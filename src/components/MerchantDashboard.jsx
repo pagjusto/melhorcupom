@@ -32,6 +32,7 @@ import {
   Lock,
   Crown,
   Award,
+  Medal,
   Zap,
   Shield
 } from 'lucide-react';
@@ -307,11 +308,16 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 ) : currentStore.tier === 'silver' ? (
                   <span className="text-xs uppercase font-bold tracking-wider text-slate-200 bg-slate-500/20 px-3 py-0.5 rounded-full border border-slate-400/40 flex items-center gap-1.5">
                     <Award size={13} className="text-slate-300" />
-                    <span>Plano Prata Pro (Destaque Ativo)</span>
+                    <span>Plano Prata Pro (5 Ofertas)</span>
+                  </span>
+                ) : currentStore.tier === 'bronze' ? (
+                  <span className="text-xs uppercase font-bold tracking-wider text-amber-500 bg-amber-900/30 px-3 py-0.5 rounded-full border border-amber-700/50 flex items-center gap-1.5">
+                    <Medal size={13} className="text-amber-500" />
+                    <span>Plano Bronze Star (3 Ofertas)</span>
                   </span>
                 ) : (
                   <span className="text-xs uppercase font-bold tracking-wider text-gray-300 bg-gray-700/40 px-3 py-0.5 rounded-full border border-gray-600">
-                    Plano Grátis (Básico)
+                    Plano Grátis (1 Oferta)
                   </span>
                 )}
 
@@ -744,10 +750,10 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 👑
               </div>
               <h3 className="text-xl font-black text-white">
-                Limite de Ofertas Atingido ({currentPlan.maxCoupons} oferta no {currentPlan.name})
+                Limite de Ofertas Atingido ({currentPlan.maxCoupons} {currentPlan.maxCoupons === 1 ? 'oferta' : 'ofertas'} no {currentPlan.name})
               </h3>
               <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed">
-                Seu estabelecimento está atualmente no <strong>{currentPlan.name}</strong>, que permite até <strong>{currentPlan.maxCoupons} oferta ativa</strong> simultaneamente.
+                Seu estabelecimento está atualmente no <strong>{currentPlan.name}</strong>, que permite até <strong>{currentPlan.maxCoupons} {currentPlan.maxCoupons === 1 ? 'oferta ativa' : 'ofertas ativas'}</strong> simultaneamente.
                 <br /><br />
                 Para cadastrar mais ofertas, ter <strong>cupons ilimitados</strong> e posicionar sua marca no <strong>topo absoluto das buscas com borda dourada</strong>, faça o upgrade de plano agora mesmo!
               </p>
@@ -1418,9 +1424,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     ? 'bg-amber-500/20 border-2 border-amber-400 text-amber-400' 
                     : currentPlan.id === 'silver'
                     ? 'bg-slate-400/20 border-2 border-slate-300 text-slate-200'
+                    : currentPlan.id === 'bronze'
+                    ? 'bg-amber-800/30 border-2 border-amber-600 text-amber-400'
                     : 'bg-white/5 border border-white/10 text-gray-400'
                 }`}>
-                  {currentPlan.id === 'gold' ? '👑' : currentPlan.id === 'silver' ? '🥈' : '🆓'}
+                  {currentPlan.id === 'gold' ? '👑' : currentPlan.id === 'silver' ? '🥈' : currentPlan.id === 'bronze' ? '🥉' : '🆓'}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -1452,30 +1460,45 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="bg-[#101017] p-3 rounded-2xl border border-white/5">
                   <span className="text-[10px] text-gray-400 block uppercase font-semibold">Prioridade no Feed</span>
                   <span className={`text-lg font-black ${
-                    currentPlan.id === 'gold' ? 'text-amber-400' : currentPlan.id === 'silver' ? 'text-slate-300' : 'text-gray-400'
+                    currentPlan.id === 'gold' 
+                      ? 'text-amber-400' 
+                      : currentPlan.id === 'silver' 
+                      ? 'text-slate-300' 
+                      : currentPlan.id === 'bronze'
+                      ? 'text-amber-500'
+                      : 'text-gray-400'
                   }`}>
-                    {currentPlan.id === 'gold' ? '⭐ 1º Lugar (Topo)' : currentPlan.id === 'silver' ? '✨ Alta (2º Lugar)' : 'Padrão'}
+                    {currentPlan.id === 'gold' 
+                      ? '⭐ 1º Lugar (Topo)' 
+                      : currentPlan.id === 'silver' 
+                      ? '✨ 2º Lugar (Alta)' 
+                      : currentPlan.id === 'bronze'
+                      ? '🥉 3º Lugar (Bronze)'
+                      : 'Padrão'}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Grid dos 3 Planos (Free, Prata, Ouro) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Grid dos 4 Planos (Free, Bronze, Prata, Ouro) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {(merchantPlans || []).map((plan) => {
               const isCurrent = currentPlan.id === plan.id;
               const isGold = plan.id === 'gold';
               const isSilver = plan.id === 'silver';
+              const isBronze = plan.id === 'bronze';
 
               return (
                 <div
                   key={plan.id}
                   className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 relative ${
                     isGold
-                      ? 'bg-gradient-to-b from-[#2A1D0E] via-[#1B1612] to-[#14141B] border-2 border-amber-400/90 shadow-[0_0_35px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/50 transform md:-translate-y-2'
+                      ? 'bg-gradient-to-b from-[#2A1D0E] via-[#1B1612] to-[#14141B] border-2 border-amber-400/90 shadow-[0_0_35px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/50 transform lg:-translate-y-2'
                       : isSilver
                       ? 'bg-gradient-to-b from-[#1C1E26] to-[#14141B] border-2 border-slate-300/60 shadow-xl'
+                      : isBronze
+                      ? 'bg-gradient-to-b from-[#251810] to-[#14141B] border-2 border-amber-700/60 shadow-lg'
                       : 'bg-[#181824] border border-white/10'
                   }`}
                 >
@@ -1490,7 +1513,14 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   {isSilver && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-900 font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap">
                       <Award size={12} />
-                      <span>Recomendado para Começar</span>
+                      <span>Recomendado Médio</span>
+                    </div>
+                  )}
+
+                  {isBronze && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-amber-600/40">
+                      <Medal size={12} />
+                      <span>Custo-Benefício</span>
                     </div>
                   )}
 
@@ -1524,9 +1554,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <div className="mb-5 p-3 rounded-2xl bg-black/30 border border-white/5">
                       <div className="text-[11px] text-gray-400">Limite de Ofertas Ativas:</div>
                       <div className={`text-base font-black ${
-                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : 'text-white'
+                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : isBronze ? 'text-amber-500' : 'text-white'
                       }`}>
-                        {plan.maxCoupons === 9999 ? '🔥 ILIMITADAS simultâneas' : `Até ${plan.maxCoupons} oferta ativa`}
+                        {plan.maxCoupons === 9999 ? '🔥 ILIMITADAS simultâneas' : `Até ${plan.maxCoupons} ${plan.maxCoupons === 1 ? 'oferta ativa' : 'ofertas ativas'}`}
                       </div>
                     </div>
 
@@ -1538,7 +1568,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       {plan.perks.map((perk, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-gray-200">
                           <CheckCircle2 size={15} className={`flex-shrink-0 mt-0.5 ${
-                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : 'text-emerald-400'
+                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : isBronze ? 'text-amber-500' : 'text-emerald-400'
                           }`} />
                           <span>{perk}</span>
                         </div>
@@ -1574,6 +1604,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black shadow-amber-950/60 transform hover:scale-[1.02]'
                             : isSilver
                             ? 'bg-slate-200 hover:bg-white text-slate-900 shadow-md'
+                            : isBronze
+                            ? 'bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-950/40'
                             : 'bg-white/10 hover:bg-white/20 text-white'
                         }`}
                       >
@@ -1586,6 +1618,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                           <>
                             <Award size={15} />
                             <span>Fazer Upgrade para Prata</span>
+                          </>
+                        ) : isBronze ? (
+                          <>
+                            <Medal size={15} />
+                            <span>Fazer Upgrade para Bronze</span>
                           </>
                         ) : (
                           <span>Mudar para Plano Grátis</span>
@@ -1609,7 +1646,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               Compare visualmente como as ofertas da sua loja se destacam na tela dos milhares de assinantes VIP de acordo com o plano contratado:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
               {/* Preview Grátis */}
               <div className="bg-[#13131A] rounded-2xl p-4 border border-white/5 space-y-3 opacity-75">
@@ -1623,6 +1660,27 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 </div>
                 <div className="text-xs font-bold text-white">{currentStore.name}</div>
                 <p className="text-[11px] text-gray-400">Listagem comum, abaixo das lojas pagantes.</p>
+              </div>
+
+              {/* Preview Bronze */}
+              <div className="bg-[#13131A] rounded-2xl p-4 border border-amber-700/60 shadow-md space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-500 flex items-center gap-1">
+                    <Medal size={12} />
+                    <span>Card no Plano Bronze:</span>
+                  </span>
+                  <span className="text-[10px] text-amber-400 font-bold">3º Nível</span>
+                </div>
+                <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
+                  <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
+                  <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
+                  <span className="absolute top-2 right-2 bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 text-[9px] font-extrabold px-2 py-0.5 rounded-full border border-amber-600/40">🥉 Bronze</span>
+                </div>
+                <div className="text-xs font-bold text-amber-400 flex items-center gap-1">
+                  <Medal size={11} className="text-amber-500" />
+                  <span>{currentStore.name}</span>
+                </div>
+                <p className="text-[11px] text-gray-300">Borda bronze, destaque acima do grátis e 3 cupons.</p>
               </div>
 
               {/* Preview Prata */}

@@ -1,13 +1,13 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { MapPin, Globe, Star, Tag, ArrowRight, Crown, Award } from 'lucide-react';
+import { MapPin, Globe, Star, Tag, ArrowRight, Crown, Award, Medal } from 'lucide-react';
 
 export const StoresView = ({ onSelectStore }) => {
   const { stores, coupons } = useApp();
 
-  // Ordenar lojas priorizando as que contratam planos superiores (Ouro > Prata > Free)
+  // Ordenar lojas priorizando as que contratam planos superiores (Ouro > Prata > Bronze > Free)
   const sortedStores = [...stores].sort((a, b) => {
-    const weights = { gold: 3, silver: 2, free: 1 };
+    const weights = { gold: 4, silver: 3, bronze: 2, free: 1 };
     const wA = weights[a.tier || 'free'] || 1;
     const wB = weights[b.tier || 'free'] || 1;
     if (wB !== wA) return wB - wA;
@@ -38,6 +38,8 @@ export const StoresView = ({ onSelectStore }) => {
                   ? 'border-2 border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.2)] hover:border-amber-400'
                   : storeTier === 'silver'
                   ? 'border border-slate-300/40 hover:border-slate-200'
+                  : storeTier === 'bronze'
+                  ? 'border border-amber-800/60 hover:border-amber-700'
                   : 'border border-white/10 hover:border-[#FF5F00]/50'
               }`}
             >
@@ -65,6 +67,12 @@ export const StoresView = ({ onSelectStore }) => {
                         <span>Prata Pro</span>
                       </span>
                     )}
+                    {storeTier === 'bronze' && (
+                      <span className="bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1 border border-amber-600/40">
+                        <Medal size={12} />
+                        <span>Bronze Star</span>
+                      </span>
+                    )}
                     {store.badge && storeTier === 'free' && (
                       <span className="bg-[#FF5F00] text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md">
                         {store.badge}
@@ -78,6 +86,8 @@ export const StoresView = ({ onSelectStore }) => {
                       ? 'border-2 border-amber-400 ring-2 ring-amber-400/30' 
                       : storeTier === 'silver'
                       ? 'border-2 border-slate-300'
+                      : storeTier === 'bronze'
+                      ? 'border-2 border-amber-700'
                       : 'border-2 border-[#FF5F00]'
                   }`}>
                     {store.logoImage ? (
@@ -94,6 +104,8 @@ export const StoresView = ({ onSelectStore }) => {
                     <h3 className="text-lg font-black text-white group-hover:text-orange-400 transition-colors flex items-center gap-1.5">
                       <span>{store.name}</span>
                       {storeTier === 'gold' && <Crown size={14} className="text-amber-400" fill="currentColor" />}
+                      {storeTier === 'silver' && <Award size={14} className="text-slate-300" />}
+                      {storeTier === 'bronze' && <Medal size={14} className="text-amber-600" />}
                     </h3>
                     <div className="flex items-center gap-1 text-xs text-amber-400 font-bold">
                       <Star size={14} fill="currentColor" />

@@ -391,6 +391,13 @@ export const AppProvider = ({ children }) => {
         origin: { y: 0.6 },
         colors: ['#94A3B8', '#E2E8F0', '#FFFFFF']
       });
+    } else if (newTier === 'bronze') {
+      confetti({
+        particleCount: 75,
+        spread: 55,
+        origin: { y: 0.6 },
+        colors: ['#D97706', '#B45309', '#FDE68A', '#FFFFFF']
+      });
     }
   };
 

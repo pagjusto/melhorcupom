@@ -12,7 +12,7 @@ import { MyCouponsView } from './components/MyCouponsView';
 import { StoresView } from './components/StoresView';
 import { HowItWorksView } from './components/HowItWorksView';
 import { UserProfileSettings } from './components/UserProfileSettings';
-import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
   const { 
@@ -89,11 +89,11 @@ const MainLayout = () => {
     return true;
   }).sort((a, b) => {
     // ALGORITMO DE DESTAQUE POR ASSINATURA:
-    // Quanto mais o lojista paga (Ouro=3, Prata=2, Free=1), mais no topo fica seu cupom!
+    // Quanto mais o lojista paga (Ouro=4, Prata=3, Bronze=2, Free=1), mais no topo fica seu cupom!
     const storeA = stores.find(s => s.id === a.storeId);
     const storeB = stores.find(s => s.id === b.storeId);
 
-    const TIER_WEIGHTS = { gold: 3, silver: 2, free: 1 };
+    const TIER_WEIGHTS = { gold: 4, silver: 3, bronze: 2, free: 1 };
     const weightA = TIER_WEIGHTS[storeA?.tier || 'free'] || 1;
     const weightB = TIER_WEIGHTS[storeB?.tier || 'free'] || 1;
 
@@ -217,6 +217,11 @@ const MainLayout = () => {
                   <span className="inline-flex items-center gap-1 text-slate-300 font-bold bg-slate-400/15 border border-slate-400/30 px-2 py-0.5 rounded-lg text-[11px]">
                     <Award size={12} />
                     <span>Lojas Prata</span>
+                  </span>
+                  <span className="text-gray-500">&gt;</span>
+                  <span className="inline-flex items-center gap-1 text-amber-500 font-bold bg-amber-700/20 border border-amber-600/30 px-2 py-0.5 rounded-lg text-[11px]">
+                    <Medal size={12} />
+                    <span>Lojas Bronze</span>
                   </span>
                   <span className="text-gray-500">&gt;</span>
                   <span className="text-gray-400 text-[11px]">Lojas Gratuitas</span>

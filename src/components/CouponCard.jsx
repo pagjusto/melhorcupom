@@ -11,6 +11,7 @@ import {
   Tag, 
   Crown, 
   Award,
+  Medal,
   Users
 } from 'lucide-react';
 
@@ -47,6 +48,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         ? 'ring-2 ring-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_36px_rgba(245,158,11,0.4)]'
         : storeTier === 'silver'
         ? 'ring-1 ring-slate-300/50 shadow-lg hover:ring-slate-300/80'
+        : storeTier === 'bronze'
+        ? 'ring-1 ring-amber-700/60 shadow-md hover:ring-amber-600/80'
         : ''
     }`}>
       
@@ -83,6 +86,13 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </div>
         )}
 
+        {storeTier === 'bronze' && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 text-amber-100 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider border border-amber-500/40">
+            <Medal size={12} />
+            <span>Destaque Bronze</span>
+          </div>
+        )}
+
         {/* Botão de Favoritar */}
         <button
           onClick={(e) => {
@@ -105,6 +115,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             ? 'border-2 border-amber-400 ring-2 ring-amber-400/40'
             : storeTier === 'silver'
             ? 'border-2 border-slate-300'
+            : storeTier === 'bronze'
+            ? 'border-2 border-amber-700'
             : 'border-2 border-[#FF5F00]'
         }`}>
           {storeLogo ? (
@@ -159,6 +171,16 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               </span>
               <span className="text-[9px] bg-slate-400/20 text-slate-200 font-extrabold px-1.5 py-0.5 rounded border border-slate-400/40">
                 PRATA
+              </span>
+            </div>
+          ) : storeTier === 'bronze' ? (
+            <div className="flex items-center gap-1.5 line-clamp-1">
+              <span className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
+                <Medal size={12} className="text-amber-500 flex-shrink-0" />
+                <span>{store?.name || 'Loja Parceira'}</span>
+              </span>
+              <span className="text-[9px] bg-amber-800/30 text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-700/50">
+                BRONZE
               </span>
             </div>
           ) : (

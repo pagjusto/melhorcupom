@@ -47,6 +47,34 @@ export const MERCHANT_PLANS = [
     ]
   },
   {
+    id: 'bronze',
+    name: 'Plano Bronze Star',
+    shortName: 'Bronze',
+    badge: '🥉 Destaque Bronze',
+    price: 39.90,
+    priceLabel: 'R$ 39,90',
+    period: '/mês',
+    tagline: 'Ideal para quem quer mais ofertas e visibilidade inicial',
+    maxCoupons: 3,
+    weight: 2,
+    color: 'from-amber-700 via-amber-800 to-amber-950',
+    borderColor: 'border-amber-700/60',
+    popular: false,
+    perks: [
+      'Até 3 ofertas VIP ativas simultaneamente',
+      'Prioridade Bronze (acima das lojas gratuitas)',
+      'Badge de destaque "🥉 Destaque Bronze"',
+      'Borda acobreada no card da oferta',
+      'Validador de balcão (PDV)',
+      'Suporte via WhatsApp'
+    ],
+    missingPerks: [
+      'Prioridade Alta / Topo da Home',
+      'Borda prateada ou dourada Glow',
+      'Mais de 3 ofertas ativas'
+    ]
+  },
+  {
     id: 'silver',
     name: 'Plano Prata Pro',
     shortName: 'Prata',
@@ -56,13 +84,13 @@ export const MERCHANT_PLANS = [
     period: '/mês',
     tagline: 'Mais visibilidade e múltiplos cupons',
     maxCoupons: 5,
-    weight: 2,
+    weight: 3,
     color: 'from-slate-400 to-slate-600',
     borderColor: 'border-slate-300/40',
     popular: false,
     perks: [
       'Até 5 ofertas VIP ativas simultaneamente',
-      'Prioridade Alta (acima dos gratuitos)',
+      'Prioridade Alta (acima dos gratuitos e bronze)',
       'Badge de destaque "🥈 Destaque Prata"',
       'Borda prateada no card da oferta',
       'Validador de balcão com múltiplos caixas',
@@ -85,7 +113,7 @@ export const MERCHANT_PLANS = [
     period: '/mês',
     tagline: 'Máxima conversão e topo absoluto do app',
     maxCoupons: 9999,
-    weight: 3,
+    weight: 4,
     color: 'from-amber-400 via-orange-500 to-amber-600',
     borderColor: 'border-amber-400/80',
     popular: true,
@@ -139,7 +167,7 @@ export const INITIAL_STORES = [
     id: 'store_3',
     name: 'Bella Napoli Trattoria',
     merchantId: 'merchant_pasta',
-    tier: 'free', // Plano Grátis (Básico)
+    tier: 'bronze', // Plano Bronze (3 Cupons)
     category: 'gastronomia',
     city: 'São Paulo - SP',
     logo: '🍝',
