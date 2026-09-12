@@ -63,7 +63,7 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  // Histórico de Resgates no Sistema (para validação do Lojista)
+  // Histórico de Resgates no Sistema (para validação do Lojista e Extrato do Usuário)
   const [redemptions, setRedemptions] = useState(() => {
     const saved = localStorage.getItem('melhor_cupom_redemptions');
     return saved ? JSON.parse(saved) : [
@@ -76,10 +76,13 @@ export const AppProvider = ({ children }) => {
         couponTitle: '50% OFF no 2º Combo Burger Especial',
         merchantId: 'merchant_burger',
         storeName: 'Smash Burger Club',
+        category: 'gastronomia',
         userName: 'Lucas Silva',
         userCpf: '382.***.***-04',
         discountBadge: '50% OFF',
-        savings: 28.00,
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
         createdAt: new Date(Date.now() - 3600000).toISOString(),
         status: 'valid', // 'valid' | 'used' | 'expired'
         expiresAt: new Date(Date.now() + 86400000).toISOString(),
@@ -93,13 +96,76 @@ export const AppProvider = ({ children }) => {
         couponTitle: '40% OFF no Combo Corte + Barboterapia',
         merchantId: 'merchant_barber',
         storeName: 'Barbearia Don Corleone',
+        category: 'beleza',
         userName: 'Lucas Silva',
         userCpf: '382.***.***-04',
         discountBadge: '40% OFF',
+        originalPrice: 110.00,
+        promoPrice: 65.00,
         savings: 45.00,
         createdAt: new Date(Date.now() - 7200000).toISOString(),
         status: 'used',
         usedAt: new Date(Date.now() - 1800000).toISOString(),
+      },
+      {
+        id: 'red_sample_3',
+        code: 'VIP-MELHOR-5542',
+        passCode: '554289',
+        qrPayload: JSON.stringify({ code: 'VIP-MELHOR-5542', passCode: '554289', couponId: 'cupom_3', merchantId: 'merchant_trattoria' }),
+        couponId: 'cupom_3',
+        couponTitle: 'Compre 1 Pizza Grande e Ganhe Outra',
+        merchantId: 'merchant_trattoria',
+        storeName: 'Bella Napoli Trattoria',
+        category: 'gastronomia',
+        userName: 'Lucas Silva',
+        userCpf: '382.***.***-04',
+        discountBadge: 'Compre 1 Leve 2',
+        originalPrice: 85.00,
+        promoPrice: 0.00,
+        savings: 85.00,
+        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 2 + 3600000).toISOString(),
+      },
+      {
+        id: 'red_sample_4',
+        code: 'VIP-MELHOR-7721',
+        passCode: '772153',
+        qrPayload: JSON.stringify({ code: 'VIP-MELHOR-7721', passCode: '772153', couponId: 'cupom_4', merchantId: 'merchant_iron' }),
+        couponId: 'cupom_4',
+        couponTitle: 'Mensalidade com 50% de Desconto nos 2 Primeiros Meses',
+        merchantId: 'merchant_iron',
+        storeName: 'Iron Fitness Centro de Treinamento',
+        category: 'fitness',
+        userName: 'Lucas Silva',
+        userCpf: '382.***.***-04',
+        discountBadge: '50% OFF',
+        originalPrice: 180.00,
+        promoPrice: 90.00,
+        savings: 90.00,
+        createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 4 + 7200000).toISOString(),
+      },
+      {
+        id: 'red_sample_5',
+        code: 'VIP-MELHOR-9912',
+        passCode: '991247',
+        qrPayload: JSON.stringify({ code: 'VIP-MELHOR-9912', passCode: '991247', couponId: 'cupom_7', merchantId: 'merchant_escape' }),
+        couponId: 'cupom_7',
+        couponTitle: 'Entrada para 4 Pessoas com 40% OFF',
+        merchantId: 'merchant_escape',
+        storeName: 'Escape 60 & Jogos Imersivos',
+        category: 'lazer',
+        userName: 'Lucas Silva',
+        userCpf: '382.***.***-04',
+        discountBadge: '40% OFF',
+        originalPrice: 225.00,
+        promoPrice: 135.00,
+        savings: 90.00,
+        createdAt: new Date(Date.now() - 86400000 * 6).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 6 + 10800000).toISOString(),
       }
     ];
   });
@@ -149,6 +215,9 @@ export const AppProvider = ({ children }) => {
   // Modal de Divulgue & Ganhe (R$ 5,00 por amigo no caixa)
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [referralModalType, setReferralModalType] = useState('auto'); // 'auto' | 'user' | 'merchant'
+
+  // Modal de Painel de Economia
+  const [isSavingsModalOpen, setIsSavingsModalOpen] = useState(false);
 
   // Modal de Autenticação / Cadastro de Usuários e Lojistas
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -332,6 +401,9 @@ export const AppProvider = ({ children }) => {
       couponTitle: coupon.title,
       merchantId: coupon.merchantId,
       storeName: store ? store.name : 'Loja Parceira',
+      category: coupon.category || (store ? store.category : 'gastronomia'),
+      storeLogo: store ? store.logo : '🏪',
+      storeImage: store ? (store.image || store.logoImage) : '',
       userName: userProfile.name,
       userCpf: userProfile.cpf || '382.***.***-04',
       maxUsesPerUser: coupon.maxUsesPerUser,
@@ -867,6 +939,9 @@ export const AppProvider = ({ children }) => {
       addCoupon,
       toggleFavorite,
       resetToFactoryDefaults,
+      // Painel de Economia
+      isSavingsModalOpen,
+      setIsSavingsModalOpen,
       // Divulgue & Ganhe
       isReferralModalOpen,
       setIsReferralModalOpen,

@@ -29,6 +29,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
     isVipUser, 
     setIsSubscriptionModalOpen,
     setIsReferralModalOpen,
+    setIsSavingsModalOpen,
     openAuthModal,
     switchRole,
     logoutAccount
@@ -155,18 +156,25 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               <div className="flex items-center gap-2.5">
                 {isVipUser ? (
                   <>
-                    {/* Economia Acumulada */}
-                    <div className="hidden lg:flex bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    {/* Botão de Economia Acumulada no Menu */}
+                    <button
+                      onClick={() => setIsSavingsModalOpen(true)}
+                      className="hidden sm:flex bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/60 px-3 py-1.5 rounded-xl items-center gap-2 transition-all cursor-pointer group shadow-sm hover:shadow-emerald-500/20 hover:scale-[1.02]"
+                      title="Ver Painel de Economia & Extrato Detalhado de Cupons"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <PiggyBank size={15} />
                       </div>
-                      <div>
-                        <div className="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">Economia</div>
+                      <div className="text-left">
+                        <div className="text-[9px] text-gray-400 uppercase font-semibold tracking-wider flex items-center gap-1">
+                          <span>Economia</span>
+                          <span className="text-emerald-400 text-[10px] group-hover:translate-x-0.5 transition-transform">↗</span>
+                        </div>
                         <div className="text-xs font-extrabold text-emerald-400">
                           R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
                         </div>
                       </div>
-                    </div>
+                    </button>
 
                     {/* Badge VIP */}
                     <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl">
@@ -411,8 +419,24 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               </button>
 
               <button
+                onClick={() => { 
+                  setIsSavingsModalOpen(true); 
+                  setMobileMenuOpen(false); 
+                }}
+                className="w-full text-left px-3 py-2 rounded-lg text-sm text-emerald-400 font-semibold hover:bg-emerald-500/10 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <PiggyBank size={16} />
+                  <span>Painel de Economia</span>
+                </div>
+                <span className="font-mono font-bold text-xs bg-emerald-500/20 px-2 py-0.5 rounded-md text-emerald-300">
+                  R$ {(userProfile.monthlySavings || 0).toFixed(2).replace('.', ',')}
+                </span>
+              </button>
+
+              <button
                 onClick={() => { setActiveTab('my-coupons'); setMobileMenuOpen(false); }}
-                className="w-full text-left px-3 py-2 rounded-lg text-sm text-emerald-400 font-semibold hover:bg-emerald-500/10 flex items-center gap-2"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5 flex items-center gap-2"
               >
                 <Tag size={16} />
                 <span>Meus Cupons Resgatados</span>

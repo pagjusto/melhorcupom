@@ -19,7 +19,8 @@ export const MyCouponsView = ({ onSelectCoupon, onOpenRedemptionModal }) => {
     stores, 
     redemptions, 
     isVipUser,
-    setIsSubscriptionModalOpen 
+    setIsSubscriptionModalOpen,
+    setIsSavingsModalOpen 
   } = useApp();
 
   const [tab, setTab] = useState('active'); // 'active' | 'history' | 'favorites'
@@ -73,13 +74,23 @@ export const MyCouponsView = ({ onSelectCoupon, onOpenRedemptionModal }) => {
             </p>
           </div>
 
-          <div className="bg-[#0F1412] border border-emerald-500/30 rounded-2xl p-5 text-center shadow-lg">
-            <div className="text-xs text-gray-400 font-semibold mb-1">ECONOMIA TOTAL ACUMULADA</div>
+          <div 
+            onClick={() => setIsSavingsModalOpen(true)}
+            className="bg-[#0F1412] hover:bg-[#131b17] border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl p-5 text-center shadow-lg cursor-pointer transition-all group"
+            title="Clique para abrir o Painel Completo de Economia"
+          >
+            <div className="text-xs text-gray-400 font-semibold mb-1 flex items-center justify-center gap-1">
+              <span>ECONOMIA TOTAL ACUMULADA</span>
+              <span className="text-emerald-400 text-[11px] group-hover:translate-x-0.5 transition-transform">↗</span>
+            </div>
             <div className="text-3xl sm:text-4xl font-black text-emerald-400 font-display">
               R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
             </div>
             <div className="text-[11px] text-gray-400 mt-1">
               Assinatura: R$ 19,90 • <strong className="text-emerald-400">Lucro de R$ {(userProfile.monthlySavings - 19.90).toFixed(2).replace('.', ',')}</strong>
+            </div>
+            <div className="mt-2 text-[10px] bg-emerald-500/10 text-emerald-300 font-bold py-1 px-2.5 rounded-lg inline-block group-hover:bg-emerald-500/20 transition-colors">
+              Ver Extrato & Demonstrativo Detalhado 📊
             </div>
           </div>
         </div>

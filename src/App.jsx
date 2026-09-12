@@ -15,6 +15,7 @@ import { UserProfileSettings } from './components/UserProfileSettings';
 import { ReferralBanner } from './components/ReferralBanner';
 import { ReferralModal } from './components/ReferralModal';
 import { AuthModal } from './components/AuthModal';
+import { SavingsModal } from './components/SavingsModal';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
@@ -460,6 +461,7 @@ const MainLayout = () => {
       <SubscriptionModal />
       <ReferralModal />
       <AuthModal />
+      <SavingsModal onSelectCoupon={(coupon) => setSelectedCoupon(coupon)} />
 
     </div>
   );

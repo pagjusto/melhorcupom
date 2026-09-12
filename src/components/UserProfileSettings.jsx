@@ -31,6 +31,7 @@ export const UserProfileSettings = () => {
     updateUserProfile, 
     isVipUser, 
     setIsSubscriptionModalOpen,
+    setIsSavingsModalOpen,
     cancelSubscription,
     addReferral 
   } = useApp();
@@ -156,12 +157,21 @@ export const UserProfileSettings = () => {
             </div>
 
             {isVipUser && (
-              <div className="bg-[#12121A] border border-emerald-500/30 rounded-2xl px-5 py-3 text-center sm:text-right shadow-md">
-                <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Economia com Cupons</div>
+              <div 
+                onClick={() => setIsSavingsModalOpen(true)}
+                className="bg-[#12121A] hover:bg-[#161d19] border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl px-5 py-3 text-center sm:text-right shadow-md cursor-pointer transition-all group"
+                title="Clique para abrir o Painel Completo de Economia"
+              >
+                <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider flex items-center justify-center sm:justify-end gap-1">
+                  <span>Economia com Cupons</span>
+                  <span className="text-emerald-400 text-[11px] group-hover:translate-x-0.5 transition-transform">↗</span>
+                </div>
                 <div className="text-2xl font-black text-emerald-400 font-display">
                   R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
                 </div>
-                <div className="text-[10px] text-gray-400">Desde jan/2026</div>
+                <div className="text-[10px] text-emerald-300/80 font-medium">
+                  Ver Extrato & Relatório Detalhado 📊
+                </div>
               </div>
             )}
           </div>
