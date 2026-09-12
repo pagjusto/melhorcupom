@@ -32,6 +32,7 @@ const MainLayout = () => {
   // Estado do Buscador de Cidade
   const [selectedCity, setSelectedCity] = useState('Todas as Cidades');
   const [citySearchQuery, setCitySearchQuery] = useState('');
+  const [selectedStoreFilter, setSelectedStoreFilter] = useState(null);
   
   // Modal de Detalhes / Resgate
   const [selectedCoupon, setSelectedCoupon] = useState(null);
@@ -42,6 +43,11 @@ const MainLayout = () => {
     const store = stores.find(s => s.id === coupon.storeId);
     const couponCity = (coupon.city || store?.city || '').toLowerCase();
     const isOnline = coupon.type === 'online' || couponCity.includes('online');
+
+    // Filtro por Loja específica (selecionada na aba Lojas Parceiras)
+    if (selectedStoreFilter && coupon.storeId !== selectedStoreFilter.id) {
+      return false;
+    }
 
     // 1. Filtro pela Cidade Selecionada
     if (selectedCity && selectedCity !== 'Todas as Cidades') {
@@ -115,6 +121,7 @@ const MainLayout = () => {
     if (store.city) {
       setSelectedCity(store.city);
     }
+    setSelectedStoreFilter(store);
     setActiveTab('explore');
   };
 
@@ -233,6 +240,26 @@ const MainLayout = () => {
                   <span className="text-[#FF5F00] font-bold">Prioridade de Destaque</span>
                 </div>
               </div>
+
+              {/* Filtro Ativo de Loja Parceira */}
+              {selectedStoreFilter && (
+                <div className="bg-gradient-to-r from-[#FF5F00]/15 to-transparent border border-[#FF5F00]/40 rounded-2xl p-3 px-4 mb-6 flex items-center justify-between animate-fade-in shadow-md">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-gray-400">Exibindo ofertas exclusivas da loja:</span>
+                    <strong className="text-sm font-black text-white flex items-center gap-1.5">
+                      <span>{selectedStoreFilter.logoImage ? '🏪' : selectedStoreFilter.logo}</span>
+                      <span>{selectedStoreFilter.name}</span>
+                    </strong>
+                  </div>
+                  <button
+                    onClick={() => setSelectedStoreFilter(null)}
+                    className="text-xs text-orange-400 hover:text-white font-bold bg-[#FF5F00]/20 hover:bg-[#FF5F00] px-3 py-1 rounded-xl transition-all flex items-center gap-1"
+                  >
+                    <span>Limpar filtro de loja</span>
+                    <span>✕</span>
+                  </button>
+                </div>
+              )}
 
               {/* Grid de Cupons no formato de Ticket */}
               {filteredCoupons.length === 0 ? (
