@@ -11,6 +11,7 @@ import { MerchantDashboard } from './components/MerchantDashboard';
 import { MyCouponsView } from './components/MyCouponsView';
 import { StoresView } from './components/StoresView';
 import { HowItWorksView } from './components/HowItWorksView';
+import { UserProfileSettings } from './components/UserProfileSettings';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin } from 'lucide-react';
 
 const MainLayout = () => {
@@ -272,6 +273,11 @@ const MainLayout = () => {
         {/* ABA: MEUS CUPONS */}
         {activeTab === 'my-coupons' && (
           <MyCouponsView onSelectCoupon={(c) => setSelectedCoupon(c)} />
+        )}
+
+        {/* ABA: CONFIGURAÇÕES DE PERFIL DO ASSINANTE */}
+        {activeTab === 'user-profile' && (
+          <UserProfileSettings />
         )}
 
       </main>

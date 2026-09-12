@@ -84,17 +84,28 @@ export const AppProvider = ({ children }) => {
 
   // Perfil do Usuário
   const [userProfile, setUserProfile] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_user');
-    return saved ? JSON.parse(saved) : {
+    const defaultUser = {
       name: 'Lucas Silva',
       email: 'lucas.vip@email.com',
+      phone: '(11) 98452-1920',
+      cpf: '382.***.***-04',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      city: 'São Paulo - SP',
+      favoriteCategories: ['gastronomia', 'beleza', 'lazer'],
+      notifications: { email: true, whatsapp: true, newDeals: true, expiringSoon: true },
       isVip: false,
       vipPlan: null, // 'monthly' | 'annual'
       vipSince: null,
       monthlySavings: 0,
       savedCouponIds: ['cupom_1', 'cupom_5']
     };
+    const saved = localStorage.getItem('melhor_cupom_user');
+    if (!saved) return defaultUser;
+    try {
+      return { ...defaultUser, ...JSON.parse(saved) };
+    } catch {
+      return defaultUser;
+    }
   });
 
   // Modal de Assinatura
@@ -318,6 +329,14 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  // Atualizar Perfil do Assinante
+  const updateUserProfile = (changes) => {
+    setUserProfile(prev => ({
+      ...prev,
+      ...changes
+    }));
+  };
+
   // Resetar dados para o padrão de fábrica
   const resetToFactoryDefaults = () => {
     localStorage.removeItem('melhor_cupom_coupons');
@@ -342,6 +361,7 @@ export const AppProvider = ({ children }) => {
       updateStore,
       redemptions,
       userProfile,
+      updateUserProfile,
       isVipUser,
       isSubscriptionModalOpen,
       setIsSubscriptionModalOpen,

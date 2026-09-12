@@ -13,7 +13,9 @@ import {
   PlusCircle, 
   Heart,
   ChevronDown,
-  MapPin
+  MapPin,
+  User,
+  Settings
 } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity }) => {
@@ -154,6 +156,26 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                   <Tag size={14} />
                   <span>Meus Cupons</span>
                 </button>
+
+                {/* Botão Meu Perfil / Configurações */}
+                <button
+                  onClick={() => setActiveTab('user-profile')}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+                    activeTab === 'user-profile'
+                      ? 'bg-[#FF5F00] text-white border-[#FF5F00] shadow-md shadow-orange-600/30'
+                      : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
+                  }`}
+                  title="Configurar Perfil do Assinante"
+                >
+                  <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
+                    <img 
+                      src={userProfile.avatar} 
+                      alt={userProfile.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <span>Perfil</span>
+                </button>
               </div>
             ) : isMerchantRole ? (
               <div className="flex items-center gap-2">
@@ -167,6 +189,19 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               </div>
             ) : (
               <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveTab('user-profile')}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+                    activeTab === 'user-profile'
+                      ? 'bg-[#FF5F00] text-white border-[#FF5F00] shadow-md shadow-orange-600/30'
+                      : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
+                  }`}
+                  title="Configurar Perfil"
+                >
+                  <User size={14} />
+                  <span>Meu Perfil</span>
+                </button>
+
                 <button
                   onClick={() => setIsSubscriptionModalOpen(true)}
                   className="relative group bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white px-5 py-2.5 rounded-xl text-sm font-extrabold shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
@@ -230,6 +265,13 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           >
             <Store size={16} />
             <span>Portal do Lojista (Validador e Cupons)</span>
+          </button>
+          <button
+            onClick={() => { setActiveTab('user-profile'); setMobileMenuOpen(false); }}
+            className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5 flex items-center gap-2"
+          >
+            <User size={16} />
+            <span>Meu Perfil de Assinante</span>
           </button>
           {isVipUser && (
             <button
