@@ -447,10 +447,27 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           </button>
           <button
             onClick={() => { setActiveTab('stores'); setMobileMenuOpen(false); }}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5"
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              activeTab === 'stores' ? 'bg-white/10 text-white font-semibold' : 'text-gray-200 hover:bg-white/5'
+            }`}
           >
             Lojas Parceiras
           </button>
+          {!isMerchantRole && (
+            <button
+              onClick={() => { 
+                openAuthModal('merchant_register'); 
+                setMobileMenuOpen(false); 
+              }}
+              className="w-full text-left px-3 py-2 rounded-xl text-xs font-black text-amber-300 bg-gradient-to-r from-orange-500/15 to-amber-500/15 border border-amber-500/30 hover:border-amber-500/60 flex items-center justify-between shadow-sm my-1"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm animate-pulse">🏪</span>
+                <span>Seja um Parceiro (Cadastre sua Loja)</span>
+              </div>
+              <span className="text-[10px] bg-[#FF5F00] text-white px-2 py-0.5 rounded-full font-black uppercase">Grátis</span>
+            </button>
+          )}
           <button
             onClick={() => { setActiveTab('how-it-works'); setMobileMenuOpen(false); }}
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5"
