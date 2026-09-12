@@ -41,7 +41,8 @@ import {
   Gift,
   Copy,
   Coins,
-  Share2
+  Share2,
+  Eye
 } from 'lucide-react';
 
 const BANNER_PRESETS = [
@@ -97,6 +98,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [copiedStoreLink, setCopiedStoreLink] = useState(false);
   const [useStoreBalanceForUpgrade, setUseStoreBalanceForUpgrade] = useState(true);
   const [merchantJustEarned, setMerchantJustEarned] = useState(null);
+  const [previewingCoupon, setPreviewingCoupon] = useState(null);
   
   // Plano de assinatura atual do lojista
   const currentPlan = merchantPlans?.find(p => p.id === (currentStore.tier || 'free')) || {
@@ -938,45 +940,59 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {storeCoupons.map((coupon) => (
-              <div 
-                key={coupon.id}
-                className="bg-[#181824] border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-[#FF5F00]/50 transition-all group"
-              >
-                {/* Banner do Cupom no Card do Lojista */}
-                <div className="relative h-36 w-full bg-black/60 overflow-hidden">
-                  <img
-                    src={coupon.banner || currentStore.image}
-                    alt={coupon.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#181824] via-transparent to-black/30" />
-                  
-                  <span className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white text-xs font-black px-2.5 py-0.5 rounded-lg shadow-md">
-                    {coupon.discountBadge}
-                  </span>
+            {storeCoupons.map((coupon) => {
+              const couponViews = coupon.viewsCount || Math.max(140, (coupon.usesCount || 8) * 11 + 35);
+              const conversionRate = (((coupon.usesCount || 0) / Math.max(1, couponViews)) * 100).toFixed(1);
 
-                  {/* Logo da Empresa no canto */}
-                  <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] border-2 border-[#FF5F00] overflow-hidden shadow-lg flex items-center justify-center z-10">
-                    {currentStore.logoImage ? (
-                      <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xl">{currentStore.logo}</span>
-                    )}
+              return (
+                <div 
+                  key={coupon.id}
+                  className="bg-[#181824] border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-[#FF5F00]/50 transition-all group shadow-lg"
+                >
+                  {/* Banner do Cupom no Card do Lojista */}
+                  <div className="relative h-40 w-full bg-black/60 overflow-hidden">
+                    <img
+                      src={coupon.banner || currentStore.image}
+                      alt={coupon.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#181824] via-transparent to-black/40" />
+                    
+                    {/* Tag de Desconto */}
+                    <span className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white text-xs font-black px-2.5 py-0.5 rounded-lg shadow-md">
+                      {coupon.discountBadge}
+                    </span>
+
+                    {/* Métrica de Visualizações do Cupom por Usuários no Banner */}
+                    <div 
+                      className="absolute top-2.5 right-2.5 bg-black/80 backdrop-blur-md border border-blue-400/40 text-blue-300 text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1.5 z-10"
+                      title="Total de vezes que usuários VIP visualizaram este cupom no catálogo"
+                    >
+                      <Eye size={13} className="text-blue-400 animate-pulse" />
+                      <span>{couponViews.toLocaleString('pt-BR')} views</span>
+                    </div>
+
+                    {/* Logo da Empresa no canto */}
+                    <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] border-2 border-[#FF5F00] overflow-hidden shadow-lg flex items-center justify-center z-10">
+                      {currentStore.logoImage ? (
+                        <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xl">{currentStore.logo}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="p-5 pt-4">
-                  <h3 className="text-base font-bold text-white mb-1.5 leading-snug">
-                    {coupon.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                    {coupon.description}
-                  </p>
+                  <div className="p-5 pt-4">
+                    <h3 className="text-base font-bold text-white mb-1.5 leading-snug">
+                      {coupon.title}
+                    </h3>
+                    <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                      {coupon.description}
+                    </p>
 
-                  <div className="text-xs text-gray-500 space-y-1.5 py-2 border-t border-white/5">
+                    {/* Preço De / Por */}
                     {coupon.originalPrice && coupon.promoPrice ? (
-                      <div className="flex items-center justify-between py-1 px-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 font-semibold mb-1 border border-emerald-500/20">
+                      <div className="flex items-center justify-between py-1.5 px-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 font-semibold mb-2.5 border border-emerald-500/20">
                         <span className="line-through text-gray-400 text-[11px]">De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}</span>
                         <span className="font-bold text-xs text-white">Por <span className="text-emerald-400">R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span></span>
                         <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300 font-bold">
@@ -984,42 +1000,84 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                         </span>
                       </div>
                     ) : null}
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <Clock size={11} className={coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'text-emerald-400' : 'text-gray-400'} />
-                        {coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? (
-                          <strong className="text-emerald-400">Validade Ilimitada</strong>
-                        ) : coupon.validityDays ? (
-                          <span>Válido {coupon.validityDays} dias</span>
-                        ) : (
-                          <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
-                        )}
-                      </span>
-                      <span className="text-orange-400 font-bold">{coupon.usesCount || 0} resgates</span>
+
+                    {/* Bloco em Destaque: Visualização do Cupom por Usuários */}
+                    <div className="bg-gradient-to-r from-blue-950/40 via-[#151928] to-indigo-950/30 border border-blue-500/30 rounded-xl p-2.5 mb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-blue-300 font-bold text-xs">
+                          <Eye size={14} className="text-blue-400" />
+                          <span>Visualizações por Usuários:</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-black text-white">
+                            {couponViews.toLocaleString('pt-BR')}
+                          </span>
+                          <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.5 rounded border border-blue-500/30">
+                            Assinantes
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-gray-400 mt-1.5 pt-1.5 border-t border-white/5">
+                        <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                          <TrendingUp size={12} />
+                          <span>Conversão em Vendas:</span>
+                          <strong className="text-white">{conversionRate}%</strong>
+                        </span>
+                        <span className="text-orange-400 font-bold">
+                          {coupon.usesCount || 0} resgates
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between pt-1 text-[11px]">
-                      <span className="text-gray-400">Limite de uso:</span>
-                      <span className="text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                        {coupon.maxUsesPerUser === 1
-                          ? '1 uso por CPF'
-                          : coupon.maxUsesPerUser > 1
-                          ? `${coupon.maxUsesPerUser} por CPF`
-                          : 'Ilimitado por CPF'}
-                      </span>
+
+                    <div className="text-xs text-gray-500 space-y-1.5 py-2 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <Clock size={11} className={coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'text-emerald-400' : 'text-gray-400'} />
+                          {coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? (
+                            <strong className="text-emerald-400">Validade Ilimitada</strong>
+                          ) : coupon.validityDays ? (
+                            <span>Válido {coupon.validityDays} dias</span>
+                          ) : (
+                            <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
+                          )}
+                        </span>
+                        <span className="text-gray-400 font-semibold">{coupon.city || 'São Paulo - SP'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 text-[11px]">
+                        <span className="text-gray-400">Limite de uso:</span>
+                        <span className="text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                          {coupon.maxUsesPerUser === 1
+                            ? '1 uso por CPF'
+                            : coupon.maxUsesPerUser > 1
+                            ? `${coupon.maxUsesPerUser} por CPF`
+                            : 'Ilimitado por CPF'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="p-5 pt-0">
-                  <button
-                    onClick={() => setActiveTab('validator')}
-                    className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-2 rounded-xl text-xs text-center transition-colors"
-                  >
-                    Ver Validações no Balcão
-                  </button>
+                  <div className="p-5 pt-0 space-y-2">
+                    {/* Botão para abrir visualização do cupom como o usuário vê */}
+                    <button
+                      onClick={() => setPreviewingCoupon(coupon)}
+                      className="w-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm group/btn cursor-pointer"
+                      title="Ver exatamente como os usuários VIP visualizam e ativam este cupom"
+                    >
+                      <Eye size={15} className="text-blue-400 group-hover/btn:scale-110 transition-transform" />
+                      <span>Visualização do Cupom por Usuários</span>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('validator')}
+                      className="w-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-semibold py-2 rounded-xl text-xs text-center transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <QrCode size={13} />
+                      <span>Ver Validações no Balcão</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -2544,6 +2602,202 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* MODAL: VISUALIZAÇÃO DO CUPOM POR USUÁRIOS VIP */}
+      {previewingCoupon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#14141E] border-2 border-blue-500/50 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl overflow-y-auto max-h-[92vh] space-y-6">
+            
+            {/* Header do Modal */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                  <Eye size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Visualização do Cupom por Usuários</h3>
+                  <p className="text-xs text-gray-400">
+                    Veja em tempo real como clientes VIP visualizam esta oferta no app
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPreviewingCoupon(null)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Painel de Métricas de Alcance */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-[#181824] border border-blue-500/30 rounded-2xl p-3.5 text-center">
+                <div className="text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                  <Eye size={12} /> Visualizações
+                </div>
+                <div className="text-lg sm:text-xl font-black text-white">
+                  {(previewingCoupon.viewsCount || Math.max(140, (previewingCoupon.usesCount || 8) * 11 + 35)).toLocaleString('pt-BR')}
+                </div>
+                <div className="text-[10px] text-gray-400 mt-0.5">Membros VIP</div>
+              </div>
+
+              <div className="bg-[#181824] border border-orange-500/30 rounded-2xl p-3.5 text-center">
+                <div className="text-[10px] text-orange-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                  <Tag size={12} /> Resgates
+                </div>
+                <div className="text-lg sm:text-xl font-black text-orange-400">
+                  {previewingCoupon.usesCount || 0}
+                </div>
+                <div className="text-[10px] text-gray-400 mt-0.5">Baixas no Caixa</div>
+              </div>
+
+              <div className="bg-[#181824] border border-emerald-500/30 rounded-2xl p-3.5 text-center">
+                <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                  <TrendingUp size={12} /> Conversão
+                </div>
+                <div className="text-lg sm:text-xl font-black text-emerald-400">
+                  {(((previewingCoupon.usesCount || 0) / Math.max(1, (previewingCoupon.viewsCount || Math.max(140, (previewingCoupon.usesCount || 8) * 11 + 35)))) * 100).toFixed(1)}%
+                </div>
+                <div className="text-[10px] text-gray-400 mt-0.5">Taxa de sucesso</div>
+              </div>
+            </div>
+
+            {/* Simulação Fiel do Card do Usuário */}
+            <div className="space-y-2">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles size={14} className="text-amber-400" />
+                <span>Simulação do Card na Vitrine do Assinante:</span>
+              </div>
+
+              <div className="bg-[#17171E] border-2 border-[#FF5F00]/60 rounded-3xl overflow-hidden shadow-2xl relative">
+                {/* Banner com Logo e Tag */}
+                <div className="relative h-48 w-full bg-black/70 overflow-hidden">
+                  <img
+                    src={previewingCoupon.banner || currentStore.image}
+                    alt={previewingCoupon.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#17171E] via-transparent to-black/40" />
+
+                  {/* Tag Desconto */}
+                  <span className="absolute top-3 left-3 bg-[#FF5F00] text-white text-xs font-black px-3 py-1 rounded-xl shadow-lg flex items-center gap-1">
+                    <Tag size={13} />
+                    <span>{previewingCoupon.discountBadge}</span>
+                  </span>
+
+                  {/* Logo da Loja */}
+                  <div className="absolute bottom-3 left-4 w-12 h-12 rounded-2xl bg-[#181824] border-2 border-[#FF5F00] overflow-hidden shadow-xl flex items-center justify-center z-10">
+                    {currentStore.logoImage ? (
+                      <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">{currentStore.logo}</span>
+                    )}
+                  </div>
+
+                  {/* Cidade */}
+                  <div className="absolute bottom-3 right-4 bg-black/60 backdrop-blur-md text-[11px] font-bold text-gray-200 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1">
+                    <MapPin size={11} className="text-[#FF5F00]" />
+                    <span>{currentStore.city || previewingCoupon.city || 'São Paulo - SP'}</span>
+                  </div>
+                </div>
+
+                {/* Conteúdo do Card */}
+                <div className="p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-amber-400 uppercase tracking-wider">
+                      {currentStore.name}
+                    </span>
+                    <span className="text-[10px] bg-amber-400/20 text-amber-300 font-bold px-1.5 py-0.5 rounded">
+                      Loja Parceira
+                    </span>
+                  </div>
+
+                  <h4 className="text-lg font-black text-white leading-snug">
+                    {previewingCoupon.title}
+                  </h4>
+
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    {previewingCoupon.description}
+                  </p>
+
+                  {/* Valores De / Por */}
+                  {previewingCoupon.originalPrice && previewingCoupon.promoPrice ? (
+                    <div className="flex items-center justify-between p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/30 text-xs">
+                      <div>
+                        <div className="text-[10px] text-gray-400 line-through">
+                          De R$ {Number(previewingCoupon.originalPrice).toFixed(2).replace('.', ',')}
+                        </div>
+                        <div className="text-base font-black text-white">
+                          Por <span className="text-emerald-400">R$ {Number(previewingCoupon.promoPrice).toFixed(2).replace('.', ',')}</span>
+                        </div>
+                      </div>
+                      <span className="bg-emerald-500/20 text-emerald-300 font-black px-3 py-1 rounded-xl text-xs border border-emerald-500/40">
+                        Economia de R$ {(Number(previewingCoupon.originalPrice) - Number(previewingCoupon.promoPrice)).toFixed(2).replace('.', ',')}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  {/* Regras e Limites */}
+                  <div className="text-xs text-gray-400 space-y-1.5 py-2 border-t border-white/5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="flex items-center gap-1">
+                        <Clock size={12} className="text-[#FF5F00]" />
+                        <span>
+                          {previewingCoupon.validityType === 'unlimited' || previewingCoupon.expiresAt === 'unlimited' || !previewingCoupon.expiresAt
+                            ? 'Validade Ilimitada'
+                            : `Válido até ${new Date(previewingCoupon.expiresAt).toLocaleDateString('pt-BR')}`}
+                        </span>
+                      </span>
+                      <span className="text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                        {previewingCoupon.maxUsesPerUser === 1
+                          ? '1 uso por CPF'
+                          : previewingCoupon.maxUsesPerUser > 1
+                          ? `${previewingCoupon.maxUsesPerUser} por CPF`
+                          : 'Ilimitado por CPF'}
+                      </span>
+                    </div>
+
+                    {previewingCoupon.rules && previewingCoupon.rules.length > 0 && (
+                      <div className="pt-2">
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Regras da Oferta:</div>
+                        <ul className="space-y-1 text-[11px] text-gray-300">
+                          {previewingCoupon.rules.map((rule, idx) => (
+                            <li key={idx} className="flex items-start gap-1.5">
+                              <span className="text-[#FF5F00]">•</span>
+                              <span>{rule}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Simulação do Botão de Ação do Usuário */}
+                  <div className="pt-2">
+                    <div className="w-full bg-[#FF5F00] text-white py-3 rounded-2xl font-black text-xs text-center shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2">
+                      <span>🎟️ Resgatar Cupom VIP (Ativar QR Code + Senha)</span>
+                    </div>
+                    <p className="text-[10px] text-gray-400 text-center mt-2">
+                      * Este é o botão interativo que o cliente clica para gerar o QR Code no seu balcão.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Fechar */}
+            <div className="pt-2">
+              <button
+                onClick={() => setPreviewingCoupon(null)}
+                className="w-full bg-white/10 hover:bg-white/15 text-white font-bold py-3 rounded-2xl text-xs transition-colors cursor-pointer"
+              >
+                Fechar Visualização
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 

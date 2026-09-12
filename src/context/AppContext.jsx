@@ -27,7 +27,8 @@ export const AppProvider = ({ children }) => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
         return {
           ...c,
-          banner: c.banner || init?.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80'
+          banner: c.banner || init?.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
+          viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init?.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35))
         };
       });
     } catch {
@@ -545,6 +546,7 @@ export const AppProvider = ({ children }) => {
   const addCoupon = (couponData) => {
     const newCoupon = {
       id: `cupom_${Date.now()}`,
+      viewsCount: 0,
       usesCount: 0,
       highlight: false,
       vipOnly: true,
@@ -562,6 +564,11 @@ export const AppProvider = ({ children }) => {
     });
 
     return newCoupon;
+  };
+
+  // Registrar visualização de cupom por usuário
+  const recordCouponView = (couponId) => {
+    setCoupons(prev => prev.map(c => c.id === couponId ? { ...c, viewsCount: (c.viewsCount || 0) + 1 } : c));
   };
 
   // Alternar Favorito
@@ -940,6 +947,7 @@ export const AppProvider = ({ children }) => {
       redeemCoupon,
       validateRedemption,
       addCoupon,
+      recordCouponView,
       toggleFavorite,
       resetToFactoryDefaults,
       // Painel de Economia

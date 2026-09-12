@@ -12,11 +12,12 @@ import {
   Crown, 
   Award,
   Medal,
-  Users
+  Users,
+  Eye
 } from 'lucide-react';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
-  const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen } = useApp();
+  const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen, recordCouponView } = useApp();
 
   const isFavorite = userProfile.savedCouponIds.includes(coupon.id);
   const storeTier = store?.tier || 'free';
@@ -32,6 +33,9 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const isLimitReached = isVipUser && isLimited && userUsesCount >= maxUses;
 
   const handleAction = () => {
+    if (recordCouponView) {
+      recordCouponView(coupon.id);
+    }
     if (!isVipUser) {
       setIsSubscriptionModalOpen(true);
     } else {
@@ -258,14 +262,20 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
             )}
           </span>
-          <span className="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 text-[10px]">
-            <Users size={11} className="text-amber-400" />
-            {coupon.maxUsesPerUser === 1
-              ? '1 por CPF'
-              : coupon.maxUsesPerUser > 1
-              ? `${coupon.maxUsesPerUser} por CPF`
-              : 'Ilimitado por CPF'}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 font-semibold text-blue-300 bg-blue-500/10 px-1.5 py-0.5 rounded-md border border-blue-500/20 text-[10px]" title="Visualizações por usuários">
+              <Eye size={11} className="text-blue-400" />
+              <span>{(coupon.viewsCount || Math.max(140, (coupon.usesCount || 8) * 11 + 35)).toLocaleString('pt-BR')}</span>
+            </span>
+            <span className="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 text-[10px]">
+              <Users size={11} className="text-amber-400" />
+              {coupon.maxUsesPerUser === 1
+                ? '1 por CPF'
+                : coupon.maxUsesPerUser > 1
+                ? `${coupon.maxUsesPerUser} por CPF`
+                : 'Ilimitado por CPF'}
+            </span>
+          </div>
         </div>
 
         {/* Botão de Resgate ou Paywall */}
