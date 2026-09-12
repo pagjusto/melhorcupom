@@ -4,12 +4,16 @@ import React, { useRef, useEffect, useState } from 'react';
  * TransparentVideo - Reprodução de vídeo com:
  * 1. Remoção inteligente de fundo branco por inundação de borda (BFS Flood-Fill):
  *    Remove APENAS o fundo externo que toca as bordas, PRESERVANDO o branco das letras e do mascote!
- * 2. Transição Ultra-Suave de Looping:
- *    - 'crossfade': Motor Dual-Player com dissolvência contínua entre ciclos (elimina corte seco e travamento de seek).
- *    - 'fade': Desvanecimento suave (fade-out / fade-in orgânico).
+ * 2. Transição Ultra-Suave de Looping com Snapshot Crossfade à Prova de Travamentos:
+ *    - Auto-recuperação contínua (NUNCA congela ou para de se mexer).
+ *    - 'crossfade': Dissolvência suave de alta precisão entre o fim e o início do ciclo.
+ *    - 'fade': Desvanecimento orgânico (fade-out e fade-in suave).
  *    - 'cut': Corte instantâneo direto.
- * 3. Corte da vinheta final do CapCut configurável.
- * 4. Remoção de marca d'água de cantos e artefatos de linha inferior.
+ * 3. Suporte a valores abaixo de 0 (negativos):
+ *    - Valores negativos cortam o início do vídeo (startOffset), permitindo pular aberturas estáticas/intros.
+ *    - Valores positivos definem o tempo da dissolvência.
+ * 4. Corte da vinheta final do CapCut configurável.
+ * 5. Remoção de marca d'água de cantos e barra inferior.
  */
 export const TransparentVideo = ({
   src,
@@ -21,19 +25,18 @@ export const TransparentVideo = ({
   trimOutro = true,            // Cortar vinheta final do CapCut
   trimOutroSeconds = 2.8,      // Duração da vinheta final / corte do loop (em segundos)
   transitionMode = 'crossfade', // 'crossfade' | 'fade' | 'cut'
-  transitionDuration = 0.5,     // Duração da transição em segundos (0.2s a 1.2s)
+  transitionDuration = 0.5,     // Duração da transição em segundos (permite abaixo de 0)
   maskWatermark = true,        // Mascarar marcas d'água de canto (CapCut)
   onLoaded,
   alt = 'Vídeo'
 }) => {
-  const video1Ref = useRef(null);
-  const video2Ref = useRef(null);
+  const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Referência do player atualmente ativo (1 ou 2)
-  const activePlayerRef = useRef(1);
-  const transitionTriggeredRef = useRef(false);
+  // Controle de transição de loop
+  const isLoopingRef = useRef(false);
+  const loopStartTimeRef = useRef(0);
 
   // Buffers reutilizáveis para 60fps constantes sem alocação de memória (zero GC lag)
   const memoryRef = useRef({
@@ -42,42 +45,36 @@ export const TransparentVideo = ({
     visitId: 0,
     lastWidth: 0,
     lastHeight: 0,
-    bufferA: null,
-    bufferB: null
+    snapshot: null
   });
 
   useEffect(() => {
-    const video1 = video1Ref.current;
-    const video2 = video2Ref.current;
+    const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video1 || !canvas) return;
+    if (!video || !canvas) return;
 
     let animId = null;
 
     const handleLoadedMetadata = () => {
-      if (video1.videoWidth && video1.videoHeight) {
-        const w = video1.videoWidth;
-        const h = video1.videoHeight;
+      if (video.videoWidth && video.videoHeight) {
+        const w = video.videoWidth;
+        const h = video.videoHeight;
         canvas.width = w;
         canvas.height = h;
 
         const mem = memoryRef.current;
-        if (!mem.bufferA) {
-          mem.bufferA = document.createElement('canvas');
-          mem.bufferB = document.createElement('canvas');
+        if (!mem.snapshot) {
+          mem.snapshot = document.createElement('canvas');
         }
-        mem.bufferA.width = w;
-        mem.bufferA.height = h;
-        mem.bufferB.width = w;
-        mem.bufferB.height = h;
+        mem.snapshot.width = w;
+        mem.snapshot.height = h;
 
         setIsReady(true);
         if (onLoaded) onLoaded();
       }
     };
 
-    video1.addEventListener('loadedmetadata', handleLoadedMetadata);
-    if (video2) video2.load(); // Pré-aquece o buffer do segundo player
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
 
     /**
      * Processa um frame de vídeo removendo o fundo branco e limpando resíduos
@@ -244,16 +241,20 @@ export const TransparentVideo = ({
     };
 
     /**
-     * Loop de renderização com motor de transição de loop suave
+     * Loop de renderização contínuo e à prova de travamentos
      */
     const render = () => {
-      const v1 = video1Ref.current;
-      const v2 = video2Ref.current;
+      const video = videoRef.current;
       const cvs = canvasRef.current;
 
-      if (!v1 || !cvs || !cvs.width || !cvs.height) {
+      if (!video || !cvs || !cvs.width || !cvs.height) {
         animId = requestAnimationFrame(render);
         return;
+      }
+
+      // 🛡️ Auto-recuperação: NUNCA deixa o vídeo permanecer pausado ou congelado
+      if (video.paused && video.readyState >= 2) {
+        video.play().catch(() => {});
       }
 
       const w = cvs.width;
@@ -264,152 +265,94 @@ export const TransparentVideo = ({
         return;
       }
 
-      const activeVideo = activePlayerRef.current === 1 ? v1 : (v2 || v1);
-      const incomingVideo = activePlayerRef.current === 1 ? (v2 || v1) : v1;
-
-      if (activeVideo.readyState < 2) {
+      if (video.readyState < 2) {
         animId = requestAnimationFrame(render);
         return;
       }
 
-      const duration = activeVideo.duration || 6.434;
+      const duration = video.duration || 6.434;
       const cutPoint = trimOutro && duration > trimOutroSeconds + 0.2
-        ? duration - trimOutroSeconds
+        ? Math.max(0.5, duration - trimOutroSeconds)
         : duration;
 
-      // Se transitionDuration for negativo (abaixo de 0):
-      // Usamos como offset no início do vídeo (corta o início estático/intro)
-      // Se for positivo: usamos como tempo de crossfade suave
-      const startOffset = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
-      const effectiveTransDur = transitionDuration > 0
-        ? Math.min(transitionDuration, Math.max(0.1, (cutPoint - startOffset) * 0.45))
-        : (transitionDuration === 0 ? 0 : 0.2); // micro-dissolvência mesmo com offset negativo
+      // Ponto de início do loop:
+      // Se transitionDuration for negativo (< 0), corta o início do vídeo pelo valor absoluto
+      const startPoint = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
 
-      const transStart = cutPoint - effectiveTransDur;
+      // Duração da transição em milissegundos
+      const fadeDurMs = transitionDuration === 0
+        ? 0
+        : Math.max(150, Math.min(1500, Math.abs(transitionDuration) * 1000));
 
-      // =========================================================================
-      // OPÇÃO 1: MOTOR DE DISSOLVÊNCIA CRUZADA CONTÍNUA (CROSSFADE DUAL-PLAYER)
-      // O próximo player começa antes do fim, eliminando corte seco e seek lag!
-      // =========================================================================
-      if (transitionMode === 'crossfade' && v2) {
-        cvs.style.opacity = '1';
+      // 1. REBOBINAMENTO AUTOMÁTICO AO ATINGIR O PONTO DE CORTE
+      if (trimOutro && duration && video.currentTime >= cutPoint && !isLoopingRef.current) {
+        isLoopingRef.current = true;
+        loopStartTimeRef.current = performance.now();
 
-        // Janela de transição: activeVideo está prestes a terminar
-        if (effectiveTransDur > 0 && trimOutro && activeVideo.currentTime >= transStart && activeVideo.currentTime < cutPoint) {
-          // Dispara o player de entrada EXATAMENTE UMA VEZ
-          if (!transitionTriggeredRef.current) {
-            transitionTriggeredRef.current = true;
-            incomingVideo.currentTime = startOffset;
-            incomingVideo.play().catch(() => {});
-          }
-
-          const rawProgress = (activeVideo.currentTime - transStart) / effectiveTransDur;
-          const progress = Math.max(0, Math.min(1, rawProgress));
-          const ease = 0.5 - 0.5 * Math.cos(progress * Math.PI); // Curva S suave
-
+        // Guarda snapshot do frame atual para a dissolvência suave
+        if (transitionMode !== 'cut' && fadeDurMs > 0) {
           const mem = memoryRef.current;
-          if (!mem.bufferA) {
-            mem.bufferA = document.createElement('canvas');
-            mem.bufferB = document.createElement('canvas');
-            mem.bufferA.width = w;
-            mem.bufferA.height = h;
-            mem.bufferB.width = w;
-            mem.bufferB.height = h;
+          if (!mem.snapshot) {
+            mem.snapshot = document.createElement('canvas');
           }
-
-          const ctxA = mem.bufferA.getContext('2d', { willReadFrequently: true });
-          const ctxB = mem.bufferB.getContext('2d', { willReadFrequently: true });
-
-          // Processa activeVideo no buffer A
-          processVideoFrame(activeVideo, ctxA, w, h);
-
-          // Processa incomingVideo no buffer B
-          const hasB = incomingVideo.readyState >= 2 && processVideoFrame(incomingVideo, ctxB, w, h);
-
-          // Mescla buffer A e buffer B suavemente
-          ctx.clearRect(0, 0, w, h);
-          ctx.save();
-          if (hasB) {
-            ctx.globalAlpha = 1.0 - ease;
-            ctx.drawImage(mem.bufferA, 0, 0, w, h);
-            ctx.globalAlpha = ease;
-            ctx.drawImage(mem.bufferB, 0, 0, w, h);
-          } else {
-            // Se o segundo player ainda estiver carregando o frame, mantém o primeiro visível
-            ctx.globalAlpha = 1.0;
-            ctx.drawImage(mem.bufferA, 0, 0, w, h);
+          if (mem.snapshot.width !== w || mem.snapshot.height !== h) {
+            mem.snapshot.width = w;
+            mem.snapshot.height = h;
           }
-          ctx.restore();
-
-        } else if (trimOutro && activeVideo.currentTime >= cutPoint) {
-          // Ponto de corte atingido: troca de papéis entre os players
-          activeVideo.pause();
-          activeVideo.currentTime = startOffset;
-
-          incomingVideo.play().catch(() => {});
-          activePlayerRef.current = activePlayerRef.current === 1 ? 2 : 1;
-          transitionTriggeredRef.current = false;
-
-          // Renderiza o novo player ativo diretamente
-          processVideoFrame(incomingVideo, ctx, w, h);
-
-        } else {
-          // Reprodução normal de alta performance fora da janela de transição
-          transitionTriggeredRef.current = false;
-          processVideoFrame(activeVideo, ctx, w, h);
+          const snapCtx = mem.snapshot.getContext('2d');
+          snapCtx.clearRect(0, 0, w, h);
+          snapCtx.drawImage(cvs, 0, 0);
         }
 
-      // =========================================================================
-      // OPÇÃO 2: DESVANECIMENTO SUAVE (FADE IN / FADE OUT ELEGANTE)
-      // =========================================================================
-      } else if (transitionMode === 'fade') {
-        if (trimOutro && duration && effectiveTransDur > 0) {
-          const fadeHalf = effectiveTransDur / 2;
-          const fadeOutStart = cutPoint - fadeHalf;
-          let op = 1.0;
+        // Rebobina para o início configurado (startPoint) e garante reprodução contínua
+        video.currentTime = startPoint;
+        video.play().catch(() => {});
+      }
 
-          if (activeVideo.currentTime >= fadeOutStart && activeVideo.currentTime < cutPoint) {
-            const p = (activeVideo.currentTime - fadeOutStart) / fadeHalf;
-            op = Math.max(0, 1.0 - p);
-          } else if (activeVideo.currentTime >= cutPoint) {
-            activeVideo.currentTime = startOffset;
-            op = 0;
-          } else if (activeVideo.currentTime < startOffset + fadeHalf) {
-            const p = (activeVideo.currentTime - startOffset) / fadeHalf;
-            op = Math.min(1.0, Math.max(0, p));
+      // 2. PROCESSAMENTO DO FRAME ATUAL NO CANVAS PRINCIPAL
+      processVideoFrame(video, ctx, w, h);
+
+      // 3. APLICAÇÃO DA TRANSIÇÃO SUAVE (DISSOLVÊNCIA OU FADE)
+      if (isLoopingRef.current) {
+        const elapsed = performance.now() - loopStartTimeRef.current;
+
+        if (elapsed < fadeDurMs && fadeDurMs > 0) {
+          const progress = Math.max(0, Math.min(1, elapsed / fadeDurMs));
+
+          if (transitionMode === 'crossfade') {
+            cvs.style.opacity = '1';
+            const mem = memoryRef.current;
+            if (mem.snapshot) {
+              // Curva suave de decaimento: o snapshot final dissolve gradualmente sobre o início do loop
+              const ease = 0.5 + 0.5 * Math.cos(progress * Math.PI);
+              ctx.save();
+              ctx.globalAlpha = ease;
+              ctx.drawImage(mem.snapshot, 0, 0);
+              ctx.restore();
+            }
+          } else if (transitionMode === 'fade') {
+            // Desvanecimento orgânico
+            const dip = Math.sin(progress * Math.PI);
+            cvs.style.opacity = Math.max(0, 1.0 - dip).toFixed(3);
           }
-
-          const smoothOp = Math.sin(op * (Math.PI / 2));
-          cvs.style.opacity = smoothOp.toFixed(3);
         } else {
+          // Transição concluída
+          isLoopingRef.current = false;
           cvs.style.opacity = '1';
-          if (trimOutro && duration && activeVideo.currentTime >= cutPoint) {
-            activeVideo.currentTime = startOffset;
-          }
         }
-
-        processVideoFrame(activeVideo, ctx, w, h);
-
-      // =========================================================================
-      // OPÇÃO 3: CORTE DIRETO INSTANTÂNEO (SEM TRANSIÇÃO)
-      // =========================================================================
       } else {
         cvs.style.opacity = '1';
-        if (trimOutro && duration && activeVideo.currentTime >= cutPoint) {
-          activeVideo.currentTime = startOffset;
-        }
-        processVideoFrame(activeVideo, ctx, w, h);
       }
 
       animId = requestAnimationFrame(render);
     };
 
-    video1.play().catch(() => {});
+    video.play().catch(() => {});
     animId = requestAnimationFrame(render);
 
     return () => {
       if (animId) cancelAnimationFrame(animId);
-      video1.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
   }, [
     src,
@@ -427,22 +370,12 @@ export const TransparentVideo = ({
 
   return (
     <div className="relative inline-block w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px]">
-      {/* Vídeo 1 (Player Principal A) */}
+      {/* Vídeo de origem oculto com reprodução contínua */}
       <video
-        ref={video1Ref}
+        ref={videoRef}
         src={src}
         autoPlay
-        muted
-        playsInline
-        crossOrigin="anonymous"
-        preload="auto"
-        className="hidden"
-      />
-
-      {/* Vídeo 2 (Player Secundário B para Crossfade Contínuo sem Stutter) */}
-      <video
-        ref={video2Ref}
-        src={src}
+        loop
         muted
         playsInline
         crossOrigin="anonymous"
