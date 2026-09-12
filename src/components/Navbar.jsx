@@ -220,7 +220,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                   title="Criar conta gratuita de usuário"
                 >
                   <UserPlus size={14} className="text-[#FF5F00]" />
-                  <span>Cadastre-se</span>
+                  <span>Cadastro/Login</span>
                 </button>
 
                 <button
@@ -304,7 +304,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               className="p-2.5 rounded-xl bg-gradient-to-r from-[#FF5F00] to-orange-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md"
             >
               <UserPlus size={14} />
-              <span>Cadastre-se</span>
+              <span>Cadastro/Login</span>
             </button>
 
             <button
