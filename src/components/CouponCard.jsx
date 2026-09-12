@@ -71,43 +71,52 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </div>
         </div>
 
-        {/* Badge do Plano de Destaque do Lojista */}
-        {storeTier === 'gold' && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-black text-[10px] sm:text-[11px] px-3 py-0.5 rounded-full shadow-lg shadow-amber-950/60 flex items-center gap-1 uppercase tracking-wider">
-            <Crown size={12} fill="currentColor" />
-            <span>Top Destaque Ouro</span>
-          </div>
-        )}
+        {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão de Favoritar */}
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+          {/* Ícone da Medalha na cor da assinatura da loja parceira */}
+          {storeTier === 'gold' && (
+            <div 
+              className="p-2 rounded-xl backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.35)] text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
+              title="Loja Parceira Ouro"
+            >
+              <Medal size={16} className="text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+            </div>
+          )}
 
-        {storeTier === 'silver' && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider">
-            <Award size={12} />
-            <span>Destaque Prata</span>
-          </div>
-        )}
+          {storeTier === 'silver' && (
+            <div 
+              className="p-2 rounded-xl backdrop-blur-md bg-black/60 border border-slate-300/50 shadow-sm text-slate-300 flex items-center justify-center transition-transform hover:scale-105"
+              title="Loja Parceira Prata"
+            >
+              <Medal size={16} className="text-slate-300 drop-shadow-[0_0_6px_rgba(203,213,225,0.4)]" />
+            </div>
+          )}
 
-        {storeTier === 'bronze' && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 text-amber-100 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider border border-amber-500/40">
-            <Medal size={12} />
-            <span>Destaque Bronze</span>
-          </div>
-        )}
+          {storeTier === 'bronze' && (
+            <div 
+              className="p-2 rounded-xl backdrop-blur-md bg-black/60 border border-amber-700/60 shadow-sm text-amber-500 flex items-center justify-center transition-transform hover:scale-105"
+              title="Loja Parceira Bronze"
+            >
+              <Medal size={16} className="text-amber-500 drop-shadow-[0_0_6px_rgba(217,119,6,0.4)]" />
+            </div>
+          )}
 
-        {/* Botão de Favoritar */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFavorite(coupon.id);
-          }}
-          className={`absolute top-3 right-3 z-10 p-2 rounded-xl backdrop-blur-md transition-all ${
-            isFavorite
-              ? 'text-red-500 bg-black/60 shadow-md'
-              : 'text-white/80 hover:text-white bg-black/40 hover:bg-black/60'
-          }`}
-          title="Favoritar cupom"
-        >
-          <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
-        </button>
+          {/* Botão de Favoritar */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(coupon.id);
+            }}
+            className={`p-2 rounded-xl backdrop-blur-md transition-all ${
+              isFavorite
+                ? 'text-red-500 bg-black/60 shadow-md'
+                : 'text-white/80 hover:text-white bg-black/40 hover:bg-black/60'
+            }`}
+            title="Favoritar cupom"
+          >
+            <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+          </button>
+        </div>
 
         {/* 2. LOGO DA EMPRESA (com borda diferenciada por plano) */}
         <div className={`absolute -bottom-3 left-4 w-12 h-12 rounded-xl bg-[#181822] shadow-xl flex items-center justify-center overflow-hidden z-20 ${

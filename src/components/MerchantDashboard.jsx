@@ -33,6 +33,7 @@ import {
   Crown,
   Award,
   Medal,
+  Heart,
   Zap,
   Shield
 } from 'lucide-react';
@@ -1657,9 +1658,12 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
                   <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
+                  <div className="absolute top-2 right-2 p-1 rounded-lg bg-black/60 text-white/70">
+                    <Heart size={12} />
+                  </div>
                 </div>
                 <div className="text-xs font-bold text-white">{currentStore.name}</div>
-                <p className="text-[11px] text-gray-400">Listagem comum, abaixo das lojas pagantes.</p>
+                <p className="text-[11px] text-gray-400">Listagem comum sem medalha, abaixo das lojas pagantes.</p>
               </div>
 
               {/* Preview Bronze */}
@@ -1674,13 +1678,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
                   <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
-                  <span className="absolute top-2 right-2 bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 text-[9px] font-extrabold px-2 py-0.5 rounded-full border border-amber-600/40">🥉 Bronze</span>
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    <div className="p-1 rounded-lg bg-black/60 border border-amber-700/60 text-amber-500 shadow-sm" title="Bronze">
+                      <Medal size={12} />
+                    </div>
+                    <div className="p-1 rounded-lg bg-black/60 text-white/70">
+                      <Heart size={12} />
+                    </div>
+                  </div>
                 </div>
                 <div className="text-xs font-bold text-amber-400 flex items-center gap-1">
                   <Medal size={11} className="text-amber-500" />
                   <span>{currentStore.name}</span>
                 </div>
-                <p className="text-[11px] text-gray-300">Borda bronze, destaque acima do grátis e 3 cupons.</p>
+                <p className="text-[11px] text-gray-300">Borda bronze, medalha na cor bronze ao lado do coração e 3 cupons.</p>
               </div>
 
               {/* Preview Prata */}
@@ -1695,10 +1706,17 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
                   <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
-                  <span className="absolute top-2 right-2 bg-slate-300 text-slate-900 text-[9px] font-extrabold px-2 py-0.5 rounded-full">🥈 Destaque</span>
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    <div className="p-1 rounded-lg bg-black/60 border border-slate-300/50 text-slate-300 shadow-sm" title="Prata">
+                      <Medal size={12} />
+                    </div>
+                    <div className="p-1 rounded-lg bg-black/60 text-white/70">
+                      <Heart size={12} />
+                    </div>
+                  </div>
                 </div>
                 <div className="text-xs font-bold text-slate-200">{currentStore.name}</div>
-                <p className="text-[11px] text-gray-300">Borda refinada e badge prateada no topo.</p>
+                <p className="text-[11px] text-gray-300">Borda prateada, medalha prata ao lado do coração e 5 ofertas.</p>
               </div>
 
               {/* Preview Ouro */}
@@ -1713,13 +1731,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
                   <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
-                  <span className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full shadow-md animate-pulse">👑 Top Ouro</span>
+                  <div className="absolute top-2 right-2 flex items-center gap-1">
+                    <div className="p-1 rounded-lg bg-black/60 border border-amber-400/60 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.4)]" title="Ouro">
+                      <Medal size={12} />
+                    </div>
+                    <div className="p-1 rounded-lg bg-black/60 text-white/70">
+                      <Heart size={12} />
+                    </div>
+                  </div>
                 </div>
                 <div className="text-xs font-black text-amber-300 flex items-center gap-1">
                   <Crown size={11} fill="currentColor" />
                   <span>{currentStore.name}</span>
                 </div>
-                <p className="text-[11px] text-amber-200/80 font-medium">Borda dourada brilhante, glow vibrante e 1º lugar no feed.</p>
+                <p className="text-[11px] text-amber-200/80 font-medium">Borda dourada, medalha de ouro com glow ao lado do coração e topo do feed.</p>
               </div>
 
             </div>
