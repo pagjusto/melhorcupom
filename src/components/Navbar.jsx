@@ -16,6 +16,7 @@ import {
   MapPin,
   User,
   UserPlus,
+  LogIn,
   Settings,
   Gift
 } from 'lucide-react';
@@ -213,25 +214,28 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                {/* Botão Login */}
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className="bg-white/5 hover:bg-white/10 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 hover:border-white/20"
+                  title="Fazer login na sua conta"
+                >
+                  <LogIn size={14} className="text-gray-300" />
+                  <span>Login</span>
+                </button>
+
+                {/* Botão Cadastro */}
                 <button
                   onClick={() => openAuthModal('user_register')}
                   className="bg-white/5 hover:bg-white/10 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 hover:border-orange-500/50"
                   title="Criar conta gratuita de usuário"
                 >
                   <UserPlus size={14} className="text-[#FF5F00]" />
-                  <span>Cadastro/Login</span>
+                  <span>Cadastro</span>
                 </button>
 
-                <button
-                  onClick={() => openAuthModal('merchant_register')}
-                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-amber-500/30"
-                  title="Cadastrar loja ou franquia de destaque"
-                >
-                  <Store size={14} className="text-amber-400" />
-                  <span>Sou Lojista</span>
-                </button>
-
+                {/* Botão Assinar VIP */}
                 <button
                   onClick={() => setIsSubscriptionModalOpen(true)}
                   className="relative group bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-1.5"
@@ -294,8 +298,19 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             </span>
           </button>
 
-          {/* Atalhos Rápidos de Cadastro / Login no Mobile Drawer */}
+          {/* Atalhos Rápidos de Login e Cadastro no Mobile Drawer */}
           <div className="grid grid-cols-2 gap-2 pb-1">
+            <button
+              onClick={() => { 
+                openAuthModal('login'); 
+                setMobileMenuOpen(false); 
+              }}
+              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10"
+            >
+              <LogIn size={14} className="text-gray-300" />
+              <span>Login</span>
+            </button>
+
             <button
               onClick={() => { 
                 openAuthModal('user_register'); 
@@ -304,18 +319,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               className="p-2.5 rounded-xl bg-gradient-to-r from-[#FF5F00] to-orange-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md"
             >
               <UserPlus size={14} />
-              <span>Cadastro/Login</span>
-            </button>
-
-            <button
-              onClick={() => { 
-                openAuthModal('merchant_register'); 
-                setMobileMenuOpen(false); 
-              }}
-              className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-xs flex items-center justify-center gap-1.5"
-            >
-              <Store size={14} />
-              <span>Sou Lojista</span>
+              <span>Cadastro</span>
             </button>
           </div>
 
