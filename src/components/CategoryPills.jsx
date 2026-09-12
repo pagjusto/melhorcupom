@@ -33,8 +33,8 @@ export const CategoryPills = ({
 }) => {
   return (
     <div className="space-y-4 mb-8">
-      {/* Categorias Principais */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      {/* Categorias Principais em Linha Única sem Barra de Rolagem */}
+      <div className="w-full flex items-center justify-between gap-1 sm:gap-1.5 lg:gap-2 overflow-x-auto md:overflow-x-visible scrollbar-none pb-1 md:pb-0">
         {CATEGORIES.map(cat => {
           const Icon = ICONS_MAP[cat.icon] || Sparkles;
           const isSelected = selectedCategory === cat.id;
@@ -43,14 +43,15 @@ export const CategoryPills = ({
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
+              title={cat.name}
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 md:px-2.5 py-1.5 sm:py-2 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all duration-200 text-center whitespace-nowrap ${
                 isSelected
                   ? 'bg-gradient-to-r from-[#FF5F00] to-[#FF7B29] text-white shadow-md shadow-orange-600/30 ring-2 ring-orange-400/50'
                   : 'bg-[#181822] text-gray-300 hover:text-white hover:bg-[#222230] border border-white/5'
               }`}
             >
-              <Icon size={16} className={isSelected ? 'text-white' : 'text-[#FF5F00]'} />
-              <span>{cat.name}</span>
+              <Icon size={13} className={`flex-shrink-0 ${isSelected ? 'text-white' : 'text-[#FF5F00]'}`} />
+              <span className="truncate">{cat.name}</span>
             </button>
           );
         })}
