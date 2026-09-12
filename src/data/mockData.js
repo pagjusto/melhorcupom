@@ -341,7 +341,7 @@ export const INITIAL_COUPONS = [
     codePrefix: 'IPANEMA2X',
     expiresAt: '2026-12-31',
     usesCount: 94,
-    maxUsesPerUser: 2,
+    maxUsesPerUser: null,
     rules: [
       'Válido todos os dias a partir das 16h',
       'Apresentar cupom ao atendente ao fazer o pedido',

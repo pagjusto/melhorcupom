@@ -136,6 +136,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     banner: BANNER_PRESETS[0].url,
     type: 'physical', // 'physical' | 'online'
     expiresAt: '2026-12-31',
+    limitType: 'one', // 'one' | 'custom' | 'unlimited'
+    customMaxUses: 2,
     rules: 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
   });
 
@@ -210,7 +212,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
 
-    const rulesArray = formData.rules.split('\n').filter(r => r.trim().length > 0);
+    let maxUses = 1;
+    let limitRule = 'Limite de 1 utilização por CPF.';
+    if (formData.limitType === 'custom') {
+      maxUses = Math.max(2, Number(formData.customMaxUses) || 2);
+      limitRule = `Limite de até ${maxUses} utilizações por CPF.`;
+    } else if (formData.limitType === 'unlimited') {
+      maxUses = null;
+      limitRule = 'Uso ilimitado por CPF durante o período da oferta.';
+    }
+
+    const rulesArray = [
+      limitRule,
+      ...formData.rules.split('\n').filter(r => r.trim().length > 0)
+    ];
 
     addCoupon({
       storeId: currentStore.id,
@@ -225,6 +240,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       city: currentStore.city || 'São Paulo - SP',
       banner: formData.banner,
       type: formData.type,
+      maxUsesPerUser: maxUses,
       codePrefix: currentStore.name.substring(0, 5).toUpperCase().replace(/\s+/g, ''),
       expiresAt: formData.expiresAt,
       rules: rulesArray
@@ -241,6 +257,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       banner: BANNER_PRESETS[0].url,
       type: 'physical',
       expiresAt: '2026-12-31',
+      limitType: 'one',
+      customMaxUses: 2,
       rules: 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
     });
     setActiveTab('coupons');
@@ -526,15 +544,28 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     </p>
 
                     {validationResult.success && validationResult.redemption && (
-                      <div className="mt-4 pt-3 border-t border-emerald-500/30 grid grid-cols-2 gap-2 text-xs">
+                      <div className="mt-4 pt-3 border-t border-emerald-500/30 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                         <div>
                           <span className="text-gray-400 block">Cliente VIP:</span>
                           <span className="font-bold text-white">{validationResult.redemption.userName}</span>
+                          {validationResult.redemption.userCpf && (
+                            <span className="text-[10px] text-gray-400 block font-mono">CPF: {validationResult.redemption.userCpf}</span>
+                          )}
                         </div>
                         <div>
                           <span className="text-gray-400 block">Desconto a aplicar:</span>
                           <span className="font-black text-emerald-400 text-sm">
                             {validationResult.redemption.discountBadge}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400 block">Regra por CPF:</span>
+                          <span className="text-amber-300 font-bold">
+                            {validationResult.redemption.maxUsesPerUser === 1
+                              ? '1 uso por CPF'
+                              : validationResult.redemption.maxUsesPerUser > 1
+                              ? `Até ${validationResult.redemption.maxUsesPerUser} por CPF`
+                              : 'Ilimitado por CPF'}
                           </span>
                         </div>
                       </div>
@@ -660,10 +691,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     {coupon.description}
                   </p>
 
-                  <div className="text-xs text-gray-500 space-y-1 py-2 border-t border-white/5">
+                  <div className="text-xs text-gray-500 space-y-1.5 py-2 border-t border-white/5">
                     <div className="flex items-center justify-between">
                       <span>Validade: {coupon.expiresAt}</span>
                       <span className="text-orange-400 font-bold">{coupon.usesCount || 0} resgates</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 text-[11px]">
+                      <span className="text-gray-400">Limite de uso:</span>
+                      <span className="text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                        {coupon.maxUsesPerUser === 1
+                          ? '1 uso por CPF'
+                          : coupon.maxUsesPerUser > 1
+                          ? `${coupon.maxUsesPerUser} por CPF`
+                          : 'Ilimitado por CPF'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -878,9 +919,136 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </div>
             </div>
 
+            {/* 4. LIMITE DE USO POR CPF */}
+            <div className="bg-[#12121A] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
+              <div>
+                <label className="text-xs font-bold text-white flex items-center gap-1.5 mb-1">
+                  <Users size={15} className="text-[#FF5F00]" />
+                  <span>Limite de Resgates por CPF do Assinante *</span>
+                </label>
+                <p className="text-[11px] text-gray-400">
+                  Defina quantas vezes cada cliente VIP pode resgatar e utilizar esta oferta.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Opção 1: 1 uso por CPF */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, limitType: 'one' })}
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                    formData.limitType === 'one'
+                      ? 'bg-[#FF5F00]/15 border-[#FF5F00] shadow-md shadow-orange-600/15 ring-1 ring-[#FF5F00]'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-black text-white">1 uso por CPF</span>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      formData.limitType === 'one' ? 'border-[#FF5F00] bg-[#FF5F00]' : 'border-gray-500'
+                    }`}>
+                      {formData.limitType === 'one' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">
+                    Máxima segurança anti-fraude: cada cliente só aproveita 1 única vez.
+                  </p>
+                </button>
+
+                {/* Opção 2: Mais de 1 uso por CPF */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, limitType: 'custom' })}
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                    formData.limitType === 'custom'
+                      ? 'bg-[#FF5F00]/15 border-[#FF5F00] shadow-md shadow-orange-600/15 ring-1 ring-[#FF5F00]'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-black text-white">Mais de 1 por CPF</span>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      formData.limitType === 'custom' ? 'border-[#FF5F00] bg-[#FF5F00]' : 'border-gray-500'
+                    }`}>
+                      {formData.limitType === 'custom' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">
+                    Defina uma quantidade fixa de resgates permitidos por cliente.
+                  </p>
+                </button>
+
+                {/* Opção 3: Uso Ilimitado por CPF */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, limitType: 'unlimited' })}
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                    formData.limitType === 'unlimited'
+                      ? 'bg-[#FF5F00]/15 border-[#FF5F00] shadow-md shadow-orange-600/15 ring-1 ring-[#FF5F00]'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-black text-white">Uso Ilimitado</span>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      formData.limitType === 'unlimited' ? 'border-[#FF5F00] bg-[#FF5F00]' : 'border-gray-500'
+                    }`}>
+                      {formData.limitType === 'unlimited' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">
+                    Sem limite: o cliente pode gerar cupons sempre que visitar.
+                  </p>
+                </button>
+              </div>
+
+              {/* Ajuste de quantidade se for personalizado */}
+              {formData.limitType === 'custom' && (
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 bg-white/5 p-3 rounded-xl border border-white/10 animate-fade-in">
+                  <div className="text-xs text-gray-300 font-semibold">
+                    Quantidade máxima de resgates permitida por CPF:
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        customMaxUses: Math.max(2, (Number(prev.customMaxUses) || 2) - 1)
+                      }))}
+                      className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center text-sm transition-colors"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="2"
+                      max="50"
+                      value={formData.customMaxUses}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        customMaxUses: Math.max(2, parseInt(e.target.value) || 2)
+                      })}
+                      className="w-16 text-center bg-[#101017] border border-white/20 rounded-lg py-1 text-sm font-bold text-white focus:outline-none focus:border-[#FF5F00]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        customMaxUses: (Number(prev.customMaxUses) || 2) + 1
+                      }))}
+                      className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center text-sm transition-colors"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-bold text-orange-400 ml-1">resgates por cliente</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="text-xs font-bold text-gray-300 block mb-1">
-                Regras e Condições (uma por linha)
+                Outras Regras e Condições (uma por linha)
               </label>
               <textarea
                 rows={3}

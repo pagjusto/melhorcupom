@@ -192,6 +192,35 @@ export const AppProvider = ({ children }) => {
 
   // Resgatar um Cupom
   const redeemCoupon = (coupon) => {
+    // Checar se o usuário já tem um resgate ativo/válido para este cupom
+    const existingValid = redemptions.find(r => 
+      r.couponId === coupon.id && 
+      (r.userName === userProfile.name || (userProfile.cpf && r.userCpf === userProfile.cpf)) && 
+      r.status === 'valid'
+    );
+    if (existingValid) {
+      return existingValid;
+    }
+
+    // Checar limite por CPF (resgates usados ou válidos)
+    const maxUses = coupon.maxUsesPerUser;
+    const isLimited = maxUses !== null && maxUses !== undefined && maxUses !== '' && maxUses !== 0 && maxUses !== 'unlimited';
+    if (isLimited) {
+      const userPreviousUses = redemptions.filter(r => 
+        r.couponId === coupon.id && 
+        (r.userName === userProfile.name || (userProfile.cpf && r.userCpf === userProfile.cpf))
+      ).length;
+
+      if (userPreviousUses >= maxUses) {
+        return {
+          error: true,
+          limitReached: true,
+          maxUses,
+          message: `Você já atingiu o limite de ${maxUses === 1 ? '1 resgate' : `${maxUses} resgates`} por CPF para esta oferta.`
+        };
+      }
+    }
+
     const store = stores.find(s => s.id === coupon.storeId);
     
     // Gera código único ex: VIP-SMASH50-8472
@@ -206,6 +235,8 @@ export const AppProvider = ({ children }) => {
       merchantId: coupon.merchantId,
       storeName: store ? store.name : 'Loja Parceira',
       userName: userProfile.name,
+      userCpf: userProfile.cpf || '382.***.***-04',
+      maxUsesPerUser: coupon.maxUsesPerUser,
       discountBadge: coupon.discountBadge,
       savings: coupon.estimatedSavings || 20.00,
       createdAt: new Date().toISOString(),
@@ -277,10 +308,17 @@ export const AppProvider = ({ children }) => {
       return r;
     }));
 
+    const cpfDisplay = found.userCpf ? ` (CPF: ${found.userCpf})` : '';
+    const limitInfo = found.maxUsesPerUser === 1
+      ? ' • Limite: 1 por CPF'
+      : found.maxUsesPerUser > 1
+      ? ` • Limite: até ${found.maxUsesPerUser} por CPF`
+      : ' • Limite: Ilimitado por CPF';
+
     return { 
       success: true, 
       redemption: { ...found, status: 'used', usedAt: now },
-      message: `Cupom validado com sucesso! Aplique o desconto de "${found.discountBadge}" para ${found.userName}.`
+      message: `Cupom validado com sucesso! Aplique o desconto de "${found.discountBadge}" para ${found.userName}${cpfDisplay}${limitInfo}.`
     };
   };
 

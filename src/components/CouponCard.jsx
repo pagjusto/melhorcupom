@@ -8,16 +8,27 @@ import {
   Clock, 
   Heart, 
   ArrowUpRight, 
-  Tag,
-  Crown,
-  Award
+  Tag, 
+  Crown, 
+  Award,
+  Users
 } from 'lucide-react';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
-  const { isVipUser, userProfile, toggleFavorite, setIsSubscriptionModalOpen } = useApp();
+  const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen } = useApp();
 
   const isFavorite = userProfile.savedCouponIds.includes(coupon.id);
   const storeTier = store?.tier || 'free';
+
+  // Verificar histórico de resgates deste cupom pelo usuário logado
+  const userUsesCount = redemptions?.filter(r => 
+    r.couponId === coupon.id && 
+    (r.userName === userProfile.name || (userProfile.cpf && r.userCpf === userProfile.cpf))
+  ).length || 0;
+
+  const maxUses = coupon.maxUsesPerUser;
+  const isLimited = maxUses !== null && maxUses !== undefined && maxUses !== '' && maxUses !== 0 && maxUses !== 'unlimited';
+  const isLimitReached = isVipUser && isLimited && userUsesCount >= maxUses;
 
   const handleAction = () => {
     if (!isVipUser) {
@@ -189,25 +200,39 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
 
       {/* Bottom Footer & Ação */}
       <div className="p-5 pt-3 bg-[#13131A]">
-        <div className="flex items-center justify-between text-[11px] text-gray-500 mb-3">
+        <div className="flex items-center justify-between text-[11px] text-gray-500 mb-2.5">
           <span className="flex items-center gap-1">
             <Clock size={12} />
-            Válido até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}
+            Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}
           </span>
-          <span className="font-medium text-orange-400/80">
-            {coupon.usesCount || 0} resgatados
+          <span className="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 text-[10px]">
+            <Users size={11} className="text-amber-400" />
+            {coupon.maxUsesPerUser === 1
+              ? '1 por CPF'
+              : coupon.maxUsesPerUser > 1
+              ? `${coupon.maxUsesPerUser} por CPF`
+              : 'Ilimitado por CPF'}
           </span>
         </div>
 
         {/* Botão de Resgate ou Paywall */}
         {isVipUser ? (
-          <button
-            onClick={handleAction}
-            className="w-full bg-[#FF5F00] hover:bg-[#E55400] text-white py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all hover:scale-[1.01]"
-          >
-            <span>🎟️ Resgatar Cupom VIP</span>
-            <ArrowUpRight size={14} />
-          </button>
+          isLimitReached ? (
+            <button
+              onClick={handleAction}
+              className="w-full bg-white/5 hover:bg-white/10 text-gray-400 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition-all"
+            >
+              <span>🔒 Limite por CPF Atingido</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleAction}
+              className="w-full bg-[#FF5F00] hover:bg-[#E55400] text-white py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all hover:scale-[1.01]"
+            >
+              <span>🎟️ Resgatar Cupom VIP</span>
+              <ArrowUpRight size={14} />
+            </button>
+          )
         ) : (
           <button
             onClick={handleAction}
