@@ -14,6 +14,7 @@ import { HowItWorksView } from './components/HowItWorksView';
 import { UserProfileSettings } from './components/UserProfileSettings';
 import { ReferralBanner } from './components/ReferralBanner';
 import { ReferralModal } from './components/ReferralModal';
+import { AuthModal } from './components/AuthModal';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
@@ -55,7 +56,9 @@ const MainLayout = () => {
     if (selectedCity && selectedCity !== 'Todas as Cidades') {
       const cityTarget = selectedCity.toLowerCase();
       const matchesCity = couponCity.includes(cityTarget) || 
-                          (store && store.city && store.city.toLowerCase().includes(cityTarget));
+                          (store && store.city && store.city.toLowerCase().includes(cityTarget)) ||
+                          (store && Array.isArray(store.cities) && store.cities.some(c => c.toLowerCase().includes(cityTarget))) ||
+                          (Array.isArray(coupon.cities) && coupon.cities.some(c => c.toLowerCase().includes(cityTarget)));
       
       // Cupons online são válidos em todo o Brasil
       if (!matchesCity && !isOnline) {
@@ -68,6 +71,8 @@ const MainLayout = () => {
       const q = citySearchQuery.toLowerCase();
       const matchesSearch = couponCity.includes(q) || 
                             (store && store.city && store.city.toLowerCase().includes(q)) ||
+                            (store && Array.isArray(store.cities) && store.cities.some(c => c.toLowerCase().includes(q))) ||
+                            (Array.isArray(coupon.cities) && coupon.cities.some(c => c.toLowerCase().includes(q))) ||
                             (store && store.address && store.address.toLowerCase().includes(q));
       
       if (!matchesSearch && !isOnline) {
@@ -453,6 +458,7 @@ const MainLayout = () => {
 
       <SubscriptionModal />
       <ReferralModal />
+      <AuthModal />
 
     </div>
   );

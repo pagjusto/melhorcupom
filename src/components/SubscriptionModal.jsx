@@ -27,7 +27,8 @@ export const SubscriptionModal = () => {
     setSelectedPlanForModal,
     userProfile,
     currentRole,
-    setIsReferralModalOpen
+    setIsReferralModalOpen,
+    openAuthModal
   } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState('pix'); // 'pix' | 'card'
@@ -162,7 +163,11 @@ export const SubscriptionModal = () => {
                   type="button"
                   onClick={() => {
                     setIsSubscriptionModalOpen(false);
-                    setIsReferralModalOpen(true);
+                    if (!userProfile?.isRegistered) {
+                      openAuthModal('user_register');
+                    } else {
+                      setIsReferralModalOpen(true);
+                    }
                   }}
                   className="bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0 transform hover:scale-105"
                 >

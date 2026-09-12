@@ -250,6 +250,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       estimatedSavings: Number(formData.estimatedSavings) || 25,
       category: currentStore.category,
       city: currentStore.city || 'São Paulo - SP',
+      cities: currentStore.cities || [currentStore.city || 'São Paulo - SP'],
       banner: formData.banner,
       type: formData.type,
       maxUsesPerUser: maxUses,

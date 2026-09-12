@@ -141,6 +141,19 @@ export const AppProvider = ({ children }) => {
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [referralModalType, setReferralModalType] = useState('auto'); // 'auto' | 'user' | 'merchant'
 
+  // Modal de Autenticação / Cadastro de Usuários e Lojistas
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('user_register'); // 'user_register' | 'merchant_register' | 'login'
+
+  const openAuthModal = (mode = 'user_register') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+  };
+
   // Salvar no LocalStorage sempre que houver alteração
   useEffect(() => {
     localStorage.setItem('melhor_cupom_role', currentRole);
@@ -541,6 +554,98 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  // Cadastrar Novo Usuário (Pessoa Física com Nome, CPF, CEP, Cidade, Email, WhatsApp, Senha)
+  const registerUser = (userData) => {
+    const { name, cpf, cep, city, email, phone } = userData;
+    const cleanName = name?.trim() || 'Usuário';
+    const firstName = cleanName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+    const generatedReferralCode = (firstName.substring(0, 5) + Math.floor(10 + Math.random() * 90)).toUpperCase();
+
+    setUserProfile(prev => ({
+      ...prev,
+      name: cleanName,
+      cpf: cpf || prev.cpf,
+      cep: cep || prev.cep || '01310-100',
+      city: city || prev.city || 'São Paulo - SP',
+      email: email || prev.email,
+      phone: phone || prev.phone,
+      referralCode: generatedReferralCode,
+      isRegistered: true
+    }));
+
+    confetti({
+      particleCount: 110,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#FF5F00', '#10B981', '#FFC800', '#FFFFFF']
+    });
+
+    setIsAuthModalOpen(false);
+    return { success: true, name: cleanName, referralCode: generatedReferralCode };
+  };
+
+  // Cadastrar Novo Lojista / Franquia (com Nome, CNPJ, CEP, Cidades Franquia, Email, WhatsApp, Senha)
+  const registerMerchant = (merchantData) => {
+    const { name, legalName, cnpj, cep, cities, email, phone, category } = merchantData;
+    const storeId = `store_${Date.now()}`;
+    const merchantId = `merchant_${Date.now()}`;
+    const cleanName = name?.trim() || 'Nova Loja Parceira';
+    const cleanShort = cleanName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '').substring(0, 5);
+    const storeRefCode = (cleanShort + '5').toUpperCase();
+
+    const selectedCities = Array.isArray(cities) && cities.length > 0 
+      ? cities 
+      : ['São Paulo - SP'];
+
+    const newStore = {
+      id: storeId,
+      merchantId,
+      name: cleanName,
+      legalName: legalName || cleanName,
+      cnpj: cnpj || '00.000.000/0001-00',
+      cep: cep || '01310-100',
+      category: category || 'gastronomia',
+      cities: selectedCities, // Suporte a múltiplas cidades para franquias
+      city: selectedCities[0] || 'São Paulo - SP',
+      phone: phone || '(11) 98123-4567',
+      email: email || 'contato@lojaparceira.com.br',
+      address: `${selectedCities[0] || 'Brasil'}`,
+      hours: 'Seg a Sáb: 10h às 22h',
+      tier: 'free',
+      referralCode: storeRefCode,
+      referralBalance: 0.00,
+      referrals: [],
+      rating: 5.0,
+      reviewsCount: 1,
+      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
+      logo: '🏪',
+      logoImage: ''
+    };
+
+    setStores(prev => [newStore, ...prev]);
+    setCurrentRole(merchantId);
+
+    confetti({
+      particleCount: 150,
+      spread: 85,
+      origin: { y: 0.55 },
+      colors: ['#FF5F00', '#F59E0B', '#10B981', '#FFFFFF']
+    });
+
+    setIsAuthModalOpen(false);
+    return { success: true, store: newStore };
+  };
+
+  // Login de Usuário ou Lojista
+  const loginAccount = (type = 'user') => {
+    if (type === 'merchant') {
+      setCurrentRole('merchant_burger');
+    } else {
+      setCurrentRole('visitor');
+    }
+    setIsAuthModalOpen(false);
+  };
+
   // Resetar dados para o padrão de fábrica
   const resetToFactoryDefaults = () => {
     localStorage.removeItem('melhor_cupom_coupons');
@@ -587,7 +692,17 @@ export const AppProvider = ({ children }) => {
       setReferralModalType,
       addReferral,
       useReferralBalance,
-      useStoreReferralBalance
+      useStoreReferralBalance,
+      // Autenticação e Cadastro
+      isAuthModalOpen,
+      setIsAuthModalOpen,
+      authModalMode,
+      setAuthModalMode,
+      openAuthModal,
+      closeAuthModal,
+      registerUser,
+      registerMerchant,
+      loginAccount
     }}>
       {children}
     </AppContext.Provider>

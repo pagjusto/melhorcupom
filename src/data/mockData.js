@@ -4,6 +4,17 @@ export const POPULAR_CITIES = [
   'Rio de Janeiro - RJ',
   'Belo Horizonte - MG',
   'Curitiba - PR',
+  'Campinas - SP',
+  'Santos - SP',
+  'Ribeirão Preto - SP',
+  'São José dos Campos - SP',
+  'Porto Alegre - RS',
+  'Florianópolis - SC',
+  'Brasília - DF',
+  'Goiânia - GO',
+  'Salvador - BA',
+  'Fortaleza - CE',
+  'Recife - PE',
   'Todo o Brasil (Online)'
 ];
 

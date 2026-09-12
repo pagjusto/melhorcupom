@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export const HowItWorksView = () => {
-  const { setIsSubscriptionModalOpen, switchRole } = useApp();
+  const { setIsSubscriptionModalOpen, switchRole, openAuthModal } = useApp();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in space-y-16">
@@ -138,15 +138,22 @@ export const HowItWorksView = () => {
             </div>
           </div>
 
-          <div className="pt-8 mt-8 border-t border-white/10">
+          <div className="pt-8 mt-8 border-t border-white/10 space-y-3">
+            <button
+              onClick={() => openAuthModal('merchant_register')}
+              className="w-full bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 text-sm transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01]"
+            >
+              <Store size={18} />
+              <span>Cadastrar Minha Loja ou Franquia Grátis</span>
+            </button>
+
             <button
               onClick={() => {
                 switchRole('merchant_burger');
               }}
-              className="w-full bg-white/10 hover:bg-white/20 text-white font-extrabold py-3.5 px-6 rounded-2xl border border-white/15 text-sm transition-all flex items-center justify-center gap-2"
+              className="w-full bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-2.5 px-6 rounded-xl border border-white/10 text-xs transition-all flex items-center justify-center gap-2"
             >
-              <Store size={16} className="text-orange-400" />
-              <span>Acessar Painel do Comerciante</span>
+              <span>Ver Demonstração do Painel do Comerciante</span>
             </button>
           </div>
         </div>

@@ -3,7 +3,10 @@ import { useApp } from '../context/AppContext';
 import { Shield, Sparkles, Store, User, RotateCcw, Check } from 'lucide-react';
 
 export const RoleSwitcher = () => {
-  const { currentRole, switchRole, resetToFactoryDefaults, isVipUser } = useApp();
+  const { currentRole, switchRole, resetToFactoryDefaults, isVipUser, stores } = useApp();
+
+  const customStore = stores?.find(s => s.merchantId === currentRole || s.id === currentRole);
+  const isDefaultRole = ['visitor', 'vip', 'merchant_burger', 'merchant_barber', 'admin'].includes(currentRole);
 
   const roles = [
     {
@@ -22,6 +25,14 @@ export const RoleSwitcher = () => {
       badgeColor: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold',
       description: 'Acesso liberado a todos os cupons e QR Codes por R$ 19,90/mês'
     },
+    ...(!isDefaultRole && customStore ? [{
+      id: currentRole,
+      name: `Lojista: ${customStore.name}`,
+      icon: Store,
+      badge: 'Minha Loja',
+      badgeColor: 'bg-emerald-600 text-white',
+      description: `Painel da loja ${customStore.name}`
+    }] : []),
     {
       id: 'merchant_burger',
       name: 'Lojista: Smash Burger',
