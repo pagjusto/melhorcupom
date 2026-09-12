@@ -30,6 +30,7 @@ export const HeroBanner = ({
   const [removeWhiteBg, setRemoveWhiteBg] = useState(true);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
   const [trimCapCutOutro, setTrimCapCutOutro] = useState(true);
+  const [trimSeconds, setTrimSeconds] = useState(2.8);
   const [maskWatermark, setMaskWatermark] = useState(true);
   const [whiteThreshold, setWhiteThreshold] = useState(215);
 
@@ -66,7 +67,7 @@ export const HeroBanner = ({
               threshold={whiteThreshold}
               feather={25}
               trimOutro={trimCapCutOutro}
-              trimOutroSeconds={1.8}
+              trimOutroSeconds={trimSeconds}
               maskWatermark={maskWatermark}
               className="w-full h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
               alt="Melhor Cupom Vídeo"
@@ -172,6 +173,28 @@ export const HeroBanner = ({
                 >
                   <span>{maskWatermark ? '✓ Sem Marca d\'Água' : '✕ Com Marca d\'Água'}</span>
                 </button>
+
+                {/* Ajuste Fino do Tempo de Loop */}
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta segundos do final para encurtar ou estender o ciclo de repetição">
+                  <span className="text-orange-400">⏱️ Loop:</span>
+                  <span className="font-mono text-white text-[11px]">-{trimSeconds.toFixed(1)}s</span>
+                  <div className="flex items-center gap-0.5 ml-0.5">
+                    <button
+                      onClick={() => setTrimSeconds(prev => Math.max(0, parseFloat((prev - 0.5).toFixed(1))))}
+                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
+                      title="Diminuir corte (+0.5s no vídeo)"
+                    >
+                      -
+                    </button>
+                    <button
+                      onClick={() => setTrimSeconds(prev => Math.min(5.0, parseFloat((prev + 0.5).toFixed(1))))}
+                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
+                      title="Aumentar corte (-0.5s no vídeo)"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
