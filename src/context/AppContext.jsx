@@ -8,6 +8,9 @@ export const AppProvider = ({ children }) => {
   // Aba Ativa Global da Aplicação ('explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons' | 'user-profile')
   const [activeTab, setActiveTab] = useState('explore');
 
+  // Aba Interna do Painel do Lojista ('coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals')
+  const [merchantDashboardTab, setMerchantDashboardTab] = useState('coupons');
+
   // Estado de Perfil Atual (Role)
   // 'visitor' | 'vip' | 'merchant_burger' | 'merchant_barber' | 'admin'
   const [currentRole, setCurrentRole] = useState(() => {
@@ -963,7 +966,9 @@ export const AppProvider = ({ children }) => {
       logoutAccount,
       // Navegação Global
       activeTab,
-      setActiveTab
+      setActiveTab,
+      merchantDashboardTab,
+      setMerchantDashboardTab
     }}>
       {children}
     </AppContext.Provider>

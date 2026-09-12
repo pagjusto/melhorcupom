@@ -67,7 +67,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     merchantPlans,
     switchRole,
     addReferral,
-    setIsReferralModalOpen 
+    setIsReferralModalOpen,
+    merchantDashboardTab,
+    setMerchantDashboardTab
   } = useApp();
 
   // Identificar loja correspondente ao role
@@ -79,7 +81,19 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const storeRedemptions = redemptions.filter(r => r.merchantId === currentStore.merchantId);
 
   // Tabs internas do Painel
-  const [activeTab, setActiveTab] = useState(prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals'
+  const activeTab = merchantDashboardTab || (prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals'
+  const setActiveTab = (tab) => {
+    if (setMerchantDashboardTab) {
+      setMerchantDashboardTab(tab);
+    }
+  };
+
+  useEffect(() => {
+    if (prefilledCode && setMerchantDashboardTab) {
+      setMerchantDashboardTab('validator');
+    }
+  }, [prefilledCode, setMerchantDashboardTab]);
+
   const [copiedStoreLink, setCopiedStoreLink] = useState(false);
   const [useStoreBalanceForUpgrade, setUseStoreBalanceForUpgrade] = useState(true);
   const [merchantJustEarned, setMerchantJustEarned] = useState(null);

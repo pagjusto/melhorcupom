@@ -27,7 +27,8 @@ const MainLayout = () => {
     switchRole,
     setIsSubscriptionModalOpen,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    setMerchantDashboardTab
   } = useApp();
 
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -123,6 +124,9 @@ const MainLayout = () => {
   const handleTestValidateAtMerchant = (code, merchantId) => {
     setPrefilledValidatorCode(code);
     switchRole(merchantId || 'merchant_burger');
+    if (setMerchantDashboardTab) {
+      setMerchantDashboardTab('validator');
+    }
     setActiveTab('merchant-dashboard');
   };
 
@@ -397,6 +401,7 @@ const MainLayout = () => {
                   <button 
                     onClick={() => {
                       switchRole('merchant_burger');
+                      if (setMerchantDashboardTab) setMerchantDashboardTab('new-coupon');
                       setActiveTab('merchant-dashboard');
                     }} 
                     className="hover:text-orange-400"
@@ -408,11 +413,24 @@ const MainLayout = () => {
                   <button 
                     onClick={() => {
                       switchRole('merchant_burger');
+                      if (setMerchantDashboardTab) setMerchantDashboardTab('validator');
                       setActiveTab('merchant-dashboard');
                     }} 
                     className="hover:text-orange-400"
                   >
                     Validador de Balcão (PDV)
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      switchRole('merchant_burger');
+                      if (setMerchantDashboardTab) setMerchantDashboardTab('settings');
+                      setActiveTab('merchant-dashboard');
+                    }} 
+                    className="hover:text-orange-400"
+                  >
+                    Perfil da Loja & Configurações
                   </button>
                 </li>
                 <li><a href="#parceria" className="hover:text-white">Seja um Estabelecimento Parceiro</a></li>

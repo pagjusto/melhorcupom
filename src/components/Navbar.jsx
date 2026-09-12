@@ -32,7 +32,9 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
     setIsSavingsModalOpen,
     openAuthModal,
     switchRole,
-    logoutAccount
+    logoutAccount,
+    merchantDashboardTab,
+    setMerchantDashboardTab
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -137,17 +139,55 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
 
             {isMerchantRole ? (
               <div className="flex items-center gap-2">
+                {/* Botão Painel do Lojista */}
                 <button
-                  onClick={() => setActiveTab('merchant-dashboard')}
-                  className="bg-[#FF5F00] hover:bg-[#E04F00] text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-orange-600/30 transition-all"
+                  onClick={() => {
+                    setMerchantDashboardTab('coupons');
+                    setActiveTab('merchant-dashboard');
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    activeTab === 'merchant-dashboard' && merchantDashboardTab !== 'settings'
+                      ? 'bg-[#FF5F00] text-white border-[#FF5F00] shadow-lg shadow-orange-600/30'
+                      : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
+                  }`}
+                  title="Abrir Painel de Ofertas e Validador"
                 >
-                  <QrCode size={15} />
+                  <Store size={14} className={activeTab === 'merchant-dashboard' && merchantDashboardTab !== 'settings' ? 'text-white' : 'text-[#FF5F00]'} />
                   <span>Painel do Lojista</span>
                 </button>
+
+                {/* Botão Perfil da Loja */}
+                <button
+                  onClick={() => {
+                    setMerchantDashboardTab('settings');
+                    setActiveTab('merchant-dashboard');
+                  }}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+                    activeTab === 'merchant-dashboard' && merchantDashboardTab === 'settings'
+                      ? 'bg-[#FF5F00] text-white border-[#FF5F00] shadow-md shadow-orange-600/30'
+                      : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
+                  }`}
+                  title="Configurações e Perfil da Loja"
+                >
+                  <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 flex-shrink-0 bg-[#181824] flex items-center justify-center text-[10px]">
+                    {currentStore?.logoImage ? (
+                      <img 
+                        src={currentStore.logoImage} 
+                        alt={currentStore.name} 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <span>{currentStore?.logo || '🏪'}</span>
+                    )}
+                  </div>
+                  <span>Perfil da Loja</span>
+                </button>
+
+                {/* Sair */}
                 <button
                   onClick={logoutAccount}
                   className="text-gray-400 hover:text-red-400 px-2.5 py-2 rounded-xl hover:bg-white/5 transition-colors text-xs font-bold"
-                  title="Sair da conta"
+                  title="Sair da conta do lojista"
                 >
                   Sair
                 </button>
@@ -350,25 +390,49 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             </div>
           ) : (
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10 mb-1">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs">
-                  {isMerchantRole ? '🏪' : '👤'}
+              <button
+                onClick={() => {
+                  if (isMerchantRole) {
+                    setMerchantDashboardTab('settings');
+                    setActiveTab('merchant-dashboard');
+                  } else {
+                    setActiveTab('user-profile');
+                  }
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2.5 text-left group flex-1 min-w-0 mr-2"
+                title={isMerchantRole ? "Abrir Perfil da Loja" : "Abrir Meu Perfil"}
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs border border-white/10 flex-shrink-0">
+                  {isMerchantRole ? (
+                    currentStore?.logoImage ? (
+                      <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-base">{currentStore?.logo || '🏪'}</span>
+                    )
+                  ) : (
+                    userProfile?.avatar ? (
+                      <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover" />
+                    ) : (
+                      '👤'
+                    )
+                  )}
                 </div>
-                <div className="text-xs">
-                  <div className="font-bold text-white truncate max-w-[150px]">
+                <div className="text-xs min-w-0">
+                  <div className="font-bold text-white truncate group-hover:text-[#FF5F00] transition-colors">
                     {isMerchantRole ? currentStore?.name : userProfile.name}
                   </div>
-                  <div className="text-[10px] text-gray-400">
-                    {isMerchantRole ? 'Painel do Lojista' : isVipUser ? 'Membro VIP' : 'Conta de Usuário'}
+                  <div className="text-[10px] text-gray-400 truncate">
+                    {isMerchantRole ? 'Ver Perfil da Loja ⚙️' : isVipUser ? 'Membro VIP' : 'Conta de Usuário'}
                   </div>
                 </div>
-              </div>
+              </button>
               <button
                 onClick={() => {
                   logoutAccount();
                   setMobileMenuOpen(false);
                 }}
-                className="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded-lg bg-red-500/10"
+                className="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded-lg bg-red-500/10 flex-shrink-0"
               >
                 Sair
               </button>
@@ -395,16 +459,45 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           </button>
           {/* Portal do Lojista: Apenas para Lojistas logados */}
           {isMerchantRole && (
-            <button
-              onClick={() => { 
-                setActiveTab('merchant-dashboard'); 
-                setMobileMenuOpen(false); 
-              }}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm text-orange-400 font-semibold hover:bg-orange-500/10 flex items-center gap-2"
-            >
-              <Store size={16} />
-              <span>Portal do Lojista (Validador e Cupons)</span>
-            </button>
+            <>
+              <button
+                onClick={() => { 
+                  setMerchantDashboardTab('coupons');
+                  setActiveTab('merchant-dashboard'); 
+                  setMobileMenuOpen(false); 
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 ${
+                  activeTab === 'merchant-dashboard' && merchantDashboardTab !== 'settings'
+                    ? 'text-[#FF5F00] bg-orange-500/10'
+                    : 'text-gray-200 hover:bg-white/5'
+                }`}
+              >
+                <Store size={16} className="text-[#FF5F00]" />
+                <span>Painel do Lojista (Ofertas & Validador)</span>
+              </button>
+
+              <button
+                onClick={() => { 
+                  setMerchantDashboardTab('settings');
+                  setActiveTab('merchant-dashboard'); 
+                  setMobileMenuOpen(false); 
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 ${
+                  activeTab === 'merchant-dashboard' && merchantDashboardTab === 'settings'
+                    ? 'text-[#FF5F00] bg-orange-500/10'
+                    : 'text-gray-200 hover:bg-white/5'
+                }`}
+              >
+                <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 flex items-center justify-center bg-[#181824] text-[10px] flex-shrink-0">
+                  {currentStore?.logoImage ? (
+                    <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{currentStore?.logo || '🏪'}</span>
+                  )}
+                </div>
+                <span>Perfil da Loja & Configurações</span>
+              </button>
+            </>
           )}
 
           {/* Atalhos para Usuários Logados */}
