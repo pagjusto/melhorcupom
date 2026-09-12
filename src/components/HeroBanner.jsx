@@ -57,11 +57,11 @@ export const HeroBanner = ({
         {/* 3. Headline & Descrição */}
         <div className="max-w-3xl mx-auto mt-6 mb-8 space-y-3">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight font-display tracking-tight">
-            Encontre os melhores cupons na <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5F00] via-[#FF8038] to-[#FFB703]">sua cidade</span>
+            Aqui você Encontra os melhores cupons do <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5F00] via-[#FF8038] to-[#FFB703]">Brasil!</span>
           </h2>
 
           <p className="text-sm sm:text-base md:text-lg text-gray-300 font-medium leading-relaxed max-w-2xl mx-auto">
-            Lojistas locais credenciados oferecem descontos exclusivos de até <strong className="text-white font-bold">50% OFF</strong> e <strong className="text-white font-bold">Compre 1 Leve 2</strong> para membros pagantes do clube.
+            Lojistas credenciados oferecem os melhores descontos exclusivos para assinantes do Clube!
           </p>
         </div>
 
