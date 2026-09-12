@@ -380,11 +380,22 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     setActiveTab('coupons');
   };
 
-  // Calcular métricas estimadas e economias concedidas aos clientes VIP
-  const totalUses = storeCoupons.reduce((acc, c) => acc + (c.usesCount || 0), 0);
-  const estimatedRevenue = (totalUses * 65.00); // Ticket médio fictício de R$ 65
-  const usedRedemptions = storeRedemptions.filter(r => r.status === 'used');
-  const totalSavingsGranted = usedRedemptions.reduce((acc, r) => acc + (Number(r.savings) || 20), 0);
+  // Calcular métricas estimadas e economias concedidas aos clientes VIP:
+  // Contabilizar SOMENTE resgates feitos por QR Code ou senha (status 'used'); em caso de lojas/cupons online, cupons utilizados
+  const isOnlineStore = currentStore.type === 'online' || (storeCoupons.length > 0 && storeCoupons.every(c => c.type === 'online'));
+
+  const validatedRedemptions = storeRedemptions.filter(r => {
+    if (r.status === 'used') return true;
+    const cp = coupons.find(c => c.id === r.couponId);
+    if (cp?.type === 'online' || currentStore.type === 'online') {
+      return r.status === 'used' || r.status === 'valid';
+    }
+    return false;
+  });
+
+  const totalAttractedVip = validatedRedemptions.length;
+  const totalSavingsGranted = validatedRedemptions.reduce((acc, r) => acc + (Number(r.savings) || 20), 0);
+  const estimatedRevenue = (totalAttractedVip * 65.00); // Ticket médio fictício de R$ 65
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
@@ -499,7 +510,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         </div>
 
         {/* Cards de Métricas do Parceiro */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/10">
           <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5">
             <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
               <span>Cupons Ativos</span>
@@ -514,8 +525,10 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               <span>Clientes VIP Atraídos</span>
               <Users size={16} className="text-blue-400" />
             </div>
-            <div className="text-2xl font-black text-white">{totalUses}</div>
-            <div className="text-[11px] text-gray-400 mt-1">Resgates totais</div>
+            <div className="text-2xl font-black text-white">{totalAttractedVip}</div>
+            <div className="text-[11px] text-gray-400 mt-1">
+              {isOnlineStore ? 'Cupons online utilizados' : 'Validados via QR Code ou Senha'}
+            </div>
           </div>
 
           <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5">
@@ -526,21 +539,12 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             <div className="text-2xl font-black text-emerald-400">
               R$ {totalSavingsGranted.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-[11px] text-gray-400 mt-1">Economia gerada no balcão</div>
+            <div className="text-[11px] text-gray-400 mt-1">
+              {isOnlineStore ? 'Economia em compras online' : 'Economia gerada no balcão'}
+            </div>
           </div>
 
           <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5">
-            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-              <span>Validações no Balcão</span>
-              <QrCode size={16} className="text-amber-400" />
-            </div>
-            <div className="text-2xl font-black text-white">
-              {usedRedemptions.length}
-            </div>
-            <div className="text-[11px] text-gray-400 mt-1">Cupons dados baixa</div>
-          </div>
-
-          <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5 col-span-2 sm:col-span-1">
             <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
               <span>Faturamento Estimado</span>
               <TrendingUp size={16} className="text-emerald-400" />
@@ -960,7 +964,16 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {storeCoupons.map((coupon) => {
               const couponViews = coupon.viewsCount || Math.max(140, (coupon.usesCount || 8) * 11 + 35);
-              const conversionRate = (((coupon.usesCount || 0) / Math.max(1, couponViews)) * 100).toFixed(1);
+              const couponValidatedUses = storeRedemptions.filter(r => {
+                if (r.couponId !== coupon.id) return false;
+                if (r.status === 'used') return true;
+                if (coupon.type === 'online' || currentStore.type === 'online') {
+                  return r.status === 'used' || r.status === 'valid';
+                }
+                return false;
+              }).length;
+              const effectiveCouponUses = couponValidatedUses > 0 ? couponValidatedUses : (coupon.usesCount || 0);
+              const conversionRate = ((effectiveCouponUses / Math.max(1, couponViews)) * 100).toFixed(1);
 
               return (
                 <div 
@@ -1042,7 +1055,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                           <strong className="text-white">{conversionRate}%</strong>
                         </span>
                         <span className="text-orange-400 font-bold">
-                          {coupon.usesCount || 0} resgates
+                          {effectiveCouponUses} {coupon.type === 'online' ? 'usados' : 'validados'}
                         </span>
                       </div>
                     </div>
@@ -2650,37 +2663,55 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
 
             {/* Painel de Métricas de Alcance */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-[#181824] border border-blue-500/30 rounded-2xl p-3.5 text-center">
-                <div className="text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                  <Eye size={12} /> Visualizações
-                </div>
-                <div className="text-lg sm:text-xl font-black text-white">
-                  {(previewingCoupon.viewsCount || Math.max(140, (previewingCoupon.usesCount || 8) * 11 + 35)).toLocaleString('pt-BR')}
-                </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">Membros VIP</div>
-              </div>
+            {(() => {
+              const previewViews = previewingCoupon.viewsCount || Math.max(140, (previewingCoupon.usesCount || 8) * 11 + 35);
+              const previewValidatedUses = storeRedemptions.filter(r => {
+                if (r.couponId !== previewingCoupon.id) return false;
+                if (r.status === 'used') return true;
+                if (previewingCoupon.type === 'online' || currentStore.type === 'online') {
+                  return r.status === 'used' || r.status === 'valid';
+                }
+                return false;
+              }).length;
+              const previewEffectiveUses = previewValidatedUses > 0 ? previewValidatedUses : (previewingCoupon.usesCount || 0);
+              const previewConversionRate = ((previewEffectiveUses / Math.max(1, previewViews)) * 100).toFixed(1);
 
-              <div className="bg-[#181824] border border-orange-500/30 rounded-2xl p-3.5 text-center">
-                <div className="text-[10px] text-orange-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                  <Tag size={12} /> Resgates
-                </div>
-                <div className="text-lg sm:text-xl font-black text-orange-400">
-                  {previewingCoupon.usesCount || 0}
-                </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">Baixas no Caixa</div>
-              </div>
+              return (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-[#181824] border border-blue-500/30 rounded-2xl p-3.5 text-center">
+                    <div className="text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                      <Eye size={12} /> Visualizações
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-white">
+                      {previewViews.toLocaleString('pt-BR')}
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">Membros VIP</div>
+                  </div>
 
-              <div className="bg-[#181824] border border-emerald-500/30 rounded-2xl p-3.5 text-center">
-                <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                  <TrendingUp size={12} /> Conversão
+                  <div className="bg-[#181824] border border-orange-500/30 rounded-2xl p-3.5 text-center">
+                    <div className="text-[10px] text-orange-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                      <Tag size={12} /> Resgates
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-orange-400">
+                      {previewEffectiveUses}
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">
+                      {previewingCoupon.type === 'online' ? 'Cupons Utilizados' : 'Baixas no Caixa'}
+                    </div>
+                  </div>
+
+                  <div className="bg-[#181824] border border-emerald-500/30 rounded-2xl p-3.5 text-center">
+                    <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                      <TrendingUp size={12} /> Conversão
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-emerald-400">
+                      {previewConversionRate}%
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">Taxa de sucesso</div>
+                  </div>
                 </div>
-                <div className="text-lg sm:text-xl font-black text-emerald-400">
-                  {(((previewingCoupon.usesCount || 0) / Math.max(1, (previewingCoupon.viewsCount || Math.max(140, (previewingCoupon.usesCount || 8) * 11 + 35)))) * 100).toFixed(1)}%
-                </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">Taxa de sucesso</div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Simulação Fiel do Card do Usuário */}
             <div className="space-y-2">

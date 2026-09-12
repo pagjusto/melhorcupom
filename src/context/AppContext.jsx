@@ -69,8 +69,8 @@ export const AppProvider = ({ children }) => {
 
   // Histórico de Resgates no Sistema (para validação do Lojista e Extrato do Usuário)
   const [redemptions, setRedemptions] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_redemptions');
-    return saved ? JSON.parse(saved) : [
+    const SAMPLE_INITIAL_REDEMPTIONS = [
+      // 1 pendente para teste no balcão do Smash Burger (Caixa / PDV)
       {
         id: 'red_sample_1',
         code: 'VIP-MELHOR-8491',
@@ -91,6 +91,168 @@ export const AppProvider = ({ children }) => {
         status: 'valid', // 'valid' | 'used' | 'expired'
         expiresAt: new Date(Date.now() + 86400000).toISOString(),
       },
+      // Resgates efetivamente validados no balcão por QR Code ou Senha de 6 dígitos no Smash Burger
+      {
+        id: 'red_smash_used_1',
+        code: 'VIP-SMASH50-1092',
+        passCode: '109284',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-1092', passCode: '109284', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Mariana Souza',
+        userCpf: '419.***.***-12',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 7200000).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 3600000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_2',
+        code: 'VIP-SMASH50-3341',
+        passCode: '334190',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-3341', passCode: '334190', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Carlos Eduardo',
+        userCpf: '284.***.***-55',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 + 1800000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_3',
+        code: 'VIP-SMASH50-7819',
+        passCode: '781923',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-7819', passCode: '781923', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Fernanda Lima',
+        userCpf: '501.***.***-89',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 2 + 3600000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_4',
+        code: 'VIP-SMASH50-9924',
+        passCode: '992410',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-9924', passCode: '992410', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Rodrigo Alves',
+        userCpf: '193.***.***-70',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 3 + 2400000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_5',
+        code: 'VIP-SMASH50-5120',
+        passCode: '512066',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-5120', passCode: '512066', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Juliana Rocha',
+        userCpf: '328.***.***-34',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 4 + 7200000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_6',
+        code: 'VIP-SMASH50-6432',
+        passCode: '643217',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-6432', passCode: '643217', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Thiago Martins',
+        userCpf: '782.***.***-41',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 5 + 4800000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_7',
+        code: 'VIP-SMASH50-8114',
+        passCode: '811452',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-8114', passCode: '811452', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Patrícia Mendes',
+        userCpf: '649.***.***-98',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000 * 6).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 6 + 3600000).toISOString(),
+      },
+      {
+        id: 'red_smash_used_8',
+        code: 'VIP-SMASH50-2490',
+        passCode: '249073',
+        qrPayload: JSON.stringify({ code: 'VIP-SMASH50-2490', passCode: '249073', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
+        couponId: 'cupom_1',
+        couponTitle: '50% OFF no 2º Combo Burger Especial',
+        merchantId: 'merchant_burger',
+        storeName: 'Smash Burger Club',
+        category: 'gastronomia',
+        userName: 'Rafael Costa',
+        userCpf: '115.***.***-63',
+        discountBadge: '50% OFF',
+        originalPrice: 65.00,
+        promoPrice: 32.50,
+        savings: 32.50,
+        createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 7 + 1800000).toISOString(),
+      },
+      // Barbearia Don Corleone (usado no balcão)
       {
         id: 'red_sample_2',
         code: 'VIP-MELHOR-3129',
@@ -111,6 +273,48 @@ export const AppProvider = ({ children }) => {
         status: 'used',
         usedAt: new Date(Date.now() - 1800000).toISOString(),
       },
+      // Lojas online (cupons utilizados)
+      {
+        id: 'red_online_1',
+        code: 'VIP-SNEAKER-5192',
+        passCode: '519240',
+        qrPayload: JSON.stringify({ code: 'VIP-SNEAKER-5192', passCode: '519240', couponId: 'cupom_5', merchantId: 'merchant_sneaker' }),
+        couponId: 'cupom_5',
+        couponTitle: 'R$ 150 OFF em Tênis Importados (Mínimo R$ 400)',
+        merchantId: 'merchant_sneaker',
+        storeName: 'Sneaker Lab Brasil',
+        category: 'moda',
+        userName: 'Camila Nogueira',
+        userCpf: '712.***.***-05',
+        discountBadge: 'R$ 150 OFF',
+        originalPrice: 550.00,
+        promoPrice: 400.00,
+        savings: 150.00,
+        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 2 + 1800000).toISOString(),
+      },
+      {
+        id: 'red_online_2',
+        code: 'VIP-SNEAKER-8841',
+        passCode: '884102',
+        qrPayload: JSON.stringify({ code: 'VIP-SNEAKER-8841', passCode: '884102', couponId: 'cupom_5', merchantId: 'merchant_sneaker' }),
+        couponId: 'cupom_5',
+        couponTitle: 'R$ 150 OFF em Tênis Importados (Mínimo R$ 400)',
+        merchantId: 'merchant_sneaker',
+        storeName: 'Sneaker Lab Brasil',
+        category: 'moda',
+        userName: 'Felipe Miranda',
+        userCpf: '531.***.***-87',
+        discountBadge: 'R$ 150 OFF',
+        originalPrice: 550.00,
+        promoPrice: 400.00,
+        savings: 150.00,
+        createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+        status: 'used',
+        usedAt: new Date(Date.now() - 86400000 * 4 + 3600000).toISOString(),
+      },
+      // Outras lojas físicas parceiras
       {
         id: 'red_sample_3',
         code: 'VIP-MELHOR-5542',
@@ -172,6 +376,22 @@ export const AppProvider = ({ children }) => {
         usedAt: new Date(Date.now() - 86400000 * 6 + 10800000).toISOString(),
       }
     ];
+
+    const saved = localStorage.getItem('melhor_cupom_redemptions');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const burgerUsed = parsed.filter(r => r.merchantId === 'merchant_burger' && r.status === 'used');
+        if (burgerUsed.length === 0) {
+          const burgerItems = SAMPLE_INITIAL_REDEMPTIONS.filter(r => r.merchantId === 'merchant_burger' && r.status === 'used');
+          return [...burgerItems, ...parsed];
+        }
+        return parsed;
+      } catch (e) {
+        return SAMPLE_INITIAL_REDEMPTIONS;
+      }
+    }
+    return SAMPLE_INITIAL_REDEMPTIONS;
   });
 
   // Perfil do Usuário com Carteira / Saldo de Divulgue & Ganhe
@@ -396,6 +616,7 @@ export const AppProvider = ({ children }) => {
       ? Number((Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2))
       : (Number(coupon.estimatedSavings) || 20.00);
 
+    const isOnline = coupon.type === 'online' || store?.type === 'online';
     const newRedemption = {
       id: redemptionId,
       code: generatedCode,
@@ -417,10 +638,19 @@ export const AppProvider = ({ children }) => {
       savings: effectiveSavings,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString(), // 20 minutos de tolerância para uso no caixa
-      status: 'valid'
+      status: isOnline ? 'used' : 'valid',
+      usedAt: isOnline ? new Date().toISOString() : null
     };
 
     setRedemptions(prev => [newRedemption, ...prev]);
+
+    // Se for cupom de loja online, o resgate do código equivale à utilização e credita economia
+    if (isOnline) {
+      setUserProfile(prev => ({
+        ...prev,
+        monthlySavings: Number(((prev.monthlySavings || 0) + effectiveSavings).toFixed(2))
+      }));
+    }
 
     // Atualizar contagem de usos do cupom
     setCoupons(prev => prev.map(c => {
