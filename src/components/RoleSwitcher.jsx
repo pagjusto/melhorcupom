@@ -1,21 +1,29 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Shield, Sparkles, Store, User, RotateCcw, Check } from 'lucide-react';
+import { Shield, Sparkles, Store, User, UserCheck, RotateCcw, Check } from 'lucide-react';
 
 export const RoleSwitcher = () => {
   const { currentRole, switchRole, resetToFactoryDefaults, isVipUser, stores } = useApp();
 
   const customStore = stores?.find(s => s.merchantId === currentRole || s.id === currentRole);
-  const isDefaultRole = ['visitor', 'vip', 'merchant_burger', 'merchant_barber', 'admin'].includes(currentRole);
+  const isDefaultRole = ['visitor', 'user_free', 'vip', 'merchant_burger', 'merchant_barber', 'admin'].includes(currentRole);
 
   const roles = [
     {
       id: 'visitor',
-      name: 'Visitante (Não-Pagante)',
+      name: 'Visitante (Não-Logado)',
       icon: User,
-      badge: 'Bloqueado',
+      badge: 'Deslogado',
       badgeColor: 'bg-gray-700 text-gray-300',
-      description: 'Vê o catálogo, mas cupons exigem assinatura'
+      description: 'Visitante que ainda não logou no sistema (sem Portal do Lojista, sem saldo no menu e sem card de indicação)'
+    },
+    {
+      id: 'user_free',
+      name: 'Usuário (Sem VIP)',
+      icon: UserCheck,
+      badge: 'Sem VIP (Logado)',
+      badgeColor: 'bg-blue-600 text-white font-bold',
+      description: 'Usuário logado: tem Perfil e Caixa de Indicações, mas ainda não assinou o VIP de R$ 19,90'
     },
     {
       id: 'vip',

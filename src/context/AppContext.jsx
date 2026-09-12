@@ -184,14 +184,29 @@ export const AppProvider = ({ children }) => {
     if (newRole === 'vip') {
       setUserProfile(prev => ({
         ...prev,
+        isLoggedIn: true,
+        isRegistered: true,
         isVip: true,
         vipPlan: 'vip',
         vipSince: '2026-01-10',
         monthlySavings: 342.50
       }));
+    } else if (newRole === 'user_free' || newRole === 'user') {
+      setUserProfile(prev => ({
+        ...prev,
+        isLoggedIn: true,
+        isRegistered: true,
+        isVip: false,
+        vipPlan: null,
+        vipSince: null,
+        monthlySavings: 0,
+        referralBalance: prev.referralBalance || 0.00
+      }));
     } else if (newRole === 'visitor') {
       setUserProfile(prev => ({
         ...prev,
+        isLoggedIn: false,
+        isRegistered: false,
         isVip: false,
         vipPlan: null,
         vipSince: null,
@@ -750,7 +765,7 @@ export const AppProvider = ({ children }) => {
     window.location.reload();
   };
 
-  const isVipUser = currentRole === 'vip' || userProfile.isVip;
+  const isVipUser = currentRole === 'vip' || (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && Boolean(userProfile.isVip));
 
   return (
     <AppContext.Provider value={{

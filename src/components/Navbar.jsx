@@ -36,7 +36,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMerchantRole = currentRole.startsWith('merchant_');
-  const isUserLoggedIn = isVipUser || userProfile?.isLoggedIn;
+  const isUserLoggedIn = isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user';
   const merchantId = isMerchantRole ? currentRole : 'merchant_burger';
   const currentStore = stores.find(s => s.merchantId === merchantId) || stores[0];
   const activeReferralBalance = isMerchantRole
