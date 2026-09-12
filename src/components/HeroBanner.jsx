@@ -28,6 +28,9 @@ export const HeroBanner = ({
   // 'video_transparent' | 'video_mp4' | 'static_image'
   const [mediaType, setMediaType] = useState('video_transparent');
   const [removeWhiteBg, setRemoveWhiteBg] = useState(true);
+  const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
+  const [trimCapCutOutro, setTrimCapCutOutro] = useState(true);
+  const [maskWatermark, setMaskWatermark] = useState(true);
   const [whiteThreshold, setWhiteThreshold] = useState(215);
 
   // Filtrar cidades disponíveis com base no texto digitado
@@ -59,8 +62,12 @@ export const HeroBanner = ({
             <TransparentVideo
               src="/hero-logo-video.webm"
               removeWhite={removeWhiteBg}
+              preserveWhiteContent={preserveWhiteContent}
               threshold={whiteThreshold}
               feather={25}
+              trimOutro={trimCapCutOutro}
+              trimOutroSeconds={1.8}
+              maskWatermark={maskWatermark}
               className="w-full h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
               alt="Melhor Cupom Vídeo"
             />
@@ -126,45 +133,45 @@ export const HeroBanner = ({
 
             {/* Controles de Remoção de Fundo Branco quando o vídeo estiver ativo */}
             {mediaType === 'video_transparent' && (
-              <div className="flex items-center gap-1.5 pt-1.5 sm:pt-0 sm:pl-2 sm:border-l sm:border-white/10">
+              <div className="flex flex-wrap items-center gap-1.5 pt-1.5 sm:pt-0 sm:pl-2 sm:border-l sm:border-white/10">
+                {/* Botão Letras Brancas Preservadas */}
                 <button
-                  onClick={() => setRemoveWhiteBg(!removeWhiteBg)}
+                  onClick={() => setPreserveWhiteContent(!preserveWhiteContent)}
                   className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
-                    removeWhiteBg
+                    preserveWhiteContent
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
-                      : 'bg-red-500/20 text-red-300 border-red-500/40'
+                      : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                   }`}
-                  title="Ligar ou desligar remoção do fundo branco"
+                  title="Preserva o branco das letras Melhor Cupom e do boneco usando algoritmo de borda"
                 >
-                  <span>{removeWhiteBg ? '✓ Fundo Branco Removido' : '✕ Com Fundo Branco'}</span>
+                  <span>{preserveWhiteContent ? '✓ Letras & Mascote Brancos' : '✕ Letras Vazadas'}</span>
                 </button>
 
-                {removeWhiteBg && (
-                  <div className="hidden md:flex items-center gap-1 text-[10px] text-gray-400">
-                    <span className="font-semibold ml-1">Força:</span>
-                    <button
-                      onClick={() => setWhiteThreshold(230)}
-                      className={`px-2 py-0.5 rounded-lg font-bold ${whiteThreshold === 230 ? 'bg-orange-500 text-white' : 'bg-white/5 hover:bg-white/10'}`}
-                      title="Suave (mantém mais detalhes claros)"
-                    >
-                      Suave
-                    </button>
-                    <button
-                      onClick={() => setWhiteThreshold(215)}
-                      className={`px-2 py-0.5 rounded-lg font-bold ${whiteThreshold === 215 ? 'bg-orange-500 text-white' : 'bg-white/5 hover:bg-white/10'}`}
-                      title="Equilibrado (recomendado)"
-                    >
-                      Médio
-                    </button>
-                    <button
-                      onClick={() => setWhiteThreshold(195)}
-                      className={`px-2 py-0.5 rounded-lg font-bold ${whiteThreshold === 195 ? 'bg-orange-500 text-white' : 'bg-white/5 hover:bg-white/10'}`}
-                      title="Intenso (remove tons de branco e cinza claro)"
-                    >
-                      Forte
-                    </button>
-                  </div>
-                )}
+                {/* Botão Cortar Final CapCut */}
+                <button
+                  onClick={() => setTrimCapCutOutro(!trimCapCutOutro)}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
+                    trimCapCutOutro
+                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
+                      : 'bg-gray-800 text-gray-400 border-white/10'
+                  }`}
+                  title="Corta a vinheta final automática do CapCut"
+                >
+                  <span>{trimCapCutOutro ? '✓ Sem Vinheta CapCut' : '✕ Com Vinheta Final'}</span>
+                </button>
+
+                {/* Botão Mascarar Marca d'Água de Canto */}
+                <button
+                  onClick={() => setMaskWatermark(!maskWatermark)}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
+                    maskWatermark
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm'
+                      : 'bg-gray-800 text-gray-400 border-white/10'
+                  }`}
+                  title="Remove marca d'água residual dos cantos do CapCut"
+                >
+                  <span>{maskWatermark ? '✓ Sem Marca d\'Água' : '✕ Com Marca d\'Água'}</span>
+                </button>
               </div>
             )}
           </div>
