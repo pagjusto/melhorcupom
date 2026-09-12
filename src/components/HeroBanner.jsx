@@ -31,6 +31,8 @@ export const HeroBanner = ({
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
   const [trimCapCutOutro, setTrimCapCutOutro] = useState(true);
   const [trimSeconds, setTrimSeconds] = useState(2.8);
+  const [transitionMode, setTransitionMode] = useState('crossfade');
+  const [transitionDuration, setTransitionDuration] = useState(0.5);
   const [maskWatermark, setMaskWatermark] = useState(true);
   const [whiteThreshold, setWhiteThreshold] = useState(215);
 
@@ -68,6 +70,8 @@ export const HeroBanner = ({
               feather={25}
               trimOutro={trimCapCutOutro}
               trimOutroSeconds={trimSeconds}
+              transitionMode={transitionMode}
+              transitionDuration={transitionDuration}
               maskWatermark={maskWatermark}
               className="w-full h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
               alt="Melhor Cupom Vídeo"
@@ -174,9 +178,71 @@ export const HeroBanner = ({
                   <span>{maskWatermark ? '✓ Sem Marca d\'Água' : '✕ Com Marca d\'Água'}</span>
                 </button>
 
+                {/* Seletor de Tipo de Transição */}
+                <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Tipo de transição ao reiniciar o ciclo de loop">
+                  <span className="text-amber-400">✨ Transição:</span>
+                  <button
+                    onClick={() => setTransitionMode('crossfade')}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
+                      transitionMode === 'crossfade'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    title="Dissolvência contínua entre ciclos (sem corte seco e sem travamento)"
+                  >
+                    Dissolvência
+                  </button>
+                  <button
+                    onClick={() => setTransitionMode('fade')}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
+                      transitionMode === 'fade'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    title="Desvanecimento suave (fade-out e fade-in elegante)"
+                  >
+                    Fade
+                  </button>
+                  <button
+                    onClick={() => setTransitionMode('cut')}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
+                      transitionMode === 'cut'
+                        ? 'bg-gray-700 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    title="Corte instantâneo direto"
+                  >
+                    Direto
+                  </button>
+                </div>
+
+                {/* Ajuste Fino da Duração da Transição (Suavidade) */}
+                {transitionMode !== 'cut' && (
+                  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Tempo de dissolvência ou desvanecimento">
+                    <span className="text-cyan-400">⏱️ Suavidade:</span>
+                    <span className="font-mono text-white text-[11px]">{transitionDuration.toFixed(1)}s</span>
+                    <div className="flex items-center gap-0.5 ml-0.5">
+                      <button
+                        onClick={() => setTransitionDuration(prev => Math.max(0.2, parseFloat((prev - 0.1).toFixed(1))))}
+                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
+                        title="Transição mais rápida (-0.1s)"
+                      >
+                        -
+                      </button>
+                      <button
+                        onClick={() => setTransitionDuration(prev => Math.min(1.2, parseFloat((prev + 0.1).toFixed(1))))}
+                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
+                        title="Transição mais suave e longa (+0.1s)"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Ajuste Fino do Tempo de Loop */}
                 <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta segundos do final para encurtar ou estender o ciclo de repetição">
-                  <span className="text-orange-400">⏱️ Loop:</span>
+                  <span className="text-orange-400">✂️ Loop:</span>
                   <span className="font-mono text-white text-[11px]">-{trimSeconds.toFixed(1)}s</span>
                   <div className="flex items-center gap-0.5 ml-0.5">
                     <button
