@@ -189,7 +189,7 @@ const MainLayout = () => {
                       onClick={() => setIsSubscriptionModalOpen(true)}
                       className="hidden sm:flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 font-bold bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 transition-colors"
                     >
-                      <span>Desbloquear tudo por R$ 14,90</span>
+                      <span>Desbloquear tudo por R$ 19,90</span>
                       <ArrowRight size={14} />
                     </button>
                   )}
@@ -277,7 +277,7 @@ const MainLayout = () => {
                       Pronto para começar a economizar?
                     </h3>
                     <p className="text-sm text-gray-300">
-                      Assine o Melhor Cupom por apenas R$ 14,90/mês e tenha acesso imediato a todos os cupons no balcão e online.
+                      Assine o Melhor Cupom por apenas R$ 19,90/mês e tenha acesso imediato a todos os cupons no balcão e online.
                     </p>
                     <button
                       onClick={() => setIsSubscriptionModalOpen(true)}

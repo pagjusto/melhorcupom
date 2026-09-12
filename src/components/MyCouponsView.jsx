@@ -34,7 +34,7 @@ export const MyCouponsView = ({ onSelectCoupon, onOpenRedemptionModal }) => {
           Sua Carteira VIP está bloqueada
         </h2>
         <p className="text-gray-400 text-sm max-w-md mx-auto mb-8 leading-relaxed">
-          Assine o clube Melhor Cupom por apenas <strong className="text-orange-400">R$ 14,90/mês</strong> para salvar cupons favoritos, gerar QR Codes no balcão e acompanhar sua economia em tempo real.
+          Assine o clube Melhor Cupom por apenas <strong className="text-orange-400">R$ 19,90/mês</strong> para salvar cupons favoritos, gerar QR Codes no balcão e acompanhar sua economia em tempo real.
         </p>
         <button
           onClick={() => setIsSubscriptionModalOpen(true)}
@@ -79,7 +79,7 @@ export const MyCouponsView = ({ onSelectCoupon, onOpenRedemptionModal }) => {
               R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
             </div>
             <div className="text-[11px] text-gray-400 mt-1">
-              Assinatura: R$ 14,90 • <strong className="text-emerald-400">Lucro de R$ {(userProfile.monthlySavings - 14.90).toFixed(2).replace('.', ',')}</strong>
+              Assinatura: R$ 19,90 • <strong className="text-emerald-400">Lucro de R$ {(userProfile.monthlySavings - 19.90).toFixed(2).replace('.', ',')}</strong>
             </div>
           </div>
         </div>

@@ -45,7 +45,7 @@ export const HowItWorksView = () => {
               Para Usuários (Assinantes VIP)
             </h3>
             <p className="text-sm text-gray-300 mb-6">
-              Você investe um valor simbólico de <strong className="text-orange-400">R$ 14,90 por mês</strong> e tem acesso livre aos melhores descontos da sua cidade.
+              Você investe um valor simbólico de <strong className="text-orange-400">R$ 19,90 por mês</strong> e tem acesso livre aos melhores descontos da sua cidade.
             </p>
 
             <div className="space-y-4 text-sm text-gray-300">
@@ -86,7 +86,7 @@ export const HowItWorksView = () => {
               onClick={() => setIsSubscriptionModalOpen(true)}
               className="w-full bg-[#FF5F00] hover:bg-[#E04F00] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 text-sm transition-all flex items-center justify-center gap-2"
             >
-              <span>Quero Assinar o VIP por R$ 14,90</span>
+              <span>Quero Assinar o VIP por R$ 19,90</span>
               <ArrowRight size={16} />
             </button>
           </div>

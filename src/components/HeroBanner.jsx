@@ -189,13 +189,13 @@ export const HeroBanner = ({
               className="w-full sm:w-auto bg-gradient-to-r from-[#FF5F00] via-[#FF7518] to-[#FFA000] hover:from-[#E04F00] hover:to-[#FF8800] text-white font-extrabold px-8 py-3.5 rounded-2xl shadow-xl shadow-orange-600/40 hover:shadow-orange-600/60 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Zap size={18} className="text-amber-200 fill-amber-200" />
-              <span>Assinar VIP por apenas R$ 14,90/mês</span>
+              <span>Assinar VIP por apenas R$ 19,90/mês</span>
               <ArrowRight size={18} />
             </button>
           ) : (
             <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold px-6 py-2.5 rounded-2xl text-sm shadow-md">
               <CheckCircle2 size={18} className="text-emerald-400" />
-              <span>Membro VIP Ouro Ativo! Aproveite os descontos da sua cidade abaixo.</span>
+              <span>Membro VIP Ativo! Aproveite os descontos da sua cidade abaixo.</span>
             </div>
           )}
         </div>

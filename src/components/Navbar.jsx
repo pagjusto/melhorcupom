@@ -139,7 +139,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-3.5 py-2 rounded-xl">
                   <span className="text-amber-400 animate-pulse">👑</span>
                   <div>
-                    <div className="text-xs font-bold text-amber-400 leading-tight">Membro VIP Ouro</div>
+                    <div className="text-xs font-bold text-amber-400 leading-tight">Membro VIP</div>
                     <div className="text-[10px] text-gray-400">Acesso ilimitado</div>
                   </div>
                 </div>
@@ -207,7 +207,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                   className="relative group bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white px-5 py-2.5 rounded-xl text-sm font-extrabold shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
                   <Sparkles size={16} className="text-amber-200 animate-spin-slow" />
-                  <span>Assinar VIP por R$ 14,90</span>
+                  <span>Assinar VIP por R$ 19,90</span>
                 </button>
               </div>
             )}

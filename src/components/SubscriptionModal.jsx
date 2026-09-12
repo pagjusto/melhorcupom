@@ -31,10 +31,10 @@ export const SubscriptionModal = () => {
 
   if (!isSubscriptionModalOpen) return null;
 
-  const currentPlan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlanForModal) || SUBSCRIPTION_PLANS[1];
+  const currentPlan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlanForModal) || SUBSCRIPTION_PLANS[0];
 
   const handleCopyPix = () => {
-    navigator.clipboard.writeText('00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com5204000053039865405119.905802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO62070503***630489A1');
+    navigator.clipboard.writeText('00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com520400005303986540519.905802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO62070503***630489A1');
     setCopiedPix(true);
     setTimeout(() => setCopiedPix(false), 2000);
   };
@@ -87,58 +87,42 @@ export const SubscriptionModal = () => {
 
         <div className="p-6 sm:p-8 space-y-6">
           
-          {/* Seleção de Planos */}
+          {/* Card do Plano VIP Único */}
           <div>
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 block">
-              1. Escolha o seu Plano de Membro VIP:
+              1. Sua Assinatura de Membro VIP:
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {SUBSCRIPTION_PLANS.map(plan => {
-                const isSelected = selectedPlanForModal === plan.id;
-                return (
-                  <div
-                    key={plan.id}
-                    onClick={() => setSelectedPlanForModal(plan.id)}
-                    className={`relative p-5 rounded-2xl cursor-pointer border-2 transition-all ${
-                      isSelected
-                        ? 'bg-[#FF5F00]/10 border-[#FF5F00] shadow-lg shadow-orange-600/20'
-                        : 'bg-[#1D1D28] border-white/10 hover:border-white/20'
-                    }`}
-                  >
-                    {plan.popular && (
-                      <span className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-[#FF5F00] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md">
-                        {plan.tag}
-                      </span>
-                    )}
+            <div className="relative p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#FF5F00]/15 via-amber-500/10 to-[#1D1D28] border-2 border-[#FF5F00] shadow-xl shadow-orange-600/15">
+              <span className="absolute -top-3 right-5 bg-gradient-to-r from-amber-500 to-[#FF5F00] text-white text-[10px] font-black uppercase px-3 py-0.5 rounded-full shadow-md tracking-wider">
+                {currentPlan.tag || 'Acesso Total'}
+              </span>
 
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-white">{plan.name}</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        isSelected ? 'border-[#FF5F00] bg-[#FF5F00]' : 'border-gray-500'
-                      }`}>
-                        {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-                      </div>
-                    </div>
-
-                    <div className="flex items-baseline gap-1 my-1">
-                      <span className="text-2xl font-black text-white">
-                        R$ {plan.price.toFixed(2).replace('.', ',')}
-                      </span>
-                      <span className="text-xs text-gray-400">/{plan.id === 'plan_annual' ? 'ano' : 'mês'}</span>
-                    </div>
-
-                    {plan.monthlyEquivalent && (
-                      <div className="text-xs text-emerald-400 font-bold">
-                        Apenas {plan.monthlyEquivalent}
-                      </div>
-                    )}
-
-                    <p className="text-[11px] text-gray-400 mt-2">
-                      {plan.billingInfo}
-                    </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-black text-white">{currentPlan.name}</span>
+                    <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Ativação Imediata
+                    </span>
                   </div>
-                );
-              })}
+                  <p className="text-xs text-gray-300 mt-1 max-w-sm">
+                    {currentPlan.billingInfo}
+                  </p>
+                </div>
+
+                <div className="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-white/10">
+                  <div className="text-[10px] text-gray-400 uppercase font-bold">Valor da Assinatura</div>
+                  <div className="flex items-baseline gap-1 sm:justify-end">
+                    <span className="text-3xl font-black text-white font-display">
+                      R$ {currentPlan.price.toFixed(2).replace('.', ',')}
+                    </span>
+                    <span className="text-xs text-gray-400">/mês</span>
+                  </div>
+                  <div className="text-[11px] text-emerald-400 font-bold mt-0.5">
+                    Sem fidelidade • Cancele quando quiser
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -203,7 +187,7 @@ export const SubscriptionModal = () => {
               <div className="bg-[#121219] p-5 rounded-2xl border border-white/10 text-center space-y-4">
                 <div className="inline-block p-3 bg-white rounded-2xl shadow-lg">
                   <QRCodeSVG 
-                    value="00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com5204000053039865405119.905802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO" 
+                    value="00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com520400005303986540519.905802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO" 
                     size={140} 
                   />
                 </div>
@@ -260,18 +244,18 @@ export const SubscriptionModal = () => {
                   <div>
                     <label className="text-[11px] text-gray-400 block mb-1">Validade</label>
                     <input 
-                      type="text" 
-                      defaultValue="08/29" 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white"
-                    />
+                    type="text" 
+                    defaultValue="08/29" 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white"
+                  />
                   </div>
                   <div>
                     <label className="text-[11px] text-gray-400 block mb-1">CVV</label>
                     <input 
-                      type="text" 
-                      defaultValue="734" 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white"
-                    />
+                    type="text" 
+                    defaultValue="734" 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white"
+                  />
                   </div>
                 </div>
                 <div>
@@ -294,7 +278,7 @@ export const SubscriptionModal = () => {
                   ) : (
                     <>
                       <Lock size={16} />
-                      <span>Confirmar Assinatura por R$ {currentPlan.price.toFixed(2).replace('.', ',')}</span>
+                      <span>Confirmar Assinatura por R$ {currentPlan.price.toFixed(2).replace('.', ',')}/mês</span>
                     </>
                   )}
                 </button>

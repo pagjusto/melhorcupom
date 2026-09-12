@@ -16,11 +16,11 @@ export const RoleSwitcher = () => {
     },
     {
       id: 'vip',
-      name: 'Assinante VIP Ouro',
+      name: 'Assinante VIP',
       icon: Sparkles,
-      badge: 'Membro Ativo',
+      badge: 'VIP (R$ 19,90)',
       badgeColor: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold',
-      description: 'Acesso liberado a todos os cupons e QR Codes'
+      description: 'Acesso liberado a todos os cupons e QR Codes por R$ 19,90/mês'
     },
     {
       id: 'merchant_burger',

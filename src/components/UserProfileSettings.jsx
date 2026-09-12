@@ -114,7 +114,7 @@ export const UserProfileSettings = () => {
                 {isVipUser ? (
                   <span className="bg-gradient-to-r from-amber-500 to-[#FF5F00] text-white text-[11px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-md flex items-center gap-1">
                     <Sparkles size={12} />
-                    <span>Membro VIP Ouro</span>
+                    <span>Membro VIP</span>
                   </span>
                 ) : (
                   <span className="bg-gray-700 text-gray-300 text-[11px] font-bold px-3 py-0.5 rounded-full">
@@ -380,10 +380,10 @@ export const UserProfileSettings = () => {
                         Status: Ativo
                       </span>
                       <h3 className="text-xl font-black text-white mt-2">
-                        Plano Anual Ouro VIP
+                        Assinatura VIP
                       </h3>
                       <p className="text-xs text-gray-400 mt-1">
-                        Próxima renovação automática em: <strong>10/01/2027</strong> (R$ 119,90/ano)
+                        Renovação mensal automática: <strong>R$ 19,90/mês</strong>
                       </p>
                     </div>
 
@@ -445,7 +445,7 @@ export const UserProfileSettings = () => {
                   Você ainda não possui uma assinatura VIP ativa
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-400 max-w-md mx-auto">
-                  Assine o Melhor Cupom por apenas R$ 14,90/mês para desbloquear descontos de até 50% em todas as lojas credenciadas.
+                  Assine o Melhor Cupom por apenas R$ 19,90/mês para desbloquear descontos de até 50% em todas as lojas credenciadas.
                 </p>
                 <button
                   type="button"

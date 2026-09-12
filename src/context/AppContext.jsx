@@ -111,7 +111,7 @@ export const AppProvider = ({ children }) => {
 
   // Modal de Assinatura
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
-  const [selectedPlanForModal, setSelectedPlanForModal] = useState('plan_annual');
+  const [selectedPlanForModal, setSelectedPlanForModal] = useState('plan_vip');
 
   // Salvar no LocalStorage sempre que houver alteração
   useEffect(() => {
@@ -141,7 +141,7 @@ export const AppProvider = ({ children }) => {
       setUserProfile(prev => ({
         ...prev,
         isVip: true,
-        vipPlan: 'annual',
+        vipPlan: 'vip',
         vipSince: '2026-01-10',
         monthlySavings: 342.50
       }));
@@ -158,7 +158,7 @@ export const AppProvider = ({ children }) => {
 
   // Assinar Plano VIP
   const subscribeToVip = (planId) => {
-    const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId) || SUBSCRIPTION_PLANS[1];
+    const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId) || SUBSCRIPTION_PLANS[0];
     
     // Disparar confetes celebratórios!
     confetti({
@@ -171,7 +171,7 @@ export const AppProvider = ({ children }) => {
     setUserProfile(prev => ({
       ...prev,
       isVip: true,
-      vipPlan: planId === 'plan_annual' ? 'annual' : 'monthly',
+      vipPlan: 'vip',
       vipSince: new Date().toISOString().split('T')[0],
       monthlySavings: prev.monthlySavings > 0 ? prev.monthlySavings : 150.00
     }));

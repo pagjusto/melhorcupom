@@ -606,39 +606,22 @@ export const INITIAL_COUPONS = [
 
 export const SUBSCRIPTION_PLANS = [
   {
-    id: 'plan_monthly',
-    name: 'Plano Mensal VIP',
-    tag: 'Flexível',
-    price: 14.90,
+    id: 'plan_vip',
+    name: 'Assinatura VIP',
+    tag: 'Acesso Total',
+    price: 19.90,
     period: 'por mês',
-    billingInfo: 'Cobrado mensalmente no PIX ou Cartão. Cancele quando quiser sem multas.',
+    billingInfo: 'Cobrança mensal recorrente de R$ 19,90 no PIX ou Cartão. Cancele quando quiser.',
     features: [
-      'Acesso a TODOS os cupons de lojas físicas e online',
-      'Descontos de até 50% e promoções Compre 1 Leve 2',
-      'Cupons renovados toda semana',
-      'Geração ilimitada de QR Codes de resgate no balcão',
+      'Acesso ilimitado a TODOS os cupons de lojas físicas e online',
+      'Descontos exclusivos de até 50% e promoções Compre 1 Leve 2',
+      'Cupons renovados toda semana na sua cidade',
+      'Geração ilimitada de QR Codes de resgate no balcão (PDV)',
+      'Economia média estimada de R$ 350,00 por mês',
       'Suporte prioritário via WhatsApp'
-    ],
-    popular: false,
-    color: 'border-white/10'
-  },
-  {
-    id: 'plan_annual',
-    name: 'Plano Anual Ouro VIP',
-    tag: 'MAIS ESCOLHIDO • 33% OFF',
-    price: 119.90,
-    originalPrice: 178.80,
-    monthlyEquivalent: 'R$ 9,99/mês',
-    period: 'por ano (12 meses)',
-    billingInfo: 'Economia de R$ 58,90 no ano. 7 dias de garantia incondicional.',
-    features: [
-      'Tudo do Plano Mensal com 33% de desconto',
-      'Acesso antecipado a cupons relâmpago de lojas premium',
-      'Sorteios mensais de R$ 1.000 em compras nas lojas parceiras',
-      'Prioridade no atendimento e reserva em restaurantes parceiros',
-      'Carteira VIP com cálculo de cashback e economia'
     ],
     popular: true,
     color: 'border-[#FF5F00] shadow-glow'
   }
 ];
+
