@@ -25,7 +25,9 @@ export const SubscriptionModal = () => {
     subscribeToVip,
     selectedPlanForModal,
     setSelectedPlanForModal,
-    userProfile 
+    userProfile,
+    currentRole,
+    setIsReferralModalOpen
   } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState('pix'); // 'pix' | 'card'
@@ -36,6 +38,7 @@ export const SubscriptionModal = () => {
   if (!isSubscriptionModalOpen) return null;
 
   const currentPlan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlanForModal) || SUBSCRIPTION_PLANS[0];
+  const isVisitor = currentRole === 'visitor';
   const userBalance = userProfile?.referralBalance || 0;
   const discount = (useReferralBalance && userBalance > 0) ? Math.min(currentPlan.price, userBalance) : 0;
   const finalPrice = Math.max(0, currentPlan.price - discount);
@@ -134,7 +137,43 @@ export const SubscriptionModal = () => {
             </div>
           </div>
 
-          {/* Abatimento com Saldo do Caixa de Indicações (Divulgue & Ganhe) */}
+          {/* Opção Alternativa para Visitantes: Adquirir créditos grátis no Divulgue & Ganhe */}
+          {(isVisitor || userBalance === 0) && (
+            <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-[#181824] border-2 border-amber-500/50 rounded-2xl p-4 sm:p-5 shadow-lg relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-xl flex-shrink-0">
+                    🎁
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-black text-white">Prefere não pagar agora?</span>
+                      <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Créditos Grátis
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-200 mt-1 leading-relaxed">
+                      Ao invés de assinar, você também pode se cadastrar no <strong>Divulgue & Ganhe</strong> para adquirir créditos grátis e trocar por assinatura <span className="text-amber-300 font-semibold">(sendo neste caso ganha R$ 3,00 por assinatura pelo link)</span>!
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSubscriptionModalOpen(false);
+                    setIsReferralModalOpen(true);
+                  }}
+                  className="bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0 transform hover:scale-105"
+                >
+                  <Sparkles size={14} />
+                  <span>Cadastrar no Divulgue & Ganhe</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Abatimento com Saldo do Caixa de Indicações (Exibido apenas quando houver saldo real disponível) */}
           {userBalance > 0 && (
             <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-[#181824] border-2 border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-lg">
               <div className="flex items-start justify-between gap-3">
@@ -150,7 +189,7 @@ export const SubscriptionModal = () => {
                       </span>
                     </div>
                     <p className="text-xs text-gray-300 mt-1 leading-relaxed">
-                      Você ganhou este saldo indicando amigos no <strong>Divulgue & Ganhe</strong>. Deseja abater no valor da sua assinatura VIP?
+                      Você acumulou este saldo indicando amigos no <strong>Divulgue & Ganhe</strong>. Deseja abater no valor da sua assinatura VIP?
                     </p>
                   </div>
                 </div>

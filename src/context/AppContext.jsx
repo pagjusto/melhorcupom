@@ -112,23 +112,21 @@ export const AppProvider = ({ children }) => {
       monthlySavings: 0,
       savedCouponIds: ['cupom_1', 'cupom_5'],
       referralCode: 'LUCAS5',
-      referralBalance: 15.00, // R$ 15,00 em caixa de indicações para teste
-      referrals: [
-        { id: 'ref_usr_1', name: 'Mariana Costa', date: 'Hoje às 14:32', bonus: 5.00 },
-        { id: 'ref_usr_2', name: 'Rodrigo Alves', date: 'Ontem', bonus: 5.00 },
-        { id: 'ref_usr_3', name: 'Camila Lima', date: 'Há 2 dias', bonus: 5.00 }
-      ]
+      referralBalance: 0.00, // Começa zerado para visitantes e novos usuários
+      referrals: []
     };
     const saved = localStorage.getItem('melhor_cupom_user');
     if (!saved) return defaultUser;
     try {
       const parsed = JSON.parse(saved);
+      // Se continha o saldo simulado antigo de 15.00 da versão anterior, zerar para visitante
+      const isLegacySample = parsed.referralBalance === 15.00 && parsed.referrals?.length === 3;
       return {
         ...defaultUser,
         ...parsed,
         referralCode: parsed.referralCode || 'LUCAS5',
-        referralBalance: typeof parsed.referralBalance === 'number' ? parsed.referralBalance : 15.00,
-        referrals: parsed.referrals || defaultUser.referrals
+        referralBalance: isLegacySample ? 0.00 : (typeof parsed.referralBalance === 'number' ? parsed.referralBalance : 0.00),
+        referrals: isLegacySample ? [] : (parsed.referrals || [])
       };
     } catch {
       return defaultUser;
@@ -181,7 +179,9 @@ export const AppProvider = ({ children }) => {
         isVip: false,
         vipPlan: null,
         vipSince: null,
-        monthlySavings: 0
+        monthlySavings: 0,
+        referralBalance: 0.00,
+        referrals: []
       }));
     }
   };
@@ -454,7 +454,8 @@ export const AppProvider = ({ children }) => {
       'Beatriz Albuquerque', 'Thiago Meireles'
     ];
     const chosenName = customFriendName || friendNames[Math.floor(Math.random() * friendNames.length)];
-    const bonus = 5.00;
+    // Lojista ganha R$ 5,00 por cadastro de cliente | Usuário ganha R$ 3,00 por assinatura pelo link
+    const bonus = isMerchant ? 5.00 : 3.00;
 
     // Disparar confetes celebratórios de ganho de bônus!
     confetti({
@@ -472,7 +473,8 @@ export const AppProvider = ({ children }) => {
             id: `ref_st_${Date.now()}`,
             name: chosenName,
             date: 'Agora mesmo',
-            bonus
+            bonus,
+            type: 'Cliente cadastrado'
           };
           return {
             ...s,
@@ -487,7 +489,8 @@ export const AppProvider = ({ children }) => {
         id: `ref_usr_${Date.now()}`,
         name: chosenName,
         date: 'Agora mesmo',
-        bonus
+        bonus,
+        type: 'Assinatura VIP pelo link'
       };
       setUserProfile(prev => ({
         ...prev,
@@ -496,7 +499,7 @@ export const AppProvider = ({ children }) => {
       }));
     }
 
-    return { name: chosenName, bonus: 5.00, isMerchant };
+    return { name: chosenName, bonus, isMerchant };
   };
 
   // Abater/Consumir saldo de indicações do usuário

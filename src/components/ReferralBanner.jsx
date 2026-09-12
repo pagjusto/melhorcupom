@@ -77,7 +77,7 @@ export const ReferralBanner = () => {
 
             <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-black">
               <Coins size={13} />
-              <span>R$ 5,00 por Amigo Cadastrado</span>
+              <span>{isMerchantRole ? 'R$ 5,00 por Cliente Cadastrado' : 'R$ 3,00 por Assinatura no Link'}</span>
             </span>
 
             {isMerchantRole ? (
@@ -94,11 +94,17 @@ export const ReferralBanner = () => {
           </div>
 
           <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-            Divulgue seu link e receba <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-[#FF5F00]">R$ 5,00 no seu Caixa</span> por cadastro!
+            {isMerchantRole ? (
+              <>Divulgue seu link e receba <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-[#FF5F00]">R$ 5,00 no seu Caixa</span> por cadastro!</>
+            ) : (
+              <>Divulgue seu link e receba <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-[#FF5F00]">R$ 3,00 no seu Caixa</span> por assinatura!</>
+            )}
           </h3>
 
           <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-            Compartilhe seu link exclusivo com amigos, clientes ou seguidores. Todo dinheiro ganho acumula no seu <strong>Caixa de Indicações</strong> para pagar ou abater assinaturas VIP e planos de lojista!
+            {isMerchantRole
+              ? 'Compartilhe seu link exclusivo com clientes ou seguidores. O saldo acumula no Caixa da Loja para abater na mensalidade!'
+              : 'Compartilhe seu link exclusivo com amigos. Adquira créditos grátis (R$ 3,00 por assinatura) para trocar pela sua Assinatura VIP 100% grátis!'}
           </p>
 
           {/* Atalho do link com 1-clique */}
@@ -168,10 +174,10 @@ export const ReferralBanner = () => {
               type="button"
               onClick={handleQuickSimulate}
               className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
-              title="Clique para simular um amigo se cadastrando agora com seu link"
+              title={isMerchantRole ? "Simular cliente se cadastrando pelo link da sua loja" : "Simular amigo assinando pelo seu link"}
             >
               <Zap size={14} className="text-emerald-400" />
-              <span>Simular Indicação (+R$ 5,00)</span>
+              <span>{isMerchantRole ? 'Simular Indicação (+R$ 5,00)' : 'Simular Assinatura (+R$ 3,00)'}</span>
             </button>
           </div>
 

@@ -102,10 +102,12 @@ export const ReferralModal = () => {
                 <span>Programa Oficial Divulgue & Ganhe</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-                Ganhe R$ 5,00 a cada indicação
+                {isStoreView ? 'Ganhe R$ 5,00 a cada indicação de cliente' : 'Ganhe R$ 3,00 por assinatura pelo link'}
               </h2>
               <p className="text-xs sm:text-sm text-gray-300 mt-1 max-w-lg">
-                Cada amigo que se cadastrar usando seu link gera <strong>R$ 5,00 direto no seu Caixa</strong> para abater ou pagar assinaturas!
+                {isStoreView 
+                  ? 'Cada cliente que se cadastrar usando seu link gera R$ 5,00 direto no Caixa da Loja para abater em planos!'
+                  : 'Divulgue para amigos e adquira créditos grátis! Cada assinatura realizada pelo seu link gera R$ 3,00 no seu Caixa para trocar por assinatura VIP.'}
               </p>
             </div>
           </div>
@@ -146,9 +148,13 @@ export const ReferralModal = () => {
           <div className="bg-emerald-500/20 border-b border-emerald-500/40 text-emerald-300 px-6 py-2.5 text-xs font-bold flex items-center justify-between animate-fade-in">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={16} className="text-emerald-400" />
-              <span>Novo amigo cadastrado com sucesso! <strong>+{justEarned.name}</strong> gerou <strong>+R$ 5,00</strong> no seu Caixa!</span>
+              <span>
+                {justEarned.isMerchant 
+                  ? `Novo cliente cadastrado com sucesso! +${justEarned.name} gerou +R$ 5,00 no Caixa da Loja!` 
+                  : `Novo amigo assinante pelo seu link! +${justEarned.name} gerou +R$ 3,00 em créditos no seu Caixa!`}
+              </span>
             </div>
-            <span className="text-emerald-400 text-sm font-black">+R$ 5,00</span>
+            <span className="text-emerald-400 text-sm font-black">+R$ {justEarned.bonus.toFixed(2).replace('.', ',')}</span>
           </div>
         )}
 
@@ -232,7 +238,7 @@ export const ReferralModal = () => {
             </p>
           </div>
 
-          {/* 3. SIMULADOR DE TESTE RÁPIDO (+R$ 5,00) */}
+          {/* 3. SIMULADOR DE TESTE RÁPIDO */}
           <div className="bg-[#12121A] rounded-2xl p-4 sm:p-5 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -242,7 +248,9 @@ export const ReferralModal = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-0.5">
-                Simule um amigo se cadastrando pelo seu link para receber <strong>+R$ 5,00 agora</strong> no seu caixa.
+                {isStoreView
+                  ? 'Simule um cliente se cadastrando pelo link da sua loja para receber +R$ 5,00 no caixa.'
+                  : 'Simule um amigo assinando pelo seu link para receber +R$ 3,00 em créditos no seu caixa.'}
               </p>
             </div>
 
@@ -252,7 +260,9 @@ export const ReferralModal = () => {
               className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all flex-shrink-0"
             >
               <Zap size={16} />
-              <span>Simular Indicação (+R$ 5,00)</span>
+              <span>
+                {isStoreView ? 'Simular Indicação de Cliente (+R$ 5,00)' : 'Simular Assinatura pelo Link (+R$ 3,00)'}
+              </span>
             </button>
           </div>
 
@@ -276,9 +286,13 @@ export const ReferralModal = () => {
                 <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-sm">
                   2
                 </div>
-                <div className="text-xs font-bold text-white">Amigo se Cadastra</div>
+                <div className="text-xs font-bold text-white">
+                  {isStoreView ? 'Cliente se Cadastra' : 'Amigo Assina pelo Link'}
+                </div>
                 <p className="text-[11px] text-gray-400">
-                  O convidado clica no seu link e realiza o cadastro gratuito na plataforma.
+                  {isStoreView 
+                    ? 'O cliente clica no seu link e realiza o cadastro na plataforma.'
+                    : 'O amigo acessa pelo seu convite e assina o Clube VIP por R$ 19,90.'}
                 </p>
               </div>
 
@@ -286,9 +300,13 @@ export const ReferralModal = () => {
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">
                   3
                 </div>
-                <div className="text-xs font-bold text-white">R$ 5,00 no seu Caixa</div>
+                <div className="text-xs font-bold text-white">
+                  {isStoreView ? 'R$ 5,00 no Caixa da Loja' : 'R$ 3,00 no seu Caixa'}
+                </div>
                 <p className="text-[11px] text-gray-400">
-                  O bônus de R$ 5,00 entra imediatamente no seu caixa para usar em assinaturas!
+                  {isStoreView 
+                    ? 'O bônus de R$ 5,00 entra no caixa da loja para abater na mensalidade!'
+                    : 'O crédito de R$ 3,00 entra na hora para abater ou trocar por assinatura grátis!'}
                 </p>
               </div>
             </div>
@@ -298,10 +316,10 @@ export const ReferralModal = () => {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">
-                Amigos Cadastrados via seu Link ({referralsList.length}):
+                Indicações Realizadas via seu Link ({referralsList.length}):
               </span>
               <span className="text-[11px] text-emerald-400 font-bold">
-                Total ganho: R$ {(referralsList.length * 5).toFixed(2).replace('.', ',')}
+                Total acumulado: R$ {referralsList.reduce((acc, r) => acc + (typeof r.bonus === 'number' ? r.bonus : (isStoreView ? 5 : 3)), 0).toFixed(2).replace('.', ',')}
               </span>
             </div>
 
