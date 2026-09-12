@@ -118,15 +118,15 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </button>
         </div>
 
-        {/* 2. LOGO DA EMPRESA (com borda diferenciada por plano) */}
-        <div className={`absolute -bottom-3 left-4 w-12 h-12 rounded-xl bg-[#181822] shadow-xl flex items-center justify-center overflow-hidden z-20 ${
+        {/* 2. LOGO DA EMPRESA (com borda diferenciada por plano - 100% visível sem cortes) */}
+        <div className={`absolute bottom-2.5 left-3 w-11 h-11 rounded-xl bg-[#181822] shadow-2xl flex items-center justify-center overflow-hidden z-20 ${
           storeTier === 'gold'
-            ? 'border-2 border-amber-400 ring-2 ring-amber-400/40'
+            ? 'border-2 border-amber-400 ring-2 ring-amber-400/40 shadow-amber-500/20'
             : storeTier === 'silver'
-            ? 'border-2 border-slate-300'
+            ? 'border-2 border-slate-300 shadow-slate-400/20'
             : storeTier === 'bronze'
-            ? 'border-2 border-amber-700'
-            : 'border-2 border-[#FF5F00]'
+            ? 'border-2 border-amber-700 shadow-amber-900/20'
+            : 'border-2 border-[#FF5F00] shadow-orange-950/50'
         }`}>
           {storeLogo ? (
             <img 

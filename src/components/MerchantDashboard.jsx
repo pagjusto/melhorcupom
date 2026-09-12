@@ -704,7 +704,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </span>
 
                   {/* Logo da Empresa no canto */}
-                  <div className="absolute -bottom-2 left-3 w-10 h-10 rounded-xl bg-[#181824] border-2 border-[#FF5F00] overflow-hidden shadow-lg flex items-center justify-center">
+                  <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] border-2 border-[#FF5F00] overflow-hidden shadow-lg flex items-center justify-center z-10">
                     {currentStore.logoImage ? (
                       <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                     ) : (
