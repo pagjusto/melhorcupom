@@ -115,7 +115,7 @@ export const TransparentVideo = ({
                 }
                 if (visited[botIdx] !== visitId) {
                   visited[botIdx] = visitId;
-                  queue[botIdx] = visitId;
+                  queue[tail++] = botIdx;
                 }
               }
               // Borda esquerda e direita
@@ -210,6 +210,31 @@ export const TransparentVideo = ({
                     data[idx4 + 3] = 0;
                   }
                 }
+              }
+
+              // 4. REMOÇÃO DE LINHA / BARRA BRANCA NA PARTE INFERIOR (ARTEFATO DE VÍDEO / CAPCUT)
+              // Limpa os pixels da base para garantir que nenhuma linha de progresso ou borda branca permaneça
+              const bottomCleanH = Math.min(14, Math.max(6, Math.round(h * 0.04)));
+              for (let y = h - bottomCleanH; y < h; y++) {
+                const rowStart = y * w * 4;
+                for (let x = 0; x < w; x++) {
+                  data[rowStart + x * 4 + 3] = 0;
+                }
+              }
+
+              // Limpa também uma margem sutil de 2px no topo e laterais contra artefatos de corte
+              for (let y = 0; y < 2; y++) {
+                const rowStart = y * w * 4;
+                for (let x = 0; x < w; x++) {
+                  data[rowStart + x * 4 + 3] = 0;
+                }
+              }
+              for (let y = 0; y < h; y++) {
+                const rowStart = y * w * 4;
+                data[rowStart + 3] = 0;
+                data[rowStart + 4 + 3] = 0;
+                data[rowStart + (w - 1) * 4 + 3] = 0;
+                data[rowStart + (w - 2) * 4 + 3] = 0;
               }
 
             } else {
