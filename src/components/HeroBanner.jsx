@@ -22,6 +22,9 @@ export const HeroBanner = ({
 }) => {
   const { isVipUser, setIsSubscriptionModalOpen } = useApp();
   const [showDropdown, setShowDropdown] = useState(false);
+  // Estado para teste visual do vídeo no lugar do logo
+  // 'video_transparent' | 'video_mp4' | 'static_image'
+  const [mediaType, setMediaType] = useState('video_transparent');
 
   // Filtrar cidades disponíveis com base no texto digitado
   const filteredCities = POPULAR_CITIES.filter(city => 
@@ -44,14 +47,85 @@ export const HeroBanner = ({
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         
-        {/* LOGO CENTRALIZADA GRANDE NO MEIO DO APP */}
-        <div className="relative flex justify-center items-center my-4 group">
+        {/* LOGO OU VÍDEO NO MEIO DO APP (MODO TESTE) */}
+        <div className="relative flex flex-col justify-center items-center my-4 group">
           <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 blur-3xl -z-10 rounded-full scale-110" />
-          <img 
-            src="/logo-melhor-cupom.png" 
-            alt="Melhor Cupom" 
-            className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
-          />
+          
+          {mediaType === 'video_transparent' && (
+            <video 
+              key="video_transparent"
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
+            >
+              <source src="/hero-logo-video.webm" type="video/webm" />
+              <source src="/hero-video.mp4" type="video/mp4" />
+              <img 
+                src="/logo-melhor-cupom.png" 
+                alt="Melhor Cupom" 
+                className="w-full h-auto object-contain"
+              />
+            </video>
+          )}
+
+          {mediaType === 'video_mp4' && (
+            <video 
+              key="video_mp4"
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              controls
+              className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
+            >
+              <source src="/hero-video.mp4" type="video/mp4" />
+            </video>
+          )}
+
+          {mediaType === 'static_image' && (
+            <img 
+              src="/logo-melhor-cupom.png" 
+              alt="Melhor Cupom" 
+              className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
+            />
+          )}
+
+          {/* Seletor Rápido de Teste */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 bg-[#14141E]/90 border border-white/10 p-1.5 rounded-2xl backdrop-blur-md shadow-lg">
+            <span className="text-[11px] text-gray-400 font-semibold px-2">Teste Visual:</span>
+            <button
+              onClick={() => setMediaType('video_transparent')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                mediaType === 'video_transparent'
+                  ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-300'
+              }`}
+            >
+              <span>✨ Vídeo Animado (Fundo Transparente)</span>
+            </button>
+            <button
+              onClick={() => setMediaType('video_mp4')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                mediaType === 'video_mp4'
+                  ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-300'
+              }`}
+            >
+              <span>🎬 Vídeo MP4</span>
+            </button>
+            <button
+              onClick={() => setMediaType('static_image')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                mediaType === 'static_image'
+                  ? 'bg-white/20 text-white shadow-md'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-300'
+              }`}
+            >
+              <span>🖼️ Logo Estática (PNG)</span>
+            </button>
+          </div>
         </div>
 
         {/* 3. Headline & Descrição */}
