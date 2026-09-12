@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS, MERCHANT_PLANS } from '../data/mockData';
+import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS, MERCHANT_PLANS, INITIAL_REGISTERED_USERS, MONTHLY_FINANCIAL_HISTORY } from '../data/mockData';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -64,6 +64,17 @@ export const AppProvider = ({ children }) => {
       });
     } catch {
       return INITIAL_STORES;
+    }
+  });
+
+  // Estado de Usuários Cadastrados no Sistema (Painel de ADM)
+  const [registeredUsers, setRegisteredUsers] = useState(() => {
+    const saved = localStorage.getItem('melhor_cupom_admin_users');
+    if (!saved) return INITIAL_REGISTERED_USERS;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return INITIAL_REGISTERED_USERS;
     }
   });
 
@@ -477,10 +488,16 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('melhor_cupom_user', JSON.stringify(userProfile));
   }, [userProfile]);
 
+  useEffect(() => {
+    localStorage.setItem('melhor_cupom_admin_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
   // Sincronizar o estado de VIP quando o perfil rápido é alterado
   const switchRole = (newRole) => {
     setCurrentRole(newRole);
-    if (newRole === 'vip') {
+    if (newRole === 'admin') {
+      setActiveTab('admin-dashboard');
+    } else if (newRole === 'vip') {
       setUserProfile(prev => ({
         ...prev,
         isLoggedIn: true,
@@ -514,6 +531,43 @@ export const AppProvider = ({ children }) => {
         referrals: []
       }));
     }
+  };
+
+  // Funções Administrativas do Painel ADM
+  const adminToggleUserVip = (userId) => {
+    setRegisteredUsers(prev => prev.map(u => {
+      if (u.id === userId) {
+        const nextVip = !u.isVip;
+        return {
+          ...u,
+          isVip: nextVip,
+          vipPlan: nextVip ? 'monthly' : null,
+          vipSince: nextVip ? (u.vipSince || new Date().toISOString().split('T')[0]) : null
+        };
+      }
+      return u;
+    }));
+  };
+
+  const adminUpdateStoreTier = (storeId, newTier) => {
+    setStores(prev => prev.map(s => {
+      if (s.id === storeId) {
+        return { ...s, tier: newTier };
+      }
+      return s;
+    }));
+  };
+
+  const adminAdjustUserReferral = (userId, amount) => {
+    setRegisteredUsers(prev => prev.map(u => {
+      if (u.id === userId) {
+        return {
+          ...u,
+          referralBalance: Math.max(0, Number(((u.referralBalance || 0) + amount).toFixed(2)))
+        };
+      }
+      return u;
+    }));
   };
 
   // Assinar Plano VIP
@@ -1147,8 +1201,10 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('melhor_cupom_redemptions');
     localStorage.removeItem('melhor_cupom_user');
     localStorage.removeItem('melhor_cupom_role');
+    localStorage.removeItem('melhor_cupom_admin_users');
     setCoupons(INITIAL_COUPONS);
     setStores(INITIAL_STORES);
+    setRegisteredUsers(INITIAL_REGISTERED_USERS);
     setCurrentRole('visitor');
     window.location.reload();
   };
@@ -1202,6 +1258,12 @@ export const AppProvider = ({ children }) => {
       registerMerchant,
       loginAccount,
       logoutAccount,
+      // Painel de ADM Master
+      registeredUsers,
+      adminToggleUserVip,
+      adminUpdateStoreTier,
+      adminAdjustUserReferral,
+      monthlyFinancialHistory: MONTHLY_FINANCIAL_HISTORY,
       // Navegação Global
       activeTab,
       setActiveTab,

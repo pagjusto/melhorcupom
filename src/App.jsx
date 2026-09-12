@@ -16,6 +16,7 @@ import { ReferralBanner } from './components/ReferralBanner';
 import { ReferralModal } from './components/ReferralModal';
 import { AuthModal } from './components/AuthModal';
 import { SavingsModal } from './components/SavingsModal';
+import { AdminDashboard } from './components/AdminDashboard';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
@@ -367,6 +368,11 @@ const MainLayout = () => {
           <UserProfileSettings />
         )}
 
+        {/* ABA: PAINEL DE ADMINISTRAÇÃO MASTER */}
+        {activeTab === 'admin-dashboard' && (
+          <AdminDashboard />
+        )}
+
       </main>
 
       {/* 4. Rodapé Moderno & Completo */}
@@ -456,6 +462,16 @@ const MainLayout = () => {
               © 2026 Melhor Cupom Serviços e Tecnologia Ltda. Todos os direitos reservados.
             </div>
             <div className="flex items-center gap-4">
+              <button 
+                onClick={() => {
+                  switchRole('admin');
+                  setActiveTab('admin-dashboard');
+                }}
+                className="hover:text-blue-400 text-gray-500 transition-colors flex items-center gap-1 font-medium"
+              >
+                <span>🛡️ Painel ADM</span>
+              </button>
+              <span>•</span>
               <span>Termos de Uso</span>
               <span>•</span>
               <span>Política de Privacidade</span>

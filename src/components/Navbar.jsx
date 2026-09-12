@@ -5,6 +5,7 @@ import {
   Tag, 
   Store, 
   ShieldCheck, 
+  Shield,
   CreditCard, 
   PiggyBank, 
   Menu, 
@@ -100,13 +101,27 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               >
                 Como Funciona
               </button>
+
+              {currentRole === 'admin' && (
+                <button
+                  onClick={() => setActiveTab('admin-dashboard')}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 transition-all ${
+                    activeTab === 'admin-dashboard'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                      : 'text-blue-400 hover:text-white hover:bg-blue-600/15'
+                  }`}
+                >
+                  <Shield size={14} className={activeTab === 'admin-dashboard' ? 'text-white' : 'text-blue-400'} />
+                  <span>Painel ADM</span>
+                </button>
+              )}
             </div>
           </div>
 
           {/* User Status / Action CTA */}
           <div className="hidden md:flex items-center gap-3">
             {/* Botão em Destaque: Divulgue & Ganhe (Apenas para Usuários ou Lojistas Logados) */}
-            {(isUserLoggedIn || isMerchantRole) && (
+            {currentRole !== 'admin' && (isUserLoggedIn || isMerchantRole) && (
               <button
                 onClick={() => setIsReferralModalOpen(true)}
                 className="relative bg-gradient-to-r from-amber-500/15 via-[#FF5F00]/20 to-amber-500/15 hover:from-amber-500/25 hover:to-[#FF5F00]/30 border border-amber-500/40 text-amber-300 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-orange-950/20 group transform hover:-translate-y-0.5"
@@ -122,7 +137,33 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               </button>
             )}
 
-            {isMerchantRole ? (
+            {currentRole === 'admin' ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('admin-dashboard')}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    activeTab === 'admin-dashboard'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-500 shadow-lg shadow-blue-600/30'
+                      : 'bg-blue-600/15 hover:bg-blue-600/25 text-blue-300 border-blue-500/30'
+                  }`}
+                  title="Abrir Painel Administrativo Master"
+                >
+                  <Shield size={14} className={activeTab === 'admin-dashboard' ? 'text-white' : 'text-blue-400'} />
+                  <span>Painel ADM</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    switchRole('visitor');
+                    setActiveTab('explore');
+                  }}
+                  className="text-gray-400 hover:text-red-400 px-2.5 py-2 rounded-xl hover:bg-white/5 transition-colors text-xs font-bold"
+                  title="Sair do modo Administrador"
+                >
+                  Sair ADM
+                </button>
+              </div>
+            ) : isMerchantRole ? (
               <div className="flex items-center gap-2">
                 {/* Botão Painel do Lojista */}
                 <button
@@ -459,6 +500,24 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           >
             Como Funciona
           </button>
+
+          {/* Painel ADM: No menu mobile */}
+          {currentRole === 'admin' && (
+            <button
+              onClick={() => { 
+                setActiveTab('admin-dashboard'); 
+                setMobileMenuOpen(false); 
+              }}
+              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors ${
+                activeTab === 'admin-dashboard' 
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  : 'text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20'
+              }`}
+            >
+              <Shield size={16} />
+              <span>🛡️ Painel de Administração Master</span>
+            </button>
+          )}
           {/* Portal do Lojista: Apenas para Lojistas logados */}
           {isMerchantRole && (
             <>

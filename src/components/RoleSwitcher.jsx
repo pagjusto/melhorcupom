@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Shield, Sparkles, Store, User, UserCheck, RotateCcw, Check } from 'lucide-react';
 
 export const RoleSwitcher = () => {
-  const { currentRole, switchRole, resetToFactoryDefaults, isVipUser, stores } = useApp();
+  const { currentRole, switchRole, resetToFactoryDefaults, isVipUser, stores, setActiveTab } = useApp();
 
   const customStore = stores?.find(s => s.merchantId === currentRole || s.id === currentRole);
   const isDefaultRole = ['visitor', 'user_free', 'vip', 'merchant_burger', 'merchant_barber', 'admin'].includes(currentRole);
@@ -87,7 +87,12 @@ export const RoleSwitcher = () => {
             return (
               <button
                 key={role.id}
-                onClick={() => switchRole(role.id)}
+                onClick={() => {
+                  switchRole(role.id);
+                  if (role.id === 'admin' && setActiveTab) {
+                    setActiveTab('admin-dashboard');
+                  }
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
                   isActive
                     ? 'bg-[#FF5F00] text-white shadow-sm ring-2 ring-orange-400/40'
