@@ -280,7 +280,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 
                 <div className="text-xs text-gray-400 mb-2 font-medium">
                   {coupon.type === 'physical' 
-                    ? 'Apresente o QR Code ao atendente ou informe o código:'
+                    ? 'Apresente o QR Code ao atendente ou informe a senha de 6 dígitos abaixo:'
                     : 'Copie o código promocional exclusivo abaixo:'
                   }
                 </div>
@@ -289,11 +289,40 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 {coupon.type === 'physical' && (
                   <div className="inline-block p-3 bg-white rounded-2xl shadow-xl my-2">
                     <QRCodeSVG 
-                      value={activeRedemption.code} 
-                      size={150} 
+                      value={activeRedemption.qrPayload || activeRedemption.code} 
+                      size={155} 
                       level="H" 
                       includeMargin={false}
                     />
+                  </div>
+                )}
+
+                {/* Senha Obrigatória do QR Code para Ofertas Locais */}
+                {coupon.type === 'physical' && (
+                  <div className="my-3 p-3.5 bg-gradient-to-r from-orange-500/20 via-black/60 to-orange-500/20 border-2 border-[#FF5F00] rounded-2xl text-center shadow-lg">
+                    <div className="text-[11px] font-black text-orange-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1">
+                      <KeyRound size={15} className="text-[#FF5F00]" />
+                      <span>Senha de Validação do QR Code:</span>
+                    </div>
+                    <div className="font-mono text-3xl sm:text-4xl font-black text-white tracking-[0.25em] py-1 select-all">
+                      {activeRedemption.passCode || '849201'}
+                    </div>
+                    <p className="text-[10px] text-gray-300 mt-1 max-w-xs mx-auto leading-tight">
+                      Apresente o QR Code no caixa para leitura. Caso a câmera do lojista não consiga escanear, informe esta <strong>Senha de 6 dígitos</strong> para baixa manual.
+                    </p>
+                  </div>
+                )}
+
+                {/* Status de Baixa Confirmada */}
+                {activeRedemption.status === 'used' && (
+                  <div className="my-3 p-3 bg-emerald-500/20 border-2 border-emerald-500/50 rounded-2xl text-center animate-fade-in">
+                    <div className="text-emerald-400 font-black text-sm flex items-center justify-center gap-1.5 mb-0.5">
+                      <CheckCircle2 size={18} />
+                      <span>CUPOM BAIXADO NO CAIXA COM SUCESSO!</span>
+                    </div>
+                    <div className="text-[11px] text-emerald-200">
+                      Economia de R$ {Number(activeRedemption.savings || 20).toFixed(2).replace('.', ',')} creditada na sua carteira.
+                    </div>
                   </div>
                 )}
 

@@ -37,7 +37,7 @@ export const AuthModal = () => {
     name: '',
     cpf: '',
     cep: '',
-    city: 'São Paulo - SP',
+    city: '',
     email: '',
     phone: '',
     password: ''
@@ -103,7 +103,7 @@ export const AuthModal = () => {
       .substring(0, 15);
   };
 
-  // Busca rápida de CEP via ViaCEP
+  // Busca rápida de CEP via ViaCEP com preenchimento automático de cidade
   const handleCepLookup = async (cepValue, target) => {
     const cleanCep = cepValue.replace(/\D/g, '');
     if (cleanCep.length === 8) {
@@ -118,15 +118,16 @@ export const AuthModal = () => {
           } else if (target === 'merchant') {
             setMerchantForm(prev => {
               const currentCities = prev.cities || [];
-              if (!currentCities.includes(detectedCity)) {
-                return { ...prev, cities: [...currentCities, detectedCity] };
-              }
-              return prev;
+              const withoutDefault = currentCities.filter(c => c !== 'São Paulo - SP' || detectedCity === 'São Paulo - SP');
+              return {
+                ...prev,
+                cities: [detectedCity, ...withoutDefault.filter(c => c !== detectedCity)]
+              };
             });
           }
         }
       } catch (err) {
-        // Fallback silencioso caso offline
+        console.error('Erro na consulta do CEP:', err);
       } finally {
         setIsSearchingCep(false);
       }
@@ -389,21 +390,51 @@ export const AuthModal = () => {
 
               {/* Cidade de Residência */}
               <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1.5">
-                  Cidade de Residência *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-gray-300 block">
+                    Cidade de Residência *
+                  </label>
+                  {isSearchingCep ? (
+                    <span className="text-[10px] text-amber-400 animate-pulse">Detectando pelo CEP...</span>
+                  ) : userForm.city ? (
+                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                      <span>✓ Preenchido pelo CEP</span>
+                    </span>
+                  ) : null}
+                </div>
                 <div className="relative">
                   <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <select
+                  <input
+                    type="text"
+                    required
+                    list="user-popular-cities"
+                    placeholder="Digite o CEP acima ou sua cidade..."
                     value={userForm.city}
                     onChange={(e) => setUserForm({ ...userForm, city: e.target.value })}
-                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none"
-                  >
+                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none placeholder-gray-500"
+                  />
+                  <datalist id="user-popular-cities">
                     {POPULAR_CITIES.filter(c => c !== 'Todas as Cidades').map((city, idx) => (
-                      <option key={idx} value={city}>{city}</option>
+                      <option key={idx} value={city} />
                     ))}
-                  </select>
+                  </datalist>
                 </div>
+                {/* Sugestões rápidas caso ainda não preenchido */}
+                {!userForm.city && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] text-gray-500">Exemplos rápidos:</span>
+                    {POPULAR_CITIES.filter(c => c !== 'Todas as Cidades').slice(0, 4).map((city, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setUserForm(prev => ({ ...prev, city }))}
+                        className="text-[10px] bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-2 py-0.5 rounded-md border border-white/5 transition-colors"
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Grid: E-mail & WhatsApp */}

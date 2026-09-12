@@ -70,11 +70,14 @@ export const AppProvider = ({ children }) => {
       {
         id: 'red_sample_1',
         code: 'VIP-MELHOR-8491',
+        passCode: '849201',
+        qrPayload: JSON.stringify({ code: 'VIP-MELHOR-8491', passCode: '849201', couponId: 'cupom_1', merchantId: 'merchant_burger' }),
         couponId: 'cupom_1',
         couponTitle: '50% OFF no 2º Combo Burger Especial',
         merchantId: 'merchant_burger',
         storeName: 'Smash Burger Club',
         userName: 'Lucas Silva',
+        userCpf: '382.***.***-04',
         discountBadge: '50% OFF',
         savings: 28.00,
         createdAt: new Date(Date.now() - 3600000).toISOString(),
@@ -84,11 +87,14 @@ export const AppProvider = ({ children }) => {
       {
         id: 'red_sample_2',
         code: 'VIP-MELHOR-3129',
+        passCode: '312940',
+        qrPayload: JSON.stringify({ code: 'VIP-MELHOR-3129', passCode: '312940', couponId: 'cupom_2', merchantId: 'merchant_barber' }),
         couponId: 'cupom_2',
         couponTitle: '40% OFF no Combo Corte + Barboterapia',
         merchantId: 'merchant_barber',
         storeName: 'Barbearia Don Corleone',
         userName: 'Lucas Silva',
+        userCpf: '382.***.***-04',
         discountBadge: '40% OFF',
         savings: 45.00,
         createdAt: new Date(Date.now() - 7200000).toISOString(),
@@ -295,14 +301,33 @@ export const AppProvider = ({ children }) => {
     const randomCode = Math.floor(1000 + Math.random() * 9000);
     const generatedCode = `VIP-${coupon.codePrefix || 'CUPOM'}-${randomCode}`;
 
+    // Gera senha numérica única de 6 dígitos para o QR Code (garante sem duplicidades)
+    let generatedPassCode = '';
+    let passCodeExists = true;
+    while (passCodeExists) {
+      generatedPassCode = String(Math.floor(100000 + Math.random() * 900000));
+      passCodeExists = redemptions.some(r => r.passCode === generatedPassCode);
+    }
+
+    const redemptionId = `red_${Date.now()}`;
+    const qrPayload = JSON.stringify({
+      code: generatedCode,
+      passCode: generatedPassCode,
+      id: redemptionId,
+      couponId: coupon.id,
+      merchantId: coupon.merchantId
+    });
+
     // Cálculo assertivo da economia real baseada em (originalPrice - promoPrice) ou estimatedSavings
     const effectiveSavings = (coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice))
       ? Number((Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2))
       : (Number(coupon.estimatedSavings) || 20.00);
 
     const newRedemption = {
-      id: `red_${Date.now()}`,
+      id: redemptionId,
       code: generatedCode,
+      passCode: generatedPassCode,
+      qrPayload: qrPayload,
       couponId: coupon.id,
       couponTitle: coupon.title,
       merchantId: coupon.merchantId,
@@ -329,13 +354,7 @@ export const AppProvider = ({ children }) => {
       return c;
     }));
 
-    // Incrementar economia do usuário com valor assertivo
-    setUserProfile(prev => ({
-      ...prev,
-      monthlySavings: Number((prev.monthlySavings + effectiveSavings).toFixed(2))
-    }));
-
-    // Celebrar resgate
+    // Celebrar ativação
     confetti({
       particleCount: 60,
       spread: 50,
@@ -346,24 +365,56 @@ export const AppProvider = ({ children }) => {
     return newRedemption;
   };
 
-  // Validar Cupom (Usado pelo Lojista no Balcão)
-  const validateRedemption = (code, merchantId) => {
-    const cleanCode = code.trim().toUpperCase();
-    const found = redemptions.find(r => r.code.toUpperCase() === cleanCode);
+  // Validar Cupom e Dar Baixa Automática (Usado pelo Lojista no Balcão via QR Code ou Senha)
+  const validateRedemption = (inputQuery, merchantId) => {
+    if (!inputQuery) {
+      return { success: false, message: 'Por favor, escaneie o QR Code ou digite a senha de 6 dígitos.' };
+    }
+
+    let searchCode = '';
+    let searchPassCode = '';
+    const rawTrimmed = String(inputQuery).trim();
+
+    // Tentar decodificar se for JSON vindo do leitor de QR Code
+    if (rawTrimmed.startsWith('{') && rawTrimmed.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(rawTrimmed);
+        if (parsed.code) searchCode = String(parsed.code).trim().toUpperCase();
+        if (parsed.passCode) searchPassCode = String(parsed.passCode).trim();
+      } catch (e) {
+        // ignora erro de parse
+      }
+    }
+
+    const cleanInput = rawTrimmed.toUpperCase().replace(/\s+/g, '');
+
+    // Localizar o cupom pelo passCode (senha de 6 dígitos) OU pelo código do cupom OU pelo payload escaneado
+    const found = redemptions.find(r => {
+      if (searchPassCode && r.passCode && r.passCode === searchPassCode) return true;
+      if (searchCode && r.code && r.code.toUpperCase() === searchCode) return true;
+      if (r.passCode && r.passCode === cleanInput) return true;
+      if (r.code && r.code.toUpperCase() === cleanInput) return true;
+      if (r.passCode && cleanInput.includes(r.passCode)) return true;
+      if (r.code && cleanInput.includes(r.code.toUpperCase())) return true;
+      return false;
+    });
 
     if (!found) {
-      return { success: false, message: 'Código de cupom não encontrado no sistema.' };
+      return { 
+        success: false, 
+        message: 'Código ou Senha do QR Code não encontrado no sistema. Verifique a senha de 6 dígitos com o cliente.' 
+      };
     }
 
     if (found.status === 'used') {
       return { 
         success: false, 
-        message: `Este cupom já foi utilizado e baixado em ${new Date(found.usedAt).toLocaleTimeString('pt-BR')}.` 
+        message: `⚠️ DUPLICIDADE BLOQUEADA: Este cupom já foi baixado em ${new Date(found.usedAt).toLocaleString('pt-BR')}. Não é permitida nova baixa!` 
       };
     }
 
     if (found.status === 'expired') {
-      return { success: false, message: 'Este cupom expirou antes de ser validado.' };
+      return { success: false, message: 'Este cupom expirou antes de ser validado no caixa.' };
     }
 
     // Verificar se pertence ao lojista atual (ou se é admin/modo teste)
@@ -374,14 +425,31 @@ export const AppProvider = ({ children }) => {
       };
     }
 
-    // Atualizar status para 'used'
+    // Fazer a baixa automática imediata
     const now = new Date().toISOString();
+    const updatedRedemption = { ...found, status: 'used', usedAt: now };
+
     setRedemptions(prev => prev.map(r => {
       if (r.id === found.id) {
-        return { ...r, status: 'used', usedAt: now };
+        return updatedRedemption;
       }
       return r;
     }));
+
+    // Contabilizar nas economias do usuário (se ainda não contabilizado)
+    const savingsAmount = Number(found.savings) || 20.00;
+    setUserProfile(prev => ({
+      ...prev,
+      monthlySavings: Number((prev.monthlySavings + savingsAmount).toFixed(2))
+    }));
+
+    // Confetes de baixa confirmada
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#10B981', '#FF5F00', '#FFD700']
+    });
 
     const cpfDisplay = found.userCpf ? ` (CPF: ${found.userCpf})` : '';
     const limitInfo = found.maxUsesPerUser === 1
@@ -392,8 +460,9 @@ export const AppProvider = ({ children }) => {
 
     return { 
       success: true, 
-      redemption: { ...found, status: 'used', usedAt: now },
-      message: `Cupom validado com sucesso! Aplique o desconto de "${found.discountBadge}" para ${found.userName}${cpfDisplay}${limitInfo}.`
+      redemption: updatedRedemption,
+      savings: savingsAmount,
+      message: `Cupom baixado com sucesso! Aplique o desconto de "${found.discountBadge}" para ${found.userName}${cpfDisplay}${limitInfo}. Economia de R$ ${savingsAmount.toFixed(2).replace('.', ',')} contabilizada!`
     };
   };
 

@@ -8,6 +8,7 @@ import {
   QrCode, 
   CheckCircle2, 
   XCircle, 
+  X, 
   AlertTriangle, 
   Users, 
   TrendingUp, 
@@ -94,9 +95,46 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const isLimitReached = storeCoupons.length >= currentPlan.maxCoupons;
   const [planUpgradeSuccess, setPlanUpgradeSuccess] = useState('');
 
-  // Estado do Validador de Balcão
+  // Estado do Validador de Balcão e Câmera QR Code
   const [validationInput, setValidationInput] = useState(prefilledCode || '');
   const [validationResult, setValidationResult] = useState(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannerError, setScannerError] = useState('');
+
+  // Scanner de Câmera com html5-qrcode
+  useEffect(() => {
+    let html5QrCode = null;
+    if (isScannerOpen) {
+      setScannerError('');
+      import('html5-qrcode').then(({ Html5Qrcode }) => {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decodedText) => {
+            handleValidateText(decodedText);
+            setIsScannerOpen(false);
+            try {
+              html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+            } catch (e) {}
+          },
+          () => {}
+        ).catch(err => {
+          console.warn("Câmera indisponível ou permissão negada:", err);
+          setScannerError("Câmera indisponível neste navegador. Digite a Senha de 6 dígitos gerada no app do cliente.");
+        });
+      }).catch(err => {
+        setScannerError("Erro ao carregar o módulo de leitura de QR Code.");
+      });
+    }
+    return () => {
+      if (html5QrCode) {
+        try {
+          html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+        } catch (e) {}
+      }
+    };
+  }, [isScannerOpen]);
 
   // Upload refs
   const logoInputRef = useRef(null);
@@ -232,12 +270,17 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     }
   };
 
+  const handleValidateText = (inputVal) => {
+    if (!inputVal || !String(inputVal).trim()) return;
+    const clean = String(inputVal).trim();
+    setValidationInput(clean);
+    const result = validateRedemption(clean, currentStore.merchantId);
+    setValidationResult(result);
+  };
+
   const handleValidate = (e) => {
     if (e) e.preventDefault();
-    if (!validationInput.trim()) return;
-
-    const result = validateRedemption(validationInput, currentStore.merchantId);
-    setValidationResult(result);
+    handleValidateText(validationInput);
   };
 
   const handleCreateCoupon = (e) => {
@@ -321,9 +364,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     setActiveTab('coupons');
   };
 
-  // Calcular métricas estimadas
+  // Calcular métricas estimadas e economias concedidas aos clientes VIP
   const totalUses = storeCoupons.reduce((acc, c) => acc + (c.usesCount || 0), 0);
   const estimatedRevenue = (totalUses * 65.00); // Ticket médio fictício de R$ 65
+  const usedRedemptions = storeRedemptions.filter(r => r.status === 'used');
+  const totalSavingsGranted = usedRedemptions.reduce((acc, r) => acc + (Number(r.savings) || 20), 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
@@ -438,7 +483,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         </div>
 
         {/* Cards de Métricas do Parceiro */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/10">
           <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5">
             <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
               <span>Cupons Ativos</span>
@@ -459,13 +504,13 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
           <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5">
             <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-              <span>Faturamento Estimado</span>
-              <TrendingUp size={16} className="text-emerald-400" />
+              <span>Economia Concedida</span>
+              <DollarSign size={16} className="text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-emerald-400">
-              R$ {estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {totalSavingsGranted.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-[11px] text-gray-400 mt-1">Ticket médio R$ 65,00</div>
+            <div className="text-[11px] text-gray-400 mt-1">Economia gerada no balcão</div>
           </div>
 
           <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5">
@@ -474,9 +519,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               <QrCode size={16} className="text-amber-400" />
             </div>
             <div className="text-2xl font-black text-white">
-              {storeRedemptions.filter(r => r.status === 'used').length}
+              {usedRedemptions.length}
             </div>
             <div className="text-[11px] text-gray-400 mt-1">Cupons dados baixa</div>
+          </div>
+
+          <div className="bg-[#12121A] p-4 rounded-2xl border border-white/5 col-span-2 sm:col-span-1">
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span>Faturamento Estimado</span>
+              <TrendingUp size={16} className="text-emerald-400" />
+            </div>
+            <div className="text-2xl font-black text-emerald-400">
+              R$ {estimatedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <div className="text-[11px] text-gray-400 mt-1">Ticket médio R$ 65,00</div>
           </div>
         </div>
       </div>
@@ -556,47 +612,134 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         </button>
       </div>
 
-      {/* ABA 1: VALIDADOR DE BALCÃO */}
+      {/* ABA 1: VALIDADOR DE BALCÃO COM QR CODE + SENHA */}
       {activeTab === 'validator' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <div className="lg:col-span-7 bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-[#FF5F00] flex items-center justify-center">
-                <QrCode size={22} />
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-[#FF5F00] flex items-center justify-center shadow-lg">
+                  <QrCode size={24} />
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-black text-white">Validador de Balcão (Caixa / PDV)</h2>
+                  <p className="text-xs text-gray-400">
+                    Bipe o QR Code com a câmera ou digite a Senha de 6 dígitos informada pelo cliente.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-black text-white">Validador de Cupons no Balcão</h2>
-                <p className="text-xs text-gray-400">
-                  Digite o código alfanumérico ou bipe o QR Code apresentado pelo cliente VIP.
-                </p>
+
+              {/* Botão de Toggle da Câmera */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(!isScannerOpen)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-md ${
+                    isScannerOpen 
+                      ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30' 
+                      : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-300 hover:from-orange-500/30 hover:to-amber-500/30 border border-[#FF5F00]/40'
+                  }`}
+                >
+                  <Camera size={15} />
+                  <span>{isScannerOpen ? 'Fechar Câmera' : '📷 Escanear com Câmera'}</span>
+                </button>
+
+                {storeRedemptions.some(r => r.status === 'valid') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextValid = storeRedemptions.find(r => r.status === 'valid');
+                      if (nextValid) {
+                        handleValidateText(nextValid.qrPayload || nextValid.passCode || nextValid.code);
+                      }
+                    }}
+                    className="px-3 py-2.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 flex items-center gap-1.5 transition-all shadow-md"
+                    title="Simular leitura automática instantânea de QR Code"
+                  >
+                    <Sparkles size={14} />
+                    <span>Simular Scan QR</span>
+                  </button>
+                )}
               </div>
             </div>
 
+            {/* Container do Leitor de Câmera (html5-qrcode) */}
+            {isScannerOpen && (
+              <div className="mb-6 p-4 bg-[#101017] border-2 border-[#FF5F00] rounded-2xl text-center animate-fade-in shadow-xl">
+                <div className="text-xs text-orange-300 font-bold mb-2 flex items-center justify-center gap-1.5">
+                  <Camera size={15} className="animate-pulse" />
+                  <span>Aponte a câmera para o QR Code na tela do smartphone do cliente</span>
+                </div>
+                
+                <div id="qr-reader" className="w-full max-w-[280px] mx-auto rounded-xl overflow-hidden bg-black aspect-square border border-white/10 shadow-inner"></div>
+
+                {scannerError && (
+                  <div className="mt-3 p-2.5 bg-red-500/15 border border-red-500/30 rounded-xl text-xs text-red-300 max-w-sm mx-auto">
+                    {scannerError}
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsScannerOpen(false)}
+                    className="text-xs text-gray-400 hover:text-white underline"
+                  >
+                    Cancelar / Digitar senha manualmente
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Formulário para Digitação Manual da Senha ou Código */}
             <form onSubmit={handleValidate} className="space-y-4 my-6">
               <div>
-                <label className="text-xs font-bold text-gray-300 uppercase tracking-wider block mb-2">
-                  Código do Cupom VIP:
+                <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-amber-300">
+                    <KeyRound size={14} className="text-[#FF5F00]" />
+                    <span>Senha de 6 Dígitos do QR Code ou Código:</span>
+                  </span>
+                  <span className="text-[11px] text-gray-400 font-normal lowercase">
+                    sem duplicidade
+                  </span>
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={validationInput}
-                    onChange={(e) => setValidationInput(e.target.value.toUpperCase())}
-                    placeholder="Ex: VIP-SMASH50-8491"
-                    className="flex-1 bg-[#101017] border-2 border-white/15 focus:border-[#FF5F00] rounded-2xl px-4 py-3.5 text-base sm:text-lg font-mono font-bold text-white placeholder-gray-500 focus:outline-none uppercase tracking-wider"
-                  />
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={validationInput}
+                      onChange={(e) => setValidationInput(e.target.value.toUpperCase())}
+                      placeholder="Ex: 849201 ou VIP-SMASH50-8491"
+                      className="w-full bg-[#101017] border-2 border-white/15 focus:border-[#FF5F00] rounded-2xl px-4 py-3.5 text-base sm:text-lg font-mono font-bold text-white placeholder-gray-500 focus:outline-none uppercase tracking-wider"
+                    />
+                    {validationInput && (
+                      <button
+                        type="button"
+                        onClick={() => { setValidationInput(''); setValidationResult(null); }}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1"
+                        title="Limpar campo"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
                   <button
                     type="submit"
-                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white font-extrabold px-6 py-3.5 rounded-2xl transition-all shadow-lg shadow-orange-600/30 flex items-center gap-2"
+                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white font-black px-6 py-3.5 rounded-2xl transition-all shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 whitespace-nowrap"
                   >
                     <CheckCircle2 size={18} />
                     <span>Validar & Baixar</span>
                   </button>
                 </div>
+                <p className="text-[11px] text-gray-400 mt-2">
+                  💡 <strong>Ofertas Locais:</strong> O cliente apresenta o QR Code e uma senha exclusiva de 6 dígitos gerada no momento do resgate. Caso a câmera não consiga escanear, basta digitar a senha de 6 dígitos acima para dar baixa imediata.
+                </p>
               </div>
             </form>
 
+            {/* Recibo de Validação / Mensagem de Baixa */}
             {validationResult && (
               <div className={`p-5 rounded-2xl border-2 transition-all animate-fade-in ${
                 validationResult.success 
@@ -605,42 +748,54 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               }`}>
                 <div className="flex items-start gap-3">
                   {validationResult.success ? (
-                    <CheckCircle2 size={24} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 size={26} className="text-emerald-400 flex-shrink-0 mt-0.5" />
                   ) : (
-                    <XCircle size={24} className="text-red-400 flex-shrink-0 mt-0.5" />
+                    <XCircle size={26} className="text-red-400 flex-shrink-0 mt-0.5" />
                   )}
-                  <div>
-                    <h4 className="text-base font-black">
-                      {validationResult.success ? 'CUPOM VALIDADO COM SUCESSO! 🎉' : 'NÃO FOI POSSÍVEL VALIDAR'}
-                    </h4>
-                    <p className="text-xs mt-1 text-gray-300">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <h4 className="text-base sm:text-lg font-black text-white">
+                        {validationResult.success ? '🎉 BAIXA REALIZADA COM SUCESSO!' : 'NÃO FOI POSSÍVEL VALIDAR'}
+                      </h4>
+                      {validationResult.success && (
+                        <span className="bg-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-400/40">
+                          Cupom Consumido & Baixado
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm mt-1 text-gray-200 font-medium">
                       {validationResult.message}
                     </p>
 
                     {validationResult.success && validationResult.redemption && (
-                      <div className="mt-4 pt-3 border-t border-emerald-500/30 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div>
-                          <span className="text-gray-400 block">Cliente VIP:</span>
-                          <span className="font-bold text-white">{validationResult.redemption.userName}</span>
+                      <div className="mt-4 pt-3 border-t border-emerald-500/30 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                        <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                          <span className="text-gray-400 block text-[10px]">Cliente VIP:</span>
+                          <span className="font-bold text-white text-xs sm:text-sm">{validationResult.redemption.userName}</span>
                           {validationResult.redemption.userCpf && (
                             <span className="text-[10px] text-gray-400 block font-mono">CPF: {validationResult.redemption.userCpf}</span>
                           )}
                         </div>
-                        <div>
-                          <span className="text-gray-400 block">Desconto a aplicar:</span>
-                          <span className="font-black text-emerald-400 text-sm">
+
+                        <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                          <span className="text-gray-400 block text-[10px]">Desconto a Aplicar:</span>
+                          <span className="font-black text-emerald-400 text-sm sm:text-base">
                             {validationResult.redemption.discountBadge}
                           </span>
                         </div>
-                        <div>
-                          <span className="text-gray-400 block">Regra por CPF:</span>
-                          <span className="text-amber-300 font-bold">
-                            {validationResult.redemption.maxUsesPerUser === 1
-                              ? '1 uso por CPF'
-                              : validationResult.redemption.maxUsesPerUser > 1
-                              ? `Até ${validationResult.redemption.maxUsesPerUser} por CPF`
-                              : 'Ilimitado por CPF'}
+
+                        <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                          <span className="text-gray-400 block text-[10px]">Economia Contabilizada:</span>
+                          <span className="font-black text-emerald-400 text-sm sm:text-base">
+                            R$ {Number(validationResult.savings || 20).toFixed(2).replace('.', ',')}
                           </span>
+                          <span className="text-[9px] text-emerald-300 block leading-tight">no cliente e no caixa</span>
+                        </div>
+
+                        <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                          <span className="text-gray-400 block text-[10px]">Senha / Cupom:</span>
+                          <span className="font-mono text-amber-300 font-black text-xs block">🔑 {validationResult.redemption.passCode}</span>
+                          <span className="font-mono text-orange-400 text-[10px] block">{validationResult.redemption.code}</span>
                         </div>
                       </div>
                     )}
@@ -650,39 +805,40 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             )}
 
             <div className="mt-8 bg-white/5 rounded-2xl p-4 text-xs text-gray-400 flex items-center gap-3">
-              <ShieldCheck size={20} className="text-[#FF5F00] flex-shrink-0" />
+              <ShieldCheck size={22} className="text-[#FF5F00] flex-shrink-0" />
               <span>
-                Cada cupom possui um código exclusivo de uso único gerado em tempo real. Uma vez validado, ele não poderá ser reaproveitado por outro cliente.
+                <strong>Segurança Anti-Fraude:</strong> Cada QR Code e Senha de 6 dígitos são exclusivos e de uso único. Uma vez dada a baixa, o sistema bloqueia qualquer tentativa de reutilização por outros clientes.
               </span>
             </div>
           </div>
 
+          {/* Coluna Lateral: Cupons Emitidos para este Lojista com Senha e Baixa Rápida */}
           <div className="lg:col-span-5 bg-[#181824] border border-white/10 rounded-3xl p-6">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center justify-between">
-              <span>Cupons Emitidos para este Lojista:</span>
-              <span className="text-xs text-orange-400 font-normal">Clique para testar</span>
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                Cupons Emitidos para esta Loja:
+              </h3>
+              <span className="text-xs text-orange-400 font-normal">
+                {storeRedemptions.filter(r => r.status === 'valid').length} aguardando
+              </span>
+            </div>
 
-            <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
               {storeRedemptions.length === 0 ? (
                 <div className="text-center py-8 text-xs text-gray-500">
-                  Nenhum cupom resgatado ainda. Experimente trocar para o perfil "Assinante VIP" e resgatar uma oferta!
+                  Nenhum cupom resgatado ainda. Experimente alternar para o perfil "Assinante VIP" e resgatar uma oferta!
                 </div>
               ) : (
                 storeRedemptions.map((red) => (
                   <div
                     key={red.id}
-                    onClick={() => {
-                      setValidationInput(red.code);
-                      setValidationResult(null);
-                    }}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                    className={`p-3.5 rounded-2xl border transition-all ${
                       red.status === 'valid'
-                        ? 'bg-[#12121A] border-white/10 hover:border-[#FF5F00]'
-                        : 'bg-white/5 border-white/5 opacity-60'
+                        ? 'bg-[#12121A] border-white/10 hover:border-[#FF5F00]/50'
+                        : 'bg-white/5 border-white/5 opacity-70'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-1.5">
                       <span className="font-mono text-xs font-extrabold text-orange-400">
                         {red.code}
                       </span>
@@ -691,18 +847,57 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'bg-gray-700 text-gray-300'
                       }`}>
-                        {red.status === 'valid' ? 'Aguardando Baixa' : 'Já Utilizado'}
+                        {red.status === 'valid' ? 'Aguardando Baixa' : '✓ Baixado'}
                       </span>
                     </div>
 
-                    <div className="text-xs text-gray-300 font-semibold line-clamp-1">
+                    <div className="text-xs text-gray-300 font-semibold line-clamp-1 mb-2">
                       {red.couponTitle}
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-gray-500 mt-2">
+                    {/* Senha de 6 dígitos em destaque */}
+                    <div className="flex items-center justify-between bg-black/40 px-2.5 py-1.5 rounded-xl border border-white/5 mb-2">
+                      <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                        <KeyRound size={12} className="text-amber-400" />
+                        <span>Senha do QR:</span>
+                      </span>
+                      <span className="font-mono text-sm font-black text-amber-300 tracking-wider">
+                        {red.passCode || '849201'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-gray-400 mb-2">
                       <span>Cliente: {red.userName}</span>
                       <span className="font-bold text-emerald-400">{red.discountBadge}</span>
                     </div>
+
+                    {/* Botões de Ação para Teste Rápido */}
+                    {red.status === 'valid' ? (
+                      <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => handleValidateText(red.passCode)}
+                          className="text-[11px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold py-1.5 px-2 rounded-lg transition-colors flex items-center justify-center gap-1"
+                          title="Dar baixa usando a senha de 6 dígitos"
+                        >
+                          <KeyRound size={11} />
+                          <span>Baixar c/ Senha</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleValidateText(red.qrPayload || red.code)}
+                          className="text-[11px] bg-[#FF5F00]/20 hover:bg-[#FF5F00]/30 text-orange-300 font-bold py-1.5 px-2 rounded-lg transition-colors flex items-center justify-center gap-1"
+                          title="Dar baixa simulando leitura do QR Code"
+                        >
+                          <QrCode size={11} />
+                          <span>Baixar c/ QR</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-gray-500 text-center pt-1 border-t border-white/5">
+                        Baixa realizada • Economia de R$ {Number(red.savings || 20).toFixed(2).replace('.', ',')} creditada
+                      </div>
+                    )}
                   </div>
                 ))
               )}
