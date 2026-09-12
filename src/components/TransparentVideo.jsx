@@ -12,8 +12,8 @@ export const TransparentVideo = ({
   className = '',
   removeWhite = true,
   preserveWhiteContent = true, // Flood-fill preservador de letras e mascote
-  threshold = 215,             // Sensibilidade para detectar fundo branco (0 a 255)
-  feather = 25,                // Suavização das bordas (anti-aliasing)
+  threshold = 200,             // Sensibilidade para detectar fundo branco (0 a 255)
+  feather = 35,                // Suavização das bordas (anti-aliasing)
   trimOutro = true,            // Cortar vinheta final do CapCut
   trimOutroSeconds = 1.8,      // Duração da vinheta final do CapCut (em segundos)
   maskWatermark = true,        // Mascarar marcas d'água de canto (CapCut)
@@ -132,6 +132,44 @@ export const TransparentVideo = ({
                 }
               }
 
+              // Sementes na bolsa fechada entre a letra 'r' e o mascote
+              const notchMinX = (w * 0.60) | 0;
+              const notchMaxX = (w * 0.66) | 0;
+              const notchMinY = (h * 0.25) | 0;
+              const notchMaxY = (h * 0.36) | 0;
+
+              for (let ny = notchMinY; ny <= notchMaxY; ny++) {
+                const rowStart = ny * w;
+                for (let nx = notchMinX; nx <= notchMaxX; nx++) {
+                  const nIdx = rowStart + nx;
+                  if (visited[nIdx] !== visitId) {
+                    const np4 = nIdx * 4;
+                    const nr = data[np4];
+                    const ng = data[np4 + 1];
+                    const nb = data[np4 + 2];
+                    const nMin = Math.min(nr, ng, nb);
+                    const nMax = Math.max(nr, ng, nb);
+                    // Se for branco neutro
+                    if (nMin > 160 && (nMax - nMin) < 45) {
+                      // Verifica se à direita há o mascote laranja (dentro de até 30px)
+                      let hasOrangeRight = false;
+                      const maxScan = Math.min(w - 1, nx + 30);
+                      for (let sx = nx + 1; sx <= maxScan; sx++) {
+                        const sp4 = (rowStart + sx) * 4;
+                        if (data[sp4] > 170 && data[sp4 + 1] > 110 && data[sp4 + 2] < 65) {
+                          hasOrangeRight = true;
+                          break;
+                        }
+                      }
+                      if (hasOrangeRight) {
+                        visited[nIdx] = visitId;
+                        queue[tail++] = nIdx;
+                      }
+                    }
+                  }
+                }
+              }
+
               // Limiares de cor para fundo claro
               const lowThreshold = threshold - feather;
               const highThreshold = threshold + 10;
@@ -192,18 +230,82 @@ export const TransparentVideo = ({
                 }
               }
 
+              // Limpeza de pequenas bolsas residuais de fundo presas entre os dedos e a mão segurando dinheiro
+              // Região da mão/dinheiro: x entre 75% e 92% da largura, y entre 20% e 45% da altura
+              const handMinX = (w * 0.75) | 0;
+              const handMaxX = (w * 0.92) | 0;
+              const handMinY = (h * 0.20) | 0;
+              const handMaxY = (h * 0.45) | 0;
+              const handVisited = new Uint8Array(w * h);
+
+              for (let hy = handMinY; hy <= handMaxY; hy++) {
+                const hRow = hy * w;
+                for (let hx = handMinX; hx <= handMaxX; hx++) {
+                  const hIdx = hRow + hx;
+                  if (handVisited[hIdx]) continue;
+                  const hp4 = hIdx * 4;
+                  if (data[hp4 + 3] === 0) continue; // já é transparente
+
+                  const hr = data[hp4];
+                  const hg = data[hp4 + 1];
+                  const hb = data[hp4 + 2];
+                  const hMin = Math.min(hr, hg, hb);
+                  const hMax = Math.max(hr, hg, hb);
+
+                  // Se for pixel branco / claro neutro ainda opaco
+                  if (hMin > 165 && (hMax - hMin) < 45) {
+                    // Explora o componente conectado para medir o tamanho
+                    const island = [hIdx];
+                    handVisited[hIdx] = 1;
+                    let headI = 0;
+                    while (headI < island.length) {
+                      const cur = island[headI++];
+                      const cx = cur % w;
+                      const cy = (cur / w) | 0;
+
+                      const nbs = [cur - 1, cur + 1, cur - w, cur + w];
+                      for (let i = 0; i < 4; i++) {
+                        const nb = nbs[i];
+                        if (nb >= 0 && nb < totalPixels && !handVisited[nb]) {
+                          const nbp4 = nb * 4;
+                          if (data[nbp4 + 3] > 0) {
+                            const nbr = data[nbp4];
+                            const nbg = data[nbp4 + 1];
+                            const nbb = data[nbp4 + 2];
+                            const nbMin = Math.min(nbr, nbg, nbb);
+                            const nbMax = Math.max(nbr, nbg, nbb);
+                            if (nbMin > 165 && (nbMax - nbMin) < 45) {
+                              handVisited[nb] = 1;
+                              island.push(nb);
+                            }
+                          }
+                        }
+                      }
+                    }
+
+                    // Se a ilha for pequena (<= 25 pixels), é um vão/detalhe de fundo preso entre os dedos!
+                    // Os dedos reais têm 60-115+ pixels, e a palma tem 250+ pixels.
+                    if (island.length <= 25) {
+                      for (let i = 0; i < island.length; i++) {
+                        data[island[i] * 4 + 3] = 0;
+                      }
+                    }
+                  }
+                }
+              }
+
               // 3. REMOÇÃO DE MARCA D'ÁGUA EM CANTOS RESIDUAIS (CapCut)
               if (maskWatermark) {
-                // Canto Superior Direito (onde CapCut às vezes insere logo flutuante)
-                const cornerW = Math.round(w * 0.22);
-                const cornerH = Math.round(h * 0.16);
+                // Apenas canto extremo (longe do leque de dinheiro para não piscar)
+                const cornerW = Math.round(w * 0.08);
+                const cornerH = Math.round(h * 0.06);
                 for (let y = 0; y < cornerH; y++) {
                   for (let x = w - cornerW; x < w; x++) {
                     const idx4 = (y * w + x) * 4;
                     data[idx4 + 3] = 0;
                   }
                 }
-                // Canto Inferior Direito (onde CapCut às vezes insere texto flutuante)
+                // Canto Inferior Direito
                 for (let y = h - cornerH; y < h; y++) {
                   for (let x = w - cornerW; x < w; x++) {
                     const idx4 = (y * w + x) * 4;
