@@ -37,12 +37,22 @@ export const AppProvider = ({ children }) => {
       const parsed = JSON.parse(saved);
       return parsed.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
+        const storeRefCode = s.referralCode || init?.referralCode || (s.name ? s.name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         return {
           ...s,
           logoImage: s.logoImage || init?.logoImage || '',
           tier: s.tier || init?.tier || 'free',
           phone: s.phone || init?.phone || '(11) 98123-4567',
-          address: s.address || init?.address || ''
+          address: s.address || init?.address || '',
+          referralCode: storeRefCode,
+          referralBalance: typeof s.referralBalance === 'number' ? s.referralBalance : 25.00,
+          referrals: s.referrals || [
+            { id: 'ref_st_1', name: 'Marcos Oliveira', date: 'Hoje às 11:20', bonus: 5.00 },
+            { id: 'ref_st_2', name: 'Carla Silveira', date: 'Ontem', bonus: 5.00 },
+            { id: 'ref_st_3', name: 'Bruno Mendes', date: 'Há 2 dias', bonus: 5.00 },
+            { id: 'ref_st_4', name: 'Larissa Ferreira', date: 'Há 4 dias', bonus: 5.00 },
+            { id: 'ref_st_5', name: 'Diego Barbosa', date: 'Há 1 semana', bonus: 5.00 }
+          ]
         };
       });
     } catch {
@@ -85,7 +95,7 @@ export const AppProvider = ({ children }) => {
     ];
   });
 
-  // Perfil do Usuário
+  // Perfil do Usuário com Carteira / Saldo de Divulgue & Ganhe
   const [userProfile, setUserProfile] = useState(() => {
     const defaultUser = {
       name: 'Lucas Silva',
@@ -100,12 +110,26 @@ export const AppProvider = ({ children }) => {
       vipPlan: null, // 'monthly' | 'annual'
       vipSince: null,
       monthlySavings: 0,
-      savedCouponIds: ['cupom_1', 'cupom_5']
+      savedCouponIds: ['cupom_1', 'cupom_5'],
+      referralCode: 'LUCAS5',
+      referralBalance: 15.00, // R$ 15,00 em caixa de indicações para teste
+      referrals: [
+        { id: 'ref_usr_1', name: 'Mariana Costa', date: 'Hoje às 14:32', bonus: 5.00 },
+        { id: 'ref_usr_2', name: 'Rodrigo Alves', date: 'Ontem', bonus: 5.00 },
+        { id: 'ref_usr_3', name: 'Camila Lima', date: 'Há 2 dias', bonus: 5.00 }
+      ]
     };
     const saved = localStorage.getItem('melhor_cupom_user');
     if (!saved) return defaultUser;
     try {
-      return { ...defaultUser, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      return {
+        ...defaultUser,
+        ...parsed,
+        referralCode: parsed.referralCode || 'LUCAS5',
+        referralBalance: typeof parsed.referralBalance === 'number' ? parsed.referralBalance : 15.00,
+        referrals: parsed.referrals || defaultUser.referrals
+      };
     } catch {
       return defaultUser;
     }
@@ -114,6 +138,10 @@ export const AppProvider = ({ children }) => {
   // Modal de Assinatura
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlanForModal, setSelectedPlanForModal] = useState('plan_vip');
+
+  // Modal de Divulgue & Ganhe (R$ 5,00 por amigo no caixa)
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+  const [referralModalType, setReferralModalType] = useState('auto'); // 'auto' | 'user' | 'merchant'
 
   // Salvar no LocalStorage sempre que houver alteração
   useEffect(() => {
@@ -159,7 +187,7 @@ export const AppProvider = ({ children }) => {
   };
 
   // Assinar Plano VIP
-  const subscribeToVip = (planId) => {
+  const subscribeToVip = (planId, discountAmount = 0) => {
     const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId) || SUBSCRIPTION_PLANS[0];
     
     // Disparar confetes celebratórios!
@@ -170,13 +198,20 @@ export const AppProvider = ({ children }) => {
       colors: ['#FF5F00', '#FFC800', '#10B981', '#FFFFFF']
     });
 
-    setUserProfile(prev => ({
-      ...prev,
-      isVip: true,
-      vipPlan: 'vip',
-      vipSince: new Date().toISOString().split('T')[0],
-      monthlySavings: prev.monthlySavings > 0 ? prev.monthlySavings : 150.00
-    }));
+    setUserProfile(prev => {
+      const remainingBalance = discountAmount > 0 
+        ? Math.max(0, (prev.referralBalance || 0) - discountAmount)
+        : (prev.referralBalance || 0);
+
+      return {
+        ...prev,
+        isVip: true,
+        vipPlan: 'vip',
+        vipSince: new Date().toISOString().split('T')[0],
+        monthlySavings: prev.monthlySavings > 0 ? prev.monthlySavings : 150.00,
+        referralBalance: remainingBalance
+      };
+    });
 
     setCurrentRole('vip');
     setIsSubscriptionModalOpen(false);
@@ -370,11 +405,18 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  // Alterar / Fazer Upgrade de Plano de Lojista (Free, Prata, Ouro)
-  const upgradeStoreTier = (storeId, newTier) => {
+  // Alterar / Fazer Upgrade de Plano de Lojista (Free, Bronze, Prata, Ouro)
+  const upgradeStoreTier = (storeId, newTier, discountAmount = 0) => {
     setStores(prev => prev.map(s => {
       if (s.id === storeId || s.merchantId === storeId) {
-        return { ...s, tier: newTier };
+        const remainingBalance = discountAmount > 0 
+          ? Math.max(0, (s.referralBalance || 0) - discountAmount)
+          : (s.referralBalance || 0);
+        return { 
+          ...s, 
+          tier: newTier,
+          referralBalance: remainingBalance
+        };
       }
       return s;
     }));
@@ -401,6 +443,91 @@ export const AppProvider = ({ children }) => {
         colors: ['#D97706', '#B45309', '#FDE68A', '#FFFFFF']
       });
     }
+  };
+
+  // Simular / Adicionar Nova Indicação (+R$ 5,00 no Caixa do Usuário ou da Loja)
+  const addReferral = (type = 'auto', customFriendName = null) => {
+    const isMerchant = type === 'merchant' || (type === 'auto' && currentRole.startsWith('merchant_'));
+    const friendNames = [
+      'Mariana Rocha', 'Carlos Eduardo', 'Juliana Fonseca', 'Rodrigo Nogueira',
+      'Fernanda Martins', 'Gustavo Lima', 'Camila Santos', 'Felipe Barreto',
+      'Beatriz Albuquerque', 'Thiago Meireles'
+    ];
+    const chosenName = customFriendName || friendNames[Math.floor(Math.random() * friendNames.length)];
+    const bonus = 5.00;
+
+    // Disparar confetes celebratórios de ganho de bônus!
+    confetti({
+      particleCount: 80,
+      spread: 65,
+      origin: { y: 0.6 },
+      colors: ['#10B981', '#FF5F00', '#FFC800', '#FFFFFF']
+    });
+
+    if (isMerchant) {
+      const targetMerchantId = currentRole.startsWith('merchant_') ? currentRole : 'merchant_burger';
+      setStores(prev => prev.map(s => {
+        if (s.merchantId === targetMerchantId || s.id === targetMerchantId) {
+          const newRef = {
+            id: `ref_st_${Date.now()}`,
+            name: chosenName,
+            date: 'Agora mesmo',
+            bonus
+          };
+          return {
+            ...s,
+            referralBalance: (s.referralBalance || 0) + bonus,
+            referrals: [newRef, ...(s.referrals || [])]
+          };
+        }
+        return s;
+      }));
+    } else {
+      const newRef = {
+        id: `ref_usr_${Date.now()}`,
+        name: chosenName,
+        date: 'Agora mesmo',
+        bonus
+      };
+      setUserProfile(prev => ({
+        ...prev,
+        referralBalance: (prev.referralBalance || 0) + bonus,
+        referrals: [newRef, ...(prev.referrals || [])]
+      }));
+    }
+
+    return { name: chosenName, bonus: 5.00, isMerchant };
+  };
+
+  // Abater/Consumir saldo de indicações do usuário
+  const useReferralBalance = (amount) => {
+    if (amount <= 0) return 0;
+    let used = 0;
+    setUserProfile(prev => {
+      used = Math.min(prev.referralBalance || 0, amount);
+      return {
+        ...prev,
+        referralBalance: Math.max(0, (prev.referralBalance || 0) - used)
+      };
+    });
+    return used;
+  };
+
+  // Abater/Consumir saldo de indicações da loja
+  const useStoreReferralBalance = (storeId, amount) => {
+    if (amount <= 0) return 0;
+    let used = 0;
+    setStores(prev => prev.map(s => {
+      if (s.id === storeId || s.merchantId === storeId) {
+        used = Math.min(s.referralBalance || 0, amount);
+        return {
+          ...s,
+          referralBalance: Math.max(0, (s.referralBalance || 0) - used)
+        };
+      }
+      return s;
+    }));
+    return used;
   };
 
   // Atualizar Perfil do Assinante
@@ -449,7 +576,15 @@ export const AppProvider = ({ children }) => {
       validateRedemption,
       addCoupon,
       toggleFavorite,
-      resetToFactoryDefaults
+      resetToFactoryDefaults,
+      // Divulgue & Ganhe
+      isReferralModalOpen,
+      setIsReferralModalOpen,
+      referralModalType,
+      setReferralModalType,
+      addReferral,
+      useReferralBalance,
+      useStoreReferralBalance
     }}>
       {children}
     </AppContext.Provider>

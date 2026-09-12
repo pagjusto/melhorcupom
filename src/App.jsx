@@ -12,6 +12,8 @@ import { MyCouponsView } from './components/MyCouponsView';
 import { StoresView } from './components/StoresView';
 import { HowItWorksView } from './components/HowItWorksView';
 import { UserProfileSettings } from './components/UserProfileSettings';
+import { ReferralBanner } from './components/ReferralBanner';
+import { ReferralModal } from './components/ReferralModal';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
@@ -152,7 +154,10 @@ const MainLayout = () => {
               setCitySearchQuery={setCitySearchQuery}
             />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+              
+              {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
+              <ReferralBanner />
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
@@ -447,6 +452,7 @@ const MainLayout = () => {
       )}
 
       <SubscriptionModal />
+      <ReferralModal />
 
     </div>
   );

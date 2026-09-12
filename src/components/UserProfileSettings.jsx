@@ -16,7 +16,13 @@ import {
   ArrowRight,
   AlertCircle,
   Clock,
-  Heart
+  Heart,
+  Gift,
+  Copy,
+  Coins,
+  Share2,
+  Zap,
+  CheckCircle2
 } from 'lucide-react';
 
 export const UserProfileSettings = () => {
@@ -25,12 +31,15 @@ export const UserProfileSettings = () => {
     updateUserProfile, 
     isVipUser, 
     setIsSubscriptionModalOpen,
-    cancelSubscription 
+    cancelSubscription,
+    addReferral 
   } = useApp();
 
   const fileInputRef = useRef(null);
-  const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'preferences' | 'subscription'
+  const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'preferences' | 'subscription' | 'referrals'
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [userJustEarned, setUserJustEarned] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -131,16 +140,31 @@ export const UserProfileSettings = () => {
             </div>
           </div>
 
-          {/* Economia no Topo */}
-          {isVipUser && (
-            <div className="bg-[#12121A] border border-emerald-500/30 rounded-2xl px-5 py-3 text-center sm:text-right shadow-md">
-              <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Economia com Cupons</div>
-              <div className="text-2xl font-black text-emerald-400 font-display">
-                R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
+          {/* Caixa de Indicações e Economia no Topo */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="bg-[#12121A] border border-amber-500/30 rounded-2xl px-5 py-3 text-center sm:text-right shadow-md">
+              <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1 sm:justify-end">
+                <span>🎁</span>
+                <span>Caixa de Indicações</span>
               </div>
-              <div className="text-[10px] text-gray-400">Desde jan/2026</div>
+              <div className="text-2xl font-black text-amber-400 font-display">
+                R$ {(userProfile.referralBalance || 0).toFixed(2).replace('.', ',')}
+              </div>
+              <div className="text-[10px] text-emerald-400 font-semibold">
+                {(userProfile.referrals || []).length} amigos indicados
+              </div>
             </div>
-          )}
+
+            {isVipUser && (
+              <div className="bg-[#12121A] border border-emerald-500/30 rounded-2xl px-5 py-3 text-center sm:text-right shadow-md">
+                <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Economia com Cupons</div>
+                <div className="text-2xl font-black text-emerald-400 font-display">
+                  R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
+                </div>
+                <div className="text-[10px] text-gray-400">Desde jan/2026</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -180,6 +204,19 @@ export const UserProfileSettings = () => {
         >
           <CreditCard size={16} />
           <span>Minha Assinatura VIP</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('referrals')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+            activeTab === 'referrals'
+              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-md shadow-orange-600/30'
+              : 'bg-[#181824] text-amber-300 hover:text-amber-200 border border-amber-500/20'
+          }`}
+        >
+          <Gift size={16} />
+          <span>Divulgue & Ganhe (Caixa: R$ {(userProfile.referralBalance || 0).toFixed(2).replace('.', ',')})</span>
         </button>
       </div>
 
@@ -456,6 +493,157 @@ export const UserProfileSettings = () => {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ABA 4: PROGRAMA DIVULGUE & GANHE */}
+        {activeTab === 'referrals' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Toast de Simulação */}
+            {userJustEarned && (
+              <div className="bg-emerald-500/20 border-2 border-emerald-500 text-emerald-300 p-4 px-6 rounded-2xl text-sm font-bold flex items-center justify-between animate-fade-in shadow-xl">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={20} className="text-emerald-400" />
+                  <span>Amigo <strong>+{userJustEarned.name}</strong> cadastrou-se pelo seu link e gerou <strong>+R$ 5,00</strong> no seu Caixa!</span>
+                </div>
+                <span className="text-emerald-400 text-base font-black">+R$ 5,00</span>
+              </div>
+            )}
+
+            {/* Card Saldo no Caixa */}
+            <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-6 sm:p-8 border-2 border-amber-500/50 shadow-xl relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                    <Coins size={16} />
+                    <span>Seu Caixa de Indicações</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-3xl sm:text-4xl font-black text-white font-display">
+                      R$ {(userProfile.referralBalance || 0).toFixed(2).replace('.', ',')}
+                    </span>
+                    <span className="text-xs text-emerald-400 font-bold bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                      Disponível no Caixa
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-2 max-w-lg">
+                    Cada amigo cadastrado rende <strong>R$ 5,00</strong>. Use esse dinheiro para pagar ou abater na sua Assinatura VIP de R$ 19,90!
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const res = addReferral('user');
+                      setUserJustEarned(res);
+                      setTimeout(() => setUserJustEarned(null), 4000);
+                    }}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all"
+                  >
+                    <Zap size={16} />
+                    <span>Simular Indicação (+R$ 5,00)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsSubscriptionModalOpen(true)}
+                    className="bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all"
+                  >
+                    <Sparkles size={16} />
+                    <span>Usar Saldo no Clube VIP</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Link de Divulgação */}
+            <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-7 space-y-4">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Share2 size={18} className="text-[#FF5F00]" />
+                <span>Seu Link de Convite Pessoal</span>
+              </h3>
+
+              <div className="bg-[#101017] border border-white/15 rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-amber-300 font-mono">
+                <span className="text-gray-500 select-none">https://</span>
+                <span className="text-white font-bold truncate">
+                  melhorcupom.com.br/convite/{userProfile.referralCode || 'LUCAS5'}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://melhorcupom.com.br/convite/${userProfile.referralCode || 'LUCAS5'}`);
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2500);
+                  }}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                    copiedLink
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+                >
+                  {copiedLink ? <Check size={16} /> : <Copy size={16} />}
+                  <span>{copiedLink ? 'Link Copiado!' : 'Copiar Link'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = `Vem pro Melhor Cupom economizar até 50% em restaurantes, barbearias e lazer! Cadastre-se pelo meu convite: https://melhorcupom.com.br/convite/${userProfile.referralCode || 'LUCAS5'}`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all"
+                >
+                  <Share2 size={16} />
+                  <span>Enviar no WhatsApp</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Extrato de Indicações */}
+            <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-7">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Gift size={18} className="text-amber-400" />
+                  <span>Amigos Cadastrados com seu Link ({(userProfile.referrals || []).length})</span>
+                </h3>
+                <span className="text-xs text-emerald-400 font-bold">
+                  Total Acumulado: R$ {(((userProfile.referrals || []).length) * 5).toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+
+              {(userProfile.referrals || []).length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-xs">
+                  Nenhum amigo cadastrado ainda. Compartilhe seu link para começar a ganhar!
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {(userProfile.referrals || []).map((ref) => (
+                    <div 
+                      key={ref.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-[#101017] border border-white/5 text-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                          ✓
+                        </div>
+                        <div>
+                          <div className="font-bold text-white">{ref.name}</div>
+                          <div className="text-[10px] text-gray-400">{ref.date} • Cadastro Concluído</div>
+                        </div>
+                      </div>
+
+                      <span className="font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                        +R$ {ref.bonus.toFixed(2).replace('.', ',')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

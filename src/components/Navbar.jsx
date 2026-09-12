@@ -15,20 +15,28 @@ import {
   ChevronDown,
   MapPin,
   User,
-  Settings
+  Settings,
+  Gift
 } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity }) => {
   const { 
     currentRole, 
     userProfile, 
+    stores,
     isVipUser, 
     setIsSubscriptionModalOpen,
+    setIsReferralModalOpen,
     switchRole 
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMerchantRole = currentRole.startsWith('merchant_');
+  const merchantId = isMerchantRole ? currentRole : 'merchant_burger';
+  const currentStore = stores.find(s => s.merchantId === merchantId) || stores[0];
+  const activeReferralBalance = isMerchantRole
+    ? (currentStore?.referralBalance || 0)
+    : (userProfile.referralBalance || 0);
 
   return (
     <nav className="bg-[#14141B] border-b border-white/10 sticky top-[41px] z-40 backdrop-blur-md bg-opacity-95">
@@ -120,6 +128,21 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
 
           {/* User Status / Action CTA */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Botão em Destaque: Divulgue & Ganhe */}
+            <button
+              onClick={() => setIsReferralModalOpen(true)}
+              className="relative bg-gradient-to-r from-amber-500/15 via-[#FF5F00]/20 to-amber-500/15 hover:from-amber-500/25 hover:to-[#FF5F00]/30 border border-amber-500/40 text-amber-300 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-orange-950/20 group transform hover:-translate-y-0.5"
+              title="Abrir Programa Divulgue & Ganhe (R$ 5,00 por amigo no Caixa)"
+            >
+              <span className="text-base group-hover:scale-125 transition-transform animate-bounce">🎁</span>
+              <div className="text-left leading-tight">
+                <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Divulgue & Ganhe</div>
+                <div className="text-xs font-black text-amber-300">
+                  Caixa: R$ {activeReferralBalance.toFixed(2).replace('.', ',')}
+                </div>
+              </div>
+            </button>
+
             {isVipUser ? (
               <div className="flex items-center gap-3">
                 {/* Economia Acumulada */}
@@ -213,8 +236,18 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button & Quick Actions */}
           <div className="flex md:hidden items-center gap-2">
+            {/* Quick Referral Pill on Mobile */}
+            <button
+              onClick={() => setIsReferralModalOpen(true)}
+              className="bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1"
+              title="Divulgue & Ganhe"
+            >
+              <span>🎁</span>
+              <span>R$ {activeReferralBalance.toFixed(0)}</span>
+            </button>
+
             {!isVipUser && !isMerchantRole && (
               <button
                 onClick={() => setIsSubscriptionModalOpen(true)}
@@ -237,6 +270,23 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-white/10 bg-[#14141B] px-4 pt-3 pb-5 space-y-2">
+          {/* Divulgue & Ganhe no Mobile Drawer */}
+          <button
+            onClick={() => { 
+              setIsReferralModalOpen(true); 
+              setMobileMenuOpen(false); 
+            }}
+            className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold text-sm flex items-center justify-between shadow-md"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎁</span>
+              <span>Divulgue & Ganhe (R$ 5/amigo)</span>
+            </div>
+            <span className="text-xs bg-amber-500/30 border border-amber-500/50 px-2 py-0.5 rounded-full font-black">
+              Caixa: R$ {activeReferralBalance.toFixed(2).replace('.', ',')}
+            </span>
+          </button>
+
           <button
             onClick={() => { setActiveTab('explore'); setMobileMenuOpen(false); }}
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5"

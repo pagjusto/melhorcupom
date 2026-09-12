@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { POPULAR_CITIES, CATEGORIES } from '../data/mockData';
+import { QRCodeSVG } from 'qrcode.react';
 import { 
   Store, 
   PlusCircle, 
@@ -35,7 +36,11 @@ import {
   Medal,
   Heart,
   Zap,
-  Shield
+  Shield,
+  Gift,
+  Copy,
+  Coins,
+  Share2
 } from 'lucide-react';
 
 const BANNER_PRESETS = [
@@ -59,7 +64,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     updateStore,
     upgradeStoreTier,
     merchantPlans,
-    switchRole 
+    switchRole,
+    addReferral,
+    setIsReferralModalOpen 
   } = useApp();
 
   // Identificar loja correspondente ao role
@@ -71,7 +78,10 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const storeRedemptions = redemptions.filter(r => r.merchantId === currentStore.merchantId);
 
   // Tabs internas do Painel
-  const [activeTab, setActiveTab] = useState(prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans'
+  const [activeTab, setActiveTab] = useState(prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals'
+  const [copiedStoreLink, setCopiedStoreLink] = useState(false);
+  const [useStoreBalanceForUpgrade, setUseStoreBalanceForUpgrade] = useState(true);
+  const [merchantJustEarned, setMerchantJustEarned] = useState(null);
   
   // Plano de assinatura atual do lojista
   const currentPlan = merchantPlans?.find(p => p.id === (currentStore.tier || 'free')) || {
@@ -486,6 +496,18 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         >
           <Crown size={16} fill={activeTab === 'plans' ? 'currentColor' : 'none'} />
           <span>Planos & Destaque ({currentPlan.name.replace('Plano ', '')})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('referrals')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+            activeTab === 'referrals'
+              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-lg shadow-orange-600/30'
+              : 'bg-[#181824] text-amber-300 hover:text-amber-200 border border-amber-500/30'
+          }`}
+        >
+          <Gift size={16} />
+          <span>Divulgue & Ganhe (Caixa: R$ {(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')})</span>
         </button>
       </div>
 
@@ -1482,6 +1504,43 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           </div>
 
+          {/* Card de Desconto com Saldo do Caixa da Loja (Divulgue & Ganhe) */}
+          {(currentStore.referralBalance || 0) > 0 && (
+            <div className="bg-gradient-to-r from-amber-500/15 via-[#FF5F00]/10 to-[#181824] border-2 border-amber-500/50 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-2xl flex-shrink-0 shadow-md">
+                  🎁
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-black text-white">
+                      Caixa de Indicações da Loja: R$ {(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')}
+                    </h3>
+                    <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                      Disponível para Abater
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">
+                    Sua loja acumulou bônus indicando usuários no <strong>Divulgue & Ganhe</strong>. Você pode abater esse saldo no investimento dos planos Bronze, Prata ou Ouro!
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-black/40 px-4 py-3 rounded-2xl border border-white/10 flex-shrink-0">
+                <span className="text-xs font-bold text-gray-300">Abater no valor do plano:</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={useStoreBalanceForUpgrade} 
+                    onChange={(e) => setUseStoreBalanceForUpgrade(e.target.checked)} 
+                    className="sr-only peer" 
+                  />
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* Grid dos 4 Planos (Free, Bronze, Prata, Ouro) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {(merchantPlans || []).map((plan) => {
@@ -1489,6 +1548,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               const isGold = plan.id === 'gold';
               const isSilver = plan.id === 'silver';
               const isBronze = plan.id === 'bronze';
+
+              const storeBalance = currentStore.referralBalance || 0;
+              const canDiscount = useStoreBalanceForUpgrade && storeBalance > 0 && plan.price > 0 && !isCurrent;
+              const storeDiscount = canDiscount ? Math.min(plan.price, storeBalance) : 0;
+              const finalPlanPrice = Math.max(0, plan.price - storeDiscount);
 
               return (
                 <div
@@ -1543,12 +1607,31 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       </p>
                     </div>
 
-                    {/* Preço */}
-                    <div className="py-4 border-y border-white/10 my-4 flex items-baseline gap-1">
-                      <span className="text-3xl sm:text-4xl font-black text-white font-display">
-                        {plan.priceLabel}
-                      </span>
-                      <span className="text-xs text-gray-400">{plan.period}</span>
+                    {/* Preço com ou sem desconto do Caixa */}
+                    <div className="py-4 border-y border-white/10 my-4 space-y-1">
+                      {storeDiscount > 0 ? (
+                        <div>
+                          <div className="flex items-center justify-between text-[11px] mb-1">
+                            <span className="text-gray-400 line-through">De R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                            <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                              - R$ {storeDiscount.toFixed(2).replace('.', ',')} do Caixa
+                            </span>
+                          </div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-3xl sm:text-4xl font-black text-white font-display">
+                              R$ {finalPlanPrice.toFixed(2).replace('.', ',')}
+                            </span>
+                            <span className="text-xs text-gray-400">{plan.period}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl sm:text-4xl font-black text-white font-display">
+                            {plan.priceLabel}
+                          </span>
+                          <span className="text-xs text-gray-400">{plan.period}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Destaque do Limite de Ofertas */}
@@ -1596,8 +1679,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     ) : (
                       <button
                         onClick={() => {
-                          upgradeStoreTier(currentStore.id, plan.id);
-                          setPlanUpgradeSuccess(`🎉 Parabéns! Sua loja agora é "${plan.name}"! A visibilidade dos seus cupons foi atualizada imediatamente no catálogo.`);
+                          upgradeStoreTier(currentStore.id, plan.id, storeDiscount);
+                          const discountMsg = storeDiscount > 0 
+                            ? ` com abatimento de R$ ${storeDiscount.toFixed(2).replace('.', ',')} do seu Caixa de Indicações!` 
+                            : '!';
+                          setPlanUpgradeSuccess(`🎉 Parabéns! Sua loja agora é "${plan.name}"${discountMsg} A visibilidade dos seus cupons foi atualizada imediatamente no catálogo.`);
                           setTimeout(() => setPlanUpgradeSuccess(''), 6000);
                         }}
                         className={`w-full py-3 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg ${
@@ -1613,17 +1699,29 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                         {isGold ? (
                           <>
                             <Crown size={15} fill="currentColor" />
-                            <span>Contratar Plano Ouro (Topo Máximo)</span>
+                            <span>
+                              {storeDiscount > 0 
+                                ? `Contratar por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
+                                : 'Contratar Plano Ouro (Topo)'}
+                            </span>
                           </>
                         ) : isSilver ? (
                           <>
                             <Award size={15} />
-                            <span>Fazer Upgrade para Prata</span>
+                            <span>
+                              {storeDiscount > 0 
+                                ? `Upgrade por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
+                                : 'Fazer Upgrade para Prata'}
+                            </span>
                           </>
                         ) : isBronze ? (
                           <>
                             <Medal size={15} />
-                            <span>Fazer Upgrade para Bronze</span>
+                            <span>
+                              {storeDiscount > 0 
+                                ? `Upgrade por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
+                                : 'Fazer Upgrade para Bronze'}
+                            </span>
                           </>
                         ) : (
                           <span>Mudar para Plano Grátis</span>
@@ -1748,6 +1846,221 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </div>
 
             </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ABA 6: PROGRAMA DIVULGUE & GANHE DA LOJA */}
+      {activeTab === 'referrals' && (
+        <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
+          {/* Header da Aba */}
+          <div className="text-center max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-full text-amber-300 font-bold text-xs mb-3 shadow-sm">
+              <Gift size={14} />
+              <span>Divulgue & Ganhe Exclusivo para Estabelecimentos</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
+              Transforme seus Clientes em Bônus para o Caixa da Loja
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-400 mt-2">
+              Cada cliente que se cadastrar na plataforma usando o link exclusivo do <strong>{currentStore.name}</strong> gera <strong>R$ 5,00 direto no Caixa da sua Loja</strong> para abater ou pagar seus planos de destaque!
+            </p>
+          </div>
+
+          {/* Toast de Bônus Simulado */}
+          {merchantJustEarned && (
+            <div className="bg-emerald-500/20 border-2 border-emerald-500 text-emerald-300 p-4 px-6 rounded-2xl text-sm font-bold flex items-center justify-between animate-fade-in shadow-xl">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={20} className="text-emerald-400" />
+                <span>Indicação simulada com sucesso! Cliente <strong>+{merchantJustEarned.name}</strong> cadastrou-se pelo link da sua loja e gerou <strong>+R$ 5,00</strong> no Caixa!</span>
+              </div>
+              <span className="text-emerald-400 text-base font-black">+R$ 5,00</span>
+            </div>
+          )}
+
+          {/* Card de Saldo no Caixa da Loja */}
+          <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-6 sm:p-8 border-2 border-amber-500/50 shadow-xl relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  <Coins size={16} />
+                  <span>Caixa de Indicações do Estabelecimento</span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl sm:text-4xl font-black text-white font-display">
+                    R$ {(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')}
+                  </span>
+                  <span className="text-xs text-emerald-400 font-bold bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                    Disponível para Abater em Planos
+                  </span>
+                </div>
+                <p className="text-xs text-gray-300 mt-2 max-w-lg">
+                  Use esse saldo acumulado para abater mensalidades dos planos <strong>Bronze (R$ 39,90)</strong>, <strong>Prata (R$ 79,90)</strong> ou <strong>Ouro (R$ 199,90)</strong> e garantir o topo das buscas!
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const res = addReferral('merchant');
+                    setMerchantJustEarned(res);
+                    setTimeout(() => setMerchantJustEarned(null), 4000);
+                  }}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all"
+                >
+                  <Zap size={16} />
+                  <span>Simular Indicação (+R$ 5,00)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('plans')}
+                  className="bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-black font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all"
+                >
+                  <Crown size={16} fill="currentColor" />
+                  <span>Abater em Planos de Destaque</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Link e QR Code de Divulgação da Loja */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            
+            {/* Link e Botões de Compartilhamento */}
+            <div className="md:col-span-8 bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-7 space-y-5">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Share2 size={18} className="text-[#FF5F00]" />
+                  <span>Link Exclusivo de Divulgação da Loja</span>
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  Divulgue em redes sociais, stories do Instagram, na bio ou envie diretamente para sua lista de clientes no WhatsApp:
+                </p>
+              </div>
+
+              <div className="bg-[#101017] border border-white/15 rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-amber-300 font-mono">
+                <span className="text-gray-500 select-none">https://</span>
+                <span className="text-white font-bold truncate">
+                  melhorcupom.com.br/convite/{currentStore.referralCode || 'SMASH5'}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://melhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`);
+                    setCopiedStoreLink(true);
+                    setTimeout(() => setCopiedStoreLink(false), 2500);
+                  }}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                    copiedStoreLink
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+                >
+                  {copiedStoreLink ? <Check size={16} /> : <Copy size={16} />}
+                  <span>{copiedStoreLink ? 'Link Copiado!' : 'Copiar Link da Loja'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = `Conheça o Clube VIP Melhor Cupom com descontos de 30% a 50% no ${currentStore.name} e dezenas de lojas! Cadastre-se pelo nosso convite: https://melhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all"
+                >
+                  <Share2 size={16} />
+                  <span>Compartilhar no WhatsApp dos Clientes</span>
+                </button>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2 text-xs text-gray-300">
+                <div className="font-bold text-white flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-amber-400" />
+                  <span>Dica de Ouro para Lojistas:</span>
+                </div>
+                <p>
+                  Imprima o QR Code ao lado e coloque nos displays de mesa e balcão com o texto: 
+                  <em> "Escaneie aqui e ganhe descontos VIP nesta e em dezenas de lojas!"</em>. 
+                  Com 40 clientes cadastrados, você ganha <strong>R$ 200,00</strong> no caixa — o suficiente para pagar integralmente o <strong>Plano Ouro VIP (R$ 199,90)</strong> e ficar no topo de tudo!
+                </p>
+              </div>
+            </div>
+
+            {/* QR Code para Imprimir no Balcão */}
+            <div className="md:col-span-4 bg-[#181824] border border-white/10 rounded-3xl p-6 text-center flex flex-col items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-white">QR Code de Balcão / Mesa</div>
+                <div className="text-[11px] text-gray-400 mt-0.5">Escaneie para se cadastrar</div>
+              </div>
+
+              <div className="p-3 bg-white rounded-2xl shadow-xl my-4">
+                <QRCodeSVG 
+                  value={`https://melhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`}
+                  size={140}
+                />
+              </div>
+
+              <div className="text-[11px] text-amber-300 font-mono font-bold mb-2">
+                Código: {currentStore.referralCode || 'SMASH5'}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl text-xs transition-all"
+              >
+                Imprimir QR Code
+              </button>
+            </div>
+
+          </div>
+
+          {/* Histórico de Indicações da Loja */}
+          <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-7">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Users size={18} className="text-emerald-400" />
+                <span>Clientes Cadastrados com o Link da Loja ({(currentStore.referrals || []).length})</span>
+              </h3>
+              <span className="text-xs text-emerald-400 font-bold">
+                Total Acumulado: R$ {(((currentStore.referrals || []).length) * 5).toFixed(2).replace('.', ',')}
+              </span>
+            </div>
+
+            {(currentStore.referrals || []).length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-xs">
+                Nenhum cliente cadastrado via link da loja ainda. Divulgue no balcão e WhatsApp para começar a faturar bônus!
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {(currentStore.referrals || []).map((ref) => (
+                  <div 
+                    key={ref.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-[#101017] border border-white/5 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                        ✓
+                      </div>
+                      <div>
+                        <div className="font-bold text-white">{ref.name}</div>
+                        <div className="text-[10px] text-gray-400">{ref.date} • Cadastro Concluído via Link da Loja</div>
+                      </div>
+                    </div>
+
+                    <span className="font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                      +R$ {ref.bonus.toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>
