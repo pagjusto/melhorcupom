@@ -554,77 +554,95 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       </div>
 
       {/* Navegação de Abas do Lojista */}
-      <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6 overflow-x-auto">
+      <div className="w-full flex items-center justify-between gap-1 sm:gap-1.5 lg:gap-2 border-b border-white/10 pb-3 mb-6 overflow-x-auto lg:overflow-x-visible scrollbar-none">
         <button
           onClick={() => setActiveTab('coupons')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+          title={`Meus Cupons Cadastrados (${storeCoupons.length})`}
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
             activeTab === 'coupons'
-              ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/30'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
               : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
           }`}
         >
-          <Tag size={16} />
-          <span>Meus Cupons Cadastrados ({storeCoupons.length})</span>
+          <Tag size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            <span className="hidden xl:inline">Meus </span>Cupons <span className="hidden 2xl:inline">Cadastrados </span>({storeCoupons.length})
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('validator')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+          title="Validador de Balcão (Caixa / PDV)"
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
             activeTab === 'validator'
-              ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/30'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
               : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
           }`}
         >
-          <QrCode size={16} />
-          <span>Validador de Balcão (Caixa / PDV)</span>
+          <QrCode size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            Validador <span className="hidden 2xl:inline">de Balcão </span>(PDV)
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('new-coupon')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+          title="Criar Nova Oferta VIP"
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
             activeTab === 'new-coupon'
-              ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/30'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
               : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
           }`}
         >
-          <PlusCircle size={16} />
-          <span>Criar Nova Oferta VIP</span>
+          <PlusCircle size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            <span className="hidden xl:inline">Criar </span>Nova Oferta VIP
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('settings')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+          title="Configurações da Loja"
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
             activeTab === 'settings'
-              ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/30'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
               : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
           }`}
         >
-          <Settings size={16} />
-          <span>Configurações da Loja</span>
+          <Settings size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            Configurações<span className="hidden xl:inline"> da Loja</span>
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('plans')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+          title={`Planos & Destaque (${currentPlan.name.replace('Plano ', '')})`}
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
             activeTab === 'plans'
-              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-lg shadow-amber-600/30'
+              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-md shadow-amber-600/30'
               : 'bg-[#181824] text-amber-400 hover:text-amber-300 border border-amber-500/20'
           }`}
         >
-          <Crown size={16} fill={activeTab === 'plans' ? 'currentColor' : 'none'} />
-          <span>Planos & Destaque ({currentPlan.name.replace('Plano ', '')})</span>
+          <Crown size={14} fill={activeTab === 'plans' ? 'currentColor' : 'none'} className="flex-shrink-0" />
+          <span className="truncate">
+            Planos<span className="hidden xl:inline"> & Destaque</span> ({currentPlan.name.replace('Plano ', '')})
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('referrals')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+          title={`Divulgue & Ganhe (Caixa: R$ ${(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')})`}
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
             activeTab === 'referrals'
-              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-lg shadow-orange-600/30'
+              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-md shadow-orange-600/30'
               : 'bg-[#181824] text-amber-300 hover:text-amber-200 border border-amber-500/30'
           }`}
         >
-          <Gift size={16} />
-          <span>Divulgue & Ganhe (Caixa: R$ {(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')})</span>
+          <Gift size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            Divulgue & Ganhe <span className="hidden 2xl:inline">(Caixa: R$ {(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')})</span><span className="hidden lg:inline 2xl:hidden">(R$ {(currentStore.referralBalance || 0).toFixed(0)})</span>
+          </span>
         </button>
       </div>
 
