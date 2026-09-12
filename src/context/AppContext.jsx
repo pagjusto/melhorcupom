@@ -5,6 +5,9 @@ import confetti from 'canvas-confetti';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  // Aba Ativa Global da Aplicação ('explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons' | 'user-profile')
+  const [activeTab, setActiveTab] = useState('explore');
+
   // Estado de Perfil Atual (Role)
   // 'visitor' | 'vip' | 'merchant_burger' | 'merchant_barber' | 'admin'
   const [currentRole, setCurrentRole] = useState(() => {
@@ -570,8 +573,12 @@ export const AppProvider = ({ children }) => {
       email: email || prev.email,
       phone: phone || prev.phone,
       referralCode: generatedReferralCode,
-      isRegistered: true
+      isRegistered: true,
+      isLoggedIn: true
     }));
+
+    setCurrentRole('visitor');
+    setActiveTab('user-profile');
 
     confetti({
       particleCount: 110,
@@ -624,6 +631,7 @@ export const AppProvider = ({ children }) => {
 
     setStores(prev => [newStore, ...prev]);
     setCurrentRole(merchantId);
+    setActiveTab('merchant-dashboard');
 
     confetti({
       particleCount: 150,
@@ -636,14 +644,97 @@ export const AppProvider = ({ children }) => {
     return { success: true, store: newStore };
   };
 
-  // Login de Usuário ou Lojista
-  const loginAccount = (type = 'user') => {
-    if (type === 'merchant') {
-      setCurrentRole('merchant_burger');
+  // Login Unificado (identifica automaticamente se é Lojista ou Usuário e redireciona à devida página)
+  const loginAccount = (identifier = '', password = '') => {
+    const raw = (identifier || '').trim();
+    const clean = raw.toLowerCase();
+    const digits = raw.replace(/\D/g, '');
+
+    // 1. Verificar se é lojista:
+    // - Bate com CNPJ de 14 dígitos
+    // - Bate com email ou CNPJ ou ID de alguma loja em stores
+    // - Contém caracteres de CNPJ (ex: '/')
+    // - Contém palavras-chave indicando lojista
+    const matchedStore = stores.find(s => 
+      (s.cnpj && digits.length >= 14 && s.cnpj.replace(/\D/g, '') === digits) ||
+      (s.email && s.email.toLowerCase() === clean) ||
+      (s.name && s.name.toLowerCase() === clean) ||
+      (s.merchantId === raw)
+    );
+
+    const isMerchant = Boolean(
+      matchedStore ||
+      digits.length === 14 ||
+      raw.includes('/') ||
+      clean.includes('loja') ||
+      clean.includes('lojista') ||
+      clean.includes('comercial') ||
+      clean.includes('burger') ||
+      clean.includes('barber') ||
+      clean.includes('barbearia')
+    );
+
+    if (isMerchant) {
+      const targetStore = matchedStore || stores[0];
+      const targetMerchantId = targetStore.merchantId || 'merchant_burger';
+      
+      setCurrentRole(targetMerchantId);
+      setActiveTab('merchant-dashboard');
+      setIsAuthModalOpen(false);
+
+      confetti({
+        particleCount: 120,
+        spread: 75,
+        origin: { y: 0.6 },
+        colors: ['#FF5F00', '#F59E0B', '#10B981']
+      });
+
+      return {
+        success: true,
+        type: 'merchant',
+        role: targetMerchantId,
+        store: targetStore,
+        redirectTab: 'merchant-dashboard'
+      };
     } else {
-      setCurrentRole('visitor');
+      // 2. Usuário / Consumidor
+      const matchedUser = (userProfile.email?.toLowerCase() === clean || (userProfile.cpf && userProfile.cpf.replace(/\D/g, '') === digits));
+
+      setUserProfile(prev => ({
+        ...prev,
+        isLoggedIn: true
+      }));
+
+      const targetRole = userProfile.isVip ? 'vip' : 'visitor';
+      setCurrentRole(targetRole);
+      setActiveTab('user-profile');
+      setIsAuthModalOpen(false);
+
+      confetti({
+        particleCount: 120,
+        spread: 75,
+        origin: { y: 0.6 },
+        colors: ['#FF5F00', '#3B82F6', '#10B981']
+      });
+
+      return {
+        success: true,
+        type: 'user',
+        role: targetRole,
+        user: userProfile,
+        redirectTab: 'user-profile'
+      };
     }
-    setIsAuthModalOpen(false);
+  };
+
+  // Logout / Sair da Conta
+  const logoutAccount = () => {
+    setCurrentRole('visitor');
+    setUserProfile(prev => ({
+      ...prev,
+      isLoggedIn: false
+    }));
+    setActiveTab('explore');
   };
 
   // Resetar dados para o padrão de fábrica
@@ -702,7 +793,11 @@ export const AppProvider = ({ children }) => {
       closeAuthModal,
       registerUser,
       registerMerchant,
-      loginAccount
+      loginAccount,
+      logoutAccount,
+      // Navegação Global
+      activeTab,
+      setActiveTab
     }}>
       {children}
     </AppContext.Provider>

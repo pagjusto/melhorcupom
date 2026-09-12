@@ -24,10 +24,11 @@ const MainLayout = () => {
     currentRole, 
     isVipUser, 
     switchRole,
-    setIsSubscriptionModalOpen 
+    setIsSubscriptionModalOpen,
+    activeTab,
+    setActiveTab
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons'
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [highDiscountOnly, setHighDiscountOnly] = useState(false);

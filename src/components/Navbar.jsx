@@ -30,11 +30,13 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
     setIsSubscriptionModalOpen,
     setIsReferralModalOpen,
     openAuthModal,
-    switchRole 
+    switchRole,
+    logoutAccount
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMerchantRole = currentRole.startsWith('merchant_');
+  const isUserLoggedIn = isVipUser || userProfile?.isLoggedIn;
   const merchantId = isMerchantRole ? currentRole : 'merchant_burger';
   const currentStore = stores.find(s => s.merchantId === merchantId) || stores[0];
   const activeReferralBalance = isMerchantRole
@@ -146,29 +148,55 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               </div>
             </button>
 
-            {isVipUser ? (
-              <div className="flex items-center gap-3">
-                {/* Economia Acumulada */}
-                <div className="bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                    <PiggyBank size={18} />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Economia este mês</div>
-                    <div className="text-sm font-extrabold text-emerald-400">
-                      R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
+            {isMerchantRole ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('merchant-dashboard')}
+                  className="bg-[#FF5F00] hover:bg-[#E04F00] text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-orange-600/30 transition-all"
+                >
+                  <QrCode size={15} />
+                  <span>Painel do Lojista</span>
+                </button>
+                <button
+                  onClick={logoutAccount}
+                  className="text-gray-400 hover:text-red-400 px-2.5 py-2 rounded-xl hover:bg-white/5 transition-colors text-xs font-bold"
+                  title="Sair da conta"
+                >
+                  Sair
+                </button>
+              </div>
+            ) : isUserLoggedIn ? (
+              <div className="flex items-center gap-2.5">
+                {isVipUser ? (
+                  <>
+                    {/* Economia Acumulada */}
+                    <div className="hidden lg:flex bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <PiggyBank size={15} />
+                      </div>
+                      <div>
+                        <div className="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">Economia</div>
+                        <div className="text-xs font-extrabold text-emerald-400">
+                          R$ {userProfile.monthlySavings.toFixed(2).replace('.', ',')}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Badge VIP */}
-                <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-3.5 py-2 rounded-xl">
-                  <span className="text-amber-400 animate-pulse">👑</span>
-                  <div>
-                    <div className="text-xs font-bold text-amber-400 leading-tight">Membro VIP</div>
-                    <div className="text-[10px] text-gray-400">Acesso ilimitado</div>
-                  </div>
-                </div>
+                    {/* Badge VIP */}
+                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl">
+                      <span className="text-amber-400 text-sm">👑</span>
+                      <div className="text-xs font-bold text-amber-400 leading-tight">VIP</div>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setIsSubscriptionModalOpen(true)}
+                    className="relative group bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold shadow-md shadow-orange-500/20 transition-all flex items-center gap-1"
+                  >
+                    <Sparkles size={13} className="text-amber-200" />
+                    <span>Assinar VIP</span>
+                  </button>
+                )}
 
                 {/* Botão Meus Cupons */}
                 <button
@@ -179,7 +207,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                       : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
                   }`}
                 >
-                  <Tag size={14} />
+                  <Tag size={13} />
                   <span>Meus Cupons</span>
                 </button>
 
@@ -191,7 +219,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                       ? 'bg-[#FF5F00] text-white border-[#FF5F00] shadow-md shadow-orange-600/30'
                       : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
                   }`}
-                  title="Configurar Perfil do Assinante"
+                  title="Configurar Perfil do Usuário"
                 >
                   <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
                     <img 
@@ -202,15 +230,14 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                   </div>
                   <span>Perfil</span>
                 </button>
-              </div>
-            ) : isMerchantRole ? (
-              <div className="flex items-center gap-2">
+
+                {/* Sair */}
                 <button
-                  onClick={() => setActiveTab('merchant-dashboard')}
-                  className="bg-[#FF5F00] hover:bg-[#E04F00] text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-orange-600/30 transition-all"
+                  onClick={logoutAccount}
+                  className="text-gray-400 hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors text-xs font-bold"
+                  title="Sair da conta"
                 >
-                  <QrCode size={16} />
-                  <span>Validar Cupom</span>
+                  Sair
                 </button>
               </div>
             ) : (
@@ -298,30 +325,57 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             </span>
           </button>
 
-          {/* Atalhos Rápidos de Login e Cadastro no Mobile Drawer */}
-          <div className="grid grid-cols-2 gap-2 pb-1">
-            <button
-              onClick={() => { 
-                openAuthModal('login'); 
-                setMobileMenuOpen(false); 
-              }}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10"
-            >
-              <LogIn size={14} className="text-gray-300" />
-              <span>Login</span>
-            </button>
+          {/* Atalhos de Conta no Mobile Drawer */}
+          {!isUserLoggedIn && !isMerchantRole ? (
+            <div className="grid grid-cols-2 gap-2 pb-1">
+              <button
+                onClick={() => { 
+                  openAuthModal('login'); 
+                  setMobileMenuOpen(false); 
+                }}
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10"
+              >
+                <LogIn size={14} className="text-gray-300" />
+                <span>Login</span>
+              </button>
 
-            <button
-              onClick={() => { 
-                openAuthModal('user_register'); 
-                setMobileMenuOpen(false); 
-              }}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-[#FF5F00] to-orange-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md"
-            >
-              <UserPlus size={14} />
-              <span>Cadastro</span>
-            </button>
-          </div>
+              <button
+                onClick={() => { 
+                  openAuthModal('user_register'); 
+                  setMobileMenuOpen(false); 
+                }}
+                className="p-2.5 rounded-xl bg-gradient-to-r from-[#FF5F00] to-orange-600 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md"
+              >
+                <UserPlus size={14} />
+                <span>Cadastro</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10 mb-1">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs">
+                  {isMerchantRole ? '🏪' : '👤'}
+                </div>
+                <div className="text-xs">
+                  <div className="font-bold text-white truncate max-w-[150px]">
+                    {isMerchantRole ? currentStore?.name : userProfile.name}
+                  </div>
+                  <div className="text-[10px] text-gray-400">
+                    {isMerchantRole ? 'Painel do Lojista' : isVipUser ? 'Membro VIP' : 'Conta de Usuário'}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  logoutAccount();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-xs text-red-400 hover:text-red-300 font-bold px-2 py-1 rounded-lg bg-red-500/10"
+              >
+                Sair
+              </button>
+            </div>
+          )}
 
           <button
             onClick={() => { setActiveTab('explore'); setMobileMenuOpen(false); }}

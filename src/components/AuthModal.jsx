@@ -56,6 +56,12 @@ export const AuthModal = () => {
     password: ''
   });
 
+  // Formulário Login Único (sem seletor de usuário ou lojista)
+  const [loginForm, setLoginForm] = useState({
+    identifier: '',
+    password: ''
+  });
+
   const [customCityInput, setCustomCityInput] = useState('');
   const [isSearchingCep, setIsSearchingCep] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -189,6 +195,26 @@ export const AuthModal = () => {
     }
   };
 
+  // Submissão do Login Unificado (sem seletor de usuário ou lojista)
+  const handleSubmitLogin = (e) => {
+    e.preventDefault();
+    if (!loginForm.identifier.trim()) {
+      setErrorMsg('Por favor, informe seu e-mail, CPF ou CNPJ.');
+      return;
+    }
+
+    const result = loginAccount(loginForm.identifier, loginForm.password);
+    if (result && result.success) {
+      setErrorMsg('');
+    }
+  };
+
+  // Atalho de login rápido para testes
+  const handleQuickLogin = (identifier, password) => {
+    setLoginForm({ identifier, password });
+    loginAccount(identifier, password);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
       <div 
@@ -214,55 +240,65 @@ export const AuthModal = () => {
             />
             <div>
               <span className="text-xs font-black text-amber-400 uppercase tracking-wider block">
-                Portal de Acesso
+                {authModalMode === 'login' ? 'Acesso ao Sistema' : 'Portal de Acesso'}
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
-                {authModalMode === 'user_register' ? 'Criar Conta de Usuário' : authModalMode === 'merchant_register' ? 'Cadastrar Loja ou Franquia' : 'Entrar na sua Conta'}
+                {authModalMode === 'login' ? 'Entrar na sua Conta' : authModalMode === 'user_register' ? 'Criar Conta de Usuário' : 'Cadastrar Loja ou Franquia'}
               </h2>
             </div>
           </div>
 
-          {/* Seletor de Abas */}
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => { setAuthModalMode('user_register'); setErrorMsg(''); }}
-              className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                authModalMode === 'user_register'
-                  ? 'bg-[#FF5F00] text-white shadow-md'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <User size={14} />
-              <span>Sou Usuário</span>
-            </button>
+          {/* Seletor de Abas apenas para Cadastro; no Login não há seletor de usuário ou lojista */}
+          {authModalMode !== 'login' ? (
+            <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => { setAuthModalMode('user_register'); setErrorMsg(''); }}
+                className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                  authModalMode === 'user_register'
+                    ? 'bg-[#FF5F00] text-white shadow-md'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <User size={14} />
+                <span>Sou Usuário</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => { setAuthModalMode('merchant_register'); setErrorMsg(''); }}
-              className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                authModalMode === 'merchant_register'
-                  ? 'bg-amber-500 text-black shadow-md font-black'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <Store size={14} />
-              <span>Sou Lojista / Franquia</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => { setAuthModalMode('merchant_register'); setErrorMsg(''); }}
+                className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                  authModalMode === 'merchant_register'
+                    ? 'bg-amber-500 text-black shadow-md font-black'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Store size={14} />
+                <span>Sou Lojista / Franquia</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => { setAuthModalMode('login'); setErrorMsg(''); }}
-              className={`px-4 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                authModalMode === 'login'
-                  ? 'bg-white text-black shadow-md font-black'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <LogIn size={14} />
-              <span>Entrar</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => { setAuthModalMode('login'); setErrorMsg(''); }}
+                className="px-4 py-2 rounded-lg flex items-center justify-center gap-1.5 text-gray-400 hover:text-white transition-all"
+              >
+                <LogIn size={14} />
+                <span>Já tenho conta</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between bg-black/30 px-3.5 py-2.5 rounded-xl border border-white/10 text-xs text-gray-300">
+              <span>Informe seu e-mail, CPF ou CNPJ para acessar seu painel</span>
+              <button
+                type="button"
+                onClick={() => { setAuthModalMode('user_register'); setErrorMsg(''); }}
+                className="text-amber-400 font-bold hover:underline flex items-center gap-1 text-[11px]"
+              >
+                <span>Criar nova conta</span>
+                <ArrowRight size={12} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Notificação de Erro */}
@@ -715,58 +751,104 @@ export const AuthModal = () => {
             </form>
           )}
 
-          {/* ================= ABA 3: ENTRAR (LOGIN) ================= */}
+          {/* ================= ABA 3: ENTRAR (LOGIN UNIFICADO) ================= */}
           {authModalMode === 'login' && (
-            <div className="space-y-4">
-              <div className="space-y-3">
+            <form onSubmit={handleSubmitLogin} className="space-y-4">
+              <div className="space-y-3.5">
                 <div>
                   <label className="text-xs font-bold text-gray-300 block mb-1.5">
-                    E-mail, CPF ou CNPJ
+                    E-mail, CPF ou CNPJ *
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Digite seu e-mail, CPF ou CNPJ"
-                    defaultValue="lucas.vip@email.com"
-                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none"
-                  />
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="Digite seu e-mail, CPF ou CNPJ"
+                      value={loginForm.identifier}
+                      onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })}
+                      className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white focus:outline-none"
+                    />
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    O sistema identifica automaticamente se a conta pertence a um Usuário ou Estabelecimento Parceiro.
+                  </p>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-gray-300 block mb-1.5">
-                    Senha de Acesso
-                  </label>
-                  <input
-                    type="password"
-                    defaultValue="••••••••"
-                    placeholder="Sua senha"
-                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none"
-                  />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-gray-300 block">
+                      Senha de Acesso *
+                    </label>
+                    <button 
+                      type="button"
+                      onClick={() => alert('Para redefinir sua senha, entre em contato com nosso suporte.')}
+                      className="text-[11px] text-orange-400 hover:underline"
+                    >
+                      Esqueceu a senha?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input
+                      type="password"
+                      required
+                      placeholder="Sua senha ou PIN"
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                      className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => loginAccount('user')}
-                  className="bg-gradient-to-r from-[#FF5F00] to-[#FF8400] text-white font-extrabold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.01]"
-                >
-                  <User size={15} />
-                  <span>Entrar como Consumidor</span>
-                </button>
+              {/* Botão Único de Login (Sem Seletor) */}
+              <button
+                type="submit"
+                className="w-full mt-2 bg-gradient-to-r from-[#FF5F00] via-[#FF7518] to-[#FF8F00] hover:from-[#E04F00] hover:to-[#E57A00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
+              >
+                <LogIn size={18} />
+                <span>Entrar na Conta</span>
+                <ArrowRight size={16} />
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => loginAccount('merchant')}
-                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.01]"
-                >
-                  <Store size={15} />
-                  <span>Entrar como Lojista</span>
-                </button>
+              {/* Atalhos Rápidos para Demonstração */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-3 text-xs text-gray-400">
+                <div className="text-[11px] font-bold text-gray-400 mb-2 flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-amber-400" />
+                  <span>Acesso rápido para demonstração:</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('lucas.vip@email.com', '123456')}
+                    className="p-2.5 bg-black/40 hover:bg-black/60 rounded-xl text-left border border-white/5 hover:border-orange-500/40 transition-all group"
+                  >
+                    <div className="font-bold text-white text-xs flex items-center gap-1 group-hover:text-orange-400">
+                      <User size={13} className="text-orange-400" />
+                      <span>Conta Usuário</span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 truncate mt-0.5">lucas.vip@email.com</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('comercial@smashburger.com.br', '123456')}
+                    className="p-2.5 bg-black/40 hover:bg-black/60 rounded-xl text-left border border-white/5 hover:border-amber-500/40 transition-all group"
+                  >
+                    <div className="font-bold text-white text-xs flex items-center gap-1 group-hover:text-amber-400">
+                      <Store size={13} className="text-amber-400" />
+                      <span>Conta Lojista</span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 truncate mt-0.5">Smash Burger (CNPJ)</div>
+                  </button>
+                </div>
               </div>
 
-              <div className="border-t border-white/10 pt-4 text-center text-xs text-gray-400 space-y-2">
-                <div>Ainda não tem conta?</div>
-                <div className="flex justify-center gap-3">
+              {/* Link para cadastro */}
+              <div className="border-t border-white/10 pt-4 text-center text-xs text-gray-400 space-y-1">
+                <div>Ainda não possui uma conta?</div>
+                <div className="flex justify-center items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setAuthModalMode('user_register')}
@@ -774,17 +856,17 @@ export const AuthModal = () => {
                   >
                     Cadastrar Usuário
                   </button>
-                  <span>•</span>
+                  <span className="text-gray-600">•</span>
                   <button
                     type="button"
                     onClick={() => setAuthModalMode('merchant_register')}
                     className="text-amber-400 font-bold hover:underline"
                   >
-                    Cadastrar Loja
+                    Cadastrar Loja Parceira
                   </button>
                 </div>
               </div>
-            </div>
+            </form>
           )}
 
         </div>
