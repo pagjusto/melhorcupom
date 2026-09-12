@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .font-display {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+/* Efeito de recorte de ticket/cupom físico */
+.ticket-card {
+  position: relative;
+  background: #17171E;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ticket-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 95, 0, 0.4);
+  box-shadow: 0 16px 30px -10px rgba(255, 95, 0, 0.2);
+}
+
+.ticket-perforation {
+  position: relative;
+  border-top: 2px dashed rgba(255, 255, 255, 0.15);
+}
+
+.ticket-notch-left {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 24px;
+  height: 24px;
+  background: #0D0D11;
+  border-radius: 50%;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 10;
+}
+
+.ticket-notch-right {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #0D0D11;
+  border-radius: 50%;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 10;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0D0D11;
+}
+::-webkit-scrollbar-thumb {
+  background: #272732;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5F00;
+}
