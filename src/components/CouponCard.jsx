@@ -8,13 +8,16 @@ import {
   Clock, 
   Heart, 
   ArrowUpRight, 
-  Tag
+  Tag,
+  Crown,
+  Award
 } from 'lucide-react';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const { isVipUser, userProfile, toggleFavorite, setIsSubscriptionModalOpen } = useApp();
 
   const isFavorite = userProfile.savedCouponIds.includes(coupon.id);
+  const storeTier = store?.tier || 'free';
 
   const handleAction = () => {
     if (!isVipUser) {
@@ -28,7 +31,13 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const storeLogo = store?.logoImage;
 
   return (
-    <div className="ticket-card flex flex-col justify-between group overflow-hidden">
+    <div className={`ticket-card flex flex-col justify-between group overflow-hidden transition-all duration-300 relative ${
+      storeTier === 'gold' 
+        ? 'ring-2 ring-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_36px_rgba(245,158,11,0.4)]'
+        : storeTier === 'silver'
+        ? 'ring-1 ring-slate-300/50 shadow-lg hover:ring-slate-300/80'
+        : ''
+    }`}>
       
       {/* 1. BANNER DA OFERTA (definido no card / upload do lojista) */}
       <div className="relative h-44 w-full overflow-hidden bg-black/60">
@@ -48,6 +57,21 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </div>
         </div>
 
+        {/* Badge do Plano de Destaque do Lojista */}
+        {storeTier === 'gold' && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-black text-[10px] sm:text-[11px] px-3 py-0.5 rounded-full shadow-lg shadow-amber-950/60 flex items-center gap-1 uppercase tracking-wider">
+            <Crown size={12} fill="currentColor" />
+            <span>Top Destaque Ouro</span>
+          </div>
+        )}
+
+        {storeTier === 'silver' && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider">
+            <Award size={12} />
+            <span>Destaque Prata</span>
+          </div>
+        )}
+
         {/* Botão de Favoritar */}
         <button
           onClick={(e) => {
@@ -64,8 +88,14 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
 
-        {/* 2. LOGO DA EMPRESA (definida no perfil do lojista) */}
-        <div className="absolute -bottom-3 left-4 w-12 h-12 rounded-xl bg-[#181822] border-2 border-[#FF5F00] shadow-xl flex items-center justify-center overflow-hidden z-20">
+        {/* 2. LOGO DA EMPRESA (com borda diferenciada por plano) */}
+        <div className={`absolute -bottom-3 left-4 w-12 h-12 rounded-xl bg-[#181822] shadow-xl flex items-center justify-center overflow-hidden z-20 ${
+          storeTier === 'gold'
+            ? 'border-2 border-amber-400 ring-2 ring-amber-400/40'
+            : storeTier === 'silver'
+            ? 'border-2 border-slate-300'
+            : 'border-2 border-[#FF5F00]'
+        }`}>
           {storeLogo ? (
             <img 
               src={storeLogo} 
@@ -98,11 +128,33 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       {/* Conteúdo Informativo */}
       <div className="p-5 pt-5 pb-4">
         
-        {/* Identificação da Loja */}
+        {/* Identificação da Loja com Badge do Plano */}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-orange-400 uppercase tracking-wider line-clamp-1">
-            {store?.name || 'Loja Parceira'}
-          </span>
+          {storeTier === 'gold' ? (
+            <div className="flex items-center gap-1.5 line-clamp-1">
+              <span className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                <Crown size={12} fill="currentColor" className="text-amber-400 flex-shrink-0" />
+                <span>{store?.name || 'Loja Parceira'}</span>
+              </span>
+              <span className="text-[9px] bg-amber-400/20 text-amber-300 font-extrabold px-1.5 py-0.5 rounded border border-amber-400/40">
+                OURO
+              </span>
+            </div>
+          ) : storeTier === 'silver' ? (
+            <div className="flex items-center gap-1.5 line-clamp-1">
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                <Award size={12} className="text-slate-300 flex-shrink-0" />
+                <span>{store?.name || 'Loja Parceira'}</span>
+              </span>
+              <span className="text-[9px] bg-slate-400/20 text-slate-200 font-extrabold px-1.5 py-0.5 rounded border border-slate-400/40">
+                PRATA
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs font-bold text-orange-400 uppercase tracking-wider line-clamp-1">
+              {store?.name || 'Loja Parceira'}
+            </span>
+          )}
           {store?.rating && (
             <span className="text-[11px] text-amber-400 font-bold flex items-center gap-0.5">
               ★ {store.rating}

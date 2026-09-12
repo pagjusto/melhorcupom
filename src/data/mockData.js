@@ -14,7 +14,92 @@ export const CATEGORIES = [
   { id: 'beleza', name: 'Beleza & Barbearia', icon: 'Scissors', color: 'from-pink-500 to-rose-500' },
   { id: 'fitness', name: 'Saúde & Fitness', icon: 'Dumbbell', color: 'from-emerald-500 to-teal-500' },
   { id: 'servicos', name: 'Serviços & Tech', icon: 'Wrench', color: 'from-blue-500 to-indigo-500' },
-  { id: 'lazer', name: 'Lazer & Experiências', icon: 'Ticket', color: 'from-amber-500 to-yellow-500' },
+  { id: 'lazer', name: 'Lazer & Experiências', icon: 'Ticket', color: 'from-amber-500 to-yellow-500' }
+];
+
+export const MERCHANT_PLANS = [
+  {
+    id: 'free',
+    name: 'Plano Grátis',
+    shortName: 'Grátis',
+    badge: null,
+    price: 0,
+    priceLabel: 'R$ 0',
+    period: '/mês',
+    tagline: 'Ideal para experimentar a plataforma',
+    maxCoupons: 1,
+    weight: 1,
+    color: 'from-gray-600 to-gray-700',
+    borderColor: 'border-white/10',
+    popular: false,
+    perks: [
+      '1 oferta VIP ativa',
+      'Listagem padrão no catálogo',
+      'Validador de balcão (PDV)',
+      'Suporte via e-mail'
+    ],
+    missingPerks: [
+      'Prioridade no topo das buscas',
+      'Badge visual de destaque',
+      'Borda iluminada nos cupons',
+      'Vitrine de Super Destaques da Home',
+      'Múltiplas ofertas simultâneas'
+    ]
+  },
+  {
+    id: 'silver',
+    name: 'Plano Prata Pro',
+    shortName: 'Prata',
+    badge: '🥈 Destaque Prata',
+    price: 79.90,
+    priceLabel: 'R$ 79,90',
+    period: '/mês',
+    tagline: 'Mais visibilidade e múltiplos cupons',
+    maxCoupons: 5,
+    weight: 2,
+    color: 'from-slate-400 to-slate-600',
+    borderColor: 'border-slate-300/40',
+    popular: false,
+    perks: [
+      'Até 5 ofertas VIP ativas simultaneamente',
+      'Prioridade Alta (acima dos gratuitos)',
+      'Badge de destaque "🥈 Destaque Prata"',
+      'Borda prateada no card da oferta',
+      'Validador de balcão com múltiplos caixas',
+      'Estatísticas de visualizações e resgates',
+      'Suporte prioritário via WhatsApp'
+    ],
+    missingPerks: [
+      'Prioridade máxima absoluta (topo da Home)',
+      'Borda dourada com efeito Glow',
+      'Ofertas ilimitadas'
+    ]
+  },
+  {
+    id: 'gold',
+    name: 'Plano Ouro VIP Top',
+    shortName: 'Ouro',
+    badge: '👑 Top Destaque Ouro',
+    price: 199.90,
+    priceLabel: 'R$ 199,90',
+    period: '/mês',
+    tagline: 'Máxima conversão e topo absoluto do app',
+    maxCoupons: 9999,
+    weight: 3,
+    color: 'from-amber-400 via-orange-500 to-amber-600',
+    borderColor: 'border-amber-400/80',
+    popular: true,
+    perks: [
+      'Ofertas VIP ILIMITADAS ativas',
+      'PRIORIDADE MÁXIMA (Topo absoluto de todas as buscas)',
+      'Badge dourada vibrante "👑 Top Destaque Ouro"',
+      'Card com borda dourada e efeito Glow brilhante',
+      'Destaque no Carrossel VIP da Página Inicial',
+      'Notificação push/alerta para assinantes da cidade',
+      'Gerente de contas dedicado 24/7'
+    ],
+    missingPerks: []
+  }
 ];
 
 export const INITIAL_STORES = [
@@ -22,6 +107,7 @@ export const INITIAL_STORES = [
     id: 'store_1',
     name: 'Smash Burger Club',
     merchantId: 'merchant_burger',
+    tier: 'gold', // Plano Ouro VIP (Topo Absoluto)
     category: 'gastronomia',
     city: 'São Paulo - SP',
     logo: '🍔',
@@ -37,6 +123,7 @@ export const INITIAL_STORES = [
     id: 'store_2',
     name: 'Barbearia Don Corleone',
     merchantId: 'merchant_barber',
+    tier: 'silver', // Plano Prata (Destaque Pro)
     category: 'beleza',
     city: 'São Paulo - SP',
     logo: '💈',
@@ -52,6 +139,7 @@ export const INITIAL_STORES = [
     id: 'store_3',
     name: 'Bella Napoli Trattoria',
     merchantId: 'merchant_pasta',
+    tier: 'free', // Plano Grátis (Básico)
     category: 'gastronomia',
     city: 'São Paulo - SP',
     logo: '🍝',
@@ -67,6 +155,7 @@ export const INITIAL_STORES = [
     id: 'store_4',
     name: 'Iron Peak Crossfit & Academia',
     merchantId: 'merchant_fit',
+    tier: 'free',
     category: 'fitness',
     city: 'São Paulo - SP',
     logo: '⚡',
@@ -82,6 +171,7 @@ export const INITIAL_STORES = [
     id: 'store_rio_1',
     name: 'Boteco Ipanema Carioca',
     merchantId: 'merchant_rio_boteco',
+    tier: 'gold',
     category: 'gastronomia',
     city: 'Rio de Janeiro - RJ',
     logo: '🍤',
@@ -97,6 +187,7 @@ export const INITIAL_STORES = [
     id: 'store_rio_2',
     name: 'Copacabana Surf & Beach Club',
     merchantId: 'merchant_rio_surf',
+    tier: 'silver',
     category: 'moda',
     city: 'Rio de Janeiro - RJ',
     logo: '🏄‍♂️',
@@ -112,6 +203,7 @@ export const INITIAL_STORES = [
     id: 'store_bh_1',
     name: 'Gastrobar Savassi Mineiro',
     merchantId: 'merchant_bh_savassi',
+    tier: 'silver',
     category: 'gastronomia',
     city: 'Belo Horizonte - MG',
     logo: '🧀',
@@ -127,6 +219,7 @@ export const INITIAL_STORES = [
     id: 'store_curitiba_1',
     name: 'Batel Steakhouse & Wine',
     merchantId: 'merchant_cwb_batel',
+    tier: 'gold',
     category: 'gastronomia',
     city: 'Curitiba - PR',
     logo: '🥩',
@@ -142,6 +235,7 @@ export const INITIAL_STORES = [
     id: 'store_5',
     name: 'Sneaker Lab Brasil',
     merchantId: 'merchant_sneaker',
+    tier: 'gold',
     category: 'moda',
     city: 'Todo o Brasil (Online)',
     logo: '👟',
@@ -157,6 +251,7 @@ export const INITIAL_STORES = [
     id: 'store_6',
     name: 'Glow Spa & Estética Avançada',
     merchantId: 'merchant_glow',
+    tier: 'free',
     category: 'beleza',
     city: 'São Paulo - SP',
     logo: '✨',
@@ -172,6 +267,7 @@ export const INITIAL_STORES = [
     id: 'store_7',
     name: 'TechFix Centro Especializado Apple & Android',
     merchantId: 'merchant_tech',
+    tier: 'free',
     category: 'servicos',
     city: 'São Paulo - SP',
     logo: '📱',

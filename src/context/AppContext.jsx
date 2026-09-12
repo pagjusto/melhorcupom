@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS } from '../data/mockData';
+import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS, MERCHANT_PLANS } from '../data/mockData';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -39,7 +39,8 @@ export const AppProvider = ({ children }) => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         return {
           ...s,
-          logoImage: s.logoImage || init?.logoImage || ''
+          logoImage: s.logoImage || init?.logoImage || '',
+          tier: s.tier || init?.tier || 'free'
         };
       });
     } catch {
@@ -329,6 +330,32 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  // Alterar / Fazer Upgrade de Plano de Lojista (Free, Prata, Ouro)
+  const upgradeStoreTier = (storeId, newTier) => {
+    setStores(prev => prev.map(s => {
+      if (s.id === storeId || s.merchantId === storeId) {
+        return { ...s, tier: newTier };
+      }
+      return s;
+    }));
+
+    if (newTier === 'gold') {
+      confetti({
+        particleCount: 160,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#F59E0B', '#FBBF24', '#FF5F00', '#FFFFFF']
+      });
+    } else if (newTier === 'silver') {
+      confetti({
+        particleCount: 90,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#94A3B8', '#E2E8F0', '#FFFFFF']
+      });
+    }
+  };
+
   // Atualizar Perfil do Assinante
   const updateUserProfile = (changes) => {
     setUserProfile(prev => ({
@@ -359,6 +386,8 @@ export const AppProvider = ({ children }) => {
       coupons,
       stores,
       updateStore,
+      upgradeStoreTier,
+      merchantPlans: MERCHANT_PLANS,
       redemptions,
       userProfile,
       updateUserProfile,

@@ -29,7 +29,11 @@ import {
   Phone,
   Globe,
   Building2,
-  Lock
+  Lock,
+  Crown,
+  Award,
+  Zap,
+  Shield
 } from 'lucide-react';
 
 const BANNER_PRESETS = [
@@ -51,6 +55,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     validateRedemption, 
     addCoupon,
     updateStore,
+    upgradeStoreTier,
+    merchantPlans,
     switchRole 
   } = useApp();
 
@@ -63,8 +69,19 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const storeRedemptions = redemptions.filter(r => r.merchantId === currentStore.merchantId);
 
   // Tabs internas do Painel
-  const [activeTab, setActiveTab] = useState(prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings'
+  const [activeTab, setActiveTab] = useState(prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans'
   
+  // Plano de assinatura atual do lojista
+  const currentPlan = merchantPlans?.find(p => p.id === (currentStore.tier || 'free')) || {
+    id: 'free',
+    name: 'Plano Grátis',
+    priceLabel: 'R$ 0',
+    period: '/mês',
+    maxCoupons: 1
+  };
+  const isLimitReached = storeCoupons.length >= currentPlan.maxCoupons;
+  const [planUpgradeSuccess, setPlanUpgradeSuccess] = useState('');
+
   // Estado do Validador de Balcão
   const [validationInput, setValidationInput] = useState(prefilledCode || '');
   const [validationResult, setValidationResult] = useState(null);
@@ -263,11 +280,34 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs uppercase font-bold tracking-wider text-[#FF5F00] bg-[#FF5F00]/15 px-2.5 py-0.5 rounded-full border border-[#FF5F00]/30">
-                  Lojista Parceiro Oficial
-                </span>
-                <span className="text-xs text-gray-400">ID: {currentStore.merchantId}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {currentStore.tier === 'gold' ? (
+                  <span className="text-xs uppercase font-black tracking-wider text-amber-300 bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1.5 shadow-md shadow-amber-950/40">
+                    <Crown size={13} fill="currentColor" className="text-amber-400 animate-pulse" />
+                    <span>Plano Ouro VIP (Topo Absoluto)</span>
+                  </span>
+                ) : currentStore.tier === 'silver' ? (
+                  <span className="text-xs uppercase font-bold tracking-wider text-slate-200 bg-slate-500/20 px-3 py-0.5 rounded-full border border-slate-400/40 flex items-center gap-1.5">
+                    <Award size={13} className="text-slate-300" />
+                    <span>Plano Prata Pro (Destaque Ativo)</span>
+                  </span>
+                ) : (
+                  <span className="text-xs uppercase font-bold tracking-wider text-gray-300 bg-gray-700/40 px-3 py-0.5 rounded-full border border-gray-600">
+                    Plano Grátis (Básico)
+                  </span>
+                )}
+
+                {currentStore.tier !== 'gold' && (
+                  <button
+                    onClick={() => setActiveTab('plans')}
+                    className="text-xs bg-gradient-to-r from-amber-400 to-[#FF5F00] hover:from-amber-300 hover:to-orange-500 text-black font-black px-2.5 py-0.5 rounded-full shadow-md flex items-center gap-1 transition-all"
+                  >
+                    <Crown size={11} fill="currentColor" />
+                    <span>Fazer Upgrade para Ouro 👑</span>
+                  </button>
+                )}
+
+                <span className="text-xs text-gray-500">ID: {currentStore.merchantId}</span>
               </div>
               
               <div className="flex items-center gap-2 mt-1">
@@ -409,6 +449,18 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         >
           <Settings size={16} />
           <span>Configurações da Loja</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('plans')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+            activeTab === 'plans'
+              ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black font-black shadow-lg shadow-amber-600/30'
+              : 'bg-[#181824] text-amber-400 hover:text-amber-300 border border-amber-500/20'
+          }`}
+        >
+          <Crown size={16} fill={activeTab === 'plans' ? 'currentColor' : 'none'} />
+          <span>Planos & Destaque ({currentPlan.name.replace('Plano ', '')})</span>
         </button>
       </div>
 
@@ -645,7 +697,40 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           </div>
 
-          <form onSubmit={handleCreateCoupon} className="space-y-6">
+          {isLimitReached ? (
+            <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border-2 border-amber-500/40 rounded-3xl p-8 text-center space-y-4 animate-fade-in">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-2xl shadow-lg">
+                👑
+              </div>
+              <h3 className="text-xl font-black text-white">
+                Limite de Ofertas Atingido ({currentPlan.maxCoupons} oferta no {currentPlan.name})
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed">
+                Seu estabelecimento está atualmente no <strong>{currentPlan.name}</strong>, que permite até <strong>{currentPlan.maxCoupons} oferta ativa</strong> simultaneamente.
+                <br /><br />
+                Para cadastrar mais ofertas, ter <strong>cupons ilimitados</strong> e posicionar sua marca no <strong>topo absoluto das buscas com borda dourada</strong>, faça o upgrade de plano agora mesmo!
+              </p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('plans')}
+                  className="bg-gradient-to-r from-amber-400 to-[#FF5F00] hover:from-amber-300 hover:to-orange-500 text-black font-black px-6 py-3 rounded-2xl text-sm shadow-xl shadow-orange-600/30 flex items-center gap-2 transition-all transform hover:scale-105"
+                >
+                  <Crown size={16} fill="currentColor" />
+                  <span>Ver Planos & Fazer Upgrade</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('coupons')}
+                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-3 rounded-2xl text-sm transition-all"
+                >
+                  Ver Cupons Já Cadastrados
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleCreateCoupon} className="space-y-6">
             
             {/* 1. UPLOAD DO BANNER DA OFERTA */}
             <div>
@@ -822,6 +907,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </button>
             </div>
           </form>
+          )}
         </div>
       )}
 
@@ -1126,6 +1212,293 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* ABA 5: PLANOS & ASSINATURA DE LOJISTA (DO FREE AO OURO) */}
+      {activeTab === 'plans' && (
+        <div className="space-y-8 animate-fade-in max-w-6xl mx-auto">
+          
+          {/* Header da Aba */}
+          <div className="text-center max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-full text-amber-300 font-bold text-xs mb-3 shadow-sm">
+              <Crown size={14} fill="currentColor" />
+              <span>Quanto mais você investe, mais no topo suas ofertas aparecem</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
+              Planos de Assinatura para Estabelecimentos
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-400 mt-2">
+              Escolha o nível de visibilidade da sua empresa. Lojas nos planos superiores aparecem no topo absoluto das pesquisas e recebem estilização dourada nos cupons.
+            </p>
+          </div>
+
+          {/* Feedback de Sucesso de Upgrade */}
+          {planUpgradeSuccess && (
+            <div className="bg-emerald-500/20 border-2 border-emerald-500 text-emerald-300 p-4 px-6 rounded-2xl text-sm font-bold flex items-center gap-3 animate-fade-in shadow-xl">
+              <CheckCircle2 size={24} className="text-emerald-400 flex-shrink-0" />
+              <span>{planUpgradeSuccess}</span>
+            </div>
+          )}
+
+          {/* Card de Status da Assinatura Atual */}
+          <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${
+                  currentPlan.id === 'gold' 
+                    ? 'bg-amber-500/20 border-2 border-amber-400 text-amber-400' 
+                    : currentPlan.id === 'silver'
+                    ? 'bg-slate-400/20 border-2 border-slate-300 text-slate-200'
+                    : 'bg-white/5 border border-white/10 text-gray-400'
+                }`}>
+                  {currentPlan.id === 'gold' ? '👑' : currentPlan.id === 'silver' ? '🥈' : '🆓'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-black tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                      Assinatura Ativa
+                    </span>
+                    <span className="text-xs text-gray-400">Renovação mensal</span>
+                  </div>
+                  <h3 className="text-xl font-black text-white mt-1 flex items-center gap-2">
+                    <span>{currentPlan.name}</span>
+                    {currentPlan.id === 'gold' && (
+                      <span className="text-xs bg-amber-400 text-black font-black px-2 py-0.5 rounded-md">TOPO</span>
+                    )}
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Investimento: <strong className="text-white">{currentPlan.priceLabel}</strong>{currentPlan.period}
+                  </p>
+                </div>
+              </div>
+
+              {/* Estatísticas de Utilização da Cota */}
+              <div className="grid grid-cols-2 gap-4 w-full sm:w-auto text-center sm:text-right">
+                <div className="bg-[#101017] p-3 rounded-2xl border border-white/5">
+                  <span className="text-[10px] text-gray-400 block uppercase font-semibold">Ofertas Ativas</span>
+                  <span className="text-lg font-black text-white">
+                    {storeCoupons.length} / {currentPlan.maxCoupons === 9999 ? '∞ Ilimitadas' : currentPlan.maxCoupons}
+                  </span>
+                </div>
+                <div className="bg-[#101017] p-3 rounded-2xl border border-white/5">
+                  <span className="text-[10px] text-gray-400 block uppercase font-semibold">Prioridade no Feed</span>
+                  <span className={`text-lg font-black ${
+                    currentPlan.id === 'gold' ? 'text-amber-400' : currentPlan.id === 'silver' ? 'text-slate-300' : 'text-gray-400'
+                  }`}>
+                    {currentPlan.id === 'gold' ? '⭐ 1º Lugar (Topo)' : currentPlan.id === 'silver' ? '✨ Alta (2º Lugar)' : 'Padrão'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid dos 3 Planos (Free, Prata, Ouro) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {(merchantPlans || []).map((plan) => {
+              const isCurrent = currentPlan.id === plan.id;
+              const isGold = plan.id === 'gold';
+              const isSilver = plan.id === 'silver';
+
+              return (
+                <div
+                  key={plan.id}
+                  className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 relative ${
+                    isGold
+                      ? 'bg-gradient-to-b from-[#2A1D0E] via-[#1B1612] to-[#14141B] border-2 border-amber-400/90 shadow-[0_0_35px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/50 transform md:-translate-y-2'
+                      : isSilver
+                      ? 'bg-gradient-to-b from-[#1C1E26] to-[#14141B] border-2 border-slate-300/60 shadow-xl'
+                      : 'bg-[#181824] border border-white/10'
+                  }`}
+                >
+                  {/* Tag Superior */}
+                  {isGold && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-black text-[11px] uppercase tracking-wider px-4 py-1 rounded-full shadow-lg flex items-center gap-1 whitespace-nowrap">
+                      <Crown size={12} fill="currentColor" />
+                      <span>Máximo Destaque & Conversão</span>
+                    </div>
+                  )}
+
+                  {isSilver && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-900 font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap">
+                      <Award size={12} />
+                      <span>Recomendado para Começar</span>
+                    </div>
+                  )}
+
+                  <div>
+                    {/* Cabeçalho do Card */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-xl font-black text-white">
+                          {plan.name}
+                        </h4>
+                        {isCurrent && (
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                            Plano Atual
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 min-h-[32px]">
+                        {plan.tagline}
+                      </p>
+                    </div>
+
+                    {/* Preço */}
+                    <div className="py-4 border-y border-white/10 my-4 flex items-baseline gap-1">
+                      <span className="text-3xl sm:text-4xl font-black text-white font-display">
+                        {plan.priceLabel}
+                      </span>
+                      <span className="text-xs text-gray-400">{plan.period}</span>
+                    </div>
+
+                    {/* Destaque do Limite de Ofertas */}
+                    <div className="mb-5 p-3 rounded-2xl bg-black/30 border border-white/5">
+                      <div className="text-[11px] text-gray-400">Limite de Ofertas Ativas:</div>
+                      <div className={`text-base font-black ${
+                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : 'text-white'
+                      }`}>
+                        {plan.maxCoupons === 9999 ? '🔥 ILIMITADAS simultâneas' : `Até ${plan.maxCoupons} oferta ativa`}
+                      </div>
+                    </div>
+
+                    {/* Lista de Benefícios */}
+                    <div className="space-y-2.5 mb-6 text-xs">
+                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                        O que está incluso:
+                      </span>
+                      {plan.perks.map((perk, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-gray-200">
+                          <CheckCircle2 size={15} className={`flex-shrink-0 mt-0.5 ${
+                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : 'text-emerald-400'
+                          }`} />
+                          <span>{perk}</span>
+                        </div>
+                      ))}
+
+                      {plan.missingPerks.map((miss, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-gray-500 line-through">
+                          <XCircle size={15} className="text-gray-600 flex-shrink-0 mt-0.5" />
+                          <span>{miss}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Botão de Ação */}
+                  <div className="pt-4 border-t border-white/10">
+                    {isCurrent ? (
+                      <button
+                        disabled
+                        className="w-full bg-white/10 text-gray-400 font-bold py-3 rounded-2xl text-xs text-center cursor-default border border-white/5"
+                      >
+                        ✓ Seu Plano Ativo
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          upgradeStoreTier(currentStore.id, plan.id);
+                          setPlanUpgradeSuccess(`🎉 Parabéns! Sua loja agora é "${plan.name}"! A visibilidade dos seus cupons foi atualizada imediatamente no catálogo.`);
+                          setTimeout(() => setPlanUpgradeSuccess(''), 6000);
+                        }}
+                        className={`w-full py-3 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg ${
+                          isGold
+                            ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black shadow-amber-950/60 transform hover:scale-[1.02]'
+                            : isSilver
+                            ? 'bg-slate-200 hover:bg-white text-slate-900 shadow-md'
+                            : 'bg-white/10 hover:bg-white/20 text-white'
+                        }`}
+                      >
+                        {isGold ? (
+                          <>
+                            <Crown size={15} fill="currentColor" />
+                            <span>Contratar Plano Ouro (Topo Máximo)</span>
+                          </>
+                        ) : isSilver ? (
+                          <>
+                            <Award size={15} />
+                            <span>Fazer Upgrade para Prata</span>
+                          </>
+                        ) : (
+                          <span>Mudar para Plano Grátis</span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Demonstração Visual: Como o seu cupom aparece */}
+          <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8 mt-10">
+            <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
+              <Zap size={18} className="text-amber-400" />
+              <span>Demonstração de Impacto Visual nos Cupons</span>
+            </h3>
+            <p className="text-xs text-gray-400 mb-6">
+              Compare visualmente como as ofertas da sua loja se destacam na tela dos milhares de assinantes VIP de acordo com o plano contratado:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              
+              {/* Preview Grátis */}
+              <div className="bg-[#13131A] rounded-2xl p-4 border border-white/5 space-y-3 opacity-75">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-gray-400">Card no Plano Grátis:</span>
+                  <span className="text-[10px] text-gray-500">Normal</span>
+                </div>
+                <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
+                  <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
+                  <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
+                </div>
+                <div className="text-xs font-bold text-white">{currentStore.name}</div>
+                <p className="text-[11px] text-gray-400">Listagem comum, abaixo das lojas pagantes.</p>
+              </div>
+
+              {/* Preview Prata */}
+              <div className="bg-[#13131A] rounded-2xl p-4 border border-slate-300/40 shadow-md space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                    <Award size={12} />
+                    <span>Card no Plano Prata:</span>
+                  </span>
+                  <span className="text-[10px] text-slate-300 font-bold">2º Nível</span>
+                </div>
+                <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
+                  <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
+                  <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
+                  <span className="absolute top-2 right-2 bg-slate-300 text-slate-900 text-[9px] font-extrabold px-2 py-0.5 rounded-full">🥈 Destaque</span>
+                </div>
+                <div className="text-xs font-bold text-slate-200">{currentStore.name}</div>
+                <p className="text-[11px] text-gray-300">Borda refinada e badge prateada no topo.</p>
+              </div>
+
+              {/* Preview Ouro */}
+              <div className="bg-gradient-to-b from-[#251A0E] to-[#13131A] rounded-2xl p-4 border-2 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.25)] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1">
+                    <Crown size={12} fill="currentColor" />
+                    <span>Card no Plano Ouro:</span>
+                  </span>
+                  <span className="text-[10px] text-amber-400 font-black">⭐ Topo Absoluto</span>
+                </div>
+                <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
+                  <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
+                  <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
+                  <span className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full shadow-md animate-pulse">👑 Top Ouro</span>
+                </div>
+                <div className="text-xs font-black text-amber-300 flex items-center gap-1">
+                  <Crown size={11} fill="currentColor" />
+                  <span>{currentStore.name}</span>
+                </div>
+                <p className="text-[11px] text-amber-200/80 font-medium">Borda dourada brilhante, glow vibrante e 1º lugar no feed.</p>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       )}
 
