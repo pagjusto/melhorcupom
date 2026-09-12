@@ -53,7 +53,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         : storeTier === 'silver'
         ? 'ring-1 ring-slate-300/50 shadow-lg hover:ring-slate-300/80'
         : storeTier === 'bronze'
-        ? 'ring-1 ring-amber-700/60 shadow-md hover:ring-amber-600/80'
+        ? 'ring-1 ring-[#CD7F32]/60 shadow-md hover:ring-[#CD7F32]/80'
         : ''
     }`}>
       
@@ -98,10 +98,10 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
 
           {storeTier === 'bronze' && (
             <div 
-              className="p-2 rounded-xl backdrop-blur-md bg-black/60 border border-amber-700/60 shadow-sm text-amber-500 flex items-center justify-center transition-transform hover:scale-105"
-              title="Loja Parceira Bronze"
+              className="p-2 rounded-xl backdrop-blur-md bg-black/60 border border-[#CD7F32]/60 shadow-[0_0_10px_rgba(205,127,50,0.35)] text-[#CD7F32] flex items-center justify-center transition-transform hover:scale-105"
+              title="Loja Parceira Bronze (3º Nível)"
             >
-              <Medal size={16} className="text-amber-500 drop-shadow-[0_0_6px_rgba(217,119,6,0.4)]" />
+              <Medal size={16} className="text-[#CD7F32] drop-shadow-[0_0_6px_rgba(205,127,50,0.7)]" />
             </div>
           )}
 
@@ -129,7 +129,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             : storeTier === 'silver'
             ? 'border-2 border-slate-300 shadow-slate-400/20'
             : storeTier === 'bronze'
-            ? 'border-2 border-amber-700 shadow-amber-900/20'
+            ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.3)]'
             : 'border-2 border-[#FF5F00] shadow-orange-950/50'
         }`}>
           {storeLogo ? (
@@ -188,11 +188,11 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           ) : storeTier === 'bronze' ? (
             <div className="flex items-center gap-1.5 line-clamp-1">
-              <span className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
-                <Medal size={12} className="text-amber-500 flex-shrink-0" />
+              <span className="text-xs font-bold text-[#CD7F32] uppercase tracking-wider flex items-center gap-1">
+                <Medal size={12} className="text-[#CD7F32] flex-shrink-0" />
                 <span>{store?.name || 'Loja Parceira'}</span>
               </span>
-              <span className="text-[9px] bg-amber-800/30 text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-700/50">
+              <span className="text-[9px] bg-[#CD7F32]/20 text-[#E09858] font-extrabold px-1.5 py-0.5 rounded border border-[#CD7F32]/50">
                 BRONZE
               </span>
             </div>

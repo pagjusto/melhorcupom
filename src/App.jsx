@@ -242,7 +242,7 @@ const MainLayout = () => {
                     <span>Lojas Prata</span>
                   </span>
                   <span className="text-gray-500">&gt;</span>
-                  <span className="inline-flex items-center gap-1 text-amber-500 font-bold bg-amber-700/20 border border-amber-600/30 px-2 py-0.5 rounded-lg text-[11px]">
+                  <span className="inline-flex items-center gap-1 text-[#CD7F32] font-bold bg-[#CD7F32]/15 border border-[#CD7F32]/35 px-2 py-0.5 rounded-lg text-[11px]">
                     <Medal size={12} />
                     <span>Lojas Bronze</span>
                   </span>

@@ -439,8 +439,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <span>Plano Prata Pro (5 Ofertas)</span>
                   </span>
                 ) : currentStore.tier === 'bronze' ? (
-                  <span className="text-xs uppercase font-bold tracking-wider text-amber-500 bg-amber-900/30 px-3 py-0.5 rounded-full border border-amber-700/50 flex items-center gap-1.5">
-                    <Medal size={13} className="text-amber-500" />
+                  <span className="text-xs uppercase font-bold tracking-wider text-[#E09858] bg-[#CD7F32]/20 px-3 py-0.5 rounded-full border border-[#CD7F32]/50 flex items-center gap-1.5 shadow-sm">
+                    <Medal size={13} className="text-[#CD7F32]" />
                     <span>Plano Bronze Star (3 Ofertas)</span>
                   </span>
                 ) : (
@@ -2133,7 +2133,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       : isSilver
                       ? 'bg-gradient-to-b from-[#1C1E26] to-[#14141B] border-2 border-slate-300/60 shadow-xl'
                       : isBronze
-                      ? 'bg-gradient-to-b from-[#251810] to-[#14141B] border-2 border-amber-700/60 shadow-lg'
+                      ? 'bg-gradient-to-b from-[#25150E] to-[#14141B] border-2 border-[#CD7F32]/70 shadow-[0_0_20px_rgba(205,127,50,0.2)]'
                       : 'bg-[#181824] border border-white/10'
                   }`}
                 >
@@ -2153,7 +2153,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   )}
 
                   {isBronze && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-amber-600/40">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] text-white font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-[#CD7F32]/60">
                       <Medal size={12} />
                       <span>Custo-Benefício</span>
                     </div>
@@ -2208,7 +2208,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <div className="mb-5 p-3 rounded-2xl bg-black/30 border border-white/5">
                       <div className="text-[11px] text-gray-400">Limite de Ofertas Ativas:</div>
                       <div className={`text-base font-black ${
-                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : isBronze ? 'text-amber-500' : 'text-white'
+                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : isBronze ? 'text-[#CD7F32]' : 'text-white'
                       }`}>
                         {plan.maxCoupons === 9999 ? '🔥 ILIMITADAS simultâneas' : `Até ${plan.maxCoupons} ${plan.maxCoupons === 1 ? 'oferta ativa' : 'ofertas ativas'}`}
                       </div>
@@ -2222,7 +2222,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       {plan.perks.map((perk, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-gray-200">
                           <CheckCircle2 size={15} className={`flex-shrink-0 mt-0.5 ${
-                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : isBronze ? 'text-amber-500' : 'text-emerald-400'
+                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : isBronze ? 'text-[#CD7F32]' : 'text-emerald-400'
                           }`} />
                           <span>{perk}</span>
                         </div>
@@ -2262,7 +2262,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             : isSilver
                             ? 'bg-slate-200 hover:bg-white text-slate-900 shadow-md'
                             : isBronze
-                            ? 'bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 text-white shadow-amber-950/40'
+                            ? 'bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] hover:from-[#DF8F42] hover:to-[#9E5523] text-white shadow-[0_4px_14px_rgba(205,127,50,0.35)]'
                             : 'bg-white/10 hover:bg-white/20 text-white'
                         }`}
                       >
@@ -2335,31 +2335,31 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </div>
 
               {/* Preview Bronze */}
-              <div className="bg-[#13131A] rounded-2xl p-4 border border-amber-700/60 shadow-md space-y-3">
+              <div className="bg-[#13131A] rounded-2xl p-4 border border-[#CD7F32]/60 shadow-md space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-amber-500 flex items-center gap-1">
-                    <Medal size={12} />
+                  <span className="text-[11px] font-bold text-[#CD7F32] flex items-center gap-1">
+                    <Medal size={12} className="text-[#CD7F32]" />
                     <span>Card no Plano Bronze:</span>
                   </span>
-                  <span className="text-[10px] text-amber-400 font-bold">3º Nível</span>
+                  <span className="text-[10px] text-[#CD7F32] font-bold bg-[#CD7F32]/20 px-2 py-0.5 rounded border border-[#CD7F32]/40">3º Nível</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
                   <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
                   <div className="absolute top-2 right-2 flex items-center gap-1">
-                    <div className="p-1 rounded-lg bg-black/60 border border-amber-700/60 text-amber-500 shadow-sm" title="Bronze">
-                      <Medal size={12} />
+                    <div className="p-1 rounded-lg bg-black/60 border border-[#CD7F32]/60 text-[#CD7F32] shadow-sm" title="Bronze">
+                      <Medal size={12} className="text-[#CD7F32]" />
                     </div>
                     <div className="p-1 rounded-lg bg-black/60 text-white/70">
                       <Heart size={12} />
                     </div>
                   </div>
                 </div>
-                <div className="text-xs font-bold text-amber-400 flex items-center gap-1">
-                  <Medal size={11} className="text-amber-500" />
+                <div className="text-xs font-bold text-[#CD7F32] flex items-center gap-1">
+                  <Medal size={11} className="text-[#CD7F32]" />
                   <span>{currentStore.name}</span>
                 </div>
-                <p className="text-[11px] text-gray-300">Borda bronze, medalha na cor bronze ao lado do coração e 3 cupons.</p>
+                <p className="text-[11px] text-gray-300">Borda bronze (#CD7F32), medalha exclusiva na cor bronze metálico e 3 cupons.</p>
               </div>
 
               {/* Preview Prata */}
