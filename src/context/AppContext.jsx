@@ -295,6 +295,11 @@ export const AppProvider = ({ children }) => {
     const randomCode = Math.floor(1000 + Math.random() * 9000);
     const generatedCode = `VIP-${coupon.codePrefix || 'CUPOM'}-${randomCode}`;
 
+    // Cálculo assertivo da economia real baseada em (originalPrice - promoPrice) ou estimatedSavings
+    const effectiveSavings = (coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice))
+      ? Number((Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2))
+      : (Number(coupon.estimatedSavings) || 20.00);
+
     const newRedemption = {
       id: `red_${Date.now()}`,
       code: generatedCode,
@@ -306,7 +311,9 @@ export const AppProvider = ({ children }) => {
       userCpf: userProfile.cpf || '382.***.***-04',
       maxUsesPerUser: coupon.maxUsesPerUser,
       discountBadge: coupon.discountBadge,
-      savings: coupon.estimatedSavings || 20.00,
+      originalPrice: coupon.originalPrice,
+      promoPrice: coupon.promoPrice,
+      savings: effectiveSavings,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString(), // 20 minutos de tolerância para uso no caixa
       status: 'valid'
@@ -322,10 +329,10 @@ export const AppProvider = ({ children }) => {
       return c;
     }));
 
-    // Incrementar economia do usuário
+    // Incrementar economia do usuário com valor assertivo
     setUserProfile(prev => ({
       ...prev,
-      monthlySavings: prev.monthlySavings + (coupon.estimatedSavings || 20.00)
+      monthlySavings: Number((prev.monthlySavings + effectiveSavings).toFixed(2))
     }));
 
     // Celebrar resgate

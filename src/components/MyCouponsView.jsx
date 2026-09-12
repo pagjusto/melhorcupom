@@ -144,13 +144,14 @@ export const MyCouponsView = ({ onSelectCoupon, onOpenRedemptionModal }) => {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="bg-[#FF5F00] text-white text-xs font-black px-2.5 py-1 rounded-lg">
+                      <span className="bg-[#FF5F00] text-white text-xs font-black px-2.5 py-1 rounded-lg shadow-sm">
                         {red.discountBadge}
                       </span>
-                      <span className="text-emerald-400 text-xs font-bold flex items-center gap-1">
-                        <Clock size={12} />
-                        Ativo para uso
-                      </span>
+                      {red.savings > 0 && (
+                        <span className="text-emerald-400 text-xs font-black bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-lg">
+                          Economia: R$ {Number(red.savings).toFixed(2).replace('.', ',')}
+                        </span>
+                      )}
                     </div>
 
                     <h4 className="text-base font-extrabold text-white mb-1">

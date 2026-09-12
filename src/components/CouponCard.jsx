@@ -214,13 +214,29 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           {coupon.description}
         </p>
 
-        {/* Economia Estimada */}
-        <div className="flex items-center justify-between text-xs py-1.5 px-3 bg-white/5 rounded-xl text-gray-300 border border-white/5">
-          <span className="text-gray-400">Economia estimada:</span>
-          <span className="font-extrabold text-emerald-400">
-            R$ {(coupon.estimatedSavings || 25).toFixed(2).replace('.', ',')}
-          </span>
-        </div>
+        {/* Preços De / Por com Economia Real ou Economia Estimada */}
+        {coupon.originalPrice && coupon.promoPrice ? (
+          <div className="flex items-center justify-between py-2 px-3 bg-emerald-500/10 rounded-xl text-xs border border-emerald-500/25">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-gray-400 line-through text-[11px]">
+                De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}
+              </span>
+              <span className="font-extrabold text-white text-xs">
+                Por <span className="text-emerald-400 font-black text-sm">R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span>
+              </span>
+            </div>
+            <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-lg border border-emerald-500/30">
+              -R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between text-xs py-1.5 px-3 bg-white/5 rounded-xl text-gray-300 border border-white/5">
+            <span className="text-gray-400">Economia estimada:</span>
+            <span className="font-extrabold text-emerald-400">
+              R$ {(coupon.estimatedSavings || 25).toFixed(2).replace('.', ',')}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Linha de Perfuração Perfurada com Recortes Laterais estilo Cupom */}
@@ -233,8 +249,14 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       <div className="p-5 pt-3 bg-[#13131A]">
         <div className="flex items-center justify-between text-[11px] text-gray-500 mb-2.5">
           <span className="flex items-center gap-1">
-            <Clock size={12} />
-            Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}
+            <Clock size={12} className={coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'text-emerald-400' : 'text-gray-500'} />
+            {coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? (
+              <span className="text-emerald-400 font-bold">Validade Ilimitada</span>
+            ) : coupon.validityDays ? (
+              <span>Válido {coupon.validityDays} dias</span>
+            ) : (
+              <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
+            )}
           </span>
           <span className="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 text-[10px]">
             <Users size={11} className="text-amber-400" />

@@ -168,15 +168,40 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
             <h2 className="text-xl font-extrabold text-white leading-snug">
               {coupon.title}
             </h2>
-            <p className="text-xs text-emerald-400 font-bold mt-1">
-              Economia garantida de R$ {(coupon.estimatedSavings || 20).toFixed(2).replace('.', ',')}
-            </p>
 
-            {/* Tag de Regra por CPF */}
-            <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-              <Users size={13} className="text-amber-400" />
-              <span>
-                Regra: <strong>{coupon.maxUsesPerUser === 1 ? '1 resgate por CPF' : coupon.maxUsesPerUser > 1 ? `Até ${coupon.maxUsesPerUser} resgates por CPF` : 'Uso Ilimitado por CPF'}</strong>
+            {/* Preços De / Por com Economia Real ou Economia Estimada */}
+            {coupon.originalPrice && coupon.promoPrice ? (
+              <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-2xl">
+                <span className="text-gray-400 line-through text-xs sm:text-sm">
+                  De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}
+                </span>
+                <span className="text-white font-extrabold text-sm sm:text-base">
+                  Por <span className="text-emerald-400 font-black">R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span>
+                </span>
+                <span className="bg-emerald-500/20 text-emerald-300 font-black text-xs px-2.5 py-0.5 rounded-lg border border-emerald-500/40">
+                  Economia de R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+            ) : (
+              <p className="text-xs text-emerald-400 font-bold mt-1">
+                Economia garantida de R$ {(coupon.estimatedSavings || 20).toFixed(2).replace('.', ',')}
+              </p>
+            )}
+
+            {/* Tags de Regra por CPF e Validade */}
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                <Users size={13} className="text-amber-400" />
+                <span>
+                  Regra: <strong>{coupon.maxUsesPerUser === 1 ? '1 resgate por CPF' : coupon.maxUsesPerUser > 1 ? `Até ${coupon.maxUsesPerUser} resgates por CPF` : 'Uso Ilimitado por CPF'}</strong>
+                </span>
+              </span>
+
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-300 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                <Clock size={13} className="text-orange-400" />
+                <span>
+                  Validade: <strong>{coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'Ilimitada' : coupon.validityDays ? `${coupon.validityDays} dias` : new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</strong>
+                </span>
               </span>
             </div>
           </div>

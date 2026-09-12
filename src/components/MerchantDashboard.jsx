@@ -141,17 +141,37 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    originalPrice: '', // De (valor normal)
+    promoPrice: '',    // Por (valor na promoção)
     discountType: 'percentage', // 'percentage' | 'fixed' | 'bogo' | 'gift'
     discountValue: '30%',
     discountBadge: '30% OFF',
     estimatedSavings: 30.00,
     banner: BANNER_PRESETS[0].url,
     type: 'physical', // 'physical' | 'online'
-    expiresAt: '2026-12-31',
+    validityType: 'days', // 'days' | 'unlimited'
+    validityDays: 30, // dias padrão
+    expiresAt: '',
     limitType: 'one', // 'one' | 'custom' | 'unlimited'
     customMaxUses: 2,
     rules: 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
   });
+
+  // Atualizar preços De / Por e sugerir automaticamente a % de desconto e economia real
+  const handlePriceChange = (field, val) => {
+    const nextForm = { ...formData, [field]: val };
+    const orig = parseFloat(field === 'originalPrice' ? val : formData.originalPrice);
+    const promo = parseFloat(field === 'promoPrice' ? val : formData.promoPrice);
+
+    if (!isNaN(orig) && !isNaN(promo) && orig > 0 && promo > 0 && orig > promo) {
+      const discountPct = Math.round(((orig - promo) / orig) * 100);
+      const savings = Number((orig - promo).toFixed(2));
+      nextForm.discountBadge = `${discountPct}% OFF`;
+      nextForm.discountValue = `${discountPct}%`;
+      nextForm.estimatedSavings = savings;
+    }
+    setFormData(nextForm);
+  };
 
   // Upload da Logo da Empresa (Perfil do Lojista)
   const handleLogoUpload = (e) => {
@@ -239,23 +259,43 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       ...formData.rules.split('\n').filter(r => r.trim().length > 0)
     ];
 
+    const orig = formData.originalPrice ? parseFloat(formData.originalPrice) : null;
+    const promo = formData.promoPrice ? parseFloat(formData.promoPrice) : null;
+    const computedSavings = (orig && promo && orig > promo)
+      ? Number((orig - promo).toFixed(2))
+      : (Number(formData.estimatedSavings) || 25);
+
+    let finalExpiresAt = null;
+    if (formData.validityType === 'days') {
+      const days = Math.max(1, parseInt(formData.validityDays) || 30);
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + days);
+      finalExpiresAt = targetDate.toISOString().split('T')[0];
+    } else {
+      finalExpiresAt = 'unlimited';
+    }
+
     addCoupon({
       storeId: currentStore.id,
       merchantId: currentStore.merchantId,
       title: formData.title,
       description: formData.description,
+      originalPrice: orig,
+      promoPrice: promo,
       discountType: formData.discountType,
       discountValue: formData.discountValue,
       discountBadge: formData.discountBadge,
-      estimatedSavings: Number(formData.estimatedSavings) || 25,
+      estimatedSavings: computedSavings,
       category: currentStore.category,
       city: currentStore.city || 'São Paulo - SP',
       cities: currentStore.cities || [currentStore.city || 'São Paulo - SP'],
       banner: formData.banner,
       type: formData.type,
+      validityType: formData.validityType,
+      validityDays: formData.validityType === 'days' ? (parseInt(formData.validityDays) || 30) : null,
       maxUsesPerUser: maxUses,
       codePrefix: currentStore.name.substring(0, 5).toUpperCase().replace(/\s+/g, ''),
-      expiresAt: formData.expiresAt,
+      expiresAt: finalExpiresAt,
       rules: rulesArray
     });
 
@@ -263,13 +303,17 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     setFormData({
       title: '',
       description: '',
+      originalPrice: '',
+      promoPrice: '',
       discountType: 'percentage',
       discountValue: '30%',
       discountBadge: '30% OFF',
       estimatedSavings: 30.00,
       banner: BANNER_PRESETS[0].url,
       type: 'physical',
-      expiresAt: '2026-12-31',
+      validityType: 'days',
+      validityDays: 30,
+      expiresAt: '',
       limitType: 'one',
       customMaxUses: 2,
       rules: 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
@@ -722,8 +766,26 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </p>
 
                   <div className="text-xs text-gray-500 space-y-1.5 py-2 border-t border-white/5">
+                    {coupon.originalPrice && coupon.promoPrice ? (
+                      <div className="flex items-center justify-between py-1 px-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 font-semibold mb-1 border border-emerald-500/20">
+                        <span className="line-through text-gray-400 text-[11px]">De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}</span>
+                        <span className="font-bold text-xs text-white">Por <span className="text-emerald-400">R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span></span>
+                        <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300 font-bold">
+                          -R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
+                        </span>
+                      </div>
+                    ) : null}
                     <div className="flex items-center justify-between">
-                      <span>Validade: {coupon.expiresAt}</span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={11} className={coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'text-emerald-400' : 'text-gray-400'} />
+                        {coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? (
+                          <strong className="text-emerald-400">Validade Ilimitada</strong>
+                        ) : coupon.validityDays ? (
+                          <span>Válido {coupon.validityDays} dias</span>
+                        ) : (
+                          <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
+                        )}
+                      </span>
                       <span className="text-orange-400 font-bold">{coupon.usesCount || 0} resgates</span>
                     </div>
                     <div className="flex items-center justify-between pt-1 text-[11px]">
@@ -820,7 +882,17 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
                 {/* Tag de Desconto Simulada */}
                 <div className="absolute top-3 left-3 bg-[#FF5F00] text-white px-3 py-1 rounded-xl text-xs font-black shadow-lg">
-                  {formData.discountBadge || '50% OFF'}
+                  {formData.discountBadge || '30% OFF'}
+                </div>
+
+                {/* Tag de Validade Simulada */}
+                <div className="absolute top-3 right-3 sm:right-64">
+                  <span className="inline-flex items-center gap-1 bg-black/70 backdrop-blur-md text-white px-2.5 py-1 rounded-xl text-xs font-bold border border-white/20 shadow-md">
+                    <Clock size={12} className="text-orange-400" />
+                    <span>
+                      {formData.validityType === 'unlimited' ? '♾️ Ilimitado' : `${formData.validityDays || 30} dias`}
+                    </span>
+                  </span>
                 </div>
 
                 {/* Logo da Empresa no Banner Simulado */}
@@ -835,6 +907,18 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <span className="text-xs font-bold text-white drop-shadow-md">{currentStore.name}</span>
                 </div>
 
+                {/* Preços De / Por Simulados no Banner */}
+                {formData.originalPrice && formData.promoPrice && (
+                  <div className="absolute bottom-3 right-3 bg-black/85 backdrop-blur-md border border-emerald-500/40 px-3 py-1 rounded-xl text-right shadow-xl">
+                    <span className="text-[10px] text-gray-400 line-through block">
+                      De R$ {parseFloat(formData.originalPrice).toFixed(2).replace('.', ',')}
+                    </span>
+                    <span className="text-xs font-black text-emerald-400">
+                      Por R$ {parseFloat(formData.promoPrice).toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                )}
+
                 {/* Botão de Trocar Imagem sobre o Banner */}
                 <button
                   type="button"
@@ -842,7 +926,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-white/20 transition-all backdrop-blur-md"
                 >
                   <Upload size={14} className="text-orange-400" />
-                  <span>Fazer Upload do Seu Computador</span>
+                  <span className="hidden sm:inline">Fazer Upload do Computador</span>
+                  <span className="sm:hidden">Upload</span>
                 </button>
 
                 <input
@@ -904,49 +989,114 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               />
             </div>
 
-            {/* 3. DESCONTOS E MODALIDADE */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">
-                  Tag de Destaque (Badge) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: 50% OFF, 2x1, R$ 30 OFF"
-                  value={formData.discountBadge}
-                  onChange={(e) => setFormData({ ...formData, discountBadge: e.target.value })}
-                  className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
-                />
+            {/* 3. PREÇOS DA OFERTA (DE / POR) & DESCONTO CALCULADO */}
+            <div className="bg-[#12121A] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-bold text-white flex items-center gap-1.5 mb-0.5">
+                    <DollarSign size={15} className="text-[#FF5F00]" />
+                    <span>3. Preços da Oferta: De (Normal) e Por (Promoção) *</span>
+                  </label>
+                  <p className="text-[11px] text-gray-400">
+                    Informe os valores para sugerir automaticamente a % de desconto e alimentar com exatidão a economia da carteira dos usuários.
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">
-                  Economia Média Estimada (R$)
-                </label>
-                <input
-                  type="number"
-                  min="5"
-                  step="0.5"
-                  value={formData.estimatedSavings}
-                  onChange={(e) => setFormData({ ...formData, estimatedSavings: e.target.value })}
-                  className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {/* De: Preço Normal */}
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">
+                    De: Preço Normal (R$)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-xs font-bold text-gray-400">R$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Ex: 80,00"
+                      value={formData.originalPrice}
+                      onChange={(e) => handlePriceChange('originalPrice', e.target.value)}
+                      className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* Por: Preço na Promoção */}
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">
+                    Por: Preço Promocional (R$)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-xs font-bold text-emerald-400">R$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Ex: 48,00"
+                      value={formData.promoPrice}
+                      onChange={(e) => handlePriceChange('promoPrice', e.target.value)}
+                      className="w-full bg-[#101017] border border-emerald-500/40 focus:border-emerald-400 rounded-xl pl-9 pr-3 py-2 text-sm text-emerald-300 font-bold focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Tag de Destaque (Badge) */}
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">
+                    Tag de Destaque (Badge) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: 40% OFF, 2x1"
+                    value={formData.discountBadge}
+                    onChange={(e) => setFormData({ ...formData, discountBadge: e.target.value })}
+                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-3 py-2 text-sm text-white focus:outline-none font-bold"
+                  />
+                  <span className="text-[10px] text-gray-400 mt-1 block">
+                    Calculado pelo De/Por (editável)
+                  </span>
+                </div>
+
+                {/* Modalidade */}
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">
+                    Modalidade *
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
+                  >
+                    <option value="physical">Loja Física (QR Code)</option>
+                    <option value="online">Loja Online (Link e Cupom)</option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">
-                  Modalidade
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
-                >
-                  <option value="physical">Loja Física (QR Code Balcão)</option>
-                  <option value="online">Loja Online (Link e Cupom)</option>
-                </select>
-              </div>
+              {/* Feedback de Economia e Sugestão em Tempo Real */}
+              {formData.originalPrice && formData.promoPrice && (
+                parseFloat(formData.originalPrice) > parseFloat(formData.promoPrice) ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl animate-fade-in">
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={16} className="text-emerald-400" />
+                      <div className="text-xs text-emerald-300">
+                        <strong>Economia real calculada:</strong> R$ {(parseFloat(formData.originalPrice) - parseFloat(formData.promoPrice)).toFixed(2).replace('.', ',')} por resgate.
+                      </div>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/40">
+                      ⚡ Sugestão aplicada: {Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.promoPrice)) / parseFloat(formData.originalPrice)) * 100)}% OFF
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-300 flex items-center gap-2">
+                    <AlertTriangle size={15} />
+                    <span>O valor com desconto (Por) deve ser menor que o valor normal (De).</span>
+                  </div>
+                )
+              )}
             </div>
 
             {/* 4. LIMITE DE USO POR CPF */}
@@ -1071,6 +1221,127 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       +
                     </button>
                     <span className="text-xs font-bold text-orange-400 ml-1">resgates por cliente</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 5. VALIDADE DA OFERTA (EM DIAS OU ILIMITADO) */}
+            <div className="bg-[#12121A] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
+              <div>
+                <label className="text-xs font-bold text-white flex items-center gap-1.5 mb-1">
+                  <Clock size={15} className="text-[#FF5F00]" />
+                  <span>5. Validade da Oferta (Tempo Limitado ou Permanente) *</span>
+                </label>
+                <p className="text-[11px] text-gray-400">
+                  Defina o período de duração desta promoção ou configure como oferta permanente.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Opção 1: Validade em Dias */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, validityType: 'days' })}
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                    formData.validityType === 'days'
+                      ? 'bg-[#FF5F00]/15 border-[#FF5F00] shadow-md shadow-orange-600/15 ring-1 ring-[#FF5F00]'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <Calendar size={15} className="text-orange-400" />
+                      <span className="text-xs font-black text-white">Validade em Dias</span>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      formData.validityType === 'days' ? 'border-[#FF5F00] bg-[#FF5F00]' : 'border-gray-500'
+                    }`}>
+                      {formData.validityType === 'days' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">
+                    A oferta expira automaticamente após a contagem de dias definida.
+                  </p>
+                </button>
+
+                {/* Opção 2: Validade Ilimitada */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, validityType: 'unlimited' })}
+                  className={`p-3.5 rounded-xl border text-left transition-all ${
+                    formData.validityType === 'unlimited'
+                      ? 'bg-[#FF5F00]/15 border-[#FF5F00] shadow-md shadow-orange-600/15 ring-1 ring-[#FF5F00]'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={15} className="text-emerald-400" />
+                      <span className="text-xs font-black text-white">Ilimitado / Permanente</span>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      formData.validityType === 'unlimited' ? 'border-[#FF5F00] bg-[#FF5F00]' : 'border-gray-500'
+                    }`}>
+                      {formData.validityType === 'unlimited' && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">
+                    Sem prazo de expiração: ativa continuamente até você pausar ou remover.
+                  </p>
+                </button>
+              </div>
+
+              {/* Presets e configuração de dias quando selecionado "Validade em Dias" */}
+              {formData.validityType === 'days' && (
+                <div className="pt-2 bg-white/5 p-3 rounded-xl border border-white/10 space-y-2.5 animate-fade-in">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs text-gray-300 font-semibold">
+                      Escolha um período rápido ou personalize:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {[7, 15, 30, 60, 90].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, validityDays: d })}
+                          className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                            Number(formData.validityDays) === d
+                              ? 'bg-[#FF5F00] text-white border-[#FF5F00] font-bold shadow'
+                              : 'bg-black/40 text-gray-300 border-white/10 hover:border-white/30'
+                          }`}
+                        >
+                          {d} dias
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 pt-1 border-t border-white/5">
+                    <span className="text-xs text-gray-400">Dias personalizados:</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={formData.validityDays}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          validityDays: Math.max(1, parseInt(e.target.value) || 1)
+                        })}
+                        className="w-20 text-center bg-[#101017] border border-white/20 rounded-lg py-1 text-sm font-bold text-white focus:outline-none focus:border-[#FF5F00]"
+                      />
+                      <span className="text-xs font-bold text-orange-400">
+                        dias a partir de hoje
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-emerald-400 flex items-center gap-1 pt-0.5 font-medium">
+                    <Calendar size={13} />
+                    <span>
+                      Esta oferta será válida até: <strong>{new Date(Date.now() + (parseInt(formData.validityDays) || 30) * 86400000).toLocaleDateString('pt-BR')}</strong>
+                    </span>
                   </div>
                 </div>
               )}
