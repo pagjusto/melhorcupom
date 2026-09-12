@@ -100,21 +100,6 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               >
                 Como Funciona
               </button>
-
-              {/* Portal do Lojista: Apenas para Lojistas logados */}
-              {isMerchantRole && (
-                <button
-                  onClick={() => setActiveTab('merchant-dashboard')}
-                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    activeTab === 'merchant-dashboard'
-                      ? 'bg-[#FF5F00]/20 text-[#FF5F00] font-semibold border border-[#FF5F00]/30'
-                      : 'text-orange-400 hover:text-orange-300 hover:bg-orange-500/10'
-                  }`}
-                >
-                  <Store size={16} />
-                  <span>Portal do Lojista</span>
-                </button>
-              )}
             </div>
           </div>
 
