@@ -20,10 +20,18 @@ export const ReferralBanner = () => {
     userProfile, 
     stores, 
     setIsReferralModalOpen,
-    addReferral 
+    addReferral,
+    isVipUser 
   } = useApp();
 
   const isMerchantRole = currentRole.startsWith('merchant_');
+  const isUserLoggedIn = isVipUser || userProfile?.isLoggedIn;
+
+  // O card Destaque Divulgue & Ganhe só deve aparecer após o login e NÃO para visitantes
+  if (!isUserLoggedIn && !isMerchantRole) {
+    return null;
+  }
+
   const merchantId = isMerchantRole ? currentRole : 'merchant_burger';
   const currentStore = stores.find(s => s.merchantId === merchantId) || stores[0];
 

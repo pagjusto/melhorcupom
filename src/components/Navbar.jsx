@@ -98,55 +98,41 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 Como Funciona
               </button>
 
-              <button
-                onClick={() => {
-                  if (!isMerchantRole) {
-                    switchRole('merchant_burger');
-                  }
-                  setActiveTab('merchant-dashboard');
-                }}
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  activeTab === 'merchant-dashboard'
-                    ? 'bg-[#FF5F00]/20 text-[#FF5F00] font-semibold border border-[#FF5F00]/30'
-                    : 'text-orange-400 hover:text-orange-300 hover:bg-orange-500/10'
-                }`}
-              >
-                <Store size={16} />
-                <span>Portal do Lojista</span>
-              </button>
-
-              {/* Indicador de Cidade Ativa */}
-              <button
-                onClick={() => {
-                  setActiveTab('explore');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-xs font-semibold text-gray-300 transition-colors ml-2"
-                title="Clique para escolher outra cidade"
-              >
-                <MapPin size={13} className="text-[#FF5F00]" />
-                <span className="text-white max-w-[140px] truncate">{selectedCity || 'Todas as Cidades'}</span>
-                <ChevronDown size={12} className="text-gray-400" />
-              </button>
+              {/* Portal do Lojista: Apenas para Lojistas logados */}
+              {isMerchantRole && (
+                <button
+                  onClick={() => setActiveTab('merchant-dashboard')}
+                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                    activeTab === 'merchant-dashboard'
+                      ? 'bg-[#FF5F00]/20 text-[#FF5F00] font-semibold border border-[#FF5F00]/30'
+                      : 'text-orange-400 hover:text-orange-300 hover:bg-orange-500/10'
+                  }`}
+                >
+                  <Store size={16} />
+                  <span>Portal do Lojista</span>
+                </button>
+              )}
             </div>
           </div>
 
           {/* User Status / Action CTA */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Botão em Destaque: Divulgue & Ganhe */}
-            <button
-              onClick={() => setIsReferralModalOpen(true)}
-              className="relative bg-gradient-to-r from-amber-500/15 via-[#FF5F00]/20 to-amber-500/15 hover:from-amber-500/25 hover:to-[#FF5F00]/30 border border-amber-500/40 text-amber-300 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-orange-950/20 group transform hover:-translate-y-0.5"
-              title="Abrir Programa Divulgue & Ganhe (R$ 5,00 por amigo no Caixa)"
-            >
-              <span className="text-base group-hover:scale-125 transition-transform animate-bounce">🎁</span>
-              <div className="text-left leading-tight">
-                <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Divulgue & Ganhe</div>
-                <div className="text-xs font-black text-amber-300">
-                  Caixa: R$ {activeReferralBalance.toFixed(2).replace('.', ',')}
+            {/* Botão em Destaque: Divulgue & Ganhe (Apenas para Usuários ou Lojistas Logados) */}
+            {(isUserLoggedIn || isMerchantRole) && (
+              <button
+                onClick={() => setIsReferralModalOpen(true)}
+                className="relative bg-gradient-to-r from-amber-500/15 via-[#FF5F00]/20 to-amber-500/15 hover:from-amber-500/25 hover:to-[#FF5F00]/30 border border-amber-500/40 text-amber-300 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-orange-950/20 group transform hover:-translate-y-0.5"
+                title="Abrir Programa Divulgue & Ganhe (R$ 5,00 por amigo no Caixa)"
+              >
+                <span className="text-base group-hover:scale-125 transition-transform animate-bounce">🎁</span>
+                <div className="text-left leading-tight">
+                  <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Divulgue & Ganhe</div>
+                  <div className="text-xs font-black text-amber-300">
+                    Caixa: R$ {activeReferralBalance.toFixed(2).replace('.', ',')}
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+            )}
 
             {isMerchantRole ? (
               <div className="flex items-center gap-2">
@@ -276,15 +262,17 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
 
           {/* Mobile Menu Button & Quick Actions */}
           <div className="flex md:hidden items-center gap-2">
-            {/* Quick Referral Pill on Mobile */}
-            <button
-              onClick={() => setIsReferralModalOpen(true)}
-              className="bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1"
-              title="Divulgue & Ganhe"
-            >
-              <span>🎁</span>
-              <span>R$ {activeReferralBalance.toFixed(0)}</span>
-            </button>
+            {/* Quick Referral Pill on Mobile (Apenas para logados) */}
+            {(isUserLoggedIn || isMerchantRole) && (
+              <button
+                onClick={() => setIsReferralModalOpen(true)}
+                className="bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1"
+                title="Divulgue & Ganhe"
+              >
+                <span>🎁</span>
+                <span>R$ {activeReferralBalance.toFixed(0)}</span>
+              </button>
+            )}
 
             {!isVipUser && !isMerchantRole && (
               <button
@@ -308,22 +296,24 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-white/10 bg-[#14141B] px-4 pt-3 pb-5 space-y-2">
-          {/* Divulgue & Ganhe no Mobile Drawer */}
-          <button
-            onClick={() => { 
-              setIsReferralModalOpen(true); 
-              setMobileMenuOpen(false); 
-            }}
-            className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold text-sm flex items-center justify-between shadow-md"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🎁</span>
-              <span>Divulgue & Ganhe (R$ 5/amigo)</span>
-            </div>
-            <span className="text-xs bg-amber-500/30 border border-amber-500/50 px-2 py-0.5 rounded-full font-black">
-              Caixa: R$ {activeReferralBalance.toFixed(2).replace('.', ',')}
-            </span>
-          </button>
+          {/* Divulgue & Ganhe no Mobile Drawer (Apenas para logados) */}
+          {(isUserLoggedIn || isMerchantRole) && (
+            <button
+              onClick={() => { 
+                setIsReferralModalOpen(true); 
+                setMobileMenuOpen(false); 
+              }}
+              className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 font-bold text-sm flex items-center justify-between shadow-md"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎁</span>
+                <span>Divulgue & Ganhe (R$ 5/amigo)</span>
+              </div>
+              <span className="text-xs bg-amber-500/30 border border-amber-500/50 px-2 py-0.5 rounded-full font-black">
+                Caixa: R$ {activeReferralBalance.toFixed(2).replace('.', ',')}
+              </span>
+            </button>
+          )}
 
           {/* Atalhos de Conta no Mobile Drawer */}
           {!isUserLoggedIn && !isMerchantRole ? (
@@ -395,32 +385,39 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           >
             Como Funciona
           </button>
-          <button
-            onClick={() => { 
-              if (!isMerchantRole) switchRole('merchant_burger');
-              setActiveTab('merchant-dashboard'); 
-              setMobileMenuOpen(false); 
-            }}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm text-orange-400 font-semibold hover:bg-orange-500/10 flex items-center gap-2"
-          >
-            <Store size={16} />
-            <span>Portal do Lojista (Validador e Cupons)</span>
-          </button>
-          <button
-            onClick={() => { setActiveTab('user-profile'); setMobileMenuOpen(false); }}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5 flex items-center gap-2"
-          >
-            <User size={16} />
-            <span>Meu Perfil de Assinante</span>
-          </button>
-          {isVipUser && (
+          {/* Portal do Lojista: Apenas para Lojistas logados */}
+          {isMerchantRole && (
             <button
-              onClick={() => { setActiveTab('my-coupons'); setMobileMenuOpen(false); }}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm text-emerald-400 font-semibold hover:bg-emerald-500/10 flex items-center gap-2"
+              onClick={() => { 
+                setActiveTab('merchant-dashboard'); 
+                setMobileMenuOpen(false); 
+              }}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm text-orange-400 font-semibold hover:bg-orange-500/10 flex items-center gap-2"
             >
-              <Tag size={16} />
-              <span>Meus Cupons Resgatados</span>
+              <Store size={16} />
+              <span>Portal do Lojista (Validador e Cupons)</span>
             </button>
+          )}
+
+          {/* Atalhos para Usuários Logados */}
+          {isUserLoggedIn && (
+            <>
+              <button
+                onClick={() => { setActiveTab('user-profile'); setMobileMenuOpen(false); }}
+                className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5 flex items-center gap-2"
+              >
+                <User size={16} />
+                <span>Meu Perfil</span>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('my-coupons'); setMobileMenuOpen(false); }}
+                className="w-full text-left px-3 py-2 rounded-lg text-sm text-emerald-400 font-semibold hover:bg-emerald-500/10 flex items-center gap-2"
+              >
+                <Tag size={16} />
+                <span>Meus Cupons Resgatados</span>
+              </button>
+            </>
           )}
         </div>
       )}
