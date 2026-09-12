@@ -40,7 +40,9 @@ export const AppProvider = ({ children }) => {
         return {
           ...s,
           logoImage: s.logoImage || init?.logoImage || '',
-          tier: s.tier || init?.tier || 'free'
+          tier: s.tier || init?.tier || 'free',
+          phone: s.phone || init?.phone || '(11) 98123-4567',
+          address: s.address || init?.address || ''
         };
       });
     } catch {
