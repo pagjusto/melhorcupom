@@ -33,6 +33,7 @@ export const TransparentVideo = ({
 
   // Referência do player atualmente ativo (1 ou 2)
   const activePlayerRef = useRef(1);
+  const transitionTriggeredRef = useRef(false);
 
   // Buffers reutilizáveis para 60fps constantes sem alocação de memória (zero GC lag)
   const memoryRef = useRef({
@@ -76,6 +77,7 @@ export const TransparentVideo = ({
     };
 
     video1.addEventListener('loadedmetadata', handleLoadedMetadata);
+    if (video2) video2.load(); // Pré-aquece o buffer do segundo player
 
     /**
      * Processa um frame de vídeo removendo o fundo branco e limpando resíduos
@@ -271,12 +273,19 @@ export const TransparentVideo = ({
       }
 
       const duration = activeVideo.duration || 6.434;
-      const cutPoint = trimOutro && duration > trimOutroSeconds + 0.5
+      const cutPoint = trimOutro && duration > trimOutroSeconds + 0.2
         ? duration - trimOutroSeconds
         : duration;
 
-      const transDur = Math.min(transitionDuration, Math.max(0.2, cutPoint * 0.45));
-      const transStart = cutPoint - transDur;
+      // Se transitionDuration for negativo (abaixo de 0):
+      // Usamos como offset no início do vídeo (corta o início estático/intro)
+      // Se for positivo: usamos como tempo de crossfade suave
+      const startOffset = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
+      const effectiveTransDur = transitionDuration > 0
+        ? Math.min(transitionDuration, Math.max(0.1, (cutPoint - startOffset) * 0.45))
+        : (transitionDuration === 0 ? 0 : 0.2); // micro-dissolvência mesmo com offset negativo
+
+      const transStart = cutPoint - effectiveTransDur;
 
       // =========================================================================
       // OPÇÃO 1: MOTOR DE DISSOLVÊNCIA CRUZADA CONTÍNUA (CROSSFADE DUAL-PLAYER)
@@ -286,14 +295,17 @@ export const TransparentVideo = ({
         cvs.style.opacity = '1';
 
         // Janela de transição: activeVideo está prestes a terminar
-        if (trimOutro && activeVideo.currentTime >= transStart && activeVideo.currentTime < cutPoint) {
-          if (incomingVideo.paused) {
-            incomingVideo.currentTime = 0;
+        if (effectiveTransDur > 0 && trimOutro && activeVideo.currentTime >= transStart && activeVideo.currentTime < cutPoint) {
+          // Dispara o player de entrada EXATAMENTE UMA VEZ
+          if (!transitionTriggeredRef.current) {
+            transitionTriggeredRef.current = true;
+            incomingVideo.currentTime = startOffset;
             incomingVideo.play().catch(() => {});
           }
 
-          const rawProgress = (activeVideo.currentTime - transStart) / transDur;
+          const rawProgress = (activeVideo.currentTime - transStart) / effectiveTransDur;
           const progress = Math.max(0, Math.min(1, rawProgress));
+          const ease = 0.5 - 0.5 * Math.cos(progress * Math.PI); // Curva S suave
 
           const mem = memoryRef.current;
           if (!mem.bufferA) {
@@ -314,41 +326,45 @@ export const TransparentVideo = ({
           // Processa incomingVideo no buffer B
           const hasB = incomingVideo.readyState >= 2 && processVideoFrame(incomingVideo, ctxB, w, h);
 
-          // Mescla buffer A (desaparecendo) e buffer B (aparecendo)
+          // Mescla buffer A e buffer B suavemente
           ctx.clearRect(0, 0, w, h);
           ctx.save();
-          ctx.globalAlpha = 1.0 - progress;
-          ctx.drawImage(mem.bufferA, 0, 0, w, h);
-
           if (hasB) {
-            ctx.globalAlpha = progress;
+            ctx.globalAlpha = 1.0 - ease;
+            ctx.drawImage(mem.bufferA, 0, 0, w, h);
+            ctx.globalAlpha = ease;
             ctx.drawImage(mem.bufferB, 0, 0, w, h);
+          } else {
+            // Se o segundo player ainda estiver carregando o frame, mantém o primeiro visível
+            ctx.globalAlpha = 1.0;
+            ctx.drawImage(mem.bufferA, 0, 0, w, h);
           }
           ctx.restore();
 
         } else if (trimOutro && activeVideo.currentTime >= cutPoint) {
           // Ponto de corte atingido: troca de papéis entre os players
           activeVideo.pause();
-          activeVideo.currentTime = 0;
+          activeVideo.currentTime = startOffset;
 
           incomingVideo.play().catch(() => {});
           activePlayerRef.current = activePlayerRef.current === 1 ? 2 : 1;
+          transitionTriggeredRef.current = false;
 
           // Renderiza o novo player ativo diretamente
           processVideoFrame(incomingVideo, ctx, w, h);
 
         } else {
           // Reprodução normal de alta performance fora da janela de transição
+          transitionTriggeredRef.current = false;
           processVideoFrame(activeVideo, ctx, w, h);
         }
 
       // =========================================================================
       // OPÇÃO 2: DESVANECIMENTO SUAVE (FADE IN / FADE OUT ELEGANTE)
-      // Fade-out orgânico no fim do ciclo e fade-in no início (oculta seek lag)
       // =========================================================================
       } else if (transitionMode === 'fade') {
-        if (trimOutro && duration) {
-          const fadeHalf = transDur / 2;
+        if (trimOutro && duration && effectiveTransDur > 0) {
+          const fadeHalf = effectiveTransDur / 2;
           const fadeOutStart = cutPoint - fadeHalf;
           let op = 1.0;
 
@@ -356,18 +372,20 @@ export const TransparentVideo = ({
             const p = (activeVideo.currentTime - fadeOutStart) / fadeHalf;
             op = Math.max(0, 1.0 - p);
           } else if (activeVideo.currentTime >= cutPoint) {
-            activeVideo.currentTime = 0;
+            activeVideo.currentTime = startOffset;
             op = 0;
-          } else if (activeVideo.currentTime < fadeHalf) {
-            const p = activeVideo.currentTime / fadeHalf;
-            op = Math.min(1.0, p);
+          } else if (activeVideo.currentTime < startOffset + fadeHalf) {
+            const p = (activeVideo.currentTime - startOffset) / fadeHalf;
+            op = Math.min(1.0, Math.max(0, p));
           }
 
-          // Curva senoidal para movimento orgânico de respiração
           const smoothOp = Math.sin(op * (Math.PI / 2));
           cvs.style.opacity = smoothOp.toFixed(3);
         } else {
           cvs.style.opacity = '1';
+          if (trimOutro && duration && activeVideo.currentTime >= cutPoint) {
+            activeVideo.currentTime = startOffset;
+          }
         }
 
         processVideoFrame(activeVideo, ctx, w, h);
@@ -378,7 +396,7 @@ export const TransparentVideo = ({
       } else {
         cvs.style.opacity = '1';
         if (trimOutro && duration && activeVideo.currentTime >= cutPoint) {
-          activeVideo.currentTime = 0;
+          activeVideo.currentTime = startOffset;
         }
         processVideoFrame(activeVideo, ctx, w, h);
       }

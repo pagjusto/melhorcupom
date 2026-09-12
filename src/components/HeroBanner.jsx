@@ -218,21 +218,23 @@ export const HeroBanner = ({
 
                 {/* Ajuste Fino da Duração da Transição (Suavidade) */}
                 {transitionMode !== 'cut' && (
-                  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Tempo de dissolvência ou desvanecimento">
+                  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Permite valores positivos (tempo de dissolvência) ou negativos abaixo de 0 (corta o início do vídeo)">
                     <span className="text-cyan-400">⏱️ Suavidade:</span>
-                    <span className="font-mono text-white text-[11px]">{transitionDuration.toFixed(1)}s</span>
+                    <span className="font-mono text-white text-[11px]">
+                      {transitionDuration > 0 ? `+${transitionDuration.toFixed(1)}s` : `${transitionDuration.toFixed(1)}s`}
+                    </span>
                     <div className="flex items-center gap-0.5 ml-0.5">
                       <button
-                        onClick={() => setTransitionDuration(prev => Math.max(0.2, parseFloat((prev - 0.1).toFixed(1))))}
+                        onClick={() => setTransitionDuration(prev => parseFloat((prev - 0.1).toFixed(1)))}
                         className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                        title="Transição mais rápida (-0.1s)"
+                        title="Diminuir suavidade (permite valores negativos abaixo de 0)"
                       >
                         -
                       </button>
                       <button
-                        onClick={() => setTransitionDuration(prev => Math.min(1.2, parseFloat((prev + 0.1).toFixed(1))))}
+                        onClick={() => setTransitionDuration(prev => parseFloat((prev + 0.1).toFixed(1)))}
                         className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                        title="Transição mais suave e longa (+0.1s)"
+                        title="Aumentar suavidade (+0.1s)"
                       >
                         +
                       </button>
@@ -243,19 +245,21 @@ export const HeroBanner = ({
                 {/* Ajuste Fino do Tempo de Loop */}
                 <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta segundos do final para encurtar ou estender o ciclo de repetição">
                   <span className="text-orange-400">✂️ Loop:</span>
-                  <span className="font-mono text-white text-[11px]">-{trimSeconds.toFixed(1)}s</span>
+                  <span className="font-mono text-white text-[11px]">
+                    {trimSeconds >= 0 ? `-${trimSeconds.toFixed(1)}s` : `+${Math.abs(trimSeconds).toFixed(1)}s`}
+                  </span>
                   <div className="flex items-center gap-0.5 ml-0.5">
                     <button
-                      onClick={() => setTrimSeconds(prev => Math.max(0, parseFloat((prev - 0.5).toFixed(1))))}
+                      onClick={() => setTrimSeconds(prev => parseFloat((prev - 0.5).toFixed(1)))}
                       className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Diminuir corte (+0.5s no vídeo)"
+                      title="Diminuir corte (permite valores abaixo de 0)"
                     >
                       -
                     </button>
                     <button
-                      onClick={() => setTrimSeconds(prev => Math.min(5.0, parseFloat((prev + 0.5).toFixed(1))))}
+                      onClick={() => setTrimSeconds(prev => parseFloat((prev + 0.5).toFixed(1)))}
                       className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Aumentar corte (-0.5s no vídeo)"
+                      title="Aumentar corte (+0.5s)"
                     >
                       +
                     </button>
