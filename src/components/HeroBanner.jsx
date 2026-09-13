@@ -24,9 +24,9 @@ export const HeroBanner = ({
 }) => {
   const { isVipUser, setIsSubscriptionModalOpen } = useApp();
   const [showDropdown, setShowDropdown] = useState(false);
-  // Estado para teste visual do vídeo no lugar do logo
-  // 'video_transparent' | 'video_mp4' | 'static_image'
-  const [mediaType, setMediaType] = useState('video_transparent');
+  // Estado para visualização do logo oficial ou teste de vídeo
+  // 'static_image' | 'video_transparent' | 'video_mp4'
+  const [mediaType, setMediaType] = useState('static_image');
   const [removeWhiteBg, setRemoveWhiteBg] = useState(true);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
   const [trimCapCutOutro, setTrimCapCutOutro] = useState(true);
@@ -105,6 +105,16 @@ export const HeroBanner = ({
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] text-gray-400 font-semibold px-2">Modo:</span>
               <button
+                onClick={() => setMediaType('static_image')}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                  mediaType === 'static_image'
+                    ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                }`}
+              >
+                <span>🖼️ Nova Logo Oficial</span>
+              </button>
+              <button
                 onClick={() => setMediaType('video_transparent')}
                 className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
                   mediaType === 'video_transparent'
@@ -112,7 +122,7 @@ export const HeroBanner = ({
                     : 'bg-white/5 hover:bg-white/10 text-gray-300'
                 }`}
               >
-                <span>🎬 Vídeo no Lugar do Logo</span>
+                <span>🎬 Vídeo Teste</span>
               </button>
               <button
                 onClick={() => setMediaType('video_mp4')}
@@ -123,16 +133,6 @@ export const HeroBanner = ({
                 }`}
               >
                 <span>🎥 Player MP4</span>
-              </button>
-              <button
-                onClick={() => setMediaType('static_image')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  mediaType === 'static_image'
-                    ? 'bg-white/20 text-white shadow-md'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300'
-                }`}
-              >
-                <span>🖼️ Logo PNG</span>
               </button>
             </div>
 
