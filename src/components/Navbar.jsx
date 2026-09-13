@@ -64,7 +64,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 <img 
                   src={logoMelhorCupom} 
                   alt="Melhor Cupom" 
-                  className="h-14 w-auto object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105" 
+                  className="h-16 w-auto object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105" 
                 />
               </div>
             </button>
