@@ -20,6 +20,8 @@ import {
   Check
 } from 'lucide-react';
 
+import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+
 export const AuthModal = () => {
   const { 
     isAuthModalOpen, 
@@ -235,7 +237,7 @@ export const AuthModal = () => {
         <div className="bg-gradient-to-r from-[#2B1307] via-[#1E110A] to-[#161622] p-5 sm:p-6 border-b border-white/10 relative overflow-hidden flex-shrink-0">
           <div className="flex items-center gap-3 mb-4">
             <img 
-              src="/logo-melhor-cupom.png" 
+              src={logoMelhorCupom} 
               alt="Melhor Cupom" 
               className="h-10 w-auto object-contain"
             />

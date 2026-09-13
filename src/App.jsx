@@ -17,6 +17,7 @@ import { ReferralModal } from './components/ReferralModal';
 import { AuthModal } from './components/AuthModal';
 import { SavingsModal } from './components/SavingsModal';
 import { AdminDashboard } from './components/AdminDashboard';
+import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
@@ -381,7 +382,7 @@ const MainLayout = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
             <div className="space-y-3">
               <img 
-                src="/logo-melhor-cupom.png" 
+                src={logoMelhorCupom} 
                 alt="Melhor Cupom" 
                 className="h-12 w-auto object-contain"
               />

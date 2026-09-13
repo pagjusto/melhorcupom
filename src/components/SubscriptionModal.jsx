@@ -18,6 +18,8 @@ import {
   Gift
 } from 'lucide-react';
 
+import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+
 export const SubscriptionModal = () => {
   const { 
     isSubscriptionModalOpen, 
@@ -78,7 +80,7 @@ export const SubscriptionModal = () => {
         <div className="bg-gradient-to-r from-[#2B1307] via-[#1E110A] to-[#16161F] p-6 sm:p-8 border-b border-white/10 relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-center gap-5">
             <img 
-              src="/logo-melhor-cupom.png" 
+              src={logoMelhorCupom} 
               alt="Melhor Cupom" 
               className="h-20 w-auto object-contain drop-shadow-xl"
             />

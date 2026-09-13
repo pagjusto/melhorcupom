@@ -22,6 +22,8 @@ import {
   Gift
 } from 'lucide-react';
 
+import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+
 export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity }) => {
   const { 
     currentRole, 
@@ -60,7 +62,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             >
               <div className="relative">
                 <img 
-                  src="/logo-melhor-cupom.png" 
+                  src={logoMelhorCupom} 
                   alt="Melhor Cupom" 
                   className="h-14 w-auto object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105" 
                 />

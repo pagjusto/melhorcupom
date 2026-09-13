@@ -14,6 +14,7 @@ import {
   Globe,
   Sliders
 } from 'lucide-react';
+import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { TransparentVideo } from './TransparentVideo';
 
 export const HeroBanner = ({ 
@@ -94,7 +95,7 @@ export const HeroBanner = ({
 
           {mediaType === 'static_image' && (
             <img 
-              src="/logo-melhor-cupom.png" 
+              src={logoMelhorCupom} 
               alt="Melhor Cupom" 
               className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
             />
