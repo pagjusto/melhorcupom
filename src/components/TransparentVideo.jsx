@@ -75,6 +75,11 @@ export const TransparentVideo = ({
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('loadeddata', handleLoadedMetadata);
+    video.addEventListener('canplay', handleLoadedMetadata);
+    if (video.videoWidth && video.videoHeight) {
+      handleLoadedMetadata();
+    }
 
     /**
      * Processa um frame de vídeo removendo o fundo branco e limpando resíduos
@@ -353,6 +358,8 @@ export const TransparentVideo = ({
     return () => {
       if (animId) cancelAnimationFrame(animId);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('loadeddata', handleLoadedMetadata);
+      video.removeEventListener('canplay', handleLoadedMetadata);
     };
   }, [
     src,
@@ -386,6 +393,8 @@ export const TransparentVideo = ({
       {/* Canvas renderizado com transparência e transição suave */}
       <canvas
         ref={canvasRef}
+        width={612}
+        height={408}
         className={className}
         aria-label={alt}
       />

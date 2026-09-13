@@ -52,7 +52,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
   return (
     <nav className="bg-[#14141B] border-b border-white/10 sticky top-[41px] z-40 backdrop-blur-md bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24 sm:h-26">
           
           {/* Logo Brand */}
           <div className="flex items-center gap-6">
@@ -64,7 +64,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 <img 
                   src={logoMelhorCupom} 
                   alt="Melhor Cupom" 
-                  className="h-16 w-auto object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105" 
+                  className="h-20 sm:h-22 w-auto object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-105" 
                 />
               </div>
             </button>

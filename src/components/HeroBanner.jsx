@@ -26,8 +26,8 @@ export const HeroBanner = ({
   const { isVipUser, setIsSubscriptionModalOpen } = useApp();
   const [showDropdown, setShowDropdown] = useState(false);
   // Estado para visualização do logo oficial ou teste de vídeo
-  // 'static_image' | 'video_transparent' | 'video_mp4'
-  const [mediaType, setMediaType] = useState('static_image');
+  // 'video_transparent' | 'static_image' | 'video_mp4'
+  const [mediaType, setMediaType] = useState('video_transparent');
   const [removeWhiteBg, setRemoveWhiteBg] = useState(true);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
   const [trimCapCutOutro, setTrimCapCutOutro] = useState(true);
