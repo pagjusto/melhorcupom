@@ -122,16 +122,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </button>
         </div>
 
-        {/* 2. LOGO DA EMPRESA (com borda diferenciada por plano - 100% visível sem cortes) */}
-        <div className={`absolute bottom-2.5 left-3 w-11 h-11 rounded-xl bg-[#181822] shadow-2xl flex items-center justify-center overflow-hidden z-20 ${
-          storeTier === 'gold'
-            ? 'border-2 border-amber-400 ring-2 ring-amber-400/40 shadow-amber-500/20'
-            : storeTier === 'silver'
-            ? 'border-2 border-slate-300 shadow-slate-400/20'
-            : storeTier === 'bronze'
-            ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.3)]'
-            : 'border-2 border-[#FF5F00] shadow-orange-950/50'
-        }`}>
+        {/* 2. LOGO DA EMPRESA (100% visível sem bordas conforme solicitado) */}
+        <div className="absolute bottom-2.5 left-3 w-11 h-11 rounded-xl bg-[#181822] shadow-2xl flex items-center justify-center overflow-hidden z-20">
           {storeLogo ? (
             <img 
               src={storeLogo} 
@@ -164,11 +156,11 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       {/* Conteúdo Informativo */}
       <div className="p-5 pt-5 pb-4">
         
-        {/* Identificação da Loja com Badge do Plano */}
+        {/* Identificação da Loja com Nome Branco Original */}
         <div className="flex items-center justify-between mb-2">
           {storeTier === 'gold' ? (
             <div className="flex items-center gap-1.5 line-clamp-1">
-              <span className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1">
                 <Crown size={12} fill="currentColor" className="text-amber-400 flex-shrink-0" />
                 <span>{store?.name || 'Loja Parceira'}</span>
               </span>
@@ -178,7 +170,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           ) : storeTier === 'silver' ? (
             <div className="flex items-center gap-1.5 line-clamp-1">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1">
                 <Award size={12} className="text-slate-300 flex-shrink-0" />
                 <span>{store?.name || 'Loja Parceira'}</span>
               </span>
@@ -188,7 +180,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           ) : storeTier === 'bronze' ? (
             <div className="flex items-center gap-1.5 line-clamp-1">
-              <span className="text-xs font-bold text-[#CD7F32] uppercase tracking-wider flex items-center gap-1">
+              <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1">
                 <Medal size={12} className="text-[#CD7F32] flex-shrink-0" />
                 <span>{store?.name || 'Loja Parceira'}</span>
               </span>
@@ -197,7 +189,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               </span>
             </div>
           ) : (
-            <span className="text-xs font-bold text-orange-400 uppercase tracking-wider line-clamp-1">
+            <span className="text-xs font-bold text-white uppercase tracking-wider line-clamp-1">
               {store?.name || 'Loja Parceira'}
             </span>
           )}
@@ -208,8 +200,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           )}
         </div>
 
-        {/* Título da Oferta */}
-        <h3 className="text-base font-black text-white leading-snug mb-2 group-hover:text-orange-300 transition-colors line-clamp-2">
+        {/* Título da Oferta (Mantido originalmente branco) */}
+        <h3 className="text-base font-black text-white leading-snug mb-2 transition-colors line-clamp-2">
           {coupon.title}
         </h3>
 

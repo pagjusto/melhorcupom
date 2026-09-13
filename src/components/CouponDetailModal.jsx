@@ -131,7 +131,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
           </button>
 
           <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
-            <div className="w-14 h-14 rounded-2xl bg-[#181822] border-2 border-[#FF5F00] flex items-center justify-center overflow-hidden shadow-xl">
+            <div className="w-14 h-14 rounded-2xl bg-[#181822] flex items-center justify-center overflow-hidden shadow-xl">
               {store?.logoImage ? (
                 <img src={store.logoImage} alt={store?.name} className="w-full h-full object-cover" />
               ) : (

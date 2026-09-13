@@ -1003,8 +1003,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       <span>{couponViews.toLocaleString('pt-BR')} views</span>
                     </div>
 
-                    {/* Logo da Empresa no canto */}
-                    <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] border-2 border-[#FF5F00] overflow-hidden shadow-lg flex items-center justify-center z-10">
+                    {/* Logo da Empresa no canto (sem borda) */}
+                    <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] overflow-hidden shadow-lg flex items-center justify-center z-10">
                       {currentStore.logoImage ? (
                         <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                       ) : (
@@ -1193,9 +1193,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </span>
                 </div>
 
-                {/* Logo da Empresa no Banner Simulado */}
+                {/* Logo da Empresa no Banner Simulado (sem borda) */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-[#181822] border-2 border-[#FF5F00] overflow-hidden flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 rounded-xl bg-[#181822] overflow-hidden flex items-center justify-center shadow-lg">
                     {currentStore.logoImage ? (
                       <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                     ) : (
