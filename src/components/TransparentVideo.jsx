@@ -19,8 +19,8 @@ export const TransparentVideo = ({
   src,
   className = '',
   containerClassName = '',
-  trimIntroSeconds = 2.0,      // Cortar os primeiros segundos do vídeo (padrão: 2.0s)
-  loopEndSeconds = 10,         // Ponto final do looping em segundos (padrão: 10s)
+  trimIntroSeconds = 2.6,      // Cortar os primeiros segundos do vídeo (salvo: 2.6s)
+  loopEndSeconds = 4.5,        // Ponto final do looping em segundos (salvo: 4.5s)
   removeGreen = true,          // Remoção de fundo verde Chroma Key (padrão)
   removeWhite = false,         // Remoção de fundo branco (para compatibilidade)
   preserveWhiteContent = true, // Flood-fill preservador de letras e mascote

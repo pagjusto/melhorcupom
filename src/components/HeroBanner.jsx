@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { POPULAR_CITIES } from '../data/mockData';
 import { 
@@ -28,9 +28,58 @@ export const HeroBanner = ({
   // Estado para visualização do logo oficial ou teste de vídeo
   // 'video_transparent' | 'static_image' | 'video_mp4'
   const [mediaType, setMediaType] = useState('video_transparent');
-  const [trimIntroSeconds, setTrimIntroSeconds] = useState(2.0); // Cortar os primeiros 2 segundos do vídeo
-  const [loopEndSeconds, setLoopEndSeconds] = useState(10); // [✂️ final : 10] Ponto final do looping
-  const [heroOffsetY, setHeroOffsetY] = useState(0); // Ajuste da localização da hero (mais pra cima ou pra baixo da navbar)
+  // Configurações salvas: Início 2.6s e Final 4.5s (com persistência LocalStorage)
+  const [trimIntroSeconds, setTrimIntroSeconds] = useState(() => {
+    const saved = localStorage.getItem('melhorcupom_trim_intro');
+    return saved !== null ? parseFloat(saved) : 2.6;
+  });
+  const [loopEndSeconds, setLoopEndSeconds] = useState(() => {
+    const saved = localStorage.getItem('melhorcupom_loop_end');
+    return saved !== null ? parseFloat(saved) : 4.5;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('melhorcupom_trim_intro', trimIntroSeconds.toString());
+    } catch (e) {}
+  }, [trimIntroSeconds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('melhorcupom_loop_end', loopEndSeconds.toString());
+    } catch (e) {}
+  }, [loopEndSeconds]);
+
+  const [heroOffsetY, setHeroOffsetY] = useState(() => {
+    const saved = localStorage.getItem('melhorcupom_hero_offset_y');
+    return saved !== null ? parseInt(saved, 10) : -120;
+  }); // Ajuste da localização da hero (salvo: -120px)
+  const [containerWidth, setContainerWidth] = useState(() => {
+    const saved = localStorage.getItem('melhorcupom_container_width');
+    return saved !== null ? parseInt(saved, 10) : 1040;
+  }); // Ajuste do container pai do Hero Banner (salvo: 1040px)
+  const [glowScale, setGlowScale] = useState(() => {
+    const saved = localStorage.getItem('melhorcupom_glow_scale');
+    return saved !== null ? parseFloat(saved) : 0.40;
+  }); // Ajuste da aura luminosa alaranjada de fundo (salvo: 40% / 0.40)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('melhorcupom_hero_offset_y', heroOffsetY.toString());
+    } catch (e) {}
+  }, [heroOffsetY]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('melhorcupom_container_width', containerWidth.toString());
+    } catch (e) {}
+  }, [containerWidth]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('melhorcupom_glow_scale', glowScale.toString());
+    } catch (e) {}
+  }, [glowScale]);
   const [removeGreenBg, setRemoveGreenBg] = useState(true);
   const [removeWhiteBg, setRemoveWhiteBg] = useState(false);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
@@ -62,16 +111,51 @@ export const HeroBanner = ({
       className="relative overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#14141C] to-[#0D0D11] border-b border-white/5 pb-14 sm:pb-20"
     >
       
-      {/* Luzes de Fundo & Glow Atmosférico Laranja Expandido para Vídeo 2x */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] sm:w-[1250px] h-[500px] bg-[#FF5F00]/25 blur-[160px] pointer-events-none rounded-full" />
-      <div className="absolute top-10 left-1/4 w-80 h-80 bg-amber-500/10 blur-[110px] pointer-events-none rounded-full" />
-      <div className="absolute top-10 right-1/4 w-80 h-80 bg-orange-600/10 blur-[110px] pointer-events-none rounded-full" />
+      {/* Luzes de Fundo & Glow Atmosférico Laranja Ajustável */}
+      <div 
+        style={{
+          opacity: 0.25 * glowScale,
+          transform: `translateX(-50%) scale(${glowScale})`,
+          transition: 'all 0.3s ease-out'
+        }}
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] sm:w-[1250px] h-[500px] bg-[#FF5F00] blur-[160px] pointer-events-none rounded-full" 
+      />
+      <div 
+        style={{
+          opacity: 0.10 * glowScale,
+          transform: `scale(${glowScale})`,
+          transition: 'all 0.3s ease-out'
+        }}
+        className="absolute top-10 left-1/4 w-80 h-80 bg-amber-500 blur-[110px] pointer-events-none rounded-full" 
+      />
+      <div 
+        style={{
+          opacity: 0.10 * glowScale,
+          transform: `scale(${glowScale})`,
+          transition: 'all 0.3s ease-out'
+        }}
+        className="absolute top-10 right-1/4 w-80 h-80 bg-orange-600 blur-[110px] pointer-events-none rounded-full" 
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      {/* Container Pai do Hero Banner com Largura Ajustável */}
+      <div 
+        style={{ 
+          maxWidth: `${containerWidth}px`,
+          transition: 'max-width 0.25s ease-out'
+        }}
+        className="w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center"
+      >
         
         {/* LOGO OU VÍDEO NO MEIO DO APP (TAMANHO 2X) */}
         <div className="relative flex flex-col justify-center items-center my-4 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 blur-3xl -z-10 rounded-full scale-150 pointer-events-none" />
+          <div 
+            style={{
+              opacity: 0.20 * glowScale,
+              transform: `scale(${1.5 * glowScale})`,
+              transition: 'all 0.3s ease-out'
+            }}
+            className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 blur-3xl -z-10 rounded-full pointer-events-none" 
+          />
           
           {mediaType === 'video_transparent' && (
             <TransparentVideo
@@ -185,16 +269,82 @@ export const HeroBanner = ({
                   >
                     ▼ Baixo
                   </button>
-                  {heroOffsetY !== 0 && (
+                  {heroOffsetY !== -120 && (
                     <button
-                      onClick={() => setHeroOffsetY(0)}
+                      onClick={() => setHeroOffsetY(-120)}
                       className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
-                      title="Restaurar posição original (0px)"
+                      title="Restaurar posição salva (-120px)"
                     >
                       ↺
                     </button>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* Controle Interativo da Largura do Container Pai da Hero */}
+            <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-white/10 bg-white/5 px-2.5 py-1 rounded-xl text-[11px] text-gray-300 font-bold" title="Ajusta a largura máxima do container pai do Hero Banner">
+              <span className="text-emerald-400">📦 Container:</span>
+              <span className="font-mono text-white text-[11px] min-w-[44px] text-center">
+                {containerWidth}px
+              </span>
+              <div className="flex items-center gap-0.5 ml-0.5">
+                <button
+                  onClick={() => setContainerWidth(prev => Math.max(760, prev - 60))}
+                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
+                  title="Diminuir container pai (-60px)"
+                >
+                  -
+                </button>
+                <button
+                  onClick={() => setContainerWidth(prev => Math.min(1920, prev + 60))}
+                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
+                  title="Aumentar container pai (+60px)"
+                >
+                  +
+                </button>
+                {containerWidth !== 1040 && (
+                  <button
+                    onClick={() => setContainerWidth(1040)}
+                    className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
+                    title="Restaurar container salvo (1040px)"
+                  >
+                    ↺
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Controle Interativo da Aura Luminosa Alaranjada de Fundo */}
+            <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-white/10 bg-white/5 px-2.5 py-1 rounded-xl text-[11px] text-gray-300 font-bold" title="Ajusta a intensidade e tamanho da aura luminosa alaranjada de fundo">
+              <span className="text-amber-400">✨ Aura:</span>
+              <span className="font-mono text-white text-[11px] min-w-[34px] text-center">
+                {Math.round(glowScale * 100)}%
+              </span>
+              <div className="flex items-center gap-0.5 ml-0.5">
+                <button
+                  onClick={() => setGlowScale(prev => Math.max(0, parseFloat((prev - 0.1).toFixed(1))))}
+                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
+                  title="Diminuir aura/brilho (-10%)"
+                >
+                  -
+                </button>
+                <button
+                  onClick={() => setGlowScale(prev => Math.min(2.5, parseFloat((prev + 0.1).toFixed(1))))}
+                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
+                  title="Aumentar aura/brilho (+10%)"
+                >
+                  +
+                </button>
+                {glowScale !== 0.4 && (
+                  <button
+                    onClick={() => setGlowScale(0.40)}
+                    className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
+                    title="Restaurar aura salva (40%)"
+                  >
+                    ↺
+                  </button>
+                )}
               </div>
             </div>
 
@@ -317,51 +467,69 @@ export const HeroBanner = ({
                   </div>
                 )}
 
-                {/* Ajuste do Corte de Início (Corta os Primeiros 2 Segundos) */}
-                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta os primeiros segundos do vídeo (ex: 2.0s)">
+                {/* Ajuste do Corte de Início (Salvo: 2.6s) */}
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta os primeiros segundos do vídeo (salvo: 2.6s)">
                   <span className="text-amber-400">✂️ Início:</span>
                   <span className="font-mono text-white text-[11px]">
                     {trimIntroSeconds.toFixed(1)}s
                   </span>
                   <div className="flex items-center gap-0.5 ml-0.5">
                     <button
-                      onClick={() => setTrimIntroSeconds(prev => Math.max(0, parseFloat((prev - 0.5).toFixed(1))))}
+                      onClick={() => setTrimIntroSeconds(prev => Math.max(0, parseFloat((prev - 0.1).toFixed(1))))}
                       className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Diminuir corte de início (-0.5s)"
+                      title="Diminuir corte de início (-0.1s)"
                     >
                       -
                     </button>
                     <button
-                      onClick={() => setTrimIntroSeconds(prev => parseFloat((prev + 0.5).toFixed(1)))}
+                      onClick={() => setTrimIntroSeconds(prev => parseFloat((prev + 0.1).toFixed(1)))}
                       className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Aumentar corte de início (+0.5s)"
+                      title="Aumentar corte de início (+0.1s)"
                     >
                       +
                     </button>
+                    {trimIntroSeconds !== 2.6 && (
+                      <button
+                        onClick={() => setTrimIntroSeconds(2.6)}
+                        className="px-1 py-0.5 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
+                        title="Restaurar início padrão (2.6s)"
+                      >
+                        ↺
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Ajuste do Ponto Final do Looping [✂️ final : 10] */}
-                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Define o ponto final do looping do vídeo [✂️ final : 10]">
+                {/* Ajuste do Ponto Final do Looping [✂️ final : 4.5s] (Salvo: 4.5s) */}
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Define o ponto final do looping do vídeo (salvo: 4.5s)">
                   <span className="text-orange-400">✂️ final :</span>
-                  <span className="font-mono text-white text-[11px] min-w-[18px] text-center">
-                    {loopEndSeconds}
+                  <span className="font-mono text-white text-[11px] min-w-[28px] text-center">
+                    {typeof loopEndSeconds === 'number' ? `${loopEndSeconds.toFixed(1)}s` : `${loopEndSeconds}s`}
                   </span>
                   <div className="flex items-center gap-0.5 ml-0.5">
                     <button
-                      onClick={() => setLoopEndSeconds(prev => Math.max(Math.ceil(trimIntroSeconds + 1), prev - 1))}
+                      onClick={() => setLoopEndSeconds(prev => Math.max(parseFloat((trimIntroSeconds + 0.2).toFixed(1)), parseFloat((prev - 0.1).toFixed(1))))}
                       className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                      title="Diminuir ponto final do loop (-1s)"
+                      title="Diminuir ponto final do loop (-0.1s)"
                     >
                       -
                     </button>
                     <button
-                      onClick={() => setLoopEndSeconds(prev => prev + 1)}
+                      onClick={() => setLoopEndSeconds(prev => parseFloat((prev + 0.1).toFixed(1)))}
                       className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                      title="Aumentar ponto final do loop (+1s)"
+                      title="Aumentar ponto final do loop (+0.1s)"
                     >
                       +
                     </button>
+                    {loopEndSeconds !== 4.5 && (
+                      <button
+                        onClick={() => setLoopEndSeconds(4.5)}
+                        className="px-1 py-0.5 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
+                        title="Restaurar final padrão (4.5s)"
+                      >
+                        ↺
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
