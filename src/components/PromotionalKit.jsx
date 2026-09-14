@@ -10,64 +10,12 @@ import {
   Layers, 
   Eye, 
   CheckCircle2, 
-  Crown, 
-  Award, 
   Tag, 
   RefreshCw, 
   Instagram, 
-  Smartphone, 
-  Maximize2,
-  Calendar,
-  Zap,
-  Clock,
-  ArrowRight,
-  TrendingUp,
-  AlertCircle
+  Zap
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
-
-// Utilitário para formatar cores de borda de acordo com o plano
-export const getTierStyle = (tier = 'free') => {
-  const t = (tier || '').toLowerCase();
-  if (t === 'gold') {
-    return {
-      name: 'Plano Gold',
-      label: 'PARCEIRO GOLD',
-      color: '#FBBF24',
-      bgGlow: 'rgba(251, 191, 36, 0.45)',
-      badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-      icon: '⭐'
-    };
-  }
-  if (t === 'silver') {
-    return {
-      name: 'Plano Silver',
-      label: 'PARCEIRO SILVER',
-      color: '#CBD5E1',
-      bgGlow: 'rgba(203, 213, 225, 0.35)',
-      badgeClass: 'bg-slate-400/20 text-slate-200 border-slate-400/40',
-      icon: '🥈'
-    };
-  }
-  if (t === 'bronze') {
-    return {
-      name: 'Plano Bronze',
-      label: 'PARCEIRO BRONZE',
-      color: '#CD7F32',
-      bgGlow: 'rgba(205, 127, 50, 0.35)',
-      badgeClass: 'bg-amber-700/20 text-amber-500 border-amber-700/40',
-      icon: '🥉'
-    };
-  }
-  return {
-    name: 'Plano Gratuito',
-    label: 'PARCEIRO CREDENCIADO',
-    color: '#FFFFFF',
-    bgGlow: 'rgba(255, 255, 255, 0.35)',
-    badgeClass: 'bg-white/20 text-white border-white/40',
-    icon: '⚪'
-  };
-};
 
 // ============================================================================
 // 1. COMPONENTE: KIT DE DIVULGAÇÃO DO LOJISTA (MerchantPromoKit)
@@ -78,7 +26,6 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
   const [copiedCaption, setCopiedCaption] = useState(false);
   const canvasRef = useRef(null);
 
-  const tierStyle = getTierStyle(store?.tier);
   const activeCouponsCount = coupons.filter(c => c.active !== false).length;
   const bestCoupon = coupons[0];
 
@@ -108,7 +55,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, width, height);
 
-    // 2. Auras Luminosas Radiais
+    // 2. Auras Luminosas Radiais Padrão Oficial Melhor Cupom
     // Aura Laranja Topo
     const orangeAura = ctx.createRadialGradient(width * 0.5, height * 0.25, 20, width * 0.5, height * 0.25, 520);
     orangeAura.addColorStop(0, 'rgba(255, 95, 0, 0.38)');
@@ -117,12 +64,12 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.fillStyle = orangeAura;
     ctx.fillRect(0, 0, width, height);
 
-    // Aura da cor da assinatura no centro da logo
-    const tierAura = ctx.createRadialGradient(width * 0.5, format === 'feed' ? 440 : 700, 30, width * 0.5, format === 'feed' ? 440 : 700, 380);
-    tierAura.addColorStop(0, tierStyle.bgGlow);
-    tierAura.addColorStop(0.6, 'rgba(0, 0, 0, 0.05)');
-    tierAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = tierAura;
+    // Aura central padronizada no centro da logo
+    const centerAura = ctx.createRadialGradient(width * 0.5, format === 'feed' ? 400 : 660, 20, width * 0.5, format === 'feed' ? 400 : 660, 400);
+    centerAura.addColorStop(0, 'rgba(255, 95, 0, 0.30)');
+    centerAura.addColorStop(0.6, 'rgba(255, 95, 0, 0.05)');
+    centerAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = centerAura;
     ctx.fillRect(0, 0, width, height);
 
     // Elementos gráficos de fundo sutis (linhas e arcos decorativos)
@@ -130,10 +77,10 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(width * 0.5, format === 'feed' ? 440 : 700, 260, 0, Math.PI * 2);
+    ctx.arc(width * 0.5, format === 'feed' ? 400 : 660, 260, 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(width * 0.5, format === 'feed' ? 440 : 700, 320, 0, Math.PI * 2);
+    ctx.arc(width * 0.5, format === 'feed' ? 400 : 660, 320, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -148,14 +95,14 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       });
 
       if (mcLogoImg.width > 0) {
-        const mcLogoWidth = format === 'feed' ? 260 : 320;
+        const mcLogoWidth = format === 'feed' ? 290 : 350;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
-        const mcLogoY = format === 'feed' ? 70 : 160;
+        const mcLogoY = format === 'feed' ? 80 : 170;
 
         ctx.save();
-        ctx.shadowColor = 'rgba(255, 95, 0, 0.4)';
-        ctx.shadowBlur = 24;
+        ctx.shadowColor = 'rgba(255, 95, 0, 0.45)';
+        ctx.shadowBlur = 26;
         ctx.drawImage(mcLogoImg, mcLogoX, mcLogoY, mcLogoWidth, mcLogoHeight);
         ctx.restore();
       }
@@ -163,39 +110,25 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       console.warn('Erro ao desenhar logo Melhor Cupom:', e);
     }
 
-    // 4. Selo / Tag Superior: "PARCEIRO OFICIAL CREDENCIADO"
-    const badgeY = format === 'feed' ? 175 : 290;
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 95, 0, 0.15)';
-    ctx.strokeStyle = 'rgba(255, 95, 0, 0.4)';
-    ctx.lineWidth = 2;
-    const bWidth = 380;
-    const bHeight = 44;
-    const bX = (width - bWidth) / 2;
-    ctx.beginPath();
-    ctx.roundRect(bX, badgeY, bWidth, bHeight, 22);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = '#FF9D5C';
-    ctx.font = 'bold 18px "Inter", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('⭐ ESTABELECIMENTO OFICIAL CREDENCIADO', width / 2, badgeY + bHeight / 2);
-    ctx.restore();
-
-    // 5. Container Circular com Logo do Lojista + Borda da Assinatura
+    // 4. Container Circular com Logo do Lojista (Borda Padronizada Oficial)
     const logoCenterY = format === 'feed' ? 390 : 660;
-    const logoRadius = format === 'feed' ? 115 : 135;
+    const logoRadius = format === 'feed' ? 120 : 140;
 
-    // Desenhar a Borda Exata do Plano (Gold, Silver, Bronze, Free = Branca)
+    // Desenhar Borda Padrão Oficial Melhor Cupom (Identidade visual única e profissional)
     ctx.save();
-    ctx.shadowColor = tierStyle.color;
-    ctx.shadowBlur = store?.tier === 'free' ? 15 : 30;
-    ctx.strokeStyle = tierStyle.color;
-    ctx.lineWidth = 8;
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
+    ctx.shadowBlur = 28;
+    ctx.strokeStyle = '#FF5F00';
+    ctx.lineWidth = 7;
     ctx.beginPath();
     ctx.arc(width / 2, logoCenterY, logoRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Anel de acabamento interno sutil
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -225,7 +158,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       }
     }
 
-    // Fallback: se a imagem não carregar ou não existir, desenha emoji/inicial estilizado
+    // Fallback: se a imagem não carregar ou não existir, desenha inicial estilizada padronizada
     if (!logoDrawn) {
       ctx.save();
       const circleGrad = ctx.createLinearGradient(width / 2 - logoRadius, logoCenterY - logoRadius, width / 2 + logoRadius, logoCenterY + logoRadius);
@@ -236,45 +169,24 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.font = '80px "Inter", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (store?.logo && store.logo.length <= 4) {
+        ctx.font = '80px "Inter", sans-serif';
         ctx.fillText(store.logo, width / 2, logoCenterY);
       } else {
-        ctx.fillStyle = tierStyle.color;
-        ctx.font = 'bold 72px "Inter", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 74px "Inter", sans-serif';
         ctx.fillText((store?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoCenterY);
       }
       ctx.restore();
     }
 
-    // Selo de Assinatura abaixo da logo
-    const tierBadgeY = logoCenterY + logoRadius + 22;
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-    ctx.strokeStyle = tierStyle.color;
-    ctx.lineWidth = 2;
-    const tbWidth = 240;
-    const tbHeight = 36;
-    const tbX = (width - tbWidth) / 2;
-    ctx.beginPath();
-    ctx.roundRect(tbX, tierBadgeY - tbHeight / 2, tbWidth, tbHeight, 18);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = tierStyle.color;
-    ctx.font = 'bold 16px "Inter", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`${tierStyle.icon} ${tierStyle.label}`, width / 2, tierBadgeY);
-    ctx.restore();
-
-    // 6. Nome da Loja
-    const storeNameY = tierBadgeY + 54;
+    // 5. Nome da Loja e Localização (sem tag de plano na arte)
+    const storeNameY = logoCenterY + logoRadius + 44;
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 42px "Inter", sans-serif';
+    ctx.font = '900 44px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const storeName = store?.name || 'Nossa Loja Parceira';
@@ -282,14 +194,14 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
     // Cidade / Categoria
     ctx.fillStyle = '#9CA3AF';
-    ctx.font = '600 20px "Inter", sans-serif';
-    ctx.fillText(`${store?.city || 'Brasil'} • Benefícios Exclusivos`, width / 2, storeNameY + 36);
+    ctx.font = '600 22px "Inter", sans-serif';
+    ctx.fillText(`${store?.city || 'Brasil'} • Benefícios Exclusivos`, width / 2, storeNameY + 38);
     ctx.restore();
 
-    // 7. TEXTO OBRIGATÓRIO SOLICITADO PELO USUÁRIO:
+    // 6. TEXTO OBRIGATÓRIO SOLICITADO PELO USUÁRIO:
     // "Eu faço parte!"
     // "resgate seu cupom!"
-    const textStartY = format === 'feed' ? 680 : 1080;
+    const textStartY = format === 'feed' ? 690 : 1080;
 
     // "Eu faço parte!"
     ctx.save();
@@ -300,14 +212,14 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.fillStyle = efGrad;
     ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
     ctx.shadowBlur = 32;
-    ctx.font = '900 78px "Inter", sans-serif';
+    ctx.font = '900 80px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Eu faço parte!', width / 2, textStartY);
     ctx.restore();
 
     // Botão / Faixa de Destaque: "resgate seu cupom!"
-    const ctaY = textStartY + 84;
+    const ctaY = textStartY + 86;
     const ctaWidth = 620;
     const ctaHeight = 78;
     const ctaX = (width - ctaWidth) / 2;
@@ -338,10 +250,10 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.fillText('🎟️ resgate seu cupom!', width / 2, ctaY + ctaHeight / 2);
     ctx.restore();
 
-    // 8. Detalhes Adicionais de Oferta / Rodapé
-    const footerY = format === 'feed' ? 920 : 1420;
+    // 7. Detalhes Adicionais de Oferta / Rodapé
+    const footerY = format === 'feed' ? 930 : 1440;
 
-    // Card de Cupom em Destaque (Se Story ou se houver espaço)
+    // Card de Cupom em Destaque (Se Story)
     if (format === 'story') {
       const cardW = 760;
       const cardH = 180;
@@ -442,7 +354,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
               Kit de Divulgação: "Eu faço parte! Resgate seu cupom!"
             </h2>
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-              Baixe a arte oficial em alta resolução (1080p) personalizada com o logotipo do seu estabelecimento, a borda oficial da sua assinatura ({tierStyle.name}) e a marca do Melhor Cupom para atrair centenas de novos clientes pelas suas redes sociais!
+              Baixe a arte oficial padronizada em alta resolução (1080p) personalizada com o logotipo do seu estabelecimento e a marca do Melhor Cupom para atrair centenas de novos clientes pelas suas redes sociais!
             </p>
           </div>
 
@@ -484,16 +396,13 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
           </div>
         </div>
 
-        {/* Resumo do Selo de Assinatura Atual */}
+        {/* Resumo do Padrão da Arte */}
         <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-3">
-            <span className="text-gray-400">Sua borda de divulgação:</span>
-            <span className={`px-3 py-1 rounded-xl font-black border flex items-center gap-1.5 ${tierStyle.badgeClass}`}>
-              <span>{tierStyle.icon}</span>
-              <span>{tierStyle.label}</span>
-              <span className="text-[10px] font-normal opacity-80">
-                ({store?.tier === 'free' ? 'Borda Branca Oficial' : `Borda Dourada / ${tierStyle.name}`})
-              </span>
+            <span className="text-gray-400">Padrão da Arte:</span>
+            <span className="px-3 py-1 rounded-xl font-black border flex items-center gap-1.5 bg-orange-500/15 text-orange-400 border-orange-500/30">
+              <Sparkles size={13} className="text-orange-400" />
+              <span>Arte Oficial Padronizada Melhor Cupom</span>
             </span>
           </div>
 
@@ -614,7 +523,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
             </button>
           </div>
 
-          {/* Canvas Renderizado (responsivo com aspect-ratio proporcional) */}
+          {/* Canvas Renderizado */}
           <div className="relative w-full flex items-center justify-center bg-black/40 rounded-2xl p-3 border border-white/5 overflow-hidden">
             <canvas
               ref={canvasRef}
@@ -628,7 +537,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
           <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-gray-400 text-center">
             <Sparkles size={13} className="text-amber-400" />
-            <span>Arte gerada dinamicamente com as cores oficiais da sua assinatura e logotipo oficial.</span>
+            <span>Arte oficial padronizada em alta resolução com o logotipo oficial do estabelecimento e do Melhor Cupom.</span>
           </div>
 
         </div>
@@ -686,7 +595,6 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const canvasRef = useRef(null);
 
   const selectedStore = stores.find(s => s.id === selectedStoreId) || stores[0] || {};
-  const tierStyle = getTierStyle(selectedStore?.tier);
 
   // Inicializar legenda com base na loja selecionada
   useEffect(() => {
@@ -754,7 +662,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       }
     }
 
-    // 3. Aura Luminosa Laranja e Dourada
+    // 3. Aura Luminosa Laranja Padrão
     const aura = ctx.createRadialGradient(width * 0.5, format === 'feed' ? 560 : 980, 20, width * 0.5, format === 'feed' ? 560 : 980, 480);
     aura.addColorStop(0, 'rgba(255, 95, 0, 0.35)');
     aura.addColorStop(0.5, 'rgba(255, 95, 0, 0.1)');
@@ -762,18 +670,25 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = aura;
     ctx.fillRect(0, 0, width, height);
 
-    // 4. Logo do Lojista em Destaque com Borda da Assinatura
+    // 4. Logo do Lojista em Destaque com Borda Padronizada Oficial
     const logoY = format === 'feed' ? 280 : 480;
-    const logoRadius = format === 'feed' ? 95 : 120;
+    const logoRadius = format === 'feed' ? 100 : 125;
 
-    // Borda da Assinatura
+    // Borda Padronizada Oficial
     ctx.save();
-    ctx.shadowColor = tierStyle.color;
-    ctx.shadowBlur = selectedStore?.tier === 'free' ? 15 : 28;
-    ctx.strokeStyle = tierStyle.color;
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
+    ctx.shadowBlur = 28;
+    ctx.strokeStyle = '#FF5F00';
     ctx.lineWidth = 7;
     ctx.beginPath();
     ctx.arc(width / 2, logoY, logoRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Anel interno sutil
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -810,49 +725,30 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = tierStyle.color;
-      ctx.font = 'bold 64px "Inter", sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 68px "Inter", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText((selectedStore?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoY);
       ctx.restore();
     }
 
-    // Badge do Plano da Loja
-    const badgeY = logoY + logoRadius + 20;
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.strokeStyle = tierStyle.color;
-    ctx.lineWidth = 2;
-    const bW = 260;
-    const bH = 34;
-    ctx.beginPath();
-    ctx.roundRect((width - bW) / 2, badgeY - bH / 2, bW, bH, 17);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = tierStyle.color;
-    ctx.font = 'bold 15px "Inter", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`${tierStyle.icon} ${tierStyle.label}`, width / 2, badgeY);
-    ctx.restore();
-
-    // Nome da Loja e Localização
+    // 5. Nome da Loja e Localização (sem tag de plano na arte)
+    const storeNameY = logoY + logoRadius + 44;
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 44px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const storeName = selectedStore?.name || 'Estabelecimento Parceiro';
-    ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, badgeY + 46);
+    ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
     ctx.fillStyle = '#9CA3AF';
     ctx.font = '600 22px "Inter", sans-serif';
-    ctx.fillText(selectedStore?.city || 'Brasil', width / 2, badgeY + 84);
+    ctx.fillText(selectedStore?.city || 'Brasil', width / 2, storeNameY + 38);
     ctx.restore();
 
-    // 5. TEXTO EXATO SOLICITADO PELO USUÁRIO:
+    // 6. TEXTO EXATO SOLICITADO PELO USUÁRIO:
     // "Eu faço parte! do"
     // seguido da [Logo do Melhor Cupom]
     const efY = format === 'feed' ? 620 : 980;
@@ -866,7 +762,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = gradText;
     ctx.shadowColor = 'rgba(255, 95, 0, 0.7)';
     ctx.shadowBlur = 34;
-    ctx.font = '900 64px "Inter", sans-serif';
+    ctx.font = '900 68px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Eu faço parte! do', width / 2, efY);
@@ -883,7 +779,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       });
 
       if (mcLogoImg.width > 0) {
-        const mcLogoWidth = format === 'feed' ? 420 : 500;
+        const mcLogoWidth = format === 'feed' ? 440 : 520;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
         const mcLogoY = efY + 45;
@@ -898,7 +794,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       console.warn('Erro ao carregar logo do Melhor Cupom no admin:', e);
     }
 
-    // 6. Chamada para Ação / Rodapé Oficial
+    // 7. Chamada para Ação / Rodapé Oficial
     const botY = format === 'feed' ? 900 : 1480;
 
     // Botão de Resgate
@@ -1090,7 +986,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               >
                 {stores.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.tier ? s.tier.toUpperCase() : 'FREE'}) - {s.city}
+                    {s.name} - {s.city}
                   </option>
                 ))}
               </select>
@@ -1197,8 +1093,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${tierStyle.badgeClass}`}>
-                {tierStyle.icon} {tierStyle.name}
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40">
+                ⭐ Arte Oficial Padronizada
               </span>
             </div>
           </div>
@@ -1217,7 +1113,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
           <div className="mt-4 text-xs text-gray-400 text-center flex items-center gap-1.5">
             <CheckCircle2 size={14} className="text-emerald-400" />
-            <span>Formatada com logotipo, banner e borda correspondente ao plano do lojista.</span>
+            <span>Arte padronizada com logotipo, banner e identidade oficial do Melhor Cupom.</span>
           </div>
 
         </div>
