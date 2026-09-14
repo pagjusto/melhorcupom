@@ -101,26 +101,26 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(width * 0.5, format === 'feed' ? 220 : 380, 240, 0, Math.PI * 2);
+    ctx.arc(width * 0.5, format === 'feed' ? 195 : 360, format === 'feed' ? 260 : 360, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    // 3. Container Circular com Logo do Lojista (Borda Padronizada Oficial)
-    const logoCenterY = format === 'feed' ? 220 : 380;
-    const logoRadius = format === 'feed' ? 90 : 130;
+    // 3. Container Circular com Logo do Lojista (Borda Padronizada Oficial em Destaque Maior)
+    const logoCenterY = format === 'feed' ? 195 : 360;
+    const logoRadius = format === 'feed' ? 125 : 170;
 
     // Borda Padrão Oficial Melhor Cupom (Laranja Oficial + Anel Interno Branco)
     ctx.save();
     ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
     ctx.shadowBlur = 28;
     ctx.strokeStyle = '#FF5F00';
-    ctx.lineWidth = 7;
+    ctx.lineWidth = 8;
     ctx.beginPath();
     ctx.arc(width / 2, logoCenterY, logoRadius, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
     ctx.stroke();
@@ -166,35 +166,35 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (store?.logo && store.logo.length <= 4) {
-        ctx.font = '72px "Inter", sans-serif';
+        ctx.font = format === 'feed' ? '96px "Inter", sans-serif' : '130px "Inter", sans-serif';
         ctx.fillText(store.logo, width / 2, logoCenterY);
       } else {
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 70px "Inter", sans-serif';
+        ctx.font = format === 'feed' ? 'bold 90px "Inter", sans-serif' : 'bold 120px "Inter", sans-serif';
         ctx.fillText((store?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoCenterY);
       }
       ctx.restore();
     }
 
     // 4. Nome da Loja
-    const storeNameY = logoCenterY + logoRadius + 42;
+    const storeNameY = logoCenterY + logoRadius + 36;
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 42px "Inter", sans-serif';
+    ctx.font = '900 40px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const storeName = store?.name || 'Nossa Loja Parceira';
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
     // 5. ABAIXO DO NOME APARECER A CIDADE (LOJA ONLINE APARECER BRASIL)
-    const cityY = storeNameY + 36;
+    const cityY = storeNameY + 34;
     ctx.fillStyle = '#FF9D5C';
     ctx.font = '700 24px "Inter", sans-serif';
     ctx.fillText(locationText, width / 2, cityY);
     ctx.restore();
 
     // 6. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
-    const plusY = format === 'feed' ? 465 : 730;
+    const plusY = format === 'feed' ? 445 : 710;
     ctx.save();
     const plusGrad = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     plusGrad.addColorStop(0, '#FFFFFF');
@@ -221,10 +221,10 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       });
 
       if (mcLogoImg.width > 0) {
-        const mcLogoWidth = format === 'feed' ? 360 : 480;
+        const mcLogoWidth = format === 'feed' ? 340 : 470;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
-        const mcLogoY = plusY + (format === 'feed' ? 48 : 70);
+        const mcLogoY = plusY + (format === 'feed' ? 46 : 65);
         mcLogoBottom = mcLogoY + mcLogoHeight;
 
         ctx.save();
@@ -651,7 +651,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillRect(0, 0, width, height);
 
     // 2. Banner da Loja como Fundo Superior Estilizado
-    const bannerHeight = format === 'feed' ? 320 : 520;
+    const bannerHeight = format === 'feed' ? 340 : 540;
     if (selectedStore?.image) {
       try {
         const bannerImg = new Image();
@@ -688,23 +688,23 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = aura;
     ctx.fillRect(0, 0, width, height);
 
-    // 4. Logo do Lojista em Destaque com Borda Padronizada Oficial
-    const logoY = format === 'feed' ? 200 : 360;
-    const logoRadius = format === 'feed' ? 80 : 115;
+    // 4. Logo do Lojista em Destaque com Borda Padronizada Oficial em Destaque Maior
+    const logoY = format === 'feed' ? 195 : 360;
+    const logoRadius = format === 'feed' ? 125 : 170;
 
     // Borda Padronizada Oficial
     ctx.save();
     ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
-    ctx.shadowBlur = 26;
+    ctx.shadowBlur = 28;
     ctx.strokeStyle = '#FF5F00';
-    ctx.lineWidth = 7;
+    ctx.lineWidth = 8;
     ctx.beginPath();
     ctx.arc(width / 2, logoY, logoRadius, 0, Math.PI * 2);
     ctx.stroke();
 
     // Anel interno sutil
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
     ctx.stroke();
@@ -738,21 +738,29 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     if (!logoDrawn) {
       ctx.save();
-      ctx.fillStyle = '#1B1B26';
+      const circleGrad = ctx.createLinearGradient(width / 2 - logoRadius, logoY - logoRadius, width / 2 + logoRadius, logoY + logoRadius);
+      circleGrad.addColorStop(0, '#1F1F2E');
+      circleGrad.addColorStop(1, '#111119');
+      ctx.fillStyle = circleGrad;
       ctx.beginPath();
       ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 64px "Inter", sans-serif';
+      ctx.font = format === 'feed' ? 'bold 90px "Inter", sans-serif' : 'bold 120px "Inter", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText((selectedStore?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoY);
+      if (selectedStore?.logo && selectedStore.logo.length <= 4) {
+        ctx.font = format === 'feed' ? '96px "Inter", sans-serif' : '130px "Inter", sans-serif';
+        ctx.fillText(selectedStore.logo, width / 2, logoY);
+      } else {
+        ctx.fillText((selectedStore?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoY);
+      }
       ctx.restore();
     }
 
     // 5. Nome da Loja
-    const storeNameY = logoY + logoRadius + 38;
+    const storeNameY = logoY + logoRadius + 36;
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 40px "Inter", sans-serif';
@@ -762,14 +770,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
     // 6. ABAIXO DO NOME APARECER A CIDADE (LOJA ONLINE APARECER BRASIL)
-    const cityY = storeNameY + 36;
+    const cityY = storeNameY + 34;
     ctx.fillStyle = '#FF9D5C';
     ctx.font = '700 24px "Inter", sans-serif';
     ctx.fillText(locationText, width / 2, cityY);
     ctx.restore();
 
     // 7. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
-    const plusY = format === 'feed' ? 435 : 670;
+    const plusY = format === 'feed' ? 445 : 710;
     ctx.save();
     const gradText = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     gradText.addColorStop(0, '#FFFFFF');
@@ -797,10 +805,10 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       });
 
       if (mcLogoImg.width > 0) {
-        const mcLogoWidth = format === 'feed' ? 340 : 460;
+        const mcLogoWidth = format === 'feed' ? 340 : 470;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
-        const mcLogoY = plusY + (format === 'feed' ? 48 : 65);
+        const mcLogoY = plusY + (format === 'feed' ? 46 : 65);
         mcLogoBottom = mcLogoY + mcLogoHeight;
 
         ctx.save();
