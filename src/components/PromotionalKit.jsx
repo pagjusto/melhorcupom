@@ -14,7 +14,8 @@ import {
   RefreshCw, 
   Instagram, 
   Zap,
-  MapPin
+  MapPin,
+  Plus
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
@@ -100,13 +101,13 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(width * 0.5, format === 'feed' ? 240 : 400, 240, 0, Math.PI * 2);
+    ctx.arc(width * 0.5, format === 'feed' ? 220 : 380, 240, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
     // 3. Container Circular com Logo do Lojista (Borda Padronizada Oficial)
-    const logoCenterY = format === 'feed' ? 230 : 380;
-    const logoRadius = format === 'feed' ? 95 : 130;
+    const logoCenterY = format === 'feed' ? 220 : 380;
+    const logoRadius = format === 'feed' ? 90 : 130;
 
     // Borda Padrão Oficial Melhor Cupom (Laranja Oficial + Anel Interno Branco)
     ctx.save();
@@ -176,7 +177,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     }
 
     // 4. Nome da Loja
-    const storeNameY = logoCenterY + logoRadius + 44;
+    const storeNameY = logoCenterY + logoRadius + 42;
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 42px "Inter", sans-serif';
@@ -186,30 +187,30 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
     // 5. ABAIXO DO NOME APARECER A CIDADE (LOJA ONLINE APARECER BRASIL)
-    const cityY = storeNameY + 38;
+    const cityY = storeNameY + 36;
     ctx.fillStyle = '#FF9D5C';
     ctx.font = '700 24px "Inter", sans-serif';
     ctx.fillText(locationText, width / 2, cityY);
     ctx.restore();
 
-    // 6. FRASE AJUSTADA: "Agora estamos no"
-    const phraseY = format === 'feed' ? 490 : 760;
+    // 6. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
+    const plusY = format === 'feed' ? 465 : 730;
     ctx.save();
-    const efGrad = ctx.createLinearGradient(width * 0.2, phraseY, width * 0.8, phraseY);
-    efGrad.addColorStop(0, '#FFFFFF');
-    efGrad.addColorStop(0.5, '#FFF2EB');
-    efGrad.addColorStop(1, '#FF8A3D');
-    ctx.fillStyle = efGrad;
-    ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
-    ctx.shadowBlur = 30;
-    ctx.font = format === 'feed' ? '900 56px "Inter", sans-serif' : '900 72px "Inter", sans-serif';
+    const plusGrad = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
+    plusGrad.addColorStop(0, '#FFFFFF');
+    plusGrad.addColorStop(0.5, '#FFF2EB');
+    plusGrad.addColorStop(1, '#FF7A29');
+    ctx.fillStyle = plusGrad;
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.75)';
+    ctx.shadowBlur = 28;
+    ctx.font = format === 'feed' ? '900 68px "Inter", sans-serif' : '900 84px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Agora estamos no', width / 2, phraseY);
+    ctx.fillText('+', width / 2, plusY);
     ctx.restore();
 
-    // 7. LOGO DO MELHOR CUPOM (Com posicionamento sem sobreposição)
-    let mcLogoBottom = phraseY + 220;
+    // 7. LOGO DO MELHOR CUPOM (Com folga vertical perfeita sem colisão)
+    let mcLogoBottom = plusY + 220;
     try {
       const mcLogoImg = new Image();
       mcLogoImg.crossOrigin = 'anonymous';
@@ -223,7 +224,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
         const mcLogoWidth = format === 'feed' ? 360 : 480;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
-        const mcLogoY = phraseY + (format === 'feed' ? 42 : 60);
+        const mcLogoY = plusY + (format === 'feed' ? 48 : 70);
         mcLogoBottom = mcLogoY + mcLogoHeight;
 
         ctx.save();
@@ -269,9 +270,8 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
       ctx.restore();
     }
 
-    // 9. BOTÃO / FAIXA DE RESGATE (Espaçamento calculado para NUNCA sobrepor o logo)
-    // No feed: mcLogoBottom fica em ~740px. O botão inicia em 795px (55px de espaço livre).
-    const ctaY = format === 'feed' ? Math.max(795, mcLogoBottom + 50) : 1410;
+    // 9. BOTÃO / FAIXA DE RESGATE (Garantindo mais de 60px de respiro livre abaixo do logo)
+    const ctaY = format === 'feed' ? Math.max(785, mcLogoBottom + 55) : 1410;
     const ctaWidth = 580;
     const ctaHeight = 74;
     const ctaX = (width - ctaWidth) / 2;
@@ -344,9 +344,9 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     }, 400);
   };
 
-  // Copiar legenda sugerida com a frase "Agora estamos no"
+  // Copiar legenda sugerida
   const handleCopyCaption = () => {
-    const caption = `🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora estamos no @melhorcupom.oficial!\n\nSe você é cliente ou quer aproveitar nossos produtos com economia real, nós disponibilizamos cupons exclusivos com descontos especiais para você resgatar gratuitamente agora mesmo!\n\n👉 COMO RESGATAR SEU CUPOM:\n1️⃣ Acesse o link na nossa bio ou baixe o app @melhorcupom.oficial\n2️⃣ Procure por "${store?.name || 'nossa loja'}"\n3️⃣ Resgate seu cupom grátis e apresente aqui no balcão!\n\nMarque aquele amigo que adora economizar e vem aproveitar! 🔥\n\n#MelhorCupom #AgoraEstamosNoMelhorCupom #ResgateSeuCupom #Descontos #${(store?.name || 'loja').replace(/\s+/g, '')} #${locationText.split('-')[0].trim().replace(/\s+/g, '')}`;
+    const caption = `🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @melhorcupom.oficial estão juntos!\n\nSe você é cliente ou quer aproveitar nossos produtos com economia real, nós disponibilizamos cupons exclusivos com descontos especiais para você resgatar gratuitamente agora mesmo!\n\n👉 COMO RESGATAR SEU CUPOM:\n1️⃣ Acesse o link na nossa bio ou baixe o app @melhorcupom.oficial\n2️⃣ Procure por "${store?.name || 'nossa loja'}"\n3️⃣ Resgate seu cupom grátis e aproveite!\n\nMarque aquele amigo que adora economizar e vem aproveitar! 🔥\n\n#MelhorCupom #Parceria #${(store?.name || 'loja').replace(/\s+/g, '')} #${locationText.split('-')[0].trim().replace(/\s+/g, '')}`;
     
     navigator.clipboard.writeText(caption);
     setCopiedCaption(true);
@@ -368,10 +368,10 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
               <span>Central Oficial de Divulgação & Redes Sociais</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight">
-              Kit de Divulgação: "Agora estamos no Melhor Cupom!"
+              Kit de Divulgação: {store?.name || 'Loja'} + Melhor Cupom
             </h2>
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-              Baixe a arte oficial padronizada em alta resolução (1080p) personalizada com o logotipo do seu estabelecimento, localização ({locationText}) e a marca do Melhor Cupom para atrair centenas de novos clientes pelas suas redes sociais!
+              Baixe a arte oficial padronizada em alta resolução (1080p) personalizada com o logotipo do seu estabelecimento, símbolo de parceria (+), localização ({locationText}) e a marca do Melhor Cupom!
             </p>
           </div>
 
@@ -495,7 +495,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
             </div>
 
             <div className="bg-[#12121B] border border-white/5 rounded-2xl p-4 text-xs text-gray-300 font-mono leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
-              {`🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora estamos no @melhorcupom.oficial!\n\nResgate cupons exclusivos gratuitos e venha aproveitar com economia de verdade!\n\n👉 Acesse o link da nossa bio ou baixe o app Melhor Cupom!`}
+              {`🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @melhorcupom.oficial estão juntos!\n\nResgate cupons exclusivos gratuitos e venha aproveitar com economia de verdade!\n\n👉 Acesse o link da nossa bio ou baixe o app Melhor Cupom!`}
             </div>
           </div>
 
@@ -528,7 +528,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
           <div className="w-full flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <Eye size={15} className="text-orange-400" />
-              <span>Pré-visualização: "Agora estamos no" ({format === 'feed' ? '1080x1080' : '1080x1920'})</span>
+              <span>Pré-visualização: Parceria (+) ({format === 'feed' ? '1080x1080' : '1080x1920'})</span>
             </div>
 
             <button
@@ -554,7 +554,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
           <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-gray-400 text-center">
             <Sparkles size={13} className="text-amber-400" />
-            <span>Arte oficial com espaçamento perfeito entre a logo e o botão de resgate.</span>
+            <span>Arte oficial com símbolo de colaboração (+) entre a loja e o Melhor Cupom.</span>
           </div>
 
         </div>
@@ -614,20 +614,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const selectedStore = stores.find(s => s.id === selectedStoreId) || stores[0] || {};
   const locationText = getStoreLocationText(selectedStore);
 
-  // Inicializar legenda com a frase solicitada: "Nova parceria !"
+  // Inicializar legenda com colaboração
   useEffect(() => {
     if (selectedStore?.name) {
       setCustomCaption(
-        `🎉 NOVA PARCERIA ! 🎟️🔥\n\nAgora você encontra cupons exclusivos no ${selectedStore.name} em ${locationText}! 🍔✨\n\nResgate seu cupom com descontos imperdíveis acessando o link na bio do @melhorcupom.oficial ou baixando nosso app!\n\n👉 Nova parceria ! Melhor Cupom!\n\n#MelhorCupom #NovaParceria #${(selectedStore.name || '').replace(/[^a-zA-Z0-9]/g, '')} #DescontosVIP #${locationText.split('-')[0].trim().replace(/[^a-zA-Z0-9]/g, '')}`
+        `🎉 NOVA PARCERIA ! 🎟️🔥\n\nAgora você encontra cupons exclusivos no ${selectedStore.name} em ${locationText}! 🍔✨\n\nResgate seu cupom com descontos imperdíveis acessando o link na bio do @melhorcupom.oficial ou baixando nosso app!\n\n👉 ${selectedStore.name} + Melhor Cupom!\n\n#MelhorCupom #NovaParceria #${(selectedStore.name || '').replace(/[^a-zA-Z0-9]/g, '')} #DescontosVIP #${locationText.split('-')[0].trim().replace(/[^a-zA-Z0-9]/g, '')}`
       );
     }
   }, [selectedStoreId]);
 
   // Desenhar arte no Canvas para o Admin
-  // Exigências:
-  // 1. "abaixo do nome apareça a cidade ,loja online aparecer brasil"
-  // 2. "ajustar tambem frase do post adm : Nova parceria !"
-  // 3. "imagem do feed logo do mlehor cupom esta sobrepondoo resgate" -> Corrigir espaçamento vertical
+  // Solicitação do usuário: "ao invez da escrita seria bom colocar um + pra eu ver como ficaria"
   useEffect(() => {
     drawAdminArtwork();
   }, [format, selectedStore]);
@@ -692,8 +689,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillRect(0, 0, width, height);
 
     // 4. Logo do Lojista em Destaque com Borda Padronizada Oficial
-    const logoY = format === 'feed' ? 210 : 360;
-    const logoRadius = format === 'feed' ? 82 : 115;
+    const logoY = format === 'feed' ? 200 : 360;
+    const logoRadius = format === 'feed' ? 80 : 115;
 
     // Borda Padronizada Oficial
     ctx.save();
@@ -771,25 +768,25 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillText(locationText, width / 2, cityY);
     ctx.restore();
 
-    // 7. FRASE DO POST ADM SOLICITADA PELO USUÁRIO: "Nova parceria !"
-    const phraseY = format === 'feed' ? 450 : 700;
+    // 7. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
+    const plusY = format === 'feed' ? 435 : 670;
     ctx.save();
-    const gradText = ctx.createLinearGradient(width * 0.2, phraseY, width * 0.8, phraseY);
+    const gradText = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     gradText.addColorStop(0, '#FFFFFF');
     gradText.addColorStop(0.5, '#FFF1EB');
     gradText.addColorStop(1, '#FF7A29');
     ctx.fillStyle = gradText;
-    ctx.shadowColor = 'rgba(255, 95, 0, 0.7)';
-    ctx.shadowBlur = 30;
-    ctx.font = format === 'feed' ? '900 54px "Inter", sans-serif' : '900 70px "Inter", sans-serif';
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.75)';
+    ctx.shadowBlur = 28;
+    ctx.font = format === 'feed' ? '900 68px "Inter", sans-serif' : '900 84px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Nova parceria !', width / 2, phraseY);
+    ctx.fillText('+', width / 2, plusY);
     ctx.restore();
 
     // 8. LOGO DO MELHOR CUPOM
-    // Posicionamento calculado com folga para NUNCA sobrepor o botão de resgate
-    let mcLogoBottom = phraseY + 200;
+    // Posicionamento com folga calculada para NUNCA sobrepor o botão de resgate
+    let mcLogoBottom = plusY + 200;
     try {
       const mcLogoImg = new Image();
       mcLogoImg.crossOrigin = 'anonymous';
@@ -803,7 +800,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         const mcLogoWidth = format === 'feed' ? 340 : 460;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
-        const mcLogoY = phraseY + (format === 'feed' ? 42 : 55);
+        const mcLogoY = plusY + (format === 'feed' ? 48 : 65);
         mcLogoBottom = mcLogoY + mcLogoHeight;
 
         ctx.save();
@@ -816,12 +813,11 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       console.warn('Erro ao carregar logo do Melhor Cupom no admin:', e);
     }
 
-    // 9. BOTÃO DE RESGATE (Espaçamento vertical ajustado: 55px abaixo do logo)
-    // No feed: mcLogoBottom fica em ~690px. O botão inicia em 750px (sem nenhuma sobreposição).
+    // 9. BOTÃO DE RESGATE (Mais de 65px de espaço livre abaixo do logo)
     const btnW = 560;
     const btnH = 68;
     const btnX = (width - btnW) / 2;
-    const botY = format === 'feed' ? Math.max(750, mcLogoBottom + 45) : 1350;
+    const botY = format === 'feed' ? Math.max(745, mcLogoBottom + 50) : 1330;
 
     ctx.save();
     const btnGrad = ctx.createLinearGradient(btnX, botY, btnX + btnW, botY + btnH);
@@ -1054,7 +1050,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             {/* Editor de Legenda do Instagram */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-300 flex items-center justify-between">
-                <span>Legenda do Post: "Nova parceria !"</span>
+                <span>Legenda do Post: Parceria (+)</span>
                 <span className="text-[10px] text-gray-400">Variáveis e hashtags automáticas</span>
               </label>
               <textarea
@@ -1119,7 +1115,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           <div className="w-full flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <Eye size={15} className="text-fuchsia-400" />
-              <span>Arte Oficial: "Nova parceria !"</span>
+              <span>Arte Oficial: Parceria (+)</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -1143,7 +1139,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
           <div className="mt-4 text-xs text-gray-400 text-center flex items-center gap-1.5">
             <CheckCircle2 size={14} className="text-emerald-400" />
-            <span>Arte padronizada com logotipo, banner e espaçamento perfeito sem sobreposição.</span>
+            <span>Arte com símbolo de parceria (+) e espaçamento perfeito sem sobreposição.</span>
           </div>
 
         </div>
@@ -1180,7 +1176,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               </div>
 
               <div className="text-xs text-gray-400 line-clamp-2">
-                {post.city} • Post automático no feed com selo "Nova Parceria".
+                {post.city} • Post automático no feed com selo de parceria.
               </div>
 
               <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-gray-300">
