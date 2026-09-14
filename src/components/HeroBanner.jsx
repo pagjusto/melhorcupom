@@ -28,10 +28,11 @@ export const HeroBanner = ({
   // Estado para visualização do logo oficial ou teste de vídeo
   // 'video_transparent' | 'static_image' | 'video_mp4'
   const [mediaType, setMediaType] = useState('video_transparent');
-  const [removeWhiteBg, setRemoveWhiteBg] = useState(true);
+  const [removeGreenBg, setRemoveGreenBg] = useState(true);
+  const [removeWhiteBg, setRemoveWhiteBg] = useState(false);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
-  const [trimCapCutOutro, setTrimCapCutOutro] = useState(true);
-  const [trimSeconds, setTrimSeconds] = useState(2.8);
+  const [trimCapCutOutro, setTrimCapCutOutro] = useState(false);
+  const [trimSeconds, setTrimSeconds] = useState(0);
   const [transitionMode, setTransitionMode] = useState('crossfade');
   const [transitionDuration, setTransitionDuration] = useState(0.5);
   const [maskWatermark, setMaskWatermark] = useState(true);
@@ -64,7 +65,8 @@ export const HeroBanner = ({
           
           {mediaType === 'video_transparent' && (
             <TransparentVideo
-              src="/hero-logo-video.webm"
+              src="/video_loop_32s.mp4"
+              removeGreen={removeGreenBg}
               removeWhite={removeWhiteBg}
               preserveWhiteContent={preserveWhiteContent}
               threshold={whiteThreshold}
@@ -75,7 +77,7 @@ export const HeroBanner = ({
               transitionDuration={transitionDuration}
               maskWatermark={maskWatermark}
               className="w-full h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
-              alt="Melhor Cupom Vídeo"
+              alt="Melhor Cupom Vídeo 32s"
             />
           )}
 
@@ -89,7 +91,7 @@ export const HeroBanner = ({
               controls
               className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
             >
-              <source src="/hero-video.mp4" type="video/mp4" />
+              <source src="/video_loop_32s.mp4" type="video/mp4" />
             </video>
           )}
 
@@ -123,7 +125,7 @@ export const HeroBanner = ({
                     : 'bg-white/5 hover:bg-white/10 text-gray-300'
                 }`}
               >
-                <span>🎬 Vídeo Teste</span>
+                <span>🎬 Vídeo 32s (Chroma Key)</span>
               </button>
               <button
                 onClick={() => setMediaType('video_mp4')}
@@ -137,9 +139,22 @@ export const HeroBanner = ({
               </button>
             </div>
 
-            {/* Controles de Remoção de Fundo Branco quando o vídeo estiver ativo */}
+            {/* Controles de Remoção de Fundo quando o vídeo estiver ativo */}
             {mediaType === 'video_transparent' && (
               <div className="flex flex-wrap items-center gap-1.5 pt-1.5 sm:pt-0 sm:pl-2 sm:border-l sm:border-white/10">
+                {/* Botão Fundo Verde Chroma Key */}
+                <button
+                  onClick={() => setRemoveGreenBg(!removeGreenBg)}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
+                    removeGreenBg
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
+                      : 'bg-red-500/20 text-red-300 border-red-500/40'
+                  }`}
+                  title="Remove o fundo verde chroma-key preservando as letras e o mascote"
+                >
+                  <span>{removeGreenBg ? '✓ Fundo Verde Removido' : '✕ Fundo Verde Visível'}</span>
+                </button>
+
                 {/* Botão Letras Brancas Preservadas */}
                 <button
                   onClick={() => setPreserveWhiteContent(!preserveWhiteContent)}
@@ -150,7 +165,7 @@ export const HeroBanner = ({
                   }`}
                   title="Preserva o branco das letras Melhor Cupom e do boneco usando algoritmo de borda"
                 >
-                  <span>{preserveWhiteContent ? '✓ Letras & Mascote Brancos' : '✕ Letras Vazadas'}</span>
+                  <span>{preserveWhiteContent ? '✓ Letras & Mascote Preservados' : '✕ Vazado'}</span>
                 </button>
 
                 {/* Botão Cortar Final CapCut */}

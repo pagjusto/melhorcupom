@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 
 /**
  * TransparentVideo - Reprodução de vídeo com:
- * 1. Remoção inteligente de fundo branco por inundação de borda (BFS Flood-Fill):
- *    Remove APENAS o fundo externo que toca as bordas, PRESERVANDO o branco das letras e do mascote!
+ * 1. Remoção inteligente de fundo verde (Chroma Key) e/ou branco por inundação de borda (BFS Flood-Fill):
+ *    Remove o fundo externo e tarjas de letterbox, PRESERVANDO o branco das letras, do mascote e o verde das notas de dinheiro!
  * 2. Transição Ultra-Suave de Looping com Snapshot Crossfade à Prova de Travamentos:
  *    - Auto-recuperação contínua (NUNCA congela ou para de se mexer).
  *    - 'crossfade': Dissolvência suave de alta precisão entre o fim e o início do ciclo.
@@ -18,12 +18,13 @@ import React, { useRef, useEffect, useState } from 'react';
 export const TransparentVideo = ({
   src,
   className = '',
-  removeWhite = true,
+  removeGreen = true,          // Remoção de fundo verde Chroma Key (padrão)
+  removeWhite = false,         // Remoção de fundo branco (para compatibilidade)
   preserveWhiteContent = true, // Flood-fill preservador de letras e mascote
   threshold = 215,             // Sensibilidade para detectar fundo branco (0 a 255)
   feather = 25,                // Suavização das bordas (anti-aliasing)
-  trimOutro = true,            // Cortar vinheta final do CapCut
-  trimOutroSeconds = 2.8,      // Duração da vinheta final / corte do loop (em segundos)
+  trimOutro = false,           // Cortar vinheta final do CapCut (desativado por padrão no loop de 32s)
+  trimOutroSeconds = 0,        // Duração da vinheta final / corte do loop (em segundos)
   transitionMode = 'crossfade', // 'crossfade' | 'fade' | 'cut'
   transitionDuration = 0.5,     // Duração da transição em segundos (permite abaixo de 0)
   maskWatermark = true,        // Mascarar marcas d'água de canto (CapCut)
@@ -55,12 +56,18 @@ export const TransparentVideo = ({
 
     let animId = null;
 
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
     const handleLoadedMetadata = () => {
       if (video.videoWidth && video.videoHeight) {
         const w = video.videoWidth;
         const h = video.videoHeight;
-        canvas.width = w;
-        canvas.height = h;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
 
         const mem = memoryRef.current;
         if (!mem.snapshot) {
@@ -77,12 +84,18 @@ export const TransparentVideo = ({
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('loadeddata', handleLoadedMetadata);
     video.addEventListener('canplay', handleLoadedMetadata);
+    video.addEventListener('play', handleLoadedMetadata);
+
     if (video.videoWidth && video.videoHeight) {
       handleLoadedMetadata();
     }
 
+    // Inicia carregamento e reprodução
+    video.load();
+    video.play().catch(() => {});
+
     /**
-     * Processa um frame de vídeo removendo o fundo branco e limpando resíduos
+     * Processa um frame de vídeo removendo o fundo verde (Chroma Key) e/ou branco e limpando resíduos
      */
     const processVideoFrame = (vid, targetCtx, w, h) => {
       if (!vid || vid.readyState < 2) return false;
@@ -90,86 +103,122 @@ export const TransparentVideo = ({
       // 1. Desenha o frame bruto
       targetCtx.drawImage(vid, 0, 0, w, h);
 
-      if (!removeWhite) return true;
+      if (!removeWhite && !removeGreen) return true;
 
       const frame = targetCtx.getImageData(0, 0, w, h);
       const data = frame.data;
+      const total = w * h;
 
-      if (preserveWhiteContent) {
-        // =========================================================================
-        // ALGORITMO BFS FLOOD-FILL PELAS BORDAS
-        // Inunda apenas o fundo branco conectado às 4 bordas do vídeo.
-        // Letras e mascote são contornados de preto, mantendo o interior 100% branco!
-        // =========================================================================
-        const mem = memoryRef.current;
-        const totalPixels = w * h;
+      // =========================================================================
+      // 1. PROCESSAMENTO DE CHROMA KEY VERDE (REMOVE FUNDO E BURACOS INTERNOS)
+      // Remove tanto o fundo externo quanto o verde entre o braço e a cabeça do boneco!
+      // Preserva 100% as notas de dinheiro, letras brancas e o mascote.
+      // =========================================================================
+      if (removeGreen) {
+        for (let i = 0; i < total; i++) {
+          const i4 = i * 4;
+          const r = data[i4];
+          const g = data[i4 + 1];
+          const b = data[i4 + 2];
+          const maxRB = Math.max(r, b);
+          const diff = g - maxRB;
+          const px = i % w;
+          const py = (i / w) | 0;
 
-        if (!mem.visited || mem.lastWidth !== w || mem.lastHeight !== h) {
-          mem.visited = new Int32Array(totalPixels);
-          mem.queue = new Int32Array(totalPixels);
-          mem.lastWidth = w;
-          mem.lastHeight = h;
-          mem.visitId = 1;
-        } else {
-          mem.visitId++;
-          if (mem.visitId > 2000000000) {
-            mem.visited.fill(0);
+          // 1. CHROMA KEY VERDE (fundo geral E o buraco entre braço e cabeça):
+          // Fundo e buraco têm g > 140 e diff > 70 (as notas de dollar têm g <= 136 e diff <= 55 e NUNCA são vazadas!)
+          const isChromaGreen = (g > 140) && (diff > 70);
+
+          // 2. BARRAS PRETAS EXTERNAS (Letterbox superior/inferior E Pillarbox laterais):
+          const isOuterBoundary = (px < 16 || px > w - 16 || py < 25 || py > h - 25);
+          const isBlackBar = isOuterBoundary && (r < 45 && g < 45 && b < 45);
+
+          if (isChromaGreen || isBlackBar) {
+            data[i4 + 3] = 0; // 100% transparente
+          } else if (py > 200 && diff > 8 && g > 35) {
+            // De-spill nos contornos pretos das letras (abaixo de y=200, onde NÃO há notas de dinheiro)
+            data[i4 + 1] = maxRB;
+          } else if (diff > 50 && g > 110) {
+            // Borda de transição verde do fundo
+            const factor = Math.max(0, 1 - (diff - 50) / 25);
+            data[i4 + 3] = Math.round(data[i4 + 3] * factor);
+            data[i4 + 1] = maxRB;
+          }
+        }
+      }
+
+      // =========================================================================
+      // 2. PROCESSAMENTO DE FUNDO BRANCO (SE ATIVO) VIA BFS FLOOD-FILL
+      // =========================================================================
+      if (removeWhite) {
+        if (preserveWhiteContent) {
+          const mem = memoryRef.current;
+          if (!mem.visited || mem.lastWidth !== w || mem.lastHeight !== h) {
+            mem.visited = new Int32Array(total);
+            mem.queue = new Int32Array(total);
+            mem.lastWidth = w;
+            mem.lastHeight = h;
             mem.visitId = 1;
+          } else {
+            mem.visitId++;
+            if (mem.visitId > 2000000000) {
+              mem.visited.fill(0);
+              mem.visitId = 1;
+            }
           }
-        }
 
-        const visited = mem.visited;
-        const queue = mem.queue;
-        const visitId = mem.visitId;
-        let head = 0;
-        let tail = 0;
+          const visited = mem.visited;
+          const queue = mem.queue;
+          const visitId = mem.visitId;
+          let head = 0;
+          let tail = 0;
 
-        // Borda superior e inferior
-        for (let x = 0; x < w; x++) {
-          const topIdx = x;
-          const botIdx = (h - 1) * w + x;
-          if (visited[topIdx] !== visitId) {
-            visited[topIdx] = visitId;
-            queue[tail++] = topIdx;
+          const lowThreshold = threshold - feather;
+          const highThreshold = threshold + 10;
+
+          const isWhiteBg = (p4) => {
+            const r = data[p4];
+            const g = data[p4 + 1];
+            const b = data[p4 + 2];
+            const minVal = Math.min(r, g, b);
+            const maxVal = Math.max(r, g, b);
+            return minVal > lowThreshold && (maxVal - minVal) < 45;
+          };
+
+          for (let x = 0; x < w; x++) {
+            const topIdx = x;
+            const botIdx = (h - 1) * w + x;
+            if (visited[topIdx] !== visitId) {
+              visited[topIdx] = visitId;
+              if (isWhiteBg(topIdx * 4)) queue[tail++] = topIdx;
+            }
+            if (visited[botIdx] !== visitId) {
+              visited[botIdx] = visitId;
+              if (isWhiteBg(botIdx * 4)) queue[tail++] = botIdx;
+            }
           }
-          if (visited[botIdx] !== visitId) {
-            visited[botIdx] = visitId;
-            queue[tail++] = botIdx;
+          for (let y = 0; y < h; y++) {
+            const leftIdx = y * w;
+            const rightIdx = y * w + w - 1;
+            if (visited[leftIdx] !== visitId) {
+              visited[leftIdx] = visitId;
+              if (isWhiteBg(leftIdx * 4)) queue[tail++] = leftIdx;
+            }
+            if (visited[rightIdx] !== visitId) {
+              visited[rightIdx] = visitId;
+              if (isWhiteBg(rightIdx * 4)) queue[tail++] = rightIdx;
+            }
           }
-        }
-        // Borda esquerda e direita
-        for (let y = 0; y < h; y++) {
-          const leftIdx = y * w;
-          const rightIdx = y * w + w - 1;
-          if (visited[leftIdx] !== visitId) {
-            visited[leftIdx] = visitId;
-            queue[tail++] = leftIdx;
-          }
-          if (visited[rightIdx] !== visitId) {
-            visited[rightIdx] = visitId;
-            queue[tail++] = rightIdx;
-          }
-        }
 
-        const lowThreshold = threshold - feather;
-        const highThreshold = threshold + 10;
+          while (head < tail) {
+            const p = queue[head++];
+            const px = p % w;
+            const py = (p / w) | 0;
+            const p4 = p * 4;
 
-        while (head < tail) {
-          const p = queue[head++];
-          const px = p % w;
-          const py = (p / w) | 0;
-          const p4 = p * 4;
-
-          const r = data[p4];
-          const g = data[p4 + 1];
-          const b = data[p4 + 2];
-          const minVal = Math.min(r, g, b);
-          const maxVal = Math.max(r, g, b);
-          const isNeutral = (maxVal - minVal) < 45;
-
-          if (minVal > lowThreshold && isNeutral) {
+            const minVal = Math.min(data[p4], data[p4 + 1], data[p4 + 2]);
             if (minVal >= highThreshold) {
-              data[p4 + 3] = 0; // 100% transparente
+              data[p4 + 3] = 0;
             } else {
               const factor = (highThreshold - minVal) / (highThreshold - lowThreshold);
               data[p4 + 3] = Math.round(data[p4 + 3] * factor);
@@ -177,67 +226,90 @@ export const TransparentVideo = ({
 
             if (px > 0) {
               const n = p - 1;
-              if (visited[n] !== visitId) { visited[n] = visitId; queue[tail++] = n; }
+              if (visited[n] !== visitId) {
+                visited[n] = visitId;
+                if (isWhiteBg(n * 4)) queue[tail++] = n;
+              }
             }
             if (px < w - 1) {
               const n = p + 1;
-              if (visited[n] !== visitId) { visited[n] = visitId; queue[tail++] = n; }
+              if (visited[n] !== visitId) {
+                visited[n] = visitId;
+                if (isWhiteBg(n * 4)) queue[tail++] = n;
+              }
             }
             if (py > 0) {
               const n = p - w;
-              if (visited[n] !== visitId) { visited[n] = visitId; queue[tail++] = n; }
+              if (visited[n] !== visitId) {
+                visited[n] = visitId;
+                if (isWhiteBg(n * 4)) queue[tail++] = n;
+              }
             }
             if (py < h - 1) {
               const n = p + w;
-              if (visited[n] !== visitId) { visited[n] = visitId; queue[tail++] = n; }
+              if (visited[n] !== visitId) {
+                visited[n] = visitId;
+                if (isWhiteBg(n * 4)) queue[tail++] = n;
+              }
             }
+          }
+        } else {
+          for (let i = 0; i < total; i++) {
+            const i4 = i * 4;
+            const minVal = Math.min(data[i4], data[i4 + 1], data[i4 + 2]);
+            if (minVal > threshold) data[i4 + 3] = 0;
           }
         }
+      }
 
-        // 2. Remoção de Marca d'água em cantos residuais (CapCut)
-        if (maskWatermark) {
-          const cornerW = Math.round(w * 0.22);
-          const cornerH = Math.round(h * 0.16);
-          for (let y = 0; y < cornerH; y++) {
-            for (let x = w - cornerW; x < w; x++) {
-              data[(y * w + x) * 4 + 3] = 0;
-            }
-          }
-          for (let y = h - cornerH; y < h; y++) {
-            for (let x = w - cornerW; x < w; x++) {
-              data[(y * w + x) * 4 + 3] = 0;
-            }
-          }
-        }
-
-        // 3. Remoção de linha/barra residual inferior
-        const bottomCleanH = Math.min(14, Math.max(6, Math.round(h * 0.04)));
-        for (let y = h - bottomCleanH; y < h; y++) {
+      // =========================================================================
+      // 3. REMOÇÃO DE MARCA D'ÁGUA CAPCUT NOS CANTOS
+      // =========================================================================
+      if (maskWatermark) {
+        // Canto superior esquerdo (marca d'água "CapCut")
+        const cw = Math.round(w * 0.22);
+        const ch = Math.round(h * 0.12);
+        for (let y = 0; y < ch; y++) {
           const rowStart = y * w * 4;
-          for (let x = 0; x < w; x++) {
+          for (let x = 0; x < cw; x++) {
             data[rowStart + x * 4 + 3] = 0;
           }
         }
-
-        // 4. Limpeza de bordas sutis (2px)
-        for (let y = 0; y < 2; y++) {
+        // Cantos superiores e inferiores direitos
+        const cornerW = Math.round(w * 0.22);
+        const cornerH = Math.round(h * 0.16);
+        for (let y = 0; y < cornerH; y++) {
           const rowStart = y * w * 4;
-          for (let x = 0; x < w; x++) {
+          for (let x = w - cornerW; x < w; x++) {
             data[rowStart + x * 4 + 3] = 0;
           }
         }
-        for (let y = 0; y < h; y++) {
+        for (let y = h - cornerH; y < h; y++) {
           const rowStart = y * w * 4;
-          data[rowStart + 3] = 0;
-          data[rowStart + 4 + 3] = 0;
-          data[rowStart + (w - 1) * 4 + 3] = 0;
-          data[rowStart + (w - 2) * 4 + 3] = 0;
+          for (let x = w - cornerW; x < w; x++) {
+            data[rowStart + x * 4 + 3] = 0;
+          }
         }
+      }
 
-      } else {
-        for (let i = 0; i < data.length; i += 4) {
-          const minVal = Math.min(data[i], data[i + 1], data[i + 2]);
-          if (minVal > threshold) data[i + 3] = 0;
+      // =========================================================================
+      // 4. LIMPEZA DE BORDAS EXTREMAS LATERAIS E VERTICAIS (12px)
+      // Elimina 100% as linhas pretas verticais e horizontais nos cantos do vídeo
+      // =========================================================================
+      const edgeClean = 12;
+      for (let y = 0; y < edgeClean; y++) {
+        const rowStart = y * w * 4;
+        for (let x = 0; x < w; x++) data[rowStart + x * 4 + 3] = 0;
+      }
+      for (let y = h - edgeClean; y < h; y++) {
+        const rowStart = y * w * 4;
+        for (let x = 0; x < w; x++) data[rowStart + x * 4 + 3] = 0;
+      }
+      for (let y = 0; y < h; y++) {
+        const rowStart = y * w * 4;
+        for (let x = 0; x < edgeClean; x++) {
+          data[rowStart + x * 4 + 3] = 0;
+          data[rowStart + (w - 1 - x) * 4 + 3] = 0;
         }
       }
 
@@ -275,8 +347,8 @@ export const TransparentVideo = ({
         return;
       }
 
-      const duration = video.duration || 6.434;
-      const cutPoint = trimOutro && duration > trimOutroSeconds + 0.2
+      const duration = video.duration || 32;
+      const cutPoint = trimOutro && trimOutroSeconds > 0 && duration > trimOutroSeconds + 0.2
         ? Math.max(0.5, duration - trimOutroSeconds)
         : duration;
 
@@ -290,7 +362,7 @@ export const TransparentVideo = ({
         : Math.max(150, Math.min(1500, Math.abs(transitionDuration) * 1000));
 
       // 1. REBOBINAMENTO AUTOMÁTICO AO ATINGIR O PONTO DE CORTE
-      if (trimOutro && duration && video.currentTime >= cutPoint && !isLoopingRef.current) {
+      if (duration && video.currentTime >= Math.max(0.1, cutPoint - 0.08) && !isLoopingRef.current) {
         isLoopingRef.current = true;
         loopStartTimeRef.current = performance.now();
 
@@ -352,6 +424,13 @@ export const TransparentVideo = ({
       animId = requestAnimationFrame(render);
     };
 
+    const handleEnded = () => {
+      const startPoint = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
+      video.currentTime = startPoint;
+      video.play().catch(() => {});
+    };
+
+    video.addEventListener('ended', handleEnded);
     video.play().catch(() => {});
     animId = requestAnimationFrame(render);
 
@@ -360,9 +439,11 @@ export const TransparentVideo = ({
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('loadeddata', handleLoadedMetadata);
       video.removeEventListener('canplay', handleLoadedMetadata);
+      video.removeEventListener('ended', handleEnded);
     };
   }, [
     src,
+    removeGreen,
     removeWhite,
     preserveWhiteContent,
     threshold,
@@ -377,9 +458,10 @@ export const TransparentVideo = ({
 
   return (
     <div className="relative inline-block w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px]">
-      {/* Vídeo de origem oculto com reprodução contínua */}
+      {/* Vídeo de origem ativo no pipeline de decodificação offscreen */}
       <video
         ref={videoRef}
+        key={src}
         src={src}
         autoPlay
         loop
@@ -387,7 +469,7 @@ export const TransparentVideo = ({
         playsInline
         crossOrigin="anonymous"
         preload="auto"
-        className="hidden"
+        className="absolute w-px h-px opacity-0 pointer-events-none -z-50"
       />
 
       {/* Canvas renderizado com transparência e transição suave */}
