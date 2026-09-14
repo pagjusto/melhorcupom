@@ -61,11 +61,12 @@ export const HeroBanner = ({
         
         {/* LOGO OU VÍDEO NO MEIO DO APP (MODO TESTE) */}
         <div className="relative flex flex-col justify-center items-center my-4 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 blur-3xl -z-10 rounded-full scale-110 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 blur-3xl -z-10 rounded-full scale-125 pointer-events-none" />
           
           {mediaType === 'video_transparent' && (
             <TransparentVideo
               src="/video_loop_32s.mp4"
+              containerClassName="max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px]"
               removeGreen={removeGreenBg}
               removeWhite={removeWhiteBg}
               preserveWhiteContent={preserveWhiteContent}
@@ -89,7 +90,7 @@ export const HeroBanner = ({
               muted 
               playsInline
               controls
-              className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
+              className="w-full max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
             >
               <source src="/video_loop_32s.mp4" type="video/mp4" />
             </video>
@@ -99,7 +100,7 @@ export const HeroBanner = ({
             <img 
               src={logoMelhorCupom} 
               alt="Melhor Cupom" 
-              className="w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
+              className="w-full max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
             />
           )}
 

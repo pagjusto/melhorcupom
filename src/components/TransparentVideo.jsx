@@ -18,6 +18,7 @@ import React, { useRef, useEffect, useState } from 'react';
 export const TransparentVideo = ({
   src,
   className = '',
+  containerClassName = '',
   removeGreen = true,          // Remoção de fundo verde Chroma Key (padrão)
   removeWhite = false,         // Remoção de fundo branco (para compatibilidade)
   preserveWhiteContent = true, // Flood-fill preservador de letras e mascote
@@ -457,7 +458,7 @@ export const TransparentVideo = ({
   ]);
 
   return (
-    <div className="relative inline-block w-full max-w-[340px] sm:max-w-[460px] md:max-w-[540px] lg:max-w-[580px]">
+    <div className={`relative inline-block w-full ${containerClassName || 'max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px]'}`}>
       {/* Vídeo de origem ativo no pipeline de decodificação offscreen */}
       <video
         ref={videoRef}
