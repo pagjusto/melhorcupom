@@ -46,16 +46,44 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const bannerImage = coupon.banner || store?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
   const storeLogo = store?.logoImage;
 
+  // Configuração visual de acordo com o plano de assinatura do lojista:
+  // - Borda da logo do lojista na cor da assinatura (branca para Free)
+  // - Aura luminosa ao passar pelo card (Gold = dourada, Silver = prateada, Bronze = acobreada, Free = sem aura)
+  const tierConfig = {
+    gold: {
+      cardClass: 'ticket-card-gold ring-1 ring-amber-400/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)]',
+      logoBorder: 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]',
+      auraBg: 'bg-gradient-to-b from-amber-400/15 via-transparent to-amber-500/15',
+    },
+    silver: {
+      cardClass: 'ticket-card-silver ring-1 ring-slate-300/35 shadow-[0_4px_20px_rgba(203,213,225,0.12)]',
+      logoBorder: 'border-2 border-slate-300 shadow-[0_0_10px_rgba(203,213,225,0.5)]',
+      auraBg: 'bg-gradient-to-b from-slate-200/12 via-transparent to-slate-300/12',
+    },
+    bronze: {
+      cardClass: 'ticket-card-bronze ring-1 ring-[#CD7F32]/40 shadow-[0_4px_20px_rgba(205,127,50,0.12)]',
+      logoBorder: 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.6)]',
+      auraBg: 'bg-gradient-to-b from-[#CD7F32]/12 via-transparent to-[#CD7F32]/15',
+    },
+    free: {
+      cardClass: 'ticket-card-free border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
+      // Borda de Free é expressamente branca:
+      logoBorder: 'border-2 border-white shadow-md',
+      auraBg: null, // Menos free: sem aura no hover
+    }
+  }[storeTier] || {
+    cardClass: 'ticket-card-free border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
+    logoBorder: 'border-2 border-white shadow-md',
+    auraBg: null,
+  };
+
   return (
-    <div className={`ticket-card flex flex-col justify-between group overflow-hidden transition-all duration-300 relative ${
-      storeTier === 'gold' 
-        ? 'ring-2 ring-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.25)] hover:shadow-[0_0_36px_rgba(245,158,11,0.4)]'
-        : storeTier === 'silver'
-        ? 'ring-1 ring-slate-300/50 shadow-lg hover:ring-slate-300/80'
-        : storeTier === 'bronze'
-        ? 'ring-1 ring-[#CD7F32]/60 shadow-md hover:ring-[#CD7F32]/80'
-        : ''
-    }`}>
+    <div className={`ticket-card flex flex-col justify-between group overflow-hidden transition-all duration-300 relative ${tierConfig.cardClass}`}>
+      
+      {/* Aura Luminosa interna no Hover (Apenas Gold, Silver, Bronze - Menos Free) */}
+      {tierConfig.auraBg && (
+        <div className={`absolute inset-0 ${tierConfig.auraBg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10`} />
+      )}
       
       {/* 1. BANNER DA OFERTA (definido no card / upload do lojista) */}
       <div className="relative h-44 w-full overflow-hidden bg-black/60">
@@ -122,8 +150,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </button>
         </div>
 
-        {/* 2. LOGO DA EMPRESA (100% visível sem bordas conforme solicitado) */}
-        <div className="absolute bottom-2.5 left-3 w-11 h-11 rounded-xl bg-[#181822] shadow-2xl flex items-center justify-center overflow-hidden z-20">
+        {/* 2. LOGO DA EMPRESA COM BORDA RESPECTIVA DA ASSINATURA (BRANCA PARA FREE) */}
+        <div className={`absolute bottom-2.5 left-3 w-11 h-11 rounded-xl bg-[#181822] shadow-2xl flex items-center justify-center overflow-hidden z-20 transition-all duration-300 ${tierConfig.logoBorder}`}>
           {storeLogo ? (
             <img 
               src={storeLogo} 

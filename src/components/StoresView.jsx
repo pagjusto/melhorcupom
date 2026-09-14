@@ -197,10 +197,18 @@ export const StoresView = ({ onSelectStore }) => {
             <div
               key={store.id}
               onClick={() => onSelectStore?.(store)}
-              className="bg-[#181824] hover:bg-[#202030] border border-white/10 hover:border-[#FF5F00]/60 rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-all duration-300 group cursor-pointer shadow-lg hover:shadow-orange-950/20 hover:-translate-y-1 relative overflow-hidden"
+              className={`bg-[#181824] rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-all duration-300 group cursor-pointer shadow-lg hover:-translate-y-1 relative overflow-hidden ${
+                store.tier === 'gold'
+                  ? 'border border-amber-400/50 hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.4)]'
+                  : store.tier === 'silver'
+                  ? 'border border-slate-300/40 hover:border-slate-300 hover:shadow-[0_0_25px_rgba(203,213,225,0.35)]'
+                  : store.tier === 'bronze'
+                  ? 'border border-[#CD7F32]/40 hover:border-[#CD7F32] hover:shadow-[0_0_25px_rgba(205,127,50,0.4)]'
+                  : 'border border-white/10 hover:border-white/30 hover:shadow-xl hover:shadow-black/50'
+              }`}
               title={`Ver cupons e ofertas de ${store.name}`}
             >
-              {/* Badge do Plano da Loja (Ouro / Prata) */}
+              {/* Badge do Plano da Loja (Ouro / Prata / Bronze) */}
               {store.tier === 'gold' && (
                 <div className="absolute top-2.5 right-2.5 bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm">
                   👑 OURO
@@ -211,9 +219,22 @@ export const StoresView = ({ onSelectStore }) => {
                   🥈 PRATA
                 </div>
               )}
+              {store.tier === 'bronze' && (
+                <div className="absolute top-2.5 right-2.5 bg-[#CD7F32] text-white text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm">
+                  🥉 BRONZE
+                </div>
+              )}
 
-              {/* Logo do Estabelecimento */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#111118] border border-white/10 group-hover:border-[#FF5F00]/50 flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105">
+              {/* Logo do Estabelecimento com borda de sua assinatura (branca para free) */}
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#111118] flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 group-hover:scale-105 ${
+                store.tier === 'gold'
+                  ? 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                  : store.tier === 'silver'
+                  ? 'border-2 border-slate-300 shadow-[0_0_10px_rgba(203,213,225,0.4)]'
+                  : store.tier === 'bronze'
+                  ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.5)]'
+                  : 'border-2 border-white shadow-md'
+              }`}>
                 {store.logoImage ? (
                   <img
                     src={store.logoImage}

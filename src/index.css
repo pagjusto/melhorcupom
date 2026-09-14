@@ -20,8 +20,27 @@
 
 .ticket-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(255, 95, 0, 0.4);
-  box-shadow: 0 16px 30px -10px rgba(255, 95, 0, 0.2);
+}
+
+/* Auras Luminosas por Assinatura no Hover (Gold, Silver, Bronze - Menos Free) */
+.ticket-card-gold:hover {
+  border-color: rgba(251, 191, 36, 0.9) !important;
+  box-shadow: 0 0 42px rgba(245, 158, 11, 0.55), 0 16px 32px -8px rgba(245, 158, 11, 0.3) !important;
+}
+
+.ticket-card-silver:hover {
+  border-color: rgba(203, 213, 225, 0.9) !important;
+  box-shadow: 0 0 35px rgba(203, 213, 225, 0.45), 0 16px 32px -8px rgba(203, 213, 225, 0.25) !important;
+}
+
+.ticket-card-bronze:hover {
+  border-color: rgba(205, 127, 50, 0.9) !important;
+  box-shadow: 0 0 35px rgba(205, 127, 50, 0.55), 0 16px 32px -8px rgba(205, 127, 50, 0.3) !important;
+}
+
+.ticket-card-free:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.6) !important;
 }
 
 .ticket-perforation {
