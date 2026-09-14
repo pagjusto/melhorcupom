@@ -3,18 +3,14 @@ import { useApp } from '../context/AppContext';
 import { POPULAR_CITIES } from '../data/mockData';
 import { 
   MapPin, 
-  Sparkles, 
   CheckCircle2, 
   ArrowRight, 
   Zap, 
   ShieldCheck, 
-  Navigation, 
-  X, 
-  Building2, 
-  Globe,
-  Sliders
+  Building2,
+  Navigation,
+  X
 } from 'lucide-react';
-import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { TransparentVideo } from './TransparentVideo';
 
 export const HeroBanner = ({ 
@@ -25,70 +21,35 @@ export const HeroBanner = ({
 }) => {
   const { isVipUser, setIsSubscriptionModalOpen } = useApp();
   const [showDropdown, setShowDropdown] = useState(false);
-  // Estado para visualização do logo oficial ou teste de vídeo
-  // 'video_transparent' | 'static_image' | 'video_mp4'
-  const [mediaType, setMediaType] = useState('video_transparent');
-  // Configurações salvas: Início 2.6s e Final 4.5s (com persistência LocalStorage)
-  const [trimIntroSeconds, setTrimIntroSeconds] = useState(() => {
-    const saved = localStorage.getItem('melhorcupom_trim_intro');
-    return saved !== null ? parseFloat(saved) : 2.6;
-  });
-  const [loopEndSeconds, setLoopEndSeconds] = useState(() => {
-    const saved = localStorage.getItem('melhorcupom_loop_end');
-    return saved !== null ? parseFloat(saved) : 4.5;
-  });
 
+  // Configurações padrão oficiais salvas:
+  // Início 2.1s, Final 4.1s, Hero -120px, Container 1040px, Aura 40%
+  const trimIntroSeconds = 2.1;
+  const loopEndSeconds = 4.1;
+  const heroOffsetY = -120;
+  const containerWidth = 1040;
+  const glowScale = 0.40;
+  const removeGreenBg = true;
+  const removeWhiteBg = false;
+  const preserveWhiteContent = true;
+  const trimCapCutOutro = false;
+  const trimSeconds = 0;
+  const transitionMode = 'crossfade';
+  const transitionDuration = 0.5;
+  const maskWatermark = true;
+  const whiteThreshold = 215;
+
+  // Sincroniza e garante os padrões oficiais no localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('melhorcupom_trim_intro', trimIntroSeconds.toString());
+      localStorage.setItem('melhorcupom_trim_intro', '2.1');
+      localStorage.setItem('melhorcupom_loop_end', '4.1');
+      localStorage.setItem('melhorcupom_hero_offset_y', '-120');
+      localStorage.setItem('melhorcupom_container_width', '1040');
+      localStorage.setItem('melhorcupom_glow_scale', '0.4');
     } catch (e) {}
-  }, [trimIntroSeconds]);
+  }, []);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('melhorcupom_loop_end', loopEndSeconds.toString());
-    } catch (e) {}
-  }, [loopEndSeconds]);
-
-  const [heroOffsetY, setHeroOffsetY] = useState(() => {
-    const saved = localStorage.getItem('melhorcupom_hero_offset_y');
-    return saved !== null ? parseInt(saved, 10) : -120;
-  }); // Ajuste da localização da hero (salvo: -120px)
-  const [containerWidth, setContainerWidth] = useState(() => {
-    const saved = localStorage.getItem('melhorcupom_container_width');
-    return saved !== null ? parseInt(saved, 10) : 1040;
-  }); // Ajuste do container pai do Hero Banner (salvo: 1040px)
-  const [glowScale, setGlowScale] = useState(() => {
-    const saved = localStorage.getItem('melhorcupom_glow_scale');
-    return saved !== null ? parseFloat(saved) : 0.40;
-  }); // Ajuste da aura luminosa alaranjada de fundo (salvo: 40% / 0.40)
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('melhorcupom_hero_offset_y', heroOffsetY.toString());
-    } catch (e) {}
-  }, [heroOffsetY]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('melhorcupom_container_width', containerWidth.toString());
-    } catch (e) {}
-  }, [containerWidth]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('melhorcupom_glow_scale', glowScale.toString());
-    } catch (e) {}
-  }, [glowScale]);
-  const [removeGreenBg, setRemoveGreenBg] = useState(true);
-  const [removeWhiteBg, setRemoveWhiteBg] = useState(false);
-  const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
-  const [trimCapCutOutro, setTrimCapCutOutro] = useState(false);
-  const [trimSeconds, setTrimSeconds] = useState(0);
-  const [transitionMode, setTransitionMode] = useState('crossfade');
-  const [transitionDuration, setTransitionDuration] = useState(0.5);
-  const [maskWatermark, setMaskWatermark] = useState(true);
-  const [whiteThreshold, setWhiteThreshold] = useState(215);
 
   // Filtrar cidades disponíveis com base no texto digitado
   const filteredCities = POPULAR_CITIES.filter(city => 
@@ -157,384 +118,24 @@ export const HeroBanner = ({
             className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 blur-3xl -z-10 rounded-full pointer-events-none" 
           />
           
-          {mediaType === 'video_transparent' && (
-            <TransparentVideo
-              src="/video_loop_32s.mp4"
-              containerClassName="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]"
-              trimIntroSeconds={trimIntroSeconds}
-              loopEndSeconds={loopEndSeconds}
-              removeGreen={removeGreenBg}
-              removeWhite={removeWhiteBg}
-              preserveWhiteContent={preserveWhiteContent}
-              threshold={whiteThreshold}
-              feather={25}
-              trimOutro={trimCapCutOutro}
-              trimOutroSeconds={trimSeconds}
-              transitionMode={transitionMode}
-              transitionDuration={transitionDuration}
-              maskWatermark={maskWatermark}
-              className="w-full h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
-              alt="Melhor Cupom Vídeo 32s"
-            />
-          )}
-
-          {mediaType === 'video_mp4' && (
-            <video 
-              key="video_mp4"
-              autoPlay 
-              loop 
-              muted 
-              playsInline
-              controls
-              onLoadedMetadata={(e) => {
-                if (e.target.currentTime < trimIntroSeconds) {
-                  e.target.currentTime = trimIntroSeconds;
-                }
-              }}
-              onTimeUpdate={(e) => {
-                if (e.target.currentTime < trimIntroSeconds - 0.1) {
-                  e.target.currentTime = trimIntroSeconds;
-                }
-                if (loopEndSeconds > 0 && e.target.currentTime >= loopEndSeconds) {
-                  e.target.currentTime = trimIntroSeconds;
-                }
-              }}
-              className="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
-            >
-              <source src="/video_loop_32s.mp4#t=2" type="video/mp4" />
-            </video>
-          )}
-
-          {mediaType === 'static_image' && (
-            <img 
-              src={logoMelhorCupom} 
-              alt="Melhor Cupom" 
-              className="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px] h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
-            />
-          )}
-
-          {/* Seletor Rápido de Teste & Controle de Fundo Transparente */}
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 mt-4 bg-[#14141E]/95 border border-white/10 p-2 rounded-2xl backdrop-blur-md shadow-xl">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-gray-400 font-semibold px-2">Modo:</span>
-              <button
-                onClick={() => setMediaType('static_image')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  mediaType === 'static_image'
-                    ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300'
-                }`}
-              >
-                <span>🖼️ Nova Logo Oficial</span>
-              </button>
-              <button
-                onClick={() => setMediaType('video_transparent')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  mediaType === 'video_transparent'
-                    ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300'
-                }`}
-              >
-                <span>🎬 Vídeo 32s (Chroma Key)</span>
-              </button>
-              <button
-                onClick={() => setMediaType('video_mp4')}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  mediaType === 'video_mp4'
-                    ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300'
-                }`}
-              >
-                <span>🎥 Player MP4</span>
-              </button>
-
-              {/* Controle Interativo de Posição da Hero (Mais pra Cima ou Mais pra Baixo da Navbar) */}
-              <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-white/10 bg-white/5 px-2.5 py-1 rounded-xl text-[11px] text-gray-300 font-bold" title="Ajusta a localização do hero, mais pra cima ou pra baixo da navbar">
-                <span className="text-cyan-400">↕️ Hero:</span>
-                <span className="font-mono text-white text-[11px] min-w-[32px] text-center">
-                  {heroOffsetY > 0 ? `+${heroOffsetY}px` : `${heroOffsetY}px`}
-                </span>
-                <div className="flex items-center gap-1 ml-0.5">
-                  <button
-                    onClick={() => setHeroOffsetY(prev => prev - 10)}
-                    className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black transition-colors text-xs flex items-center gap-0.5 shadow-sm active:scale-95"
-                    title="Mover Hero mais pra CIMA (aproximar da navbar)"
-                  >
-                    ▲ Cima
-                  </button>
-                  <button
-                    onClick={() => setHeroOffsetY(prev => prev + 10)}
-                    className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black transition-colors text-xs flex items-center gap-0.5 shadow-sm active:scale-95"
-                    title="Mover Hero mais pra BAIXO (afastar da navbar)"
-                  >
-                    ▼ Baixo
-                  </button>
-                  {heroOffsetY !== -120 && (
-                    <button
-                      onClick={() => setHeroOffsetY(-120)}
-                      className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
-                      title="Restaurar posição salva (-120px)"
-                    >
-                      ↺
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Controle Interativo da Largura do Container Pai da Hero */}
-            <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-white/10 bg-white/5 px-2.5 py-1 rounded-xl text-[11px] text-gray-300 font-bold" title="Ajusta a largura máxima do container pai do Hero Banner">
-              <span className="text-emerald-400">📦 Container:</span>
-              <span className="font-mono text-white text-[11px] min-w-[44px] text-center">
-                {containerWidth}px
-              </span>
-              <div className="flex items-center gap-0.5 ml-0.5">
-                <button
-                  onClick={() => setContainerWidth(prev => Math.max(760, prev - 60))}
-                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                  title="Diminuir container pai (-60px)"
-                >
-                  -
-                </button>
-                <button
-                  onClick={() => setContainerWidth(prev => Math.min(1920, prev + 60))}
-                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                  title="Aumentar container pai (+60px)"
-                >
-                  +
-                </button>
-                {containerWidth !== 1040 && (
-                  <button
-                    onClick={() => setContainerWidth(1040)}
-                    className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
-                    title="Restaurar container salvo (1040px)"
-                  >
-                    ↺
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Controle Interativo da Aura Luminosa Alaranjada de Fundo */}
-            <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-white/10 bg-white/5 px-2.5 py-1 rounded-xl text-[11px] text-gray-300 font-bold" title="Ajusta a intensidade e tamanho da aura luminosa alaranjada de fundo">
-              <span className="text-amber-400">✨ Aura:</span>
-              <span className="font-mono text-white text-[11px] min-w-[34px] text-center">
-                {Math.round(glowScale * 100)}%
-              </span>
-              <div className="flex items-center gap-0.5 ml-0.5">
-                <button
-                  onClick={() => setGlowScale(prev => Math.max(0, parseFloat((prev - 0.1).toFixed(1))))}
-                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                  title="Diminuir aura/brilho (-10%)"
-                >
-                  -
-                </button>
-                <button
-                  onClick={() => setGlowScale(prev => Math.min(2.5, parseFloat((prev + 0.1).toFixed(1))))}
-                  className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                  title="Aumentar aura/brilho (+10%)"
-                >
-                  +
-                </button>
-                {glowScale !== 0.4 && (
-                  <button
-                    onClick={() => setGlowScale(0.40)}
-                    className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
-                    title="Restaurar aura salva (40%)"
-                  >
-                    ↺
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Controles de Remoção de Fundo quando o vídeo estiver ativo */}
-            {mediaType === 'video_transparent' && (
-              <div className="flex flex-wrap items-center gap-1.5 pt-1.5 sm:pt-0 sm:pl-2 sm:border-l sm:border-white/10">
-                {/* Botão Fundo Verde Chroma Key */}
-                <button
-                  onClick={() => setRemoveGreenBg(!removeGreenBg)}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
-                    removeGreenBg
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
-                      : 'bg-red-500/20 text-red-300 border-red-500/40'
-                  }`}
-                  title="Remove o fundo verde chroma-key preservando as letras e o mascote"
-                >
-                  <span>{removeGreenBg ? '✓ Fundo Verde Removido' : '✕ Fundo Verde Visível'}</span>
-                </button>
-
-                {/* Botão Letras Brancas Preservadas */}
-                <button
-                  onClick={() => setPreserveWhiteContent(!preserveWhiteContent)}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
-                    preserveWhiteContent
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
-                      : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  }`}
-                  title="Preserva o branco das letras Melhor Cupom e do boneco usando algoritmo de borda"
-                >
-                  <span>{preserveWhiteContent ? '✓ Letras & Mascote Preservados' : '✕ Vazado'}</span>
-                </button>
-
-                {/* Botão Cortar Final CapCut */}
-                <button
-                  onClick={() => setTrimCapCutOutro(!trimCapCutOutro)}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
-                    trimCapCutOutro
-                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-sm'
-                      : 'bg-gray-800 text-gray-400 border-white/10'
-                  }`}
-                  title="Corta a vinheta final automática do CapCut"
-                >
-                  <span>{trimCapCutOutro ? '✓ Sem Vinheta CapCut' : '✕ Com Vinheta Final'}</span>
-                </button>
-
-                {/* Botão Mascarar Marca d'Água de Canto */}
-                <button
-                  onClick={() => setMaskWatermark(!maskWatermark)}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all border flex items-center gap-1 ${
-                    maskWatermark
-                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm'
-                      : 'bg-gray-800 text-gray-400 border-white/10'
-                  }`}
-                  title="Remove marca d'água residual dos cantos do CapCut"
-                >
-                  <span>{maskWatermark ? '✓ Sem Marca d\'Água' : '✕ Com Marca d\'Água'}</span>
-                </button>
-
-                {/* Seletor de Tipo de Transição */}
-                <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Tipo de transição ao reiniciar o ciclo de loop">
-                  <span className="text-amber-400">✨ Transição:</span>
-                  <button
-                    onClick={() => setTransitionMode('crossfade')}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
-                      transitionMode === 'crossfade'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    title="Dissolvência contínua entre ciclos (sem corte seco e sem travamento)"
-                  >
-                    Dissolvência
-                  </button>
-                  <button
-                    onClick={() => setTransitionMode('fade')}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
-                      transitionMode === 'fade'
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    title="Desvanecimento suave (fade-out e fade-in elegante)"
-                  >
-                    Fade
-                  </button>
-                  <button
-                    onClick={() => setTransitionMode('cut')}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-all ${
-                      transitionMode === 'cut'
-                        ? 'bg-gray-700 text-white shadow-sm'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    title="Corte instantâneo direto"
-                  >
-                    Direto
-                  </button>
-                </div>
-
-                {/* Ajuste Fino da Duração da Transição (Suavidade) */}
-                {transitionMode !== 'cut' && (
-                  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Permite valores positivos (tempo de dissolvência) ou negativos abaixo de 0 (corta o início do vídeo)">
-                    <span className="text-cyan-400">⏱️ Suavidade:</span>
-                    <span className="font-mono text-white text-[11px]">
-                      {transitionDuration > 0 ? `+${transitionDuration.toFixed(1)}s` : `${transitionDuration.toFixed(1)}s`}
-                    </span>
-                    <div className="flex items-center gap-0.5 ml-0.5">
-                      <button
-                        onClick={() => setTransitionDuration(prev => parseFloat((prev - 0.1).toFixed(1)))}
-                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                        title="Diminuir suavidade (permite valores negativos abaixo de 0)"
-                      >
-                        -
-                      </button>
-                      <button
-                        onClick={() => setTransitionDuration(prev => parseFloat((prev + 0.1).toFixed(1)))}
-                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                        title="Aumentar suavidade (+0.1s)"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Ajuste do Corte de Início (Salvo: 2.6s) */}
-                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta os primeiros segundos do vídeo (salvo: 2.6s)">
-                  <span className="text-amber-400">✂️ Início:</span>
-                  <span className="font-mono text-white text-[11px]">
-                    {trimIntroSeconds.toFixed(1)}s
-                  </span>
-                  <div className="flex items-center gap-0.5 ml-0.5">
-                    <button
-                      onClick={() => setTrimIntroSeconds(prev => Math.max(0, parseFloat((prev - 0.1).toFixed(1))))}
-                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Diminuir corte de início (-0.1s)"
-                    >
-                      -
-                    </button>
-                    <button
-                      onClick={() => setTrimIntroSeconds(prev => parseFloat((prev + 0.1).toFixed(1)))}
-                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Aumentar corte de início (+0.1s)"
-                    >
-                      +
-                    </button>
-                    {trimIntroSeconds !== 2.6 && (
-                      <button
-                        onClick={() => setTrimIntroSeconds(2.6)}
-                        className="px-1 py-0.5 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
-                        title="Restaurar início padrão (2.6s)"
-                      >
-                        ↺
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Ajuste do Ponto Final do Looping [✂️ final : 4.5s] (Salvo: 4.5s) */}
-                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Define o ponto final do looping do vídeo (salvo: 4.5s)">
-                  <span className="text-orange-400">✂️ final :</span>
-                  <span className="font-mono text-white text-[11px] min-w-[28px] text-center">
-                    {typeof loopEndSeconds === 'number' ? `${loopEndSeconds.toFixed(1)}s` : `${loopEndSeconds}s`}
-                  </span>
-                  <div className="flex items-center gap-0.5 ml-0.5">
-                    <button
-                      onClick={() => setLoopEndSeconds(prev => Math.max(parseFloat((trimIntroSeconds + 0.2).toFixed(1)), parseFloat((prev - 0.1).toFixed(1))))}
-                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                      title="Diminuir ponto final do loop (-0.1s)"
-                    >
-                      -
-                    </button>
-                    <button
-                      onClick={() => setLoopEndSeconds(prev => parseFloat((prev + 0.1).toFixed(1)))}
-                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
-                      title="Aumentar ponto final do loop (+0.1s)"
-                    >
-                      +
-                    </button>
-                    {loopEndSeconds !== 4.5 && (
-                      <button
-                        onClick={() => setLoopEndSeconds(4.5)}
-                        className="px-1 py-0.5 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
-                        title="Restaurar final padrão (4.5s)"
-                      >
-                        ↺
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <TransparentVideo
+            src="/video_loop_32s.mp4"
+            containerClassName="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]"
+            trimIntroSeconds={trimIntroSeconds}
+            loopEndSeconds={loopEndSeconds}
+            removeGreen={removeGreenBg}
+            removeWhite={removeWhiteBg}
+            preserveWhiteContent={preserveWhiteContent}
+            threshold={whiteThreshold}
+            feather={25}
+            trimOutro={trimCapCutOutro}
+            trimOutroSeconds={trimSeconds}
+            transitionMode={transitionMode}
+            transitionDuration={transitionDuration}
+            maskWatermark={maskWatermark}
+            className="w-full h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
+            alt="Melhor Cupom Vídeo 32s"
+          />
         </div>
 
         {/* 3. Headline & Descrição */}
