@@ -20,6 +20,7 @@ export const TransparentVideo = ({
   className = '',
   containerClassName = '',
   trimIntroSeconds = 2.0,      // Cortar os primeiros segundos do vídeo (padrão: 2.0s)
+  loopEndSeconds = 10,         // Ponto final do looping em segundos (padrão: 10s)
   removeGreen = true,          // Remoção de fundo verde Chroma Key (padrão)
   removeWhite = false,         // Remoção de fundo branco (para compatibilidade)
   preserveWhiteContent = true, // Flood-fill preservador de letras e mascote
@@ -368,9 +369,11 @@ export const TransparentVideo = ({
       }
 
       const duration = video.duration || 32;
-      const cutPoint = trimOutro && trimOutroSeconds > 0 && duration > trimOutroSeconds + 0.2
-        ? Math.max(0.5, duration - trimOutroSeconds)
-        : duration;
+      const cutPoint = typeof loopEndSeconds === 'number' && loopEndSeconds > 0
+        ? Math.min(duration, loopEndSeconds)
+        : (trimOutro && trimOutroSeconds > 0 && duration > trimOutroSeconds + 0.2
+            ? Math.max(0.5, duration - trimOutroSeconds)
+            : duration);
 
       // Ponto de início do loop (corta os primeiros segundos configurados)
       const startPoint = getStartPoint();
@@ -471,6 +474,7 @@ export const TransparentVideo = ({
   }, [
     src,
     trimIntroSeconds,
+    loopEndSeconds,
     removeGreen,
     removeWhite,
     preserveWhiteContent,

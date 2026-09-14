@@ -29,6 +29,8 @@ export const HeroBanner = ({
   // 'video_transparent' | 'static_image' | 'video_mp4'
   const [mediaType, setMediaType] = useState('video_transparent');
   const [trimIntroSeconds, setTrimIntroSeconds] = useState(2.0); // Cortar os primeiros 2 segundos do vídeo
+  const [loopEndSeconds, setLoopEndSeconds] = useState(10); // [✂️ final : 10] Ponto final do looping
+  const [heroOffsetY, setHeroOffsetY] = useState(0); // Ajuste da localização da hero (mais pra cima ou pra baixo da navbar)
   const [removeGreenBg, setRemoveGreenBg] = useState(true);
   const [removeWhiteBg, setRemoveWhiteBg] = useState(false);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
@@ -51,7 +53,14 @@ export const HeroBanner = ({
   };
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#14141C] to-[#0D0D11] border-b border-white/5 py-14 sm:py-20">
+    <div 
+      style={{
+        paddingTop: `${Math.max(12, 56 + heroOffsetY)}px`,
+        marginTop: heroOffsetY < -44 ? `${heroOffsetY + 44}px` : undefined,
+        transition: 'padding-top 0.25s cubic-bezier(0.16, 1, 0.3, 1), margin-top 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
+      className="relative overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#14141C] to-[#0D0D11] border-b border-white/5 pb-14 sm:pb-20"
+    >
       
       {/* Luzes de Fundo & Glow Atmosférico Laranja Expandido para Vídeo 2x */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] sm:w-[1250px] h-[500px] bg-[#FF5F00]/25 blur-[160px] pointer-events-none rounded-full" />
@@ -69,6 +78,7 @@ export const HeroBanner = ({
               src="/video_loop_32s.mp4"
               containerClassName="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]"
               trimIntroSeconds={trimIntroSeconds}
+              loopEndSeconds={loopEndSeconds}
               removeGreen={removeGreenBg}
               removeWhite={removeWhiteBg}
               preserveWhiteContent={preserveWhiteContent}
@@ -99,6 +109,9 @@ export const HeroBanner = ({
               }}
               onTimeUpdate={(e) => {
                 if (e.target.currentTime < trimIntroSeconds - 0.1) {
+                  e.target.currentTime = trimIntroSeconds;
+                }
+                if (loopEndSeconds > 0 && e.target.currentTime >= loopEndSeconds) {
                   e.target.currentTime = trimIntroSeconds;
                 }
               }}
@@ -150,6 +163,39 @@ export const HeroBanner = ({
               >
                 <span>🎥 Player MP4</span>
               </button>
+
+              {/* Controle Interativo de Posição da Hero (Mais pra Cima ou Mais pra Baixo da Navbar) */}
+              <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-white/10 bg-white/5 px-2.5 py-1 rounded-xl text-[11px] text-gray-300 font-bold" title="Ajusta a localização do hero, mais pra cima ou pra baixo da navbar">
+                <span className="text-cyan-400">↕️ Hero:</span>
+                <span className="font-mono text-white text-[11px] min-w-[32px] text-center">
+                  {heroOffsetY > 0 ? `+${heroOffsetY}px` : `${heroOffsetY}px`}
+                </span>
+                <div className="flex items-center gap-1 ml-0.5">
+                  <button
+                    onClick={() => setHeroOffsetY(prev => prev - 10)}
+                    className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black transition-colors text-xs flex items-center gap-0.5 shadow-sm active:scale-95"
+                    title="Mover Hero mais pra CIMA (aproximar da navbar)"
+                  >
+                    ▲ Cima
+                  </button>
+                  <button
+                    onClick={() => setHeroOffsetY(prev => prev + 10)}
+                    className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-black transition-colors text-xs flex items-center gap-0.5 shadow-sm active:scale-95"
+                    title="Mover Hero mais pra BAIXO (afastar da navbar)"
+                  >
+                    ▼ Baixo
+                  </button>
+                  {heroOffsetY !== 0 && (
+                    <button
+                      onClick={() => setHeroOffsetY(0)}
+                      className="px-1.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors text-[10px]"
+                      title="Restaurar posição original (0px)"
+                    >
+                      ↺
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Controles de Remoção de Fundo quando o vídeo estiver ativo */}
@@ -295,24 +341,24 @@ export const HeroBanner = ({
                   </div>
                 </div>
 
-                {/* Ajuste Fino do Tempo de Loop */}
-                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta segundos do final para encurtar ou estender o ciclo de repetição">
-                  <span className="text-orange-400">✂️ Loop:</span>
-                  <span className="font-mono text-white text-[11px]">
-                    {trimSeconds >= 0 ? `-${trimSeconds.toFixed(1)}s` : `+${Math.abs(trimSeconds).toFixed(1)}s`}
+                {/* Ajuste do Ponto Final do Looping [✂️ final : 10] */}
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Define o ponto final do looping do vídeo [✂️ final : 10]">
+                  <span className="text-orange-400">✂️ final :</span>
+                  <span className="font-mono text-white text-[11px] min-w-[18px] text-center">
+                    {loopEndSeconds}
                   </span>
                   <div className="flex items-center gap-0.5 ml-0.5">
                     <button
-                      onClick={() => setTrimSeconds(prev => parseFloat((prev - 0.5).toFixed(1)))}
-                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Diminuir corte (permite valores abaixo de 0)"
+                      onClick={() => setLoopEndSeconds(prev => Math.max(Math.ceil(trimIntroSeconds + 1), prev - 1))}
+                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
+                      title="Diminuir ponto final do loop (-1s)"
                     >
                       -
                     </button>
                     <button
-                      onClick={() => setTrimSeconds(prev => parseFloat((prev + 0.5).toFixed(1)))}
-                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
-                      title="Aumentar corte (+0.5s)"
+                      onClick={() => setLoopEndSeconds(prev => prev + 1)}
+                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs active:scale-95"
+                      title="Aumentar ponto final do loop (+1s)"
                     >
                       +
                     </button>
