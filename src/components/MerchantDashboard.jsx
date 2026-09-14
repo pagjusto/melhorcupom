@@ -44,6 +44,7 @@ import {
   Share2,
   Eye
 } from 'lucide-react';
+import { MerchantPromoKit } from './PromotionalKit';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -646,6 +647,21 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           <Gift size={14} className="flex-shrink-0" />
           <span className="truncate">
             Divulgue & Ganhe <span className="hidden 2xl:inline">(Caixa: R$ {(currentStore.referralBalance || 0).toFixed(2).replace('.', ',')})</span><span className="hidden lg:inline 2xl:hidden">(R$ {(currentStore.referralBalance || 0).toFixed(0)})</span>
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('divulgacao')}
+          title="Divulgação & Redes Sociais (Kit de Artes Oficiais)"
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
+            activeTab === 'divulgacao'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+              : 'bg-[#181824] text-orange-400 hover:text-white border border-orange-500/20'
+          }`}
+        >
+          <Share2 size={14} className="flex-shrink-0" />
+          <span className="truncate">
+            Divulgação
           </span>
         </button>
       </div>
@@ -2634,6 +2650,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           </div>
 
         </div>
+      )}
+
+      {/* ABA 7: DIVULGAÇÃO & REDES SOCIAIS (KIT DE ARTES OFICIAIS) */}
+      {activeTab === 'divulgacao' && (
+        <MerchantPromoKit store={currentStore} coupons={storeCoupons} />
       )}
 
       {/* MODAL: VISUALIZAÇÃO DO CUPOM POR USUÁRIOS VIP */}

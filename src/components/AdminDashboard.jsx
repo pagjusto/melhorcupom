@@ -33,9 +33,11 @@ import {
   Calendar,
   Phone,
   Mail,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { AdminPromoManager } from './PromotionalKit';
 
 export const AdminDashboard = () => {
   const { 
@@ -408,6 +410,18 @@ export const AdminDashboard = () => {
           >
             <Users size={15} />
             <span>Usuários Cadastrados ({registeredUsers.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveAdminTab('divulgacao')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'divulgacao'
+                ? 'bg-gradient-to-r from-fuchsia-600 via-rose-600 to-[#FF5F00] text-white shadow-md shadow-rose-600/30'
+                : 'bg-white/5 hover:bg-white/10 text-rose-300 hover:text-white border border-rose-500/20'
+            }`}
+          >
+            <Share2 size={15} />
+            <span>Divulgação</span>
           </button>
         </div>
       </div>
@@ -1550,6 +1564,11 @@ export const AdminDashboard = () => {
           </div>
 
         </div>
+      )}
+
+      {/* ABA 6: DIVULGAÇÃO & INSTAGRAM OFICIAL (@melhorcupom.oficial) */}
+      {activeAdminTab === 'divulgacao' && (
+        <AdminPromoManager stores={stores} showToast={showToast} />
       )}
 
     </div>
