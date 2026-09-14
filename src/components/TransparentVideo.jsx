@@ -19,6 +19,7 @@ export const TransparentVideo = ({
   src,
   className = '',
   containerClassName = '',
+  trimIntroSeconds = 2.0,      // Cortar os primeiros segundos do vídeo (padrão: 2.0s)
   removeGreen = true,          // Remoção de fundo verde Chroma Key (padrão)
   removeWhite = false,         // Remoção de fundo branco (para compatibilidade)
   preserveWhiteContent = true, // Flood-fill preservador de letras e mascote
@@ -50,6 +51,13 @@ export const TransparentVideo = ({
     snapshot: null
   });
 
+  // Ponto de início do vídeo (corta os primeiros segundos especificados)
+  const getStartPoint = () => {
+    const explicitIntro = typeof trimIntroSeconds === 'number' ? trimIntroSeconds : 0;
+    const durationOffset = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
+    return Math.max(explicitIntro, durationOffset);
+  };
+
   useEffect(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -61,7 +69,17 @@ export const TransparentVideo = ({
     video.defaultMuted = true;
     video.playsInline = true;
 
+    const seekToStartIfBefore = () => {
+      const startPoint = getStartPoint();
+      if (startPoint > 0 && video.currentTime < startPoint) {
+        try {
+          video.currentTime = startPoint;
+        } catch (e) {}
+      }
+    };
+
     const handleLoadedMetadata = () => {
+      seekToStartIfBefore();
       if (video.videoWidth && video.videoHeight) {
         const w = video.videoWidth;
         const h = video.videoHeight;
@@ -85,14 +103,15 @@ export const TransparentVideo = ({
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('loadeddata', handleLoadedMetadata);
     video.addEventListener('canplay', handleLoadedMetadata);
-    video.addEventListener('play', handleLoadedMetadata);
+    video.addEventListener('play', seekToStartIfBefore);
 
     if (video.videoWidth && video.videoHeight) {
       handleLoadedMetadata();
     }
 
-    // Inicia carregamento e reprodução
+    // Inicia carregamento e reprodução já posicionando após os primeiros segundos
     video.load();
+    seekToStartIfBefore();
     video.play().catch(() => {});
 
     /**
@@ -353,17 +372,23 @@ export const TransparentVideo = ({
         ? Math.max(0.5, duration - trimOutroSeconds)
         : duration;
 
-      // Ponto de início do loop:
-      // Se transitionDuration for negativo (< 0), corta o início do vídeo pelo valor absoluto
-      const startPoint = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
+      // Ponto de início do loop (corta os primeiros segundos configurados)
+      const startPoint = getStartPoint();
 
       // Duração da transição em milissegundos
       const fadeDurMs = transitionDuration === 0
         ? 0
         : Math.max(150, Math.min(1500, Math.abs(transitionDuration) * 1000));
 
+      // Garante que o vídeo nunca volte a exibir os primeiros segundos cortados
+      if (startPoint > 0 && video.currentTime < startPoint - 0.05) {
+        try {
+          video.currentTime = startPoint;
+        } catch (e) {}
+      }
+
       // 1. REBOBINAMENTO AUTOMÁTICO AO ATINGIR O PONTO DE CORTE
-      if (duration && video.currentTime >= Math.max(0.1, cutPoint - 0.08) && !isLoopingRef.current) {
+      if (duration && video.currentTime >= Math.max(startPoint + 0.5, cutPoint - 0.08) && !isLoopingRef.current) {
         isLoopingRef.current = true;
         loopStartTimeRef.current = performance.now();
 
@@ -426,7 +451,7 @@ export const TransparentVideo = ({
     };
 
     const handleEnded = () => {
-      const startPoint = transitionDuration < 0 ? Math.abs(transitionDuration) : 0;
+      const startPoint = getStartPoint();
       video.currentTime = startPoint;
       video.play().catch(() => {});
     };
@@ -440,10 +465,12 @@ export const TransparentVideo = ({
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('loadeddata', handleLoadedMetadata);
       video.removeEventListener('canplay', handleLoadedMetadata);
+      video.removeEventListener('play', seekToStartIfBefore);
       video.removeEventListener('ended', handleEnded);
     };
   }, [
     src,
+    trimIntroSeconds,
     removeGreen,
     removeWhite,
     preserveWhiteContent,
@@ -458,7 +485,7 @@ export const TransparentVideo = ({
   ]);
 
   return (
-    <div className={`relative inline-block w-full ${containerClassName || 'max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px]'}`}>
+    <div className={`relative inline-block w-full ${containerClassName || 'max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]'}`}>
       {/* Vídeo de origem ativo no pipeline de decodificação offscreen */}
       <video
         ref={videoRef}

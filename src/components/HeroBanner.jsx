@@ -28,6 +28,7 @@ export const HeroBanner = ({
   // Estado para visualização do logo oficial ou teste de vídeo
   // 'video_transparent' | 'static_image' | 'video_mp4'
   const [mediaType, setMediaType] = useState('video_transparent');
+  const [trimIntroSeconds, setTrimIntroSeconds] = useState(2.0); // Cortar os primeiros 2 segundos do vídeo
   const [removeGreenBg, setRemoveGreenBg] = useState(true);
   const [removeWhiteBg, setRemoveWhiteBg] = useState(false);
   const [preserveWhiteContent, setPreserveWhiteContent] = useState(true);
@@ -52,21 +53,22 @@ export const HeroBanner = ({
   return (
     <div className="relative overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#14141C] to-[#0D0D11] border-b border-white/5 py-14 sm:py-20">
       
-      {/* Luzes de Fundo & Glow Atmosférico Laranja */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[650px] sm:w-[850px] h-[350px] bg-[#FF5F00]/25 blur-[140px] pointer-events-none rounded-full" />
-      <div className="absolute top-10 left-1/4 w-72 h-72 bg-amber-500/10 blur-[100px] pointer-events-none rounded-full" />
-      <div className="absolute top-10 right-1/4 w-72 h-72 bg-orange-600/10 blur-[100px] pointer-events-none rounded-full" />
+      {/* Luzes de Fundo & Glow Atmosférico Laranja Expandido para Vídeo 2x */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] sm:w-[1250px] h-[500px] bg-[#FF5F00]/25 blur-[160px] pointer-events-none rounded-full" />
+      <div className="absolute top-10 left-1/4 w-80 h-80 bg-amber-500/10 blur-[110px] pointer-events-none rounded-full" />
+      <div className="absolute top-10 right-1/4 w-80 h-80 bg-orange-600/10 blur-[110px] pointer-events-none rounded-full" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         
-        {/* LOGO OU VÍDEO NO MEIO DO APP (MODO TESTE) */}
+        {/* LOGO OU VÍDEO NO MEIO DO APP (TAMANHO 2X) */}
         <div className="relative flex flex-col justify-center items-center my-4 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 blur-3xl -z-10 rounded-full scale-125 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 blur-3xl -z-10 rounded-full scale-150 pointer-events-none" />
           
           {mediaType === 'video_transparent' && (
             <TransparentVideo
               src="/video_loop_32s.mp4"
-              containerClassName="max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px]"
+              containerClassName="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]"
+              trimIntroSeconds={trimIntroSeconds}
               removeGreen={removeGreenBg}
               removeWhite={removeWhiteBg}
               preserveWhiteContent={preserveWhiteContent}
@@ -77,7 +79,7 @@ export const HeroBanner = ({
               transitionMode={transitionMode}
               transitionDuration={transitionDuration}
               maskWatermark={maskWatermark}
-              className="w-full h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
+              className="w-full h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
               alt="Melhor Cupom Vídeo 32s"
             />
           )}
@@ -90,9 +92,19 @@ export const HeroBanner = ({
               muted 
               playsInline
               controls
-              className="w-full max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
+              onLoadedMetadata={(e) => {
+                if (e.target.currentTime < trimIntroSeconds) {
+                  e.target.currentTime = trimIntroSeconds;
+                }
+              }}
+              onTimeUpdate={(e) => {
+                if (e.target.currentTime < trimIntroSeconds - 0.1) {
+                  e.target.currentTime = trimIntroSeconds;
+                }
+              }}
+              className="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px] h-auto rounded-3xl border-2 border-[#FF5F00]/40 shadow-2xl shadow-orange-950/60 transition-transform duration-500 hover:scale-102"
             >
-              <source src="/video_loop_32s.mp4" type="video/mp4" />
+              <source src="/video_loop_32s.mp4#t=2" type="video/mp4" />
             </video>
           )}
 
@@ -100,7 +112,7 @@ export const HeroBanner = ({
             <img 
               src={logoMelhorCupom} 
               alt="Melhor Cupom" 
-              className="w-full max-w-[420px] sm:max-w-[560px] md:max-w-[700px] lg:max-w-[820px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-105 select-none"
+              className="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px] h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
             />
           )}
 
@@ -258,6 +270,30 @@ export const HeroBanner = ({
                     </div>
                   </div>
                 )}
+
+                {/* Ajuste do Corte de Início (Corta os Primeiros 2 Segundos) */}
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta os primeiros segundos do vídeo (ex: 2.0s)">
+                  <span className="text-amber-400">✂️ Início:</span>
+                  <span className="font-mono text-white text-[11px]">
+                    {trimIntroSeconds.toFixed(1)}s
+                  </span>
+                  <div className="flex items-center gap-0.5 ml-0.5">
+                    <button
+                      onClick={() => setTrimIntroSeconds(prev => Math.max(0, parseFloat((prev - 0.5).toFixed(1))))}
+                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
+                      title="Diminuir corte de início (-0.5s)"
+                    >
+                      -
+                    </button>
+                    <button
+                      onClick={() => setTrimIntroSeconds(prev => parseFloat((prev + 0.5).toFixed(1)))}
+                      className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white font-black flex items-center justify-center transition-colors text-xs"
+                      title="Aumentar corte de início (+0.5s)"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
 
                 {/* Ajuste Fino do Tempo de Loop */}
                 <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded-xl text-[11px] text-gray-300 font-bold" title="Corta segundos do final para encurtar ou estender o ciclo de repetição">
