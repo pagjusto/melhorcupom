@@ -51,7 +51,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
     : (userProfile.referralBalance || 0);
 
   return (
-    <nav className="bg-[#14141B] border-b border-white/10 sticky top-[41px] z-40 backdrop-blur-md bg-opacity-95">
+    <nav className="bg-[#14141B] border-b border-white/10 sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 sm:h-20">
           

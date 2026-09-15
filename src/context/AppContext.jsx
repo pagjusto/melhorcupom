@@ -492,10 +492,54 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('melhor_cupom_admin_users', JSON.stringify(registeredUsers));
   }, [registeredUsers]);
 
+  // Estado de Simulação Ativa pelo Administrador Master
+  const [isSimulatingRole, setIsSimulatingRole] = useState(() => {
+    return localStorage.getItem('melhor_cupom_simulating') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('melhor_cupom_simulating', String(isSimulatingRole));
+  }, [isSimulatingRole]);
+
+  // Iniciar Simulação de Perfil a partir do Painel do Administrador
+  const startSimulation = (roleId) => {
+    setIsSimulatingRole(true);
+    switchRole(roleId);
+    if (roleId.startsWith('merchant_')) {
+      setActiveTab('merchant-dashboard');
+    } else if (roleId === 'user_free' || roleId === 'user') {
+      setActiveTab('user-profile');
+    } else if (roleId === 'admin') {
+      setIsSimulatingRole(false);
+      setActiveTab('admin-dashboard');
+    } else {
+      setActiveTab('explore');
+    }
+  };
+
+  // Encerrar Simulação e Retornar ao Painel ADM Master
+  const exitSimulation = () => {
+    setIsSimulatingRole(false);
+    setCurrentRole('admin');
+    setUserProfile(prev => ({
+      ...prev,
+      name: ADMIN_CREDENTIALS.name,
+      email: ADMIN_CREDENTIALS.email,
+      phone: '(11) 98765-4321',
+      isLoggedIn: true,
+      isRegistered: true,
+      isAdmin: true,
+      isVip: true,
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'
+    }));
+    setActiveTab('admin-dashboard');
+  };
+
   // Sincronizar o estado de VIP quando o perfil rápido é alterado
   const switchRole = (newRole) => {
     setCurrentRole(newRole);
     if (newRole === 'admin') {
+      setIsSimulatingRole(false);
       setUserProfile(prev => ({
         ...prev,
         name: ADMIN_CREDENTIALS.name,
@@ -1236,6 +1280,8 @@ export const AppProvider = ({ children }) => {
 
   // Logout / Sair da Conta
   const logoutAccount = () => {
+    setIsSimulatingRole(false);
+    localStorage.removeItem('melhor_cupom_simulating');
     setCurrentRole('visitor');
     setUserProfile(prev => ({
       ...prev,
@@ -1253,6 +1299,8 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('melhor_cupom_user');
     localStorage.removeItem('melhor_cupom_role');
     localStorage.removeItem('melhor_cupom_admin_users');
+    localStorage.removeItem('melhor_cupom_simulating');
+    setIsSimulatingRole(false);
     setCoupons(INITIAL_COUPONS);
     setStores(INITIAL_STORES);
     setRegisteredUsers(INITIAL_REGISTERED_USERS);
@@ -1266,6 +1314,9 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider value={{
       currentRole,
       switchRole,
+      isSimulatingRole,
+      startSimulation,
+      exitSimulation,
       coupons,
       stores,
       updateStore,

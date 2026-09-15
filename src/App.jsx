@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
-import { RoleSwitcher } from './components/RoleSwitcher';
 import { Navbar } from './components/Navbar';
 import { HeroBanner } from './components/HeroBanner';
 import { CategoryPills } from './components/CategoryPills';
@@ -18,7 +17,7 @@ import { AuthModal } from './components/AuthModal';
 import { SavingsModal } from './components/SavingsModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
-import { Sparkles, ArrowRight, ShieldCheck, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
 const MainLayout = () => {
   const { 
@@ -27,6 +26,8 @@ const MainLayout = () => {
     currentRole, 
     isVipUser, 
     switchRole,
+    isSimulatingRole,
+    exitSimulation,
     setIsSubscriptionModalOpen,
     activeTab,
     setActiveTab,
@@ -140,11 +141,43 @@ const MainLayout = () => {
     setActiveTab('explore');
   };
 
+  const getSimulatedRoleLabel = (role) => {
+    if (role === 'visitor') return 'Visitante (Público Não-Logado)';
+    if (role === 'user_free' || role === 'user') return 'Usuário Cadastrado (Sem VIP)';
+    if (role === 'vip') return 'Assinante VIP (Membro Fidelidade)';
+    if (role.startsWith('merchant_')) {
+      const st = stores.find(s => s.merchantId === role || s.id === role);
+      return `Lojista Parceiro (${st?.name || 'Comércio'})`;
+    }
+    return role;
+  };
+
   return (
     <div className="min-h-screen bg-[#0D0D11] text-gray-100 flex flex-col justify-between selection:bg-[#FF5F00] selection:text-white">
       
-      {/* 1. Barra de Troca Rápida de Papéis (Simulador) */}
-      <RoleSwitcher />
+      {/* 1. Barra Superior de Modo Simulação (Visível APENAS quando o Administrador Master estiver testando outro perfil) */}
+      {isSimulatingRole && currentRole !== 'admin' && (
+        <div className="bg-gradient-to-r from-[#0B132B] via-[#101D3F] to-[#0B132B] border-b border-blue-500/40 text-white px-4 py-2.5 text-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping flex-shrink-0" />
+            <span className="font-black text-blue-300 tracking-wide uppercase text-[10px] bg-blue-500/20 px-2.5 py-0.5 rounded-md border border-blue-400/30">
+              Modo Simulação ADM
+            </span>
+            <span className="text-gray-300 text-xs">
+              Testando a plataforma como: <strong className="text-white font-bold bg-white/10 px-2 py-0.5 rounded">{getSimulatedRoleLabel(currentRole)}</strong>
+            </span>
+          </div>
+
+          <button
+            onClick={exitSimulation}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-blue-600/30 transition-all cursor-pointer transform hover:scale-105"
+            title="Sair do modo de teste e retornar ao Painel de Administração Master"
+          >
+            <Shield size={14} />
+            <span>Voltar ao Painel ADM Master</span>
+          </button>
+        </div>
+      )}
 
       {/* 2. Barra de Navegação Principal com Seletor de Cidade */}
       <Navbar 

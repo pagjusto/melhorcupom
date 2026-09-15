@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
+import { RoleSwitcher } from './RoleSwitcher';
 
 export const AdminDashboard = () => {
   const { 
@@ -339,10 +340,19 @@ export const AdminDashboard = () => {
           {/* Ações Rápidas do Topo */}
           <div className="flex flex-wrap items-center gap-2.5">
             <button
+              onClick={() => setActiveAdminTab('simulador')}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-300 hover:text-white border border-blue-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              title="Abrir Simulador de Perfis para testar como cliente ou lojista"
+            >
+              <Sparkles size={14} className="text-amber-400" />
+              <span>Simulador de Perfis</span>
+            </button>
+
+            <button
               onClick={() => {
                 showToast('Dados consolidados sincronizados em tempo real!');
               }}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition-all"
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
               title="Atualizar dados analíticos"
             >
               <RefreshCw size={14} />
@@ -351,7 +361,7 @@ export const AdminDashboard = () => {
 
             <button
               onClick={() => setActiveAdminTab('cities')}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg shadow-blue-600/30"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg shadow-blue-600/30 cursor-pointer"
             >
               <MapPin size={14} />
               <span>Ver por Cidades</span>
@@ -432,6 +442,18 @@ export const AdminDashboard = () => {
             <Share2 size={15} />
             <span>Divulgação</span>
           </button>
+
+          <button
+            onClick={() => setActiveAdminTab('simulador')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'simulador'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md shadow-blue-600/30'
+                : 'bg-white/5 hover:bg-white/10 text-cyan-300 hover:text-white border border-cyan-500/20'
+            }`}
+          >
+            <Sparkles size={15} />
+            <span>🧪 Simulador de Perfis</span>
+          </button>
         </div>
       </div>
 
@@ -440,6 +462,32 @@ export const AdminDashboard = () => {
       {/* ========================================================================= */}
       {activeAdminTab === 'overview' && (
         <div className="space-y-8 animate-fade-in">
+
+          {/* BANNER RÁPIDO DO SIMULADOR NO OVERVIEW */}
+          <div className="bg-gradient-to-r from-blue-950/40 via-[#161628] to-indigo-950/40 border border-blue-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={20} className="text-amber-400" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>Simulador de Perfis Ativo no Painel</span>
+                  <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-black uppercase">Exclusivo ADM</span>
+                </div>
+                <p className="text-xs text-gray-400">
+                  Valide como a plataforma é exibida para Visitantes, Usuários sem VIP, Assinantes VIP e Lojistas em tempo real.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setActiveAdminTab('simulador')}
+              className="px-4 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-2 flex-shrink-0 shadow-md shadow-blue-600/30 cursor-pointer"
+            >
+              <span>Abrir Simulador Completo</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
           
           {/* GRID DE 6 CARDS PRINCIPAIS DE KPIS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1578,6 +1626,11 @@ export const AdminDashboard = () => {
       {/* ABA 6: DIVULGAÇÃO & INSTAGRAM OFICIAL (@melhorcupom.oficial) */}
       {activeAdminTab === 'divulgacao' && (
         <AdminPromoManager stores={stores} showToast={showToast} />
+      )}
+
+      {/* ABA 7: SIMULADOR DE PERFIS E PERMISSÕES (EXCLUSIVO DO ADM MASTER) */}
+      {activeAdminTab === 'simulador' && (
+        <RoleSwitcher />
       )}
 
     </div>
