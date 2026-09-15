@@ -309,11 +309,20 @@ export const AdminDashboard = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider">
-              <Shield size={14} className="text-blue-400" />
-              <span>Painel de Administração Master</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 text-[10px]">Tempo Real</span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider">
+                <Shield size={14} className="text-blue-400" />
+                <span>Painel de Administração Master</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-emerald-400 text-[10px]">Tempo Real</span>
+              </div>
+
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Administrador:</span>
+                <strong className="text-white">Renan Zanferrari</strong>
+                <span className="text-emerald-400 text-[11px] font-mono">(renanzanferrari@live.com)</span>
+              </div>
             </div>
             
             <h1 className="text-2xl sm:text-4xl font-black text-white font-display flex flex-wrap items-center gap-3">

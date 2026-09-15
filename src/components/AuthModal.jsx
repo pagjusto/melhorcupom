@@ -13,6 +13,7 @@ import {
   Lock, 
   Building2, 
   ShieldCheck, 
+  Shield,
   Plus, 
   AlertCircle,
   ArrowRight,
@@ -207,7 +208,9 @@ export const AuthModal = () => {
     }
 
     const result = loginAccount(loginForm.identifier, loginForm.password);
-    if (result && result.success) {
+    if (result && !result.success) {
+      setErrorMsg(result.error || 'Credenciais inválidas.');
+    } else if (result && result.success) {
       setErrorMsg('');
     }
   };
@@ -215,7 +218,12 @@ export const AuthModal = () => {
   // Atalho de login rápido para testes
   const handleQuickLogin = (identifier, password) => {
     setLoginForm({ identifier, password });
-    loginAccount(identifier, password);
+    const result = loginAccount(identifier, password);
+    if (result && !result.success) {
+      setErrorMsg(result.error || 'Credenciais inválidas.');
+    } else if (result && result.success) {
+      setErrorMsg('');
+    }
   };
 
   return (
@@ -851,7 +859,7 @@ export const AuthModal = () => {
                   <Sparkles size={13} className="text-amber-400" />
                   <span>Acesso rápido para demonstração:</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('lucas.vip@email.com', '123456')}
@@ -874,6 +882,18 @@ export const AuthModal = () => {
                       <span>Conta Lojista</span>
                     </div>
                     <div className="text-[10px] text-gray-400 truncate mt-0.5">Smash Burger (CNPJ)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('renanzanferrari@live.com', 'rEn@n1406')}
+                    className="p-2.5 bg-blue-950/30 hover:bg-blue-900/40 rounded-xl text-left border border-blue-500/30 hover:border-blue-400 transition-all group"
+                  >
+                    <div className="font-bold text-white text-xs flex items-center gap-1 group-hover:text-blue-400">
+                      <Shield size={13} className="text-blue-400" />
+                      <span>ADM Master</span>
+                    </div>
+                    <div className="text-[10px] text-blue-300/80 truncate mt-0.5">renanzanferrari@live.com</div>
                   </button>
                 </div>
               </div>

@@ -18,6 +18,7 @@ import {
   User,
   UserPlus,
   LogIn,
+  LogOut,
   Settings,
   Gift
 } from 'lucide-react';
@@ -140,7 +141,23 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             )}
 
             {currentRole === 'admin' ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
+                {/* Chip de Identificação do Administrador Master */}
+                <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-black text-white shadow-sm border border-blue-400/40">
+                    RZ
+                  </div>
+                  <div className="text-left leading-tight">
+                    <div className="text-xs font-black text-white flex items-center gap-1.5">
+                      <span>Renan Zanferrari</span>
+                      <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black tracking-wide">
+                        ADM MASTER
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-blue-300/80">renanzanferrari@live.com</div>
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setActiveTab('admin-dashboard')}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
@@ -155,14 +172,12 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 </button>
 
                 <button
-                  onClick={() => {
-                    switchRole('visitor');
-                    setActiveTab('explore');
-                  }}
-                  className="text-gray-400 hover:text-red-400 px-2.5 py-2 rounded-xl hover:bg-white/5 transition-colors text-xs font-bold"
+                  onClick={logoutAccount}
+                  className="text-gray-400 hover:text-red-400 px-2.5 py-2 rounded-xl hover:bg-white/5 transition-colors text-xs font-bold flex items-center gap-1"
                   title="Sair do modo Administrador"
                 >
-                  Sair ADM
+                  <LogOut size={13} />
+                  <span>Sair ADM</span>
                 </button>
               </div>
             ) : isMerchantRole ? (
@@ -392,7 +407,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           )}
 
           {/* Atalhos de Conta no Mobile Drawer */}
-          {!isUserLoggedIn && !isMerchantRole ? (
+          {!isUserLoggedIn && !isMerchantRole && currentRole !== 'admin' ? (
             <div className="grid grid-cols-2 gap-2 pb-1">
               <button
                 onClick={() => { 
@@ -420,7 +435,9 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10 mb-1">
               <button
                 onClick={() => {
-                  if (isMerchantRole) {
+                  if (currentRole === 'admin') {
+                    setActiveTab('admin-dashboard');
+                  } else if (isMerchantRole) {
                     setMerchantDashboardTab('settings');
                     setActiveTab('merchant-dashboard');
                   } else {
@@ -429,10 +446,14 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                   setMobileMenuOpen(false);
                 }}
                 className="flex items-center gap-2.5 text-left group flex-1 min-w-0 mr-2"
-                title={isMerchantRole ? "Abrir Perfil da Loja" : "Abrir Meu Perfil"}
+                title={currentRole === 'admin' ? "Painel ADM Master" : isMerchantRole ? "Abrir Perfil da Loja" : "Abrir Meu Perfil"}
               >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs border border-white/10 flex-shrink-0">
-                  {isMerchantRole ? (
+                <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center font-bold text-xs border border-white/10 flex-shrink-0 ${
+                  currentRole === 'admin' ? 'bg-blue-600 text-white font-black' : 'bg-orange-500/20 text-orange-400'
+                }`}>
+                  {currentRole === 'admin' ? (
+                    'RZ'
+                  ) : isMerchantRole ? (
                     currentStore?.logoImage ? (
                       <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                     ) : (
@@ -448,10 +469,10 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 </div>
                 <div className="text-xs min-w-0">
                   <div className="font-bold text-white truncate group-hover:text-[#FF5F00] transition-colors">
-                    {isMerchantRole ? currentStore?.name : userProfile.name}
+                    {currentRole === 'admin' ? 'Renan Zanferrari' : isMerchantRole ? currentStore?.name : userProfile.name}
                   </div>
                   <div className="text-[10px] text-gray-400 truncate">
-                    {isMerchantRole ? 'Ver Perfil da Loja ⚙️' : isVipUser ? 'Membro VIP' : 'Conta de Usuário'}
+                    {currentRole === 'admin' ? 'Administrador Master 🛡️' : isMerchantRole ? 'Ver Perfil da Loja ⚙️' : isVipUser ? 'Membro VIP' : 'Conta de Usuário'}
                   </div>
                 </div>
               </button>

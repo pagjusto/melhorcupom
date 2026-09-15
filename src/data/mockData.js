@@ -1037,4 +1037,12 @@ export const MONTHLY_FINANCIAL_HISTORY = [
   { month: 'Fev/26', vipRevenue: 980.00, merchantRevenue: 1980.00, totalMRR: 2960.00, vipsCount: 49, storesCount: 17 }
 ];
 
+export const ADMIN_CREDENTIALS = {
+  email: 'renanzanferrari@live.com',
+  password: 'rEn@n1406',
+  name: 'Renan Zanferrari',
+  role: 'admin'
+};
+
+
 

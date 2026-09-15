@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS, MERCHANT_PLANS, INITIAL_REGISTERED_USERS, MONTHLY_FINANCIAL_HISTORY } from '../data/mockData';
+import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS, MERCHANT_PLANS, INITIAL_REGISTERED_USERS, MONTHLY_FINANCIAL_HISTORY, ADMIN_CREDENTIALS } from '../data/mockData';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -496,6 +496,16 @@ export const AppProvider = ({ children }) => {
   const switchRole = (newRole) => {
     setCurrentRole(newRole);
     if (newRole === 'admin') {
+      setUserProfile(prev => ({
+        ...prev,
+        name: ADMIN_CREDENTIALS.name,
+        email: ADMIN_CREDENTIALS.email,
+        isLoggedIn: true,
+        isRegistered: true,
+        isAdmin: true,
+        isVip: true,
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'
+      }));
       setActiveTab('admin-dashboard');
     } else if (newRole === 'vip') {
       setUserProfile(prev => ({
@@ -1101,11 +1111,51 @@ export const AppProvider = ({ children }) => {
     return { success: true, store: newStore };
   };
 
-  // Login Unificado (identifica automaticamente se é Lojista ou Usuário e redireciona à devida página)
+  // Login Unificado (identifica automaticamente se é Administrador Master, Lojista ou Usuário)
   const loginAccount = (identifier = '', password = '') => {
     const raw = (identifier || '').trim();
     const clean = raw.toLowerCase();
     const digits = raw.replace(/\D/g, '');
+
+    // 0. Verificar se é o Administrador Master (Renan Zanferrari)
+    if (clean === ADMIN_CREDENTIALS.email.toLowerCase()) {
+      if (password !== ADMIN_CREDENTIALS.password) {
+        return {
+          success: false,
+          error: 'Senha incorreta para a conta de Administrador Master.'
+        };
+      }
+
+      setCurrentRole('admin');
+      setUserProfile(prev => ({
+        ...prev,
+        name: ADMIN_CREDENTIALS.name,
+        email: ADMIN_CREDENTIALS.email,
+        phone: '(11) 98765-4321',
+        isLoggedIn: true,
+        isRegistered: true,
+        isAdmin: true,
+        isVip: true,
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'
+      }));
+      setActiveTab('admin-dashboard');
+      setIsAuthModalOpen(false);
+
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.55 },
+        colors: ['#3B82F6', '#6366F1', '#FF5F00', '#10B981', '#FFFFFF']
+      });
+
+      return {
+        success: true,
+        type: 'admin',
+        role: 'admin',
+        name: ADMIN_CREDENTIALS.name,
+        redirectTab: 'admin-dashboard'
+      };
+    }
 
     // 1. Verificar se é lojista:
     // - Bate com CNPJ de 14 dígitos
@@ -1189,7 +1239,8 @@ export const AppProvider = ({ children }) => {
     setCurrentRole('visitor');
     setUserProfile(prev => ({
       ...prev,
-      isLoggedIn: false
+      isLoggedIn: false,
+      isAdmin: false
     }));
     setActiveTab('explore');
   };
@@ -1258,6 +1309,7 @@ export const AppProvider = ({ children }) => {
       registerMerchant,
       loginAccount,
       logoutAccount,
+      adminCredentials: ADMIN_CREDENTIALS,
       // Painel de ADM Master
       registeredUsers,
       adminToggleUserVip,
