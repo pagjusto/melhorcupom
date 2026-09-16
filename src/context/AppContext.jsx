@@ -1,5 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_COUPONS, INITIAL_STORES, CATEGORIES, SUBSCRIPTION_PLANS, MERCHANT_PLANS, INITIAL_REGISTERED_USERS, MONTHLY_FINANCIAL_HISTORY, ADMIN_CREDENTIALS } from '../data/mockData';
+import { 
+  INITIAL_COUPONS, 
+  INITIAL_STORES, 
+  CATEGORIES, 
+  SUBSCRIPTION_PLANS, 
+  MERCHANT_PLANS, 
+  INITIAL_REGISTERED_USERS, 
+  MONTHLY_FINANCIAL_HISTORY, 
+  ADMIN_CREDENTIALS,
+  API_CONNECTORS,
+  INITIAL_API_LOGS
+} from '../data/mockData';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -17,18 +28,27 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('melhor_cupom_role') || 'visitor';
   });
 
-  // Estado de Cupons (com persistência no LocalStorage)
+  // Estado de Cupons (com persistência no LocalStorage e auto-mesclagem de novos dados)
   const [coupons, setCoupons] = useState(() => {
     const saved = localStorage.getItem('melhor_cupom_coupons');
     if (!saved) return INITIAL_COUPONS;
     try {
       const parsed = JSON.parse(saved);
-      return parsed.map(c => {
+      const parsedIds = new Set(parsed.map(c => c.id));
+      const missing = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
+      const combined = [...parsed, ...missing];
+      return combined.map(c => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
         return {
           ...c,
           banner: c.banner || init?.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
-          viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init?.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35))
+          viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init?.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
+          isApiIntegrated: c.isApiIntegrated ?? init?.isApiIntegrated ?? false,
+          apiSource: c.apiSource || init?.apiSource || null,
+          apiLastSync: c.apiLastSync || init?.apiLastSync || null,
+          cashbackRate: c.cashbackRate || init?.cashbackRate || null,
+          cashbackPercent: c.cashbackPercent || init?.cashbackPercent || 0,
+          affiliateUrl: c.affiliateUrl || init?.affiliateUrl || null
         };
       });
     } catch {
@@ -36,13 +56,16 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  // Estado de Lojas / Comerciantes
+  // Estado de Lojas / Comerciantes (com auto-mesclagem de lojas de grandes redes)
   const [stores, setStores] = useState(() => {
     const saved = localStorage.getItem('melhor_cupom_stores');
     if (!saved) return INITIAL_STORES;
     try {
       const parsed = JSON.parse(saved);
-      return parsed.map(s => {
+      const parsedIds = new Set(parsed.map(s => s.id));
+      const missing = INITIAL_STORES.filter(s => !parsedIds.has(s.id));
+      const combined = [...parsed, ...missing];
+      return combined.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (s.name ? s.name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         return {
@@ -51,6 +74,13 @@ export const AppProvider = ({ children }) => {
           tier: s.tier || init?.tier || 'free',
           phone: s.phone || init?.phone || '(11) 98123-4567',
           address: s.address || init?.address || '',
+          isApiIntegrated: s.isApiIntegrated ?? init?.isApiIntegrated ?? false,
+          apiSource: s.apiSource || init?.apiSource || null,
+          apiStatus: s.apiStatus || init?.apiStatus || null,
+          cashbackRate: s.cashbackRate || init?.cashbackRate || null,
+          cashbackPercent: s.cashbackPercent || init?.cashbackPercent || 0,
+          couponsCount: s.couponsCount ?? init?.couponsCount ?? 1,
+          affiliateUrl: s.affiliateUrl || init?.affiliateUrl || null,
           referralCode: storeRefCode,
           referralBalance: typeof s.referralBalance === 'number' ? s.referralBalance : 25.00,
           referrals: s.referrals || [
@@ -1308,6 +1338,85 @@ export const AppProvider = ({ children }) => {
     window.location.reload();
   };
 
+  // ==========================================
+  // HUB DE INTEGRAÇÕES & APIS DE AFILIADOS (Awin, Lomadee, Shopee, Mercado Livre)
+  // ==========================================
+  const [apiConnectors, setApiConnectors] = useState(API_CONNECTORS);
+  const [apiLogs, setApiLogs] = useState(INITIAL_API_LOGS);
+  const [isSyncingApis, setIsSyncingApis] = useState(false);
+
+  const syncApisNow = async () => {
+    setIsSyncingApis(true);
+    // Simula tempo de requisição às APIs oficiais
+    await new Promise(resolve => setTimeout(resolve, 1400));
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('pt-BR');
+    
+    setApiConnectors(prev => prev.map(c => ({
+      ...c,
+      status: 'connected',
+      statusLabel: 'Conectado & Sincronizado',
+      lastSync: `Hoje às ${timeStr}`,
+      pingMs: Math.floor(Math.random() * 35) + 25
+    })));
+
+    const newLogs = [
+      {
+        id: `log_${Date.now()}_1`,
+        timestamp: timeStr,
+        service: 'Awin API',
+        type: 'sync',
+        status: '200 OK',
+        message: 'GET /publishers/849201/vouchers -> 142 cupons ativos sincronizados (Amazon, Nike, Drogasil).',
+        level: 'success'
+      },
+      {
+        id: `log_${Date.now()}_2`,
+        timestamp: timeStr,
+        service: 'Lomadee API',
+        type: 'sync',
+        status: '200 OK',
+        message: 'GET /v3/offers/coupons -> 96 cupons ativos sincronizados (Magalu, KaBuM!).',
+        level: 'success'
+      },
+      {
+        id: `log_${Date.now()}_3`,
+        timestamp: timeStr,
+        service: 'Shopee Open Platform',
+        type: 'sync',
+        status: '200 OK',
+        message: 'POST /api/v2/affiliate/vouchers -> 64 cupons atualizados com cashback de 8%.',
+        level: 'success'
+      },
+      {
+        id: `log_${Date.now()}_4`,
+        timestamp: timeStr,
+        service: 'Mercado Livre Developers',
+        type: 'sync',
+        status: '200 OK',
+        message: 'GET /sites/MLB/deals -> 45 cupons oficiais Full atualizados com sucesso.',
+        level: 'success'
+      }
+    ];
+
+    setApiLogs(prev => [...newLogs, ...prev]);
+    setIsSyncingApis(false);
+
+    try {
+      confetti({
+        particleCount: 65,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#10B981', '#3B82F6', '#FF5F00']
+      });
+    } catch {
+      // ignore
+    }
+
+    return { success: true, count: 347, timestamp: timeStr };
+  };
+
   const isVipUser = currentRole === 'vip' || (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && Boolean(userProfile.isVip));
 
   return (
@@ -1367,6 +1476,13 @@ export const AppProvider = ({ children }) => {
       adminUpdateStoreTier,
       adminAdjustUserReferral,
       monthlyFinancialHistory: MONTHLY_FINANCIAL_HISTORY,
+      // Hub de Integrações de APIs
+      apiConnectors,
+      setApiConnectors,
+      apiLogs,
+      setApiLogs,
+      isSyncingApis,
+      syncApisNow,
       // Navegação Global
       activeTab,
       setActiveTab,

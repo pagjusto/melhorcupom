@@ -34,7 +34,17 @@ import {
   Phone,
   Mail,
   ArrowRight,
-  Share2
+  Share2,
+  Zap,
+  Server,
+  Activity,
+  Terminal,
+  ExternalLink,
+  Coins,
+  Database,
+  Network,
+  Cpu,
+  Copy
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
@@ -51,11 +61,15 @@ export const AdminDashboard = () => {
     adminAdjustUserReferral,
     monthlyFinancialHistory,
     merchantPlans,
+    apiConnectors,
+    apiLogs,
+    isSyncingApis,
+    syncApisNow,
     setActiveTab,
     switchRole
   } = useApp();
 
-  // Aba ativa do Painel ADM ('overview' | 'cities' | 'financial' | 'stores' | 'users')
+  // Aba ativa do Painel ADM ('overview' | 'cities' | 'financial' | 'stores' | 'users' | 'divulgacao' | 'simulador' | 'integrations')
   const [activeAdminTab, setActiveAdminTab] = useState('overview');
 
   // Filtros Globais
@@ -441,6 +455,18 @@ export const AdminDashboard = () => {
           >
             <Share2 size={15} />
             <span>Divulgação</span>
+          </button>
+
+          <button
+            onClick={() => setActiveAdminTab('integrations')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'integrations'
+                ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-md shadow-emerald-600/30'
+                : 'bg-white/5 hover:bg-white/10 text-emerald-300 hover:text-white border border-emerald-500/20'
+            }`}
+          >
+            <Zap size={15} />
+            <span>🔌 APIs & Afiliados</span>
           </button>
 
           <button
@@ -1628,7 +1654,343 @@ export const AdminDashboard = () => {
         <AdminPromoManager stores={stores} showToast={showToast} />
       )}
 
-      {/* ABA 7: SIMULADOR DE PERFIS E PERMISSÕES (EXCLUSIVO DO ADM MASTER) */}
+      {/* ABA 7: HUB DE INTEGRAÇÕES & APIS DE AFILIADOS (AWIN, LOMADEE, SHOPEE, MERCADO LIVRE) */}
+      {activeAdminTab === 'integrations' && (
+        <div className="space-y-8 animate-fade-in">
+          
+          {/* HEADER DO HUB DE APIS & BOTÕES DE CONTROLE */}
+          <div className="bg-gradient-to-r from-[#101F18] via-[#14231E] to-[#101F18] border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute -top-16 -right-16 w-80 h-80 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Conexão em Tempo Real</span>
+                  </span>
+                  <span className="text-xs text-gray-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/10 font-mono">
+                    Protocolos: REST • GraphQL • Webhooks
+                  </span>
+                </div>
+
+                <h2 className="text-2xl sm:text-3xl font-black text-white font-display flex items-center gap-2.5">
+                  <span>Central de APIs & Afiliados Oficiais</span>
+                  <span className="text-xs bg-emerald-500/30 text-emerald-300 font-extrabold px-2.5 py-1 rounded-lg border border-emerald-500/40">
+                    4 Ativos
+                  </span>
+                </h2>
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
+                  Gerencie a sincronização contínua de cupons, geração automática de SubIDs para rastreamento de compras e processamento de comissões/cashback das redes Awin, Lomadee, Shopee e Mercado Livre.
+                </p>
+              </div>
+
+              {/* Ações Rápidas: Sincronizar Agora */}
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={async () => {
+                    const res = await syncApisNow();
+                    showToast(`Sincronização concluída! ${res.count} cupons atualizados com sucesso via APIs.`);
+                  }}
+                  disabled={isSyncingApis}
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-emerald-950/60 transition-all hover:scale-[1.02] cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw size={16} className={isSyncingApis ? 'animate-spin' : ''} />
+                  <span>{isSyncingApis ? 'Sincronizando com Redes...' : 'Sincronizar APIs Agora'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    showToast('Ping enviado para todas as redes: 200 OK (Latência Média: 42ms)');
+                  }}
+                  className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-white/10 transition-all cursor-pointer"
+                >
+                  <Activity size={16} className="text-emerald-400" />
+                  <span>Testar Latência (Ping)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 4 CARDS DE KPIS DO HUB DE APIS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* KPI 1 */}
+            <div className="bg-[#14141E] border border-white/10 rounded-2xl p-5 relative overflow-hidden shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Conectores Oficiais</span>
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                  <Server size={18} />
+                </div>
+              </div>
+              <div className="text-3xl font-black text-white font-display flex items-baseline gap-2">
+                <span>4 / 4</span>
+                <span className="text-xs font-bold text-emerald-400">100% Online</span>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                Awin, Lomadee, Shopee e Mercado Livre operando normalmente.
+              </p>
+            </div>
+
+            {/* KPI 2 */}
+            <div className="bg-[#14141E] border border-white/10 rounded-2xl p-5 relative overflow-hidden shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cupons Sincronizados</span>
+                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
+                  <Tag size={18} />
+                </div>
+              </div>
+              <div className="text-3xl font-black text-white font-display flex items-baseline gap-2">
+                <span>482</span>
+                <span className="text-xs font-bold text-blue-400">+18 hoje</span>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                Vouchers oficiais testados e ativos na plataforma.
+              </p>
+            </div>
+
+            {/* KPI 3 */}
+            <div className="bg-[#14141E] border border-white/10 rounded-2xl p-5 relative overflow-hidden shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Volume de Vendas (GMV)</span>
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                  <TrendingUp size={18} />
+                </div>
+              </div>
+              <div className="text-3xl font-black text-white font-display">
+                R$ 58.400,00
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                Vendas rastreadas via SubID dos assinantes VIP no mês.
+              </p>
+            </div>
+
+            {/* KPI 4 */}
+            <div className="bg-[#14141E] border border-emerald-500/30 rounded-2xl p-5 relative overflow-hidden shadow-lg bg-gradient-to-b from-[#14141E] to-[#12221A]">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Lucro Líquido Afiliados</span>
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <Coins size={18} />
+                </div>
+              </div>
+              <div className="text-3xl font-black text-emerald-400 font-display">
+                R$ 2.410,00
+              </div>
+              <p className="text-[11px] text-gray-300 mt-1">
+                De R$ 4.820,00 brutos (50% cashback usuário / 50% margem Melhor Cupom).
+              </p>
+            </div>
+          </div>
+
+          {/* GRID DOS CONECTORES DE APIS */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <Network size={18} className="text-[#FF5F00]" />
+              <span>Conectores de APIs de Afiliados Configurados</span>
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {apiConnectors?.map((connector) => (
+                <div 
+                  key={connector.id}
+                  className="bg-[#151522] border border-white/10 rounded-2xl p-6 flex flex-col justify-between space-y-4 shadow-xl hover:border-emerald-500/40 transition-colors"
+                >
+                  <div>
+                    {/* Header do Conector */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-base font-black text-white">{connector.name}</h4>
+                          <span className="text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span>{connector.statusLabel}</span>
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">{connector.network}</p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
+                          {connector.pingMs}ms
+                        </span>
+                        <div className="text-[10px] text-gray-500 mt-1">{connector.apiVersion}</div>
+                      </div>
+                    </div>
+
+                    {/* Métricas do Conector */}
+                    <div className="grid grid-cols-3 gap-2 py-3 px-3 bg-black/40 rounded-xl border border-white/5 text-center text-xs mb-4">
+                      <div>
+                        <span className="text-[10px] text-gray-400 block">Lojas Ativas</span>
+                        <strong className="text-white font-black">{connector.totalStores}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block">Cupons</span>
+                        <strong className="text-white font-black">{connector.totalCoupons}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block">Comissão Média</span>
+                        <strong className="text-emerald-400 font-black">{connector.avgCommission}</strong>
+                      </div>
+                    </div>
+
+                    {/* Principais Marcas Vinculadas */}
+                    <div className="space-y-1.5 mb-4">
+                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                        Marcas Sincronizadas:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {connector.topBrands?.map((brand, bIdx) => (
+                          <span key={bIdx} className="text-[11px] bg-white/5 text-gray-200 px-2.5 py-1 rounded-lg border border-white/10 font-semibold">
+                            {brand}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Credenciais & Endpoint Webhook */}
+                    <div className="bg-[#0D0D14] rounded-xl p-3 text-[11px] font-mono space-y-1.5 border border-white/5 text-gray-400">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">ID / Publisher:</span>
+                        <span className="text-gray-200 font-bold">{connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">API Key:</span>
+                        <span className="text-amber-400">{connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">SubID Param:</span>
+                        <span className="text-blue-300">{connector.credentials?.subIdParam}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ação do Conector: Teste de Conexão */}
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
+                    <span className="text-gray-500 text-[11px]">Última sincronização: {connector.lastSync}</span>
+                    <button
+                      onClick={() => {
+                        showToast(`Conexão com ${connector.name}: 200 OK (${connector.pingMs}ms)!`);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1 text-[11px]"
+                    >
+                      <CheckCircle2 size={12} />
+                      <span>Ping OK</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* TERMINAL DE LOGS & WEBHOOKS EM TEMPO REAL */}
+          <div className="bg-[#0A0A10] border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+            {/* Header do Terminal com Botões Estilo Mac/Linux */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                </div>
+                <div className="text-xs font-mono font-bold text-gray-300 flex items-center gap-2">
+                  <Terminal size={14} className="text-emerald-400" />
+                  <span>logs_stream_melhorcupom_api.log</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                </div>
+              </div>
+
+              <div className="text-[11px] font-mono text-gray-500">
+                Live Feed (Webhook Listener: 0.0.0.0:8080)
+              </div>
+            </div>
+
+            {/* Corpo de Mensagens do Terminal */}
+            <div className="font-mono text-xs space-y-2 max-h-64 overflow-y-auto pr-2">
+              {apiLogs?.map((log) => (
+                <div key={log.id} className="flex items-start gap-2.5 leading-relaxed">
+                  <span className="text-gray-500 select-none">[{log.timestamp}]</span>
+                  <span className="text-blue-400 font-bold select-none">[{log.service}]</span>
+                  <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold select-none ${
+                    log.status === '200 OK' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'
+                  }`}>
+                    {log.status}
+                  </span>
+                  <span className="text-gray-300">{log.message}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* TABELA DE REPASSE & MARGENS DE COMISSÃO POR MARCA */}
+          <div className="bg-[#151522] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
+            <div>
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Coins size={18} className="text-emerald-400" />
+                <span>Modelo de Repasse: Cashback do Usuário vs Margem da Plataforma</span>
+              </h3>
+              <p className="text-xs text-gray-400 mt-1">
+                Demonstrativo de como o Melhor Cupom rentabiliza cada transação gerada nos grandes e-commerces parceiros.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-gray-300">
+                <thead className="bg-[#1B1B2A] text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="py-3 px-4 rounded-l-xl">Loja Parceira</th>
+                    <th className="py-3 px-4">Rede API</th>
+                    <th className="py-3 px-4 text-center">Comissão Bruta</th>
+                    <th className="py-3 px-4 text-center">Cashback Pago ao Usuário</th>
+                    <th className="py-3 px-4 text-center">Lucro Melhor Cupom</th>
+                    <th className="py-3 px-4 text-center">Cupons Ativos</th>
+                    <th className="py-3 px-4 rounded-r-xl text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {stores.filter(s => s.isApiIntegrated || s.apiSource).map((store) => {
+                    const comBruta = store.name.includes('Amazon') ? '9.0%' : store.name.includes('Shopee') ? '8.0%' : store.name.includes('Nike') ? '7.5%' : store.name.includes('Magalu') ? '6.5%' : store.name.includes('Drogasil') ? '5.5%' : store.name.includes('Mercado') ? '5.0%' : '4.0%';
+                    const cashbackUser = store.cashbackRate || 'Até 6%';
+                    const margemPlataforma = '50% do Spread';
+
+                    return (
+                      <tr key={store.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-bold text-white flex items-center gap-2.5">
+                          <span className="text-lg">{store.logo || '🛍️'}</span>
+                          <span>{store.name}</span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-gray-300">
+                          {store.apiSource || 'API Oficial'}
+                        </td>
+                        <td className="py-3 px-4 text-center font-bold text-amber-300">
+                          {comBruta}
+                        </td>
+                        <td className="py-3 px-4 text-center font-bold text-emerald-400">
+                          {cashbackUser}
+                        </td>
+                        <td className="py-3 px-4 text-center font-black text-blue-400">
+                          {margemPlataforma}
+                        </td>
+                        <td className="py-3 px-4 text-center font-semibold text-gray-300">
+                          {store.couponsCount || 8} cupons
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span>Sincronizado</span>
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ABA 8: SIMULADOR DE PERFIS E PERMISSÕES (EXCLUSIVO DO ADM MASTER) */}
       {activeAdminTab === 'simulador' && (
         <RoleSwitcher />
       )}

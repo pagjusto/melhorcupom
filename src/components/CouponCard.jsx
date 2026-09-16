@@ -13,7 +13,10 @@ import {
   Award,
   Medal,
   Users,
-  Eye
+  Eye,
+  Coins,
+  Zap,
+  ExternalLink
 } from 'lucide-react';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
@@ -153,15 +156,35 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         {/* 2. LOGO DA EMPRESA COM BORDA RESPECTIVA DA ASSINATURA (BRANCA PARA FREE) */}
         <div className={`absolute bottom-2.5 left-3 w-11 h-11 rounded-xl bg-[#181822] shadow-2xl flex items-center justify-center overflow-hidden z-20 transition-all duration-300 ${tierConfig.logoBorder}`}>
           {storeLogo ? (
-            <img 
-              src={storeLogo} 
-              alt={store?.name} 
-              className="w-full h-full object-cover" 
-            />
+            <>
+              <img 
+                src={storeLogo} 
+                alt={store?.name} 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.parentElement?.querySelector('.card-logo-fallback');
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              <span className="card-logo-fallback hidden w-full h-full items-center justify-center text-xl bg-[#1D1D2B]">
+                {store?.logo || '🏪'}
+              </span>
+            </>
           ) : (
             <span className="text-2xl">{store?.logo || '🏪'}</span>
           )}
         </div>
+
+        {/* Badge de Integração de API Oficial */}
+        {(coupon.isApiIntegrated || store?.isApiIntegrated) && (
+          <div className="absolute bottom-2.5 left-16 z-10">
+            <span className="inline-flex items-center gap-1 bg-emerald-950/90 backdrop-blur-md text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/40 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{coupon.apiSource || store?.apiSource || 'API'}</span>
+            </span>
+          </div>
+        )}
 
         {/* Modalidade / Cidade badge no banner */}
         <div className="absolute bottom-2 right-3 z-10">
@@ -238,6 +261,19 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           {coupon.description}
         </p>
 
+        {/* Tag de Cashback Oficial para E-commerces Integrados */}
+        {(coupon.cashbackRate || store?.cashbackRate) && (
+          <div className="mb-2.5 flex items-center justify-between py-1 px-2.5 bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs shadow-sm">
+            <div className="flex items-center gap-1.5 text-emerald-300 font-extrabold text-[11px]">
+              <Coins size={12} className="text-emerald-400" />
+              <span>Cashback Garantido:</span>
+            </div>
+            <span className="text-emerald-300 font-black text-xs">
+              {coupon.cashbackRate || store?.cashbackRate}
+            </span>
+          </div>
+        )}
+
         {/* Preços De / Por com Economia Real ou Economia Estimada */}
         {coupon.originalPrice && coupon.promoPrice ? (
           <div className="flex items-center justify-between py-2 px-3 bg-emerald-500/10 rounded-xl text-xs border border-emerald-500/25">
@@ -312,7 +348,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               onClick={handleAction}
               className="w-full bg-[#FF5F00] hover:bg-[#E55400] text-white py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all hover:scale-[1.01]"
             >
-              <span>🎟️ Resgatar Cupom VIP</span>
+              <span>{coupon.type === 'online' || coupon.isApiIntegrated ? '🎟️ Pegar Cupom & Ir para a Loja' : '🎟️ Resgatar Cupom VIP'}</span>
               <ArrowUpRight size={14} />
             </button>
           )

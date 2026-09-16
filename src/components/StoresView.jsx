@@ -10,12 +10,16 @@ import {
   TrendingUp, 
   Users, 
   QrCode,
-  MapPin
+  MapPin,
+  Coins,
+  Globe,
+  Zap
 } from 'lucide-react';
 
 export const StoresView = ({ onSelectStore }) => {
   const { stores, openAuthModal } = useApp();
   const [search, setSearch] = useState('');
+  const [storeTypeFilter, setStoreTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
 
   // Ordenar lojas priorizando as que contratam planos superiores (Ouro > Prata > Bronze > Free)
   const sortedStores = [...stores].sort((a, b) => {
@@ -26,11 +30,18 @@ export const StoresView = ({ onSelectStore }) => {
     return (b.rating || 0) - (a.rating || 0);
   });
 
-  const filteredStores = sortedStores.filter(store => 
-    store.name.toLowerCase().includes(search.toLowerCase()) ||
-    (store.category && store.category.toLowerCase().includes(search.toLowerCase())) ||
-    (store.city && store.city.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredStores = sortedStores.filter(store => {
+    const matchesSearch = store.name.toLowerCase().includes(search.toLowerCase()) ||
+      (store.category && store.category.toLowerCase().includes(search.toLowerCase())) ||
+      (store.city && store.city.toLowerCase().includes(search.toLowerCase()));
+
+    if (!matchesSearch) return false;
+
+    if (storeTypeFilter === 'physical' && (store.type !== 'physical' || store.isApiIntegrated)) return false;
+    if (storeTypeFilter === 'online' && store.type !== 'online' && !store.isApiIntegrated) return false;
+
+    return true;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in space-y-10">
@@ -148,6 +159,40 @@ export const StoresView = ({ onSelectStore }) => {
         </button>
       </div>
 
+      {/* 2.1 FILTROS DE TIPO DE ESTABELECIMENTO */}
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setStoreTypeFilter('all')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            storeTypeFilter === 'all'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+              : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5'
+          }`}
+        >
+          Todas as Lojas ({stores.length})
+        </button>
+        <button
+          onClick={() => setStoreTypeFilter('physical')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            storeTypeFilter === 'physical'
+              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+              : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5'
+          }`}
+        >
+          🏪 Comércios Locais ({stores.filter(s => s.type === 'physical' && !s.isApiIntegrated).length})
+        </button>
+        <button
+          onClick={() => setStoreTypeFilter('online')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            storeTypeFilter === 'online'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30'
+              : 'bg-white/5 hover:bg-white/10 text-emerald-400 hover:text-white border border-emerald-500/20'
+          }`}
+        >
+          ⚡ Grandes Redes Online & APIs ({stores.filter(s => s.isApiIntegrated || s.type === 'online').length})
+        </button>
+      </div>
+
       {/* 3. LISTA / GRID DE LOJAS PARCEIRAS */}
       {filteredStores.length === 0 ? (
         <div className="bg-[#171722] border border-white/10 rounded-3xl p-12 text-center max-w-md mx-auto">
@@ -225,6 +270,14 @@ export const StoresView = ({ onSelectStore }) => {
                 </div>
               )}
 
+              {/* Badge de Origem da API no Topo Esquerdo */}
+              {(store.isApiIntegrated || store.apiSource) && (
+                <div className="absolute top-2.5 left-2.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>{store.apiSource || 'API'}</span>
+                </div>
+              )}
+
               {/* Logo do Estabelecimento com borda de sua assinatura (branca para free) */}
               <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#111118] flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 group-hover:scale-105 ${
                 store.tier === 'gold'
@@ -256,6 +309,14 @@ export const StoresView = ({ onSelectStore }) => {
                 <span className="text-[10px] text-gray-400 mt-1 flex items-center gap-0.5 truncate max-w-full">
                   <MapPin size={10} className="text-gray-500 flex-shrink-0" />
                   <span className="truncate">{store.city.split('-')[0].trim()}</span>
+                </span>
+              )}
+
+              {/* Cashback da Loja Integrada */}
+              {store.cashbackRate && (
+                <span className="text-[10px] font-black text-emerald-400 mt-1.5 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                  <Coins size={10} />
+                  <span>{store.cashbackRate}</span>
                 </span>
               )}
             </div>

@@ -16,6 +16,7 @@ import { ReferralModal } from './components/ReferralModal';
 import { AuthModal } from './components/AuthModal';
 import { SavingsModal } from './components/SavingsModal';
 import { AdminDashboard } from './components/AdminDashboard';
+import { BigStoresShowcase } from './components/BigStoresShowcase';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
@@ -204,6 +205,9 @@ const MainLayout = () => {
               
               {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
               <ReferralBanner />
+
+              {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API */}
+              <BigStoresShowcase onSelectStore={handleSelectStoreFromDirectory} />
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>

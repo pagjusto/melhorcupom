@@ -15,7 +15,12 @@ import {
   Sparkles,
   Users,
   AlertTriangle,
-  Navigation
+  Navigation,
+  KeyRound,
+  CheckCircle2,
+  Coins,
+  Zap,
+  ArrowRight
 } from 'lucide-react';
 
 export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerchant }) => {
@@ -24,6 +29,8 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const [isLimitReached, setIsLimitReached] = useState(false);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1200); // 20 min in seconds
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectProgress, setRedirectProgress] = useState(0);
 
   // Histórico de resgates deste cupom pelo usuário logado
   const pastUserRedemptions = redemptions.filter(r => 
@@ -101,14 +108,146 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const seconds = timeLeft % 60;
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
+  const isOnlineCoupon = coupon.type === 'online' || coupon.isApiIntegrated;
+  const couponCode = coupon.codePrefix || activeRedemption?.code || 'MELHORVIP';
+  const affiliateDestinationUrl = coupon.affiliateUrl || store?.affiliateUrl || 'https://www.google.com';
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(activeRedemption.code);
+    navigator.clipboard.writeText(couponCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleStartRedirect = () => {
+    try {
+      navigator.clipboard.writeText(couponCode);
+      setCopied(true);
+    } catch {
+      // ignore
+    }
+
+    setIsRedirecting(true);
+    setRedirectProgress(20);
+
+    setTimeout(() => setRedirectProgress(55), 300);
+    setTimeout(() => setRedirectProgress(85), 700);
+    setTimeout(() => {
+      setRedirectProgress(100);
+      try {
+        window.open(affiliateDestinationUrl, '_blank');
+      } catch {
+        // ignore
+      }
+    }, 1100);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+      
+      {/* OVERLAY ANIMADO DE REDIRECIONAMENTO & ATIVAÇÃO DE CASHBACK */}
+      {isRedirecting && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md bg-[#161622] border-2 border-emerald-500/60 rounded-3xl p-6 sm:p-8 text-center shadow-2xl shadow-emerald-950/70 space-y-6">
+            
+            {/* Logo da Loja Pulsando */}
+            <div className="relative w-20 h-20 mx-auto">
+              <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping pointer-events-none" />
+              <div className="relative w-full h-full rounded-2xl bg-[#1C1C2A] border-2 border-emerald-400 p-2 flex items-center justify-center shadow-xl overflow-hidden">
+                {store?.logoImage ? (
+                  <>
+                    <img 
+                      src={store.logoImage} 
+                      alt={store.name} 
+                      className="w-full h-full object-cover rounded-xl" 
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.querySelector('.overlay-logo-fallback');
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <span className="overlay-logo-fallback hidden w-full h-full items-center justify-center text-3xl">
+                      {store?.logo || '🛍️'}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl">{store?.logo || '🛍️'}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Ativação Automática VIP</span>
+              </div>
+              <h3 className="text-xl font-black text-white">
+                Redirecionando para {store?.name || 'a Loja Oficial'}...
+              </h3>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                Estamos registrando seu SubID exclusivo para garantir seu desconto e rastreamento de Cashback.
+              </p>
+            </div>
+
+            {/* Checklist de Validação em Tempo Real */}
+            <div className="bg-black/40 rounded-2xl p-4 text-left space-y-2.5 text-xs text-gray-300 border border-white/5">
+              <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                <span>Cupom <strong className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">{couponCode}</strong> copiado!</span>
+              </div>
+              <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                <span>Cashback ativado via API oficial ({coupon.apiSource || store?.apiSource || 'Awin / Lomadee'})</span>
+              </div>
+              <div className="flex items-center gap-2 text-blue-300">
+                <span className="w-4 h-4 rounded-full border-2 border-blue-400 border-t-transparent animate-spin flex-shrink-0" />
+                <span>SubID injetado com segurança: melhorcupom_vip</span>
+              </div>
+            </div>
+
+            {/* Barra de Progresso */}
+            <div className="space-y-2">
+              <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-[#FF5F00] transition-all duration-300"
+                  style={{ width: `${redirectProgress}%` }}
+                />
+              </div>
+              <div className="text-[11px] text-gray-400 flex items-center justify-between">
+                <span>{redirectProgress}% concluído</span>
+                <span className="text-emerald-400 font-bold">
+                  {redirectProgress === 100 ? '✓ Loja aberta!' : 'Conectando...'}
+                </span>
+              </div>
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="space-y-2 pt-1">
+              <a
+                href={affiliateDestinationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  setIsRedirecting(false);
+                  onClose();
+                }}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 transition-all cursor-pointer"
+              >
+                <span>Ir para a Loja Oficial Agora</span>
+                <ExternalLink size={16} />
+              </a>
+
+              <button
+                onClick={() => setIsRedirecting(false)}
+                className="w-full text-xs text-gray-400 hover:text-white py-2 cursor-pointer transition-colors"
+              >
+                Voltar aos detalhes
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       <div 
         className="relative w-full max-w-lg bg-[#181822] border-2 border-[#FF5F00]/50 rounded-3xl overflow-hidden shadow-2xl shadow-orange-950/60 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -133,7 +272,21 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
           <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
             <div className="w-14 h-14 rounded-2xl bg-[#181822] flex items-center justify-center overflow-hidden shadow-xl">
               {store?.logoImage ? (
-                <img src={store.logoImage} alt={store?.name} className="w-full h-full object-cover" />
+                <>
+                  <img 
+                    src={store.logoImage} 
+                    alt={store?.name} 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.modal-hdr-logo-fallback');
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <span className="modal-hdr-logo-fallback hidden w-full h-full items-center justify-center text-2xl">
+                    {store?.logo || '🏪'}
+                  </span>
+                </>
               ) : (
                 <span className="text-2xl">{store?.logo || '🏪'}</span>
               )}
@@ -272,46 +425,137 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 Explorar Outros Cupons Disponíveis
               </button>
             </div>
+          ) : isOnlineCoupon ? (
+            /* ======================================================== */
+            /* FLUXO EXCLUSIVO DE CUPOM ONLINE / E-COMMERCE INTEGRADO   */
+            /* ======================================================== */
+            <div className="space-y-4 animate-fade-in">
+              {/* Badge de Integração Oficial via API */}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Sincronizado via API Oficial ({coupon.apiSource || store?.apiSource || 'Awin / Lomadee'})</span>
+                </span>
+                <span className="text-[11px] text-gray-400 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/5">
+                  Verificado hoje
+                </span>
+              </div>
+
+              {/* Destaque de Cashback Garantido */}
+              {(coupon.cashbackRate || store?.cashbackRate) && (
+                <div className="p-4 bg-gradient-to-r from-emerald-500/20 via-[#101F18] to-emerald-500/20 border-2 border-emerald-500/50 rounded-2xl text-center shadow-lg">
+                  <div className="text-xs font-extrabold text-emerald-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-0.5">
+                    <Coins size={15} className="text-emerald-400" />
+                    <span>Cashback Garantido na sua Conta</span>
+                  </div>
+                  <div className="text-3xl font-black text-emerald-400">
+                    {coupon.cashbackRate || store?.cashbackRate}
+                  </div>
+                  <p className="text-[11px] text-gray-300 mt-1 max-w-xs mx-auto leading-relaxed">
+                    Comprando pelo link rastreado do Melhor Cupom, você recebe parte do valor de volta na sua carteira VIP.
+                  </p>
+                </div>
+              )}
+
+              {/* Caixa de Código com Cópia Rápida */}
+              <div className="p-5 bg-gradient-to-b from-white/10 via-black/40 to-white/5 border-2 border-dashed border-[#FF5F00] rounded-2xl text-center space-y-3">
+                <div className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                  <Zap size={14} className="text-[#FF5F00]" />
+                  <span>Código Promocional Exclusivo:</span>
+                </div>
+                
+                <div className="flex items-center justify-center gap-2">
+                  <div className="font-mono text-2xl sm:text-3xl font-black text-orange-400 bg-black/70 px-6 py-2.5 rounded-xl border border-orange-500/40 tracking-widest select-all shadow-inner">
+                    {couponCode}
+                  </div>
+                  <button
+                    onClick={handleCopy}
+                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-3 rounded-xl transition-all shadow-lg flex items-center justify-center hover:scale-105 cursor-pointer"
+                    title="Copiar código promocional"
+                  >
+                    {copied ? <Check size={22} className="text-emerald-300" /> : <Copy size={22} />}
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-300">
+                  {copied ? (
+                    <strong className="text-emerald-400 font-bold flex items-center justify-center gap-1">
+                      <CheckCircle2 size={14} /> Código copiado! Agora clique no botão abaixo para ir à loja oficial.
+                    </strong>
+                  ) : (
+                    'Copie o código promocional acima e cole na tela de pagamento da loja oficial.'
+                  )}
+                </p>
+              </div>
+
+              {/* Botão Master: Copiar e Ir para Loja Oficial */}
+              <button
+                onClick={handleStartRedirect}
+                className="w-full bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2.5 shadow-xl shadow-orange-950/60 transition-all hover:scale-[1.02] cursor-pointer"
+              >
+                <Sparkles size={18} className="text-amber-200" />
+                <span>Copiar Cupom & Ir para a Loja Oficial</span>
+                <ExternalLink size={18} />
+              </button>
+
+              {/* Regras e Condições de Uso Online */}
+              <div className="bg-white/5 rounded-2xl p-4 text-xs space-y-2 text-gray-300 border border-white/5">
+                <div className="font-bold text-white flex items-center gap-1.5 text-sm">
+                  <ShieldCheck size={16} className="text-[#FF5F00]" />
+                  <span>Regras da Oferta Online:</span>
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-gray-400 pl-1 leading-relaxed">
+                  {coupon.rules?.map((rule, idx) => (
+                    <li key={idx}>{rule}</li>
+                  ))}
+                  <li>Para garantir o cashback, complete a compra na mesma janela do navegador sem fechar o link rastreado.</li>
+                  <li>Não utilize cupons ou extensões de terceiros para não anular a comissão de cashback.</li>
+                </ul>
+              </div>
+
+              {/* Botão Concluído / Fechar */}
+              <button
+                onClick={onClose}
+                className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all border border-white/10 cursor-pointer"
+              >
+                Concluído / Voltar ao Catálogo
+              </button>
+            </div>
           ) : (
-            /* TELA NORMAL COM QR CODE QUANDO DENTRO DO LIMITE */
+            /* ======================================================== */
+            /* FLUXO DE LOJA FÍSICA (COM QR CODE E SENHA DE 6 DÍGITOS)  */
+            /* ======================================================== */
             <>
               {/* Área do Cupom / QR Code Box */}
               <div className="bg-[#101017] border-2 border-dashed border-[#FF5F00]/40 rounded-2xl p-5 text-center relative mb-5">
                 
                 <div className="text-xs text-gray-400 mb-2 font-medium">
-                  {coupon.type === 'physical' 
-                    ? 'Apresente o QR Code ao atendente ou informe a senha de 6 dígitos abaixo:'
-                    : 'Copie o código promocional exclusivo abaixo:'
-                  }
+                  Apresente o QR Code ao atendente ou informe a senha de 6 dígitos abaixo:
                 </div>
 
                 {/* Renderização do QR Code oficial */}
-                {coupon.type === 'physical' && (
-                  <div className="inline-block p-3 bg-white rounded-2xl shadow-xl my-2">
-                    <QRCodeSVG 
-                      value={activeRedemption.qrPayload || activeRedemption.code} 
-                      size={155} 
-                      level="H" 
-                      includeMargin={false}
-                    />
-                  </div>
-                )}
+                <div className="inline-block p-3 bg-white rounded-2xl shadow-xl my-2">
+                  <QRCodeSVG 
+                    value={activeRedemption.qrPayload || activeRedemption.code} 
+                    size={155} 
+                    level="H" 
+                    includeMargin={false}
+                  />
+                </div>
 
                 {/* Senha Obrigatória do QR Code para Ofertas Locais */}
-                {coupon.type === 'physical' && (
-                  <div className="my-3 p-3.5 bg-gradient-to-r from-orange-500/20 via-black/60 to-orange-500/20 border-2 border-[#FF5F00] rounded-2xl text-center shadow-lg">
-                    <div className="text-[11px] font-black text-orange-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1">
-                      <KeyRound size={15} className="text-[#FF5F00]" />
-                      <span>Senha de Validação do QR Code:</span>
-                    </div>
-                    <div className="font-mono text-3xl sm:text-4xl font-black text-white tracking-[0.25em] py-1 select-all">
-                      {activeRedemption.passCode || '849201'}
-                    </div>
-                    <p className="text-[10px] text-gray-300 mt-1 max-w-xs mx-auto leading-tight">
-                      Apresente o QR Code no caixa para leitura. Caso a câmera do lojista não consiga escanear, informe esta <strong>Senha de 6 dígitos</strong> para baixa manual.
-                    </p>
+                <div className="my-3 p-3.5 bg-gradient-to-r from-orange-500/20 via-black/60 to-orange-500/20 border-2 border-[#FF5F00] rounded-2xl text-center shadow-lg">
+                  <div className="text-[11px] font-black text-orange-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1">
+                    <KeyRound size={15} className="text-[#FF5F00]" />
+                    <span>Senha de Validação do QR Code:</span>
                   </div>
-                )}
+                  <div className="font-mono text-3xl sm:text-4xl font-black text-white tracking-[0.25em] py-1 select-all">
+                    {activeRedemption.passCode || '849201'}
+                  </div>
+                  <p className="text-[10px] text-gray-300 mt-1 max-w-xs mx-auto leading-tight">
+                    Apresente o QR Code no caixa para leitura. Caso a câmera do lojista não consiga escanear, informe esta <strong>Senha de 6 dígitos</strong> para baixa manual.
+                  </p>
+                </div>
 
                 {/* Status de Baixa Confirmada */}
                 {activeRedemption.status === 'used' && (
@@ -333,7 +577,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                   </div>
                   <button
                     onClick={handleCopy}
-                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-2.5 rounded-xl transition-colors shadow-md flex items-center justify-center"
+                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-2.5 rounded-xl transition-colors shadow-md flex items-center justify-center cursor-pointer"
                     title="Copiar código"
                   >
                     {copied ? <Check size={20} className="text-emerald-300" /> : <Copy size={20} />}
@@ -398,7 +642,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                       onClose();
                       onTestValidateAtMerchant(activeRedemption.code, coupon.merchantId);
                     }}
-                    className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 border border-white/15 transition-all"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 border border-white/15 transition-all cursor-pointer"
                   >
                     <Store size={15} className="text-orange-400" />
                     <span>Testar como Lojista: Abrir Validador com este Código</span>
@@ -407,7 +651,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
 
                 <button
                   onClick={onClose}
-                  className="w-full bg-[#FF5F00] hover:bg-[#E04F00] text-white font-extrabold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-orange-600/30"
+                  className="w-full bg-[#FF5F00] hover:bg-[#E04F00] text-white font-extrabold py-3 px-4 rounded-xl text-sm transition-all shadow-lg shadow-orange-600/30 cursor-pointer"
                 >
                   Concluído / Voltar
                 </button>
