@@ -6,7 +6,6 @@ import {
   CheckCircle2, 
   ArrowRight, 
   Zap, 
-  ShieldCheck, 
   Building2,
   Navigation,
   X
@@ -226,28 +225,6 @@ export const HeroBanner = ({
             </div>
           )}
 
-          {/* Atalhos Rápidos para Cidades Mais Populares */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-            <span className="text-xs text-gray-400 font-medium">Cidades em destaque:</span>
-            {POPULAR_CITIES.map((city, idx) => {
-              const isCurrent = selectedCity === city;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleSelectCity(city)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                    isCurrent
-                      ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
-                      : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
-                  }`}
-                >
-                  <MapPin size={11} className={isCurrent ? 'text-white' : 'text-orange-400'} />
-                  <span>{city}</span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Feedback de Cidade Ativa */}
           {selectedCity && selectedCity !== 'Todas as Cidades' && (
             <div className="mt-4 inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl text-xs text-emerald-300">
@@ -282,26 +259,6 @@ export const HeroBanner = ({
               <span>Membro VIP Ativo! Aproveite os descontos da sua cidade abaixo.</span>
             </div>
           )}
-        </div>
-
-        {/* 6. Selos de Confiança */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-gray-400 mt-8 pt-6 border-t border-white/5 font-medium">
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={15} className="text-[#FF5F00]" />
-            Cupons com validação no balcão
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={15} className="text-[#FF5F00]" />
-            Economia média de R$ 420/mês
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 size={15} className="text-[#FF5F00]" />
-            Sem fidelidade, cancele quando quiser
-          </span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck size={15} className="text-emerald-400" />
-            7 dias de garantia incondicional
-          </span>
         </div>
 
       </div>
