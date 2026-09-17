@@ -99,23 +99,45 @@
   scrollbar-width: none !important;
 }
 
-/* Animação de Carrossel Infinito da Direita para a Esquerda */
-@keyframes marqueeLeft {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+/* Animações de Carrossel Infinito da Direita para a Esquerda em 3 Linhas */
+@keyframes marqueeLeft1 {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
-.animate-marquee-left {
+@keyframes marqueeLeft2 {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeLeft3 {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-left,
+.animate-marquee-row-1 {
   display: flex;
   width: max-content;
-  animation: marqueeLeft 45s linear infinite;
+  animation: marqueeLeft1 45s linear infinite;
+}
+
+.animate-marquee-row-2 {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft2 38s linear infinite;
+}
+
+.animate-marquee-row-3 {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft3 42s linear infinite;
 }
 
 .animate-marquee-left:hover,
+.animate-marquee-row-1:hover,
+.animate-marquee-row-2:hover,
+.animate-marquee-row-3:hover,
 .animate-marquee-paused {
   animation-play-state: paused !important;
 }
