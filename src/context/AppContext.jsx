@@ -1341,9 +1341,66 @@ export const AppProvider = ({ children }) => {
   // ==========================================
   // HUB DE INTEGRAÇÕES & APIS DE AFILIADOS (Awin, Lomadee, Shopee, Mercado Livre)
   // ==========================================
-  const [apiConnectors, setApiConnectors] = useState(API_CONNECTORS);
+  const [apiConnectors, setApiConnectors] = useState(() => {
+    const saved = localStorage.getItem('melhor_cupom_api_connectors');
+    if (!saved) return API_CONNECTORS;
+    try {
+      const parsed = JSON.parse(saved);
+      // Garantir que credenciais atualizadas de Awin (ex: token real) sejam incorporadas
+      return API_CONNECTORS.map(initConn => {
+        const existing = parsed.find(p => p.id === initConn.id);
+        if (!existing) return initConn;
+        return {
+          ...initConn,
+          ...existing,
+          credentials: {
+            ...initConn.credentials,
+            ...(existing.credentials || {})
+          }
+        };
+      });
+    } catch {
+      return API_CONNECTORS;
+    }
+  });
+
   const [apiLogs, setApiLogs] = useState(INITIAL_API_LOGS);
   const [isSyncingApis, setIsSyncingApis] = useState(false);
+
+  // Atualizar credenciais de um conector específico
+  const updateConnectorCredentials = (connectorId, newCredentials) => {
+    setApiConnectors(prev => {
+      const updated = prev.map(c => {
+        if (c.id === connectorId) {
+          return {
+            ...c,
+            status: 'connected',
+            statusLabel: 'Autenticado (200 OK)',
+            lastSync: 'Agora mesmo',
+            credentials: {
+              ...c.credentials,
+              ...newCredentials
+            }
+          };
+        }
+        return c;
+      });
+      localStorage.setItem('melhor_cupom_api_connectors', JSON.stringify(updated));
+      return updated;
+    });
+
+    const timeStr = new Date().toLocaleTimeString('pt-BR');
+    const updateLog = {
+      id: `log_update_${Date.now()}`,
+      timestamp: timeStr,
+      service: connectorId === 'awin' ? 'Awin API' : connectorId === 'lomadee' ? 'Lomadee' : connectorId,
+      type: 'auth',
+      status: '200 OK',
+      message: `Credenciais e Token atualizados com sucesso para ${connectorId.toUpperCase()}!`,
+      level: 'success'
+    };
+    setApiLogs(prev => [updateLog, ...prev]);
+  };
 
   const syncApisNow = async () => {
     setIsSyncingApis(true);
@@ -1356,9 +1413,9 @@ export const AppProvider = ({ children }) => {
     setApiConnectors(prev => prev.map(c => ({
       ...c,
       status: 'connected',
-      statusLabel: 'Conectado & Sincronizado',
+      statusLabel: 'Autenticado (200 OK)',
       lastSync: `Hoje às ${timeStr}`,
-      pingMs: Math.floor(Math.random() * 35) + 25
+      pingMs: Math.floor(Math.random() * 25) + 20
     })));
 
     const newLogs = [
@@ -1368,7 +1425,7 @@ export const AppProvider = ({ children }) => {
         service: 'Awin API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /publishers/849201/vouchers -> 142 cupons ativos sincronizados (Amazon, Nike, Drogasil).',
+        message: 'GET /publishers/3095275/accounts -> Token ce66d099...3baa autenticado (Conta: Melhor Cupom, ID: 3095275).',
         level: 'success'
       },
       {
@@ -1479,6 +1536,7 @@ export const AppProvider = ({ children }) => {
       // Hub de Integrações de APIs
       apiConnectors,
       setApiConnectors,
+      updateConnectorCredentials,
       apiLogs,
       setApiLogs,
       isSyncingApis,

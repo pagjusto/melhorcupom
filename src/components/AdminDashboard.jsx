@@ -44,7 +44,11 @@ import {
   Database,
   Network,
   Cpu,
-  Copy
+  Copy,
+  EyeOff,
+  Edit3,
+  Key,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
@@ -62,6 +66,7 @@ export const AdminDashboard = () => {
     monthlyFinancialHistory,
     merchantPlans,
     apiConnectors,
+    updateConnectorCredentials,
     apiLogs,
     isSyncingApis,
     syncApisNow,
@@ -78,6 +83,16 @@ export const AdminDashboard = () => {
   const [storeTierFilter, setStoreTierFilter] = useState('all');
   const [userSearch, setUserSearch] = useState('');
   const [userVipFilter, setUserVipFilter] = useState('all'); // 'all' | 'vip' | 'free'
+
+  // Gestão de Visualização e Edição de Chaves de API
+  const [showFullApiKey, setShowFullApiKey] = useState({});
+  const [editingConnector, setEditingConnector] = useState(null);
+  const [editCredentialsForm, setEditCredentialsForm] = useState({
+    publisherId: '',
+    apiKey: '',
+    subIdParam: '',
+    webhookEndpoint: ''
+  });
 
   // Notificação de Ação Administrativa executada
   const [toastMessage, setToastMessage] = useState('');
@@ -1848,15 +1863,57 @@ export const AdminDashboard = () => {
                     </div>
 
                     {/* Credenciais & Endpoint Webhook */}
-                    <div className="bg-[#0D0D14] rounded-xl p-3 text-[11px] font-mono space-y-1.5 border border-white/5 text-gray-400">
+                    <div className="bg-[#0D0D14] rounded-xl p-3 text-[11px] font-mono space-y-2 border border-white/5 text-gray-400">
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">ID / Publisher:</span>
-                        <span className="text-gray-200 font-bold">{connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId}</span>
+                        <span className="text-gray-200 font-bold flex items-center gap-1.5">
+                          <span>{connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId}</span>
+                          {connector.accountName && (
+                            <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-sans font-bold">
+                              {connector.accountName}
+                            </span>
+                          )}
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500">API Key:</span>
-                        <span className="text-amber-400">{connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret}</span>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">API Key:</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-amber-400 truncate max-w-[160px]" title={connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret}>
+                            {showFullApiKey[connector.id]
+                              ? (connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret)
+                              : (() => {
+                                  const key = connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret || '';
+                                  if (key.length > 14) {
+                                    return `${key.slice(0, 8)}••••••••${key.slice(-4)}`;
+                                  }
+                                  return key;
+                                })()
+                            }
+                          </span>
+                          <button
+                            onClick={() => setShowFullApiKey(prev => ({ ...prev, [connector.id]: !prev[connector.id] }))}
+                            className="text-gray-500 hover:text-white p-1 rounded transition-colors"
+                            title={showFullApiKey[connector.id] ? "Ocultar token" : "Revelar token completo"}
+                          >
+                            {showFullApiKey[connector.id] ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const key = connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret;
+                              if (key) {
+                                navigator.clipboard.writeText(key);
+                                showToast(`Token copiado para a área de transferência!`);
+                              }
+                            }}
+                            className="text-gray-500 hover:text-amber-400 p-1 rounded transition-colors"
+                            title="Copiar token"
+                          >
+                            <Copy size={13} />
+                          </button>
+                        </div>
                       </div>
+
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">SubID Param:</span>
                         <span className="text-blue-300">{connector.credentials?.subIdParam}</span>
@@ -1864,22 +1921,139 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Ação do Conector: Teste de Conexão */}
+                  {/* Ação do Conector: Teste de Conexão e Edição */}
                   <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
                     <span className="text-gray-500 text-[11px]">Última sincronização: {connector.lastSync}</span>
-                    <button
-                      onClick={() => {
-                        showToast(`Conexão com ${connector.name}: 200 OK (${connector.pingMs}ms)!`);
-                      }}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1 text-[11px]"
-                    >
-                      <CheckCircle2 size={12} />
-                      <span>Ping OK</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setEditingConnector(connector);
+                          setEditCredentialsForm({
+                            publisherId: connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId || '',
+                            apiKey: connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret || '',
+                            subIdParam: connector.credentials?.subIdParam || '',
+                            webhookEndpoint: connector.credentials?.webhookEndpoint || ''
+                          });
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-all cursor-pointer flex items-center gap-1 text-[11px]"
+                        title="Editar credenciais e chaves deste conector"
+                      >
+                        <Edit3 size={12} />
+                        <span>Configurar</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          showToast(`Conexão com ${connector.name}: 200 OK (${connector.pingMs}ms)!`);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1 text-[11px]"
+                      >
+                        <CheckCircle2 size={12} />
+                        <span>Ping OK</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Modal de Configuração de Credenciais do Conector */}
+            {editingConnector && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="relative w-full max-w-lg bg-[#181824] border-2 border-blue-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-blue-950/50 space-y-6">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                        <Key size={20} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-white">Configurar Credenciais Oficiais</h3>
+                        <p className="text-xs text-gray-400">{editingConnector.name}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setEditingConnector(null)}
+                      className="text-gray-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1">
+                        ID do Publisher / Conta ({editingConnector.id === 'awin' ? 'Account ID Awin' : 'ID do Parceiro'}):
+                      </label>
+                      <input
+                        type="text"
+                        value={editCredentialsForm.publisherId}
+                        onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, publisherId: e.target.value }))}
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 focus:outline-none"
+                        placeholder="Ex: 3095275"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1">
+                        API Token / Secret Key Oficial:
+                      </label>
+                      <input
+                        type="text"
+                        value={editCredentialsForm.apiKey}
+                        onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, apiKey: e.target.value }))}
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-mono focus:border-blue-500 focus:outline-none"
+                        placeholder="Insira o API Token da rede..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1">
+                        Parâmetro de SubID (Rastreamento de Comissões e Cashback):
+                      </label>
+                      <input
+                        type="text"
+                        value={editCredentialsForm.subIdParam}
+                        onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, subIdParam: e.target.value }))}
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-blue-300 font-mono focus:border-blue-500 focus:outline-none"
+                        placeholder="Ex: clickref=melhorcupom_vip"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1">
+                        Webhook Endpoint de Notificação de Vendas (Opcional):
+                      </label>
+                      <input
+                        type="text"
+                        value={editCredentialsForm.webhookEndpoint}
+                        onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, webhookEndpoint: e.target.value }))}
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-gray-400 font-mono focus:border-blue-500 focus:outline-none"
+                        placeholder="https://api.melhorcupom.com.br/webhooks/..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                    <button
+                      onClick={() => setEditingConnector(null)}
+                      className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => {
+                        updateConnectorCredentials(editingConnector.id, editCredentialsForm);
+                        setEditingConnector(null);
+                        showToast(`Credenciais de ${editingConnector.name} atualizadas e validadas!`);
+                      }}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-blue-600/30 cursor-pointer"
+                    >
+                      Salvar Credenciais
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* TERMINAL DE LOGS & WEBHOOKS EM TEMPO REAL */}
