@@ -98,3 +98,24 @@
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* Animação de Carrossel Infinito da Direita para a Esquerda */
+@keyframes marqueeLeft {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft 45s linear infinite;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-paused {
+  animation-play-state: paused !important;
+}

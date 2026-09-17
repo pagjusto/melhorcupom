@@ -54,6 +54,13 @@ const MainLayout = () => {
     const couponCity = (coupon.city || store?.city || '').toLowerCase();
     const isOnline = coupon.type === 'online' || couponCity.includes('online');
 
+    // REGRA DE OURO: Não misturar cupons das grandes lojas com os cupons comuns
+    // Cupons de APIs/Grandes redes ficam exclusivamente na vitrine horizontal superior!
+    const isBigStoreCoupon = coupon.isApiIntegrated || coupon.apiSource || store?.isApiIntegrated;
+    if (isBigStoreCoupon && !selectedStoreFilter) {
+      return false;
+    }
+
     // Filtro por Loja específica (selecionada na aba Lojas Parceiras)
     if (selectedStoreFilter && coupon.storeId !== selectedStoreFilter.id) {
       return false;
@@ -206,13 +213,16 @@ const MainLayout = () => {
               {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
               <ReferralBanner />
 
-              {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API */}
-              <BigStoresShowcase onSelectStore={handleSelectStoreFromDirectory} />
+              {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API (CARROSSEL HORIZONTAL) */}
+              <BigStoresShowcase 
+                onSelectCoupon={(c) => setSelectedCoupon(c)} 
+                onSelectStore={handleSelectStoreFromDirectory} 
+              />
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-black text-white font-display flex flex-wrap items-center gap-2">
-                    <span>Cupons VIP Disponíveis</span>
+                    <span>Cupons de Estabelecimentos Credenciados</span>
                     {selectedCity && selectedCity !== 'Todas as Cidades' ? (
                       <span className="text-xs bg-[#FF5F00] text-white font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
                         <MapPin size={12} />
@@ -224,13 +234,13 @@ const MainLayout = () => {
                       </span>
                     )}
                     <span className="text-xs bg-[#FF5F00]/20 text-[#FF5F00] font-bold px-2.5 py-1 rounded-full border border-[#FF5F00]/30">
-                      {filteredCoupons.length} ofertas
+                      {filteredCoupons.length} ofertas locais
                     </span>
                   </h2>
                   <p className="text-xs text-gray-400 mt-1">
                     {selectedCity !== 'Todas as Cidades'
-                      ? `Exibindo ofertas em ${selectedCity} e promoções nacionais online.`
-                      : 'Exibindo ofertas de todas as regiões credenciadas e lojas online.'}
+                      ? `Exibindo ofertas de estabelecimentos credenciados em ${selectedCity}.`
+                      : 'Exibindo ofertas exclusivas de comércios locais parceiros em todo o Brasil.'}
                   </p>
                 </div>
 
