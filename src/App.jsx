@@ -17,6 +17,7 @@ import { AuthModal } from './components/AuthModal';
 import { SavingsModal } from './components/SavingsModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { BigStoresShowcase } from './components/BigStoresShowcase';
+import { BigStoreFreeRegisterModal } from './components/BigStoreFreeRegisterModal';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
 
@@ -25,11 +26,13 @@ const MainLayout = () => {
     coupons, 
     stores, 
     currentRole, 
+    userProfile,
     isVipUser, 
     switchRole,
     isSimulatingRole,
     exitSimulation,
     setIsSubscriptionModalOpen,
+    recordCouponView,
     activeTab,
     setActiveTab,
     setMerchantDashboardTab
@@ -38,6 +41,7 @@ const MainLayout = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [highDiscountOnly, setHighDiscountOnly] = useState(false);
+  const [bigStoreFreeRegisterCoupon, setBigStoreFreeRegisterCoupon] = useState(null);
   
   // Estado do Buscador de Cidade
   const [selectedCity, setSelectedCity] = useState('Todas as Cidades');
@@ -149,6 +153,18 @@ const MainLayout = () => {
     setActiveTab('explore');
   };
 
+  const handleSelectBigStoreCoupon = (coupon) => {
+    if (recordCouponView) {
+      recordCouponView(coupon.id);
+    }
+    // Ao clicar em oferta de grandes lojas, sugere cadastro gratuito para visitantes
+    if (currentRole === 'visitor' && !userProfile?.isRegistered) {
+      setBigStoreFreeRegisterCoupon(coupon);
+    } else {
+      setSelectedCoupon(coupon);
+    }
+  };
+
   const getSimulatedRoleLabel = (role) => {
     if (role === 'visitor') return 'Visitante (Público Não-Logado)';
     if (role === 'user_free' || role === 'user') return 'Usuário Cadastrado (Sem VIP)';
@@ -215,7 +231,7 @@ const MainLayout = () => {
 
               {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API (CARROSSEL HORIZONTAL) */}
               <BigStoresShowcase 
-                onSelectCoupon={(c) => setSelectedCoupon(c)} 
+                onSelectCoupon={handleSelectBigStoreCoupon} 
                 onSelectStore={handleSelectStoreFromDirectory} 
               />
               
@@ -531,6 +547,19 @@ const MainLayout = () => {
       </footer>
 
       {/* 5. Modais Globais */}
+      {bigStoreFreeRegisterCoupon && (
+        <BigStoreFreeRegisterModal
+          coupon={bigStoreFreeRegisterCoupon}
+          store={stores.find(s => s.id === bigStoreFreeRegisterCoupon.storeId)}
+          onClose={() => setBigStoreFreeRegisterCoupon(null)}
+          onProceedToCoupon={(c) => {
+            const targetCoupon = c || bigStoreFreeRegisterCoupon;
+            setBigStoreFreeRegisterCoupon(null);
+            setSelectedCoupon(targetCoupon);
+          }}
+        />
+      )}
+
       {selectedCoupon && (
         <CouponDetailModal
           coupon={selectedCoupon}

@@ -24,13 +24,30 @@ import {
 } from 'lucide-react';
 
 export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerchant }) => {
-  const { redeemCoupon, redemptions, userProfile, isVipUser, setIsSubscriptionModalOpen } = useApp();
+  const { 
+    redeemCoupon, 
+    redemptions, 
+    userProfile, 
+    isVipUser, 
+    setIsSubscriptionModalOpen,
+    openAuthModal,
+    currentRole
+  } = useApp();
   const [activeRedemption, setActiveRedemption] = useState(null);
   const [isLimitReached, setIsLimitReached] = useState(false);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1200); // 20 min in seconds
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectProgress, setRedirectProgress] = useState(0);
+
+  // Identificar se é cupom de grande loja / e-commerce online
+  const isBigStoreCoupon = Boolean(
+    coupon?.isApiIntegrated || 
+    coupon?.apiSource || 
+    store?.isApiIntegrated || 
+    coupon?.type === 'online' ||
+    store?.type === 'online'
+  );
 
   // Histórico de resgates deste cupom pelo usuário logado
   const pastUserRedemptions = redemptions.filter(r => 
@@ -53,9 +70,16 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   useEffect(() => {
     if (!coupon) return;
 
-    if (!isVipUser) {
+    // Cupons de lojas físicas locais requerem assinatura VIP do clube
+    if (!isVipUser && !isBigStoreCoupon) {
       onClose();
       setIsSubscriptionModalOpen(true);
+      return;
+    }
+
+    // Cupons de grandes lojas e-commerce online não dependem de validação PDV
+    if (isBigStoreCoupon) {
+      setIsLimitReached(false);
       return;
     }
 
@@ -102,7 +126,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   }, []);
 
   if (!coupon) return null;
-  if (!isLimitReached && !activeRedemption) return null;
+  if (!isLimitReached && !activeRedemption && !isBigStoreCoupon) return null;
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -430,6 +454,30 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
             /* FLUXO EXCLUSIVO DE CUPOM ONLINE / E-COMMERCE INTEGRADO   */
             /* ======================================================== */
             <div className="space-y-4 animate-fade-in">
+              {/* Sugestão de Cadastro Gratuito para Visitantes */}
+              {(!userProfile?.isRegistered || currentRole === 'visitor') && (
+                <div className="p-4 bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-orange-500/15 border border-orange-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left shadow-lg">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#FF5F00]/20 text-[#FF5F00] flex items-center justify-center flex-shrink-0">
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-white">Cadastre-se grátis para não perder nenhuma oferta como esta!</h5>
+                      <p className="text-[11px] text-gray-300">Crie sua conta em 30 segundos para salvar cupons e receber alertas diários.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      openAuthModal('user_register');
+                    }}
+                    className="bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex-shrink-0 transition-all shadow-md cursor-pointer whitespace-nowrap"
+                  >
+                    Cadastrar Grátis
+                  </button>
+                </div>
+              )}
+
               {/* Badge de Integração Oficial via API */}
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
