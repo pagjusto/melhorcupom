@@ -229,12 +229,7 @@ const MainLayout = () => {
               {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
               <ReferralBanner />
 
-              {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API (CARROSSEL HORIZONTAL) */}
-              <BigStoresShowcase 
-                onSelectCoupon={handleSelectBigStoreCoupon} 
-                onSelectStore={handleSelectStoreFromDirectory} 
-              />
-              
+              {/* CUPONS DE ESTABELECIMENTOS CREDENCIADOS (LOCAIS) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-black text-white font-display flex flex-wrap items-center gap-2">
@@ -378,6 +373,12 @@ const MainLayout = () => {
                   })}
                 </div>
               )}
+
+              {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API (CARROSSEL HORIZONTAL) */}
+              <BigStoresShowcase 
+                onSelectCoupon={handleSelectBigStoreCoupon} 
+                onSelectStore={handleSelectStoreFromDirectory} 
+              />
 
               {/* Banner CTA intermediário */}
               {!isVipUser && (
