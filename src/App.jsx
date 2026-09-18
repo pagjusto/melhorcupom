@@ -359,7 +359,7 @@ const MainLayout = () => {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                   {filteredCoupons.map((coupon) => {
                     const store = stores.find(s => s.id === coupon.storeId);
                     return (
