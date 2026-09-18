@@ -199,7 +199,7 @@ export const MyCouponsView = ({ onSelectCoupon, onOpenRedemptionModal }) => {
 
       {/* TAB: SALVOS / FAVORITOS */}
       {tab === 'favorites' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {favoriteCoupons.length === 0 ? (
             <div className="col-span-full bg-[#181822] border border-white/10 rounded-3xl p-12 text-center text-gray-400 text-xs">
               Você ainda não favoritou nenhum cupom. Clique no ícone de coração nos cupons do catálogo!

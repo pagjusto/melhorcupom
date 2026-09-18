@@ -50,10 +50,10 @@
 
 .ticket-notch-left {
   position: absolute;
-  top: -12px;
-  left: -12px;
-  width: 24px;
-  height: 24px;
+  top: -8px;
+  left: -8px;
+  width: 16px;
+  height: 16px;
   background: #0D0D11;
   border-radius: 50%;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -62,10 +62,10 @@
 
 .ticket-notch-right {
   position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 24px;
-  height: 24px;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
   background: #0D0D11;
   border-radius: 50%;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
