@@ -4,11 +4,8 @@ import {
   Sparkles, 
   ExternalLink, 
   Coins, 
-  Globe, 
   Tag, 
   ShieldCheck,
-  Pause,
-  Play,
   Search,
   X,
   Store,
@@ -29,7 +26,6 @@ const QUICK_SEARCH_CHIPS = [
 
 export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
   const { stores, coupons } = useApp();
-  const [isGlobalPaused, setIsGlobalPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrar exclusivamente cupons das grandes lojas / APIs oficiais
@@ -190,66 +186,16 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[#FF5F00]/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header da Vitrine */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>3 Linhas de Ofertas Ao Vivo</span>
-            </span>
-
-            <span className="inline-flex items-center gap-1 text-xs text-amber-300 font-bold bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-              <Coins size={12} className="text-amber-400" />
-              <span>Cashback Ativado</span>
-            </span>
-
-            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-blue-300 font-medium bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
-              <Globe size={12} className="text-blue-400" />
-              <span>Awin • Lomadee • Shopee • Mercado Livre</span>
-            </span>
-          </div>
-
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-display flex flex-wrap items-center gap-2.5">
-            <span>Cupons das Grandes Lojas & E-commerces</span>
-            <span className="text-xs bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
-              Ao Vivo
-            </span>
-          </h2>
-          <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-            Ofertas compactas passando continuamente em 3 faixas simultâneas com cupons oficiais e cashback ativado.
-          </p>
-        </div>
-
-        {/* Status de Sincronização e Botão Pausar/Reproduzir */}
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <div className="text-right hidden lg:block mr-2">
-            <div className="text-[11px] text-gray-400">Status das APIs</div>
-            <div className="text-xs font-mono text-emerald-400 font-bold flex items-center justify-end gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>42ms • 100% Online</span>
-            </div>
-          </div>
-
-          {!isSearching && (
-            <button
-              onClick={() => setIsGlobalPaused(!isGlobalPaused)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 hover:bg-white/10 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
-              title={isGlobalPaused ? 'Retomar movimento contínuo' : 'Pausar movimento'}
-            >
-              {isGlobalPaused ? (
-                <>
-                  <Play size={14} className="text-emerald-400 fill-emerald-400" />
-                  <span>Continuar</span>
-                </>
-              ) : (
-                <>
-                  <Pause size={14} className="text-amber-400 fill-amber-400" />
-                  <span>Pausar</span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
+      <div className="relative z-10 mb-4">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-display flex flex-wrap items-center gap-2.5">
+          <span>Cupons das Grandes Lojas & E-commerces</span>
+          <span className="text-xs bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
+            Ao Vivo
+          </span>
+        </h2>
+        <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+          Ofertas compactas passando continuamente em 3 faixas simultâneas com cupons oficiais e cashback ativado.
+        </p>
       </div>
 
       {/* CAMPO DE PESQUISA POR MERCADORIA OU POR LOJA */}
@@ -373,7 +319,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           {/* LINHA 1 - Velocidade 45s */}
           <div className="overflow-hidden">
             <div 
-              className={`flex gap-3 items-center ${isGlobalPaused ? 'animate-marquee-paused' : 'animate-marquee-row-1'}`}
+              className="flex gap-3 items-center animate-marquee-row-1"
               style={{ willChange: 'transform' }}
             >
               {row1.map((coupon, idx) => renderCompactCard(coupon, `row1-${coupon.id}-${idx}`))}
@@ -383,7 +329,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           {/* LINHA 2 - Velocidade 38s (movimento ligeiramente mais rápido) */}
           <div className="overflow-hidden">
             <div 
-              className={`flex gap-3 items-center ${isGlobalPaused ? 'animate-marquee-paused' : 'animate-marquee-row-2'}`}
+              className="flex gap-3 items-center animate-marquee-row-2"
               style={{ willChange: 'transform' }}
             >
               {row2.map((coupon, idx) => renderCompactCard(coupon, `row2-${coupon.id}-${idx}`))}
@@ -393,7 +339,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           {/* LINHA 3 - Velocidade 42s (cadência alternada) */}
           <div className="overflow-hidden">
             <div 
-              className={`flex gap-3 items-center ${isGlobalPaused ? 'animate-marquee-paused' : 'animate-marquee-row-3'}`}
+              className="flex gap-3 items-center animate-marquee-row-3"
               style={{ willChange: 'transform' }}
             >
               {row3.map((coupon, idx) => renderCompactCard(coupon, `row3-${coupon.id}-${idx}`))}

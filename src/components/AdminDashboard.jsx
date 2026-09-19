@@ -48,11 +48,13 @@ import {
   EyeOff,
   Edit3,
   Key,
-  X
+  X,
+  MessageCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
 import { RoleSwitcher } from './RoleSwitcher';
+import { AdminWhatsAppManager } from './AdminWhatsAppManager';
 
 export const AdminDashboard = () => {
   const { 
@@ -470,6 +472,18 @@ export const AdminDashboard = () => {
           >
             <Share2 size={15} />
             <span>Divulgação</span>
+          </button>
+
+          <button
+            onClick={() => setActiveAdminTab('mensagens')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'mensagens'
+                ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 text-white shadow-md shadow-emerald-600/30 ring-1 ring-emerald-400/40'
+                : 'bg-white/5 hover:bg-white/10 text-emerald-300 hover:text-white border border-emerald-500/20'
+            }`}
+          >
+            <MessageCircle size={15} />
+            <span>💬 Mensagens WhatsApp</span>
           </button>
 
           <button
@@ -2167,6 +2181,11 @@ export const AdminDashboard = () => {
       {/* ABA 8: SIMULADOR DE PERFIS E PERMISSÕES (EXCLUSIVO DO ADM MASTER) */}
       {activeAdminTab === 'simulador' && (
         <RoleSwitcher />
+      )}
+
+      {/* ABA 9: GERENCIADOR DE MENSAGENS WHATSAPP POR CIDADE */}
+      {activeAdminTab === 'mensagens' && (
+        <AdminWhatsAppManager />
       )}
 
     </div>

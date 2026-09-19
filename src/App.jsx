@@ -19,7 +19,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { BigStoresShowcase } from './components/BigStoresShowcase';
 import { BigStoreFreeRegisterModal } from './components/BigStoreFreeRegisterModal';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
-import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin, Crown, Award, Medal } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin } from 'lucide-react';
 
 const MainLayout = () => {
   const { 
@@ -288,34 +288,6 @@ const MainLayout = () => {
                 highDiscountOnly={highDiscountOnly}
                 setHighDiscountOnly={setHighDiscountOnly}
               />
-
-              {/* Indicador de Prioridade por Assinatura do Lojista */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#151520] border border-white/10 rounded-2xl p-3 px-4 mb-6 text-xs text-gray-400 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 text-amber-400 font-bold bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-lg text-[11px]">
-                    <Crown size={12} fill="currentColor" />
-                    <span>Lojas Ouro</span>
-                  </span>
-                  <span className="text-gray-500">&gt;</span>
-                  <span className="inline-flex items-center gap-1 text-slate-300 font-bold bg-slate-400/15 border border-slate-400/30 px-2 py-0.5 rounded-lg text-[11px]">
-                    <Award size={12} />
-                    <span>Lojas Prata</span>
-                  </span>
-                  <span className="text-gray-500">&gt;</span>
-                  <span className="inline-flex items-center gap-1 text-[#CD7F32] font-bold bg-[#CD7F32]/15 border border-[#CD7F32]/35 px-2 py-0.5 rounded-lg text-[11px]">
-                    <Medal size={12} />
-                    <span>Lojas Bronze</span>
-                  </span>
-                  <span className="text-gray-500">&gt;</span>
-                  <span className="text-gray-400 text-[11px]">Lojas Gratuitas</span>
-                  <span className="hidden md:inline text-gray-500">•</span>
-                  <span className="hidden md:inline text-gray-400 text-[11px]">Quanto maior o plano contratado pelo parceiro, mais no topo suas ofertas aparecem!</span>
-                </div>
-                <div className="text-[11px] text-gray-500 flex items-center gap-1">
-                  <span>Ordenação:</span>
-                  <span className="text-[#FF5F00] font-bold">Prioridade de Destaque</span>
-                </div>
-              </div>
 
               {/* Filtro Ativo de Loja Parceira */}
               {selectedStoreFilter && (
