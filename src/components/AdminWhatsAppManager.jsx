@@ -249,25 +249,31 @@ const DEFAULT_COMMERCE_DIRECTORY = [
 const PREDEFINED_TEMPLATES = [
   {
     id: 'convite_gratis',
-    name: '1. Convite Parceria Gratuita (Recomendado)',
+    name: '1. Cadastro Gratuito & Link (Oficial)',
     badge: 'Alta Conversão',
-    text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan Zanferrari, sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para cadastrar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento, sem nenhuma taxa de adesão inicial.\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona?`
+    text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan e sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para cadastrar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento, sem nenhuma taxa de adesão !\n\nSe você nao esta no melhor cupom , voce esta perdendo !\ncadastre gratuitamente uma oferta de cupom para milhares de possiveis clientes novos !\nwww.omelhorcupom.com.br`
+  },
+  {
+    id: 'conversa_rapida',
+    name: '2. Convite Conversa 2 Minutinhos',
+    badge: 'Aproximação Direta',
+    text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan e sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para cadastrar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento, sem nenhuma taxa de adesão !\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona?`
   },
   {
     id: 'lotar_balcao',
-    name: '2. Movimento no Balcão & Salão',
+    name: '3. Movimento no Balcão & Salão',
     badge: 'Vendas Recorrentes',
     text: `Olá {responsavel} da {loja}! Tudo bem?\n\nAcompanhamos o trabalho de vocês em {cidade} e notamos a excelente avaliação da empresa.\n\nO *Melhor Cupom* é um clube que conecta clientes prontos para consumir diretamente ao seu comércio, gerando fluxo garantido no salão e delivery com validação de cupom instantânea.\n\nPodemos agendar uma demonstração rápida hoje?`
   },
   {
     id: 'destaque_vip',
-    name: '3. Proposta de Destaque Ouro/Prata',
+    name: '4. Proposta de Destaque Ouro/Prata',
     badge: 'Posição Topo',
     text: `Olá {loja}!\n\nLançamos uma campanha especial para a cidade de {cidade} no *Melhor Cupom* e gostaríamos de oferecer à {loja} uma posição de destaque no topo da nossa plataforma.\n\nCom o nosso selo oficial, milhares de assinantes da sua cidade verão a sua marca em primeiro lugar.\n\nQual o melhor horário para falarmos sobre essa condição exclusiva?`
   },
   {
     id: 'custom',
-    name: '4. Mensagem Personalizada',
+    name: '5. Mensagem Personalizada',
     badge: 'Customizada',
     text: `Olá {loja}, aqui é o Renan do Melhor Cupom em {cidade}! Gostaria de apresentar uma parceria comercial para divulgar sua empresa para nossos assinantes locais. Quando podemos conversar?`
   }
