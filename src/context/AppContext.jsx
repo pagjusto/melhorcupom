@@ -1279,14 +1279,17 @@ export const AppProvider = ({ children }) => {
       };
     } else {
       // 2. Usuário / Consumidor
-      const matchedUser = (userProfile.email?.toLowerCase() === clean || (userProfile.cpf && userProfile.cpf.replace(/\D/g, '') === digits));
+      const isVip = userProfile.isVip || clean.includes('vip');
 
       setUserProfile(prev => ({
         ...prev,
-        isLoggedIn: true
+        isLoggedIn: true,
+        isRegistered: true,
+        isVip: isVip,
+        vipPlan: isVip ? (prev.vipPlan || 'monthly') : null
       }));
 
-      const targetRole = userProfile.isVip ? 'vip' : 'visitor';
+      const targetRole = isVip ? 'vip' : 'user_free';
       setCurrentRole(targetRole);
       setActiveTab('user-profile');
       setIsAuthModalOpen(false);

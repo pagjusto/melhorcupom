@@ -254,28 +254,34 @@ const PREDEFINED_TEMPLATES = [
     text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan e sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para cadastrar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento, sem nenhuma taxa de adesão !\n\nSe você nao esta no melhor cupom , voce esta perdendo !\ncadastre gratuitamente uma oferta de cupom para milhares de possiveis clientes novos !\nwww.omelhorcupom.com.br`
   },
   {
+    id: 'proposta_irrecusavel_balcao',
+    name: '2. Lotar Balcão & Risco Zero',
+    badge: 'Proposta Irrecusável',
+    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan, do *Melhor Cupom* em {cidade}.\n\nTenho uma proposta irrecusável: queremos colocar novos clientes pagantes dentro da {loja} já nesta semana, sem você gastar nem 1 centavo com anúncio ou mensalidade!\n\nNossos membros VIP são pessoas da sua região que pagam para ter acesso a descontos exclusivos e estão buscando lugares como a {loja} em {cidade}. Você só oferece a vantagem quando o cliente for consumir no seu estabelecimento!\n\nÉ risco ZERO e faturamento direto no seu caixa.\n\nSe você não está no Melhor Cupom, você está perdendo vendas todos os dias!\n\nCadastre gratuitamente a sua oferta agora:\nwww.omelhorcupom.com.br`
+  },
+  {
+    id: 'destaque_ouro_gratis',
+    name: '3. Topo Ouro Grátis (30 Dias)',
+    badge: 'Vaga VIP Topo',
+    text: `Olá, equipe da {loja}! Tudo bem?\n\nAqui é o Renan, diretor da plataforma *Melhor Cupom* em {cidade}.\n\nEstamos liberando uma condição exclusiva e irrecusável de lançamento: selecionamos a {loja} para ganhar **30 dias de Destaque Ouro no Topo do App 100% Grátis** na categoria de {categoria}!\n\nSua marca vai aparecer em primeiro lugar para milhares de pessoas que buscam onde comer, comprar e contratar serviços em {cidade}.\n\nNão perca essa vaga para o seu concorrente. Garanta seu topo gratuito agora:\nwww.omelhorcupom.com.br\n(Vagas limitadas para comércios em {cidade})`
+  },
+  {
+    id: 'zero_taxa_lucro_total',
+    name: '4. Zero Taxa & 100% no seu Bolso',
+    badge: 'Sem Comissão',
+    text: `Olá equipe da {loja}, tudo bem?\n\nMe chamo Renan, do *Melhor Cupom* em {cidade}.\n\nVocê sabia que a maioria dos apps convencionais chegam a tirar até 27% do seu faturamento em taxas e comissões?\n\nNo *Melhor Cupom* a nossa proposta é simples e irrecusável:\n✅ Taxa de adesão: ZERO\n✅ Taxa de comissão: ZERO\n✅ 100% do valor da conta do cliente fica no seu caixa!\n\nNós trazemos clientes qualificados até a {loja} e você não divide 1 centavo do seu lucro com ninguém.\n\nCadastre sua oferta gratuita em menos de 2 minutos:\nwww.omelhorcupom.com.br`
+  },
+  {
     id: 'conversa_rapida',
-    name: '2. Convite Conversa 2 Minutinhos',
+    name: '5. Áudio Rápido (Conversa 2 Min)',
     badge: 'Aproximação Direta',
-    text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan e sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para cadastrar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento, sem nenhuma taxa de adesão !\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona?`
-  },
-  {
-    id: 'lotar_balcao',
-    name: '3. Movimento no Balcão & Salão',
-    badge: 'Vendas Recorrentes',
-    text: `Olá {responsavel} da {loja}! Tudo bem?\n\nAcompanhamos o trabalho de vocês em {cidade} e notamos a excelente avaliação da empresa.\n\nO *Melhor Cupom* é um clube que conecta clientes prontos para consumir diretamente ao seu comércio, gerando fluxo garantido no salão e delivery com validação de cupom instantânea.\n\nPodemos agendar uma demonstração rápida hoje?`
-  },
-  {
-    id: 'destaque_vip',
-    name: '4. Proposta de Destaque Ouro/Prata',
-    badge: 'Posição Topo',
-    text: `Olá {loja}!\n\nLançamos uma campanha especial para a cidade de {cidade} no *Melhor Cupom* e gostaríamos de oferecer à {loja} uma posição de destaque no topo da nossa plataforma.\n\nCom o nosso selo oficial, milhares de assinantes da sua cidade verão a sua marca em primeiro lugar.\n\nQual o melhor horário para falarmos sobre essa condição exclusiva?`
+    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan do *Melhor Cupom* em {cidade}.\n\nEstamos direcionando centenas de membros VIP para comércios parceiros na nossa cidade, sem cobrar nenhuma taxa de entrada.\n\nSe você não está no Melhor Cupom, seu comércio está deixando dinheiro na mesa todos os dias!\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona na prática? Dá uma olhada no site oficial:\nwww.omelhorcupom.com.br\n\nPosso te mandar um áudio de 1 minuto explicando como ativar hoje?`
   },
   {
     id: 'custom',
-    name: '5. Mensagem Personalizada',
+    name: '6. Mensagem Personalizada',
     badge: 'Customizada',
-    text: `Olá {loja}, aqui é o Renan do Melhor Cupom em {cidade}! Gostaria de apresentar uma parceria comercial para divulgar sua empresa para nossos assinantes locais. Quando podemos conversar?`
+    text: `Olá {loja}, aqui é o Renan do Melhor Cupom em {cidade}! Tenho uma proposta irrecusável para trazer novos clientes para a {loja} com custo ZERO e sem comissões. Cadastre grátis em www.omelhorcupom.com.br ou responda aqui para falarmos 2 minutos!`
   }
 ];
 
@@ -790,8 +796,8 @@ export const AdminWhatsAppManager = () => {
             </span>
           </div>
 
-          {/* Botões dos 4 Templates */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {/* Botões dos 6 Modelos de Proposta Irrecusável */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {PREDEFINED_TEMPLATES.map(tmpl => (
               <button
                 key={tmpl.id}

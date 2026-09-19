@@ -176,6 +176,11 @@ const MainLayout = () => {
     return role;
   };
 
+  // Identificação de visitante vs usuário logado/VIP/lojista
+  const isMerchantRole = currentRole ? currentRole.startsWith('merchant_') : false;
+  const isUserLoggedIn = Boolean(isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user' || currentRole === 'admin');
+  const isVisitor = currentRole === 'visitor' || (!isUserLoggedIn && !isMerchantRole);
+
   return (
     <div className="min-h-screen bg-[#0D0D11] text-gray-100 flex flex-col justify-between selection:bg-[#FF5F00] selection:text-white">
       
@@ -229,128 +234,264 @@ const MainLayout = () => {
               {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
               <ReferralBanner />
 
-              {/* CUPONS DE ESTABELECIMENTOS CREDENCIADOS (LOCAIS) */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-2xl font-black text-white font-display flex flex-wrap items-center gap-2">
-                    <span>Cupons de Estabelecimentos Credenciados</span>
-                    {selectedCity && selectedCity !== 'Todas as Cidades' ? (
-                      <span className="text-xs bg-[#FF5F00] text-white font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
-                        <MapPin size={12} />
-                        <span>{selectedCity}</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-white/10 text-gray-300 font-bold px-3 py-1 rounded-full border border-white/10">
-                        Todas as Cidades
-                      </span>
+              {/* ORDENAÇÃO DINÂMICA BASEADA NO PERFIL: */}
+              {/* Para Visitantes: Cupons das Grandes Lojas aparecem ACIMA dos locais */}
+              {/* Para Usuários Logados / VIP / Lojistas / ADM: Cupons Locais aparecem ACIMA */}
+              {isVisitor ? (
+                <>
+                  {/* 1. VITRINE DE GRANDES LOJAS & E-COMMERCES (ACIMA PARA VISITANTES) */}
+                  <BigStoresShowcase 
+                    onSelectCoupon={handleSelectBigStoreCoupon} 
+                    onSelectStore={handleSelectStoreFromDirectory} 
+                  />
+
+                  {/* 2. CUPONS DE ESTABELECIMENTOS CREDENCIADOS (LOCAIS) */}
+                  <div className="space-y-6 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h2 className="text-2xl font-black text-white font-display flex flex-wrap items-center gap-2">
+                          <span>Cupons de Estabelecimentos Credenciados</span>
+                          {selectedCity && selectedCity !== 'Todas as Cidades' ? (
+                            <span className="text-xs bg-[#FF5F00] text-white font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+                              <MapPin size={12} />
+                              <span>{selectedCity}</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-white/10 text-gray-300 font-bold px-3 py-1 rounded-full border border-white/10">
+                              Todas as Cidades
+                            </span>
+                          )}
+                          <span className="text-xs bg-[#FF5F00]/20 text-[#FF5F00] font-bold px-2.5 py-1 rounded-full border border-[#FF5F00]/30">
+                            {filteredCoupons.length} ofertas locais
+                          </span>
+                        </h2>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {selectedCity !== 'Todas as Cidades'
+                            ? `Exibindo ofertas de estabelecimentos credenciados em ${selectedCity}.`
+                            : 'Exibindo ofertas exclusivas de comércios locais parceiros em todo o Brasil.'}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {selectedCity !== 'Todas as Cidades' && (
+                          <button
+                            onClick={() => {
+                              setSelectedCity('Todas as Cidades');
+                              setCitySearchQuery('');
+                            }}
+                            className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
+                          >
+                            Ver Todas as Cidades
+                          </button>
+                        )}
+                        {!isVipUser && (
+                          <button
+                            onClick={() => setIsSubscriptionModalOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 font-bold bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 transition-colors"
+                          >
+                            <span>Desbloquear tudo por R$ 19,90</span>
+                            <ArrowRight size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Filtros de Categoria e Modalidade */}
+                    <CategoryPills
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                      typeFilter={typeFilter}
+                      setTypeFilter={setTypeFilter}
+                      highDiscountOnly={highDiscountOnly}
+                      setHighDiscountOnly={setHighDiscountOnly}
+                    />
+
+                    {/* Filtro Ativo de Loja Parceira */}
+                    {selectedStoreFilter && (
+                      <div className="bg-gradient-to-r from-[#FF5F00]/15 to-transparent border border-[#FF5F00]/40 rounded-2xl p-3 px-4 mb-6 flex items-center justify-between animate-fade-in shadow-md">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-400">Exibindo ofertas exclusivas da loja:</span>
+                          <strong className="text-sm font-black text-white flex items-center gap-1.5">
+                            <span>{selectedStoreFilter.logoImage ? '🏪' : selectedStoreFilter.logo}</span>
+                            <span>{selectedStoreFilter.name}</span>
+                          </strong>
+                        </div>
+                        <button
+                          onClick={() => setSelectedStoreFilter(null)}
+                          className="text-xs text-orange-400 hover:text-white font-bold bg-[#FF5F00]/20 hover:bg-[#FF5F00] px-3 py-1 rounded-xl transition-all flex items-center gap-1"
+                        >
+                          <span>Limpar filtro de loja</span>
+                          <span>✕</span>
+                        </button>
+                      </div>
                     )}
-                    <span className="text-xs bg-[#FF5F00]/20 text-[#FF5F00] font-bold px-2.5 py-1 rounded-full border border-[#FF5F00]/30">
-                      {filteredCoupons.length} ofertas locais
-                    </span>
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {selectedCity !== 'Todas as Cidades'
-                      ? `Exibindo ofertas de estabelecimentos credenciados em ${selectedCity}.`
-                      : 'Exibindo ofertas exclusivas de comércios locais parceiros em todo o Brasil.'}
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  {selectedCity !== 'Todas as Cidades' && (
-                    <button
-                      onClick={() => {
-                        setSelectedCity('Todas as Cidades');
-                        setCitySearchQuery('');
-                      }}
-                      className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
-                    >
-                      Ver Todas as Cidades
-                    </button>
-                  )}
-                  {!isVipUser && (
-                    <button
-                      onClick={() => setIsSubscriptionModalOpen(true)}
-                      className="hidden sm:flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 font-bold bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 transition-colors"
-                    >
-                      <span>Desbloquear tudo por R$ 19,90</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Filtros de Categoria e Modalidade */}
-              <CategoryPills
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                typeFilter={typeFilter}
-                setTypeFilter={setTypeFilter}
-                highDiscountOnly={highDiscountOnly}
-                setHighDiscountOnly={setHighDiscountOnly}
-              />
-
-              {/* Filtro Ativo de Loja Parceira */}
-              {selectedStoreFilter && (
-                <div className="bg-gradient-to-r from-[#FF5F00]/15 to-transparent border border-[#FF5F00]/40 rounded-2xl p-3 px-4 mb-6 flex items-center justify-between animate-fade-in shadow-md">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-400">Exibindo ofertas exclusivas da loja:</span>
-                    <strong className="text-sm font-black text-white flex items-center gap-1.5">
-                      <span>{selectedStoreFilter.logoImage ? '🏪' : selectedStoreFilter.logo}</span>
-                      <span>{selectedStoreFilter.name}</span>
-                    </strong>
+                    {/* Grid de Cupons no formato de Ticket */}
+                    {filteredCoupons.length === 0 ? (
+                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-16 text-center max-w-lg mx-auto">
+                        <div className="text-4xl mb-3">🔍</div>
+                        <h3 className="text-lg font-bold text-white mb-2">Nenhum cupom encontrado</h3>
+                        <p className="text-xs text-gray-400 mb-6">
+                          Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setSelectedCategory('all');
+                            setTypeFilter('all');
+                            setHighDiscountOnly(false);
+                            setSelectedCity('Todas as Cidades');
+                            setCitySearchQuery('');
+                          }}
+                          className="bg-[#FF5F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs"
+                        >
+                          Limpar Todos os Filtros
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                        {filteredCoupons.map((coupon) => {
+                          const store = stores.find(s => s.id === coupon.storeId);
+                          return (
+                            <CouponCard
+                              key={coupon.id}
+                              coupon={coupon}
+                              store={store}
+                              onSelectCoupon={(c) => setSelectedCoupon(c)}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={() => setSelectedStoreFilter(null)}
-                    className="text-xs text-orange-400 hover:text-white font-bold bg-[#FF5F00]/20 hover:bg-[#FF5F00] px-3 py-1 rounded-xl transition-all flex items-center gap-1"
-                  >
-                    <span>Limpar filtro de loja</span>
-                    <span>✕</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Grid de Cupons no formato de Ticket */}
-              {filteredCoupons.length === 0 ? (
-                <div className="bg-[#171722] border border-white/10 rounded-3xl p-16 text-center max-w-lg mx-auto">
-                  <div className="text-4xl mb-3">🔍</div>
-                  <h3 className="text-lg font-bold text-white mb-2">Nenhum cupom encontrado</h3>
-                  <p className="text-xs text-gray-400 mb-6">
-                    Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSelectedCategory('all');
-                      setTypeFilter('all');
-                      setHighDiscountOnly(false);
-                      setSelectedCity('Todas as Cidades');
-                      setCitySearchQuery('');
-                    }}
-                    className="bg-[#FF5F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs"
-                  >
-                    Limpar Todos os Filtros
-                  </button>
-                </div>
+                </>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                  {filteredCoupons.map((coupon) => {
-                    const store = stores.find(s => s.id === coupon.storeId);
-                    return (
-                      <CouponCard
-                        key={coupon.id}
-                        coupon={coupon}
-                        store={store}
-                        onSelectCoupon={(c) => setSelectedCoupon(c)}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+                <>
+                  {/* 1. CUPONS DE ESTABELECIMENTOS CREDENCIADOS (LOCAIS NO TOPO PARA LOGADOS/VIP) */}
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h2 className="text-2xl font-black text-white font-display flex flex-wrap items-center gap-2">
+                          <span>Cupons de Estabelecimentos Credenciados</span>
+                          {selectedCity && selectedCity !== 'Todas as Cidades' ? (
+                            <span className="text-xs bg-[#FF5F00] text-white font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+                              <MapPin size={12} />
+                              <span>{selectedCity}</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-white/10 text-gray-300 font-bold px-3 py-1 rounded-full border border-white/10">
+                              Todas as Cidades
+                            </span>
+                          )}
+                          <span className="text-xs bg-[#FF5F00]/20 text-[#FF5F00] font-bold px-2.5 py-1 rounded-full border border-[#FF5F00]/30">
+                            {filteredCoupons.length} ofertas locais
+                          </span>
+                        </h2>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {selectedCity !== 'Todas as Cidades'
+                            ? `Exibindo ofertas de estabelecimentos credenciados em ${selectedCity}.`
+                            : 'Exibindo ofertas exclusivas de comércios locais parceiros em todo o Brasil.'}
+                        </p>
+                      </div>
 
-              {/* VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API (CARROSSEL HORIZONTAL) */}
-              <BigStoresShowcase 
-                onSelectCoupon={handleSelectBigStoreCoupon} 
-                onSelectStore={handleSelectStoreFromDirectory} 
-              />
+                      <div className="flex items-center gap-2">
+                        {selectedCity !== 'Todas as Cidades' && (
+                          <button
+                            onClick={() => {
+                              setSelectedCity('Todas as Cidades');
+                              setCitySearchQuery('');
+                            }}
+                            className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
+                          >
+                            Ver Todas as Cidades
+                          </button>
+                        )}
+                        {!isVipUser && (
+                          <button
+                            onClick={() => setIsSubscriptionModalOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 font-bold bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 transition-colors"
+                          >
+                            <span>Desbloquear tudo por R$ 19,90</span>
+                            <ArrowRight size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Filtros de Categoria e Modalidade */}
+                    <CategoryPills
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                      typeFilter={typeFilter}
+                      setTypeFilter={setTypeFilter}
+                      highDiscountOnly={highDiscountOnly}
+                      setHighDiscountOnly={setHighDiscountOnly}
+                    />
+
+                    {/* Filtro Ativo de Loja Parceira */}
+                    {selectedStoreFilter && (
+                      <div className="bg-gradient-to-r from-[#FF5F00]/15 to-transparent border border-[#FF5F00]/40 rounded-2xl p-3 px-4 mb-6 flex items-center justify-between animate-fade-in shadow-md">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-400">Exibindo ofertas exclusivas da loja:</span>
+                          <strong className="text-sm font-black text-white flex items-center gap-1.5">
+                            <span>{selectedStoreFilter.logoImage ? '🏪' : selectedStoreFilter.logo}</span>
+                            <span>{selectedStoreFilter.name}</span>
+                          </strong>
+                        </div>
+                        <button
+                          onClick={() => setSelectedStoreFilter(null)}
+                          className="text-xs text-orange-400 hover:text-white font-bold bg-[#FF5F00]/20 hover:bg-[#FF5F00] px-3 py-1 rounded-xl transition-all flex items-center gap-1"
+                        >
+                          <span>Limpar filtro de loja</span>
+                          <span>✕</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Grid de Cupons no formato de Ticket */}
+                    {filteredCoupons.length === 0 ? (
+                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-16 text-center max-w-lg mx-auto">
+                        <div className="text-4xl mb-3">🔍</div>
+                        <h3 className="text-lg font-bold text-white mb-2">Nenhum cupom encontrado</h3>
+                        <p className="text-xs text-gray-400 mb-6">
+                          Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setSelectedCategory('all');
+                            setTypeFilter('all');
+                            setHighDiscountOnly(false);
+                            setSelectedCity('Todas as Cidades');
+                            setCitySearchQuery('');
+                          }}
+                          className="bg-[#FF5F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs"
+                        >
+                          Limpar Todos os Filtros
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                        {filteredCoupons.map((coupon) => {
+                          const store = stores.find(s => s.id === coupon.storeId);
+                          return (
+                            <CouponCard
+                              key={coupon.id}
+                              coupon={coupon}
+                              store={store}
+                              onSelectCoupon={(c) => setSelectedCoupon(c)}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. VITRINE DE GRANDES LOJAS & E-COMMERCES INTEGRADOS VIA API */}
+                  <BigStoresShowcase 
+                    onSelectCoupon={handleSelectBigStoreCoupon} 
+                    onSelectStore={handleSelectStoreFromDirectory} 
+                  />
+                </>
+              )}
 
               {/* Banner CTA intermediário */}
               {!isVipUser && (
