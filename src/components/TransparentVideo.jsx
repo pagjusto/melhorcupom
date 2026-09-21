@@ -132,130 +132,67 @@ export const TransparentVideo = ({
       const total = w * h;
 
       // =========================================================================
-      // =========================================================================
-      // 1. PROCESSAMENTO DE CHROMA KEY VERDE VIA BOUNDARY FLOOD-FILL
-      // Remove o fundo verde externo e o verde entre braço e cabeça com precisão absoluta,
+      // 1. PROCESSAMENTO DE CHROMA KEY VERDE
+      // Remove 100% o fundo verde externo e o vão entre a cabeça e as notas de dólar,
       // preservando 100% o interior das notas de dólar (sem furos) e eliminando qualquer
-      // serrilhado verde ou branco ao redor da logo.
+      // serrilhado verde ou branco ao redor da logo e mascote.
       // =========================================================================
       if (removeGreen) {
         const mem = memoryRef.current;
-        if (!mem.visited || mem.lastWidth !== w || mem.lastHeight !== h) {
-          mem.visited = new Int32Array(total);
-          mem.queue = new Int32Array(total);
+        if (!mem.alphas || mem.lastWidth !== w || mem.lastHeight !== h) {
           mem.alphas = new Uint8Array(total);
           mem.lastWidth = w;
           mem.lastHeight = h;
-          mem.visitId = 1;
-        } else {
-          mem.visitId++;
-          if (mem.visitId > 2000000000) {
-            mem.visited.fill(0);
-            mem.visitId = 1;
-          }
         }
 
-        const visited = mem.visited;
-        const queue = mem.queue;
-        const visitId = mem.visitId;
-        let head = 0;
-        let tail = 0;
-
-        // Seed das 4 bordas do canvas (o fundo verde cerca o vídeo por fora)
-        for (let x = 0; x < w; x++) {
-          const top = x;
-          const bot = (h - 1) * w + x;
-          visited[top] = visitId; queue[tail++] = top;
-          visited[bot] = visitId; queue[tail++] = bot;
-        }
-        for (let y = 1; y < h - 1; y++) {
-          const left = y * w;
-          const right = y * w + w - 1;
-          visited[left] = visitId; queue[tail++] = left;
-          visited[right] = visitId; queue[tail++] = right;
-        }
-
-        // Também garante a inclusão do buraco interno entre a cabeça e o braço se não alcançado
-        const holeIdx = 230 * w + 745;
-        if (visited[holeIdx] !== visitId) {
-          const h4 = holeIdx * 4;
-          const hr = data[h4], hg = data[h4 + 1], hb = data[h4 + 2];
-          const hdiff = hg - Math.max(hr, hb);
-          if ((hg > 100 && hdiff > 15) || (hg > 70 && hdiff > 25)) {
-            visited[holeIdx] = visitId;
-            queue[tail++] = holeIdx;
-          }
-        }
-
-        // BFS: propaga exclusivamente através do verde de fundo e suas bordas de transição
-        // Não atravessa os contornos pretos fechados do mascote nem das notas de dólar!
-        while (head < tail) {
-          const p = queue[head++];
-          const p4 = p * 4;
-          const r = data[p4];
-          const g = data[p4 + 1];
-          const b = data[p4 + 2];
+        // PASS 1: Remoção de Chroma Key, despill de sombras e preservação das notas de dólar
+        for (let i = 0; i < total; i++) {
+          const i4 = i * 4;
+          const r = data[i4];
+          const g = data[i4 + 1];
+          const b = data[i4 + 2];
           const maxRB = Math.max(r, b);
           const diff = g - maxRB;
+          const px = i % w;
+          const py = (i / w) | 0;
 
-          if ((g > 130 && diff > 25) || (g > 95 && diff > 40)) {
-            data[p4 + 3] = 0; // 100% transparente
-          } else if (diff > 8 && g > 35) {
-            // Borda verde de transição: suavização e despill total
-            const factor = Math.max(0, 1 - (diff - 8) / 22);
-            data[p4 + 3] = Math.round(data[p4 + 3] * factor);
-            data[p4 + 1] = maxRB;
-          } else if (diff > 2 && g > 20) {
-            // Despill sutil em contornos escuros
-            data[p4 + 1] = maxRB;
+          // 1. Barras pretas externas (Letterbox/Pillarbox)
+          const isOuterBoundary = (px < 16 || px > w - 16 || py < 25 || py > h - 25);
+          if (isOuterBoundary && (r < 45 && g < 45 && b < 45)) {
+            data[i4 + 3] = 0;
+            continue;
           }
 
-          const px = p % w;
-          const py = (p / w) | 0;
+          // 2. Preservação do leque de cédulas de dólar (papel-moeda verde oliva):
+          // No papel-moeda de dólar, há azul e vermelho significativos (r >= 40, b >= 22, r+b >= 72)
+          // com excesso de verde moderado (diff < 50 ou diff < 60).
+          // O fundo verde Chroma Key e suas sombras têm b < 16 e (r+b) < 65!
+          const isInDollarArea = (py >= 130 && py <= 420 && px >= 740 && px <= 980);
+          const isDollarBill = isInDollarArea && (
+            (r >= 40 && b >= 22 && (r + b) >= 72 && diff >= 0 && diff < 50) ||
+            (r >= 55 && b >= 30 && diff >= 0 && diff < 60)
+          );
 
-          if (px > 0) {
-            const n = p - 1;
-            if (visited[n] !== visitId) {
-              visited[n] = visitId;
-              const n4 = n * 4;
-              const ng = data[n4 + 1];
-              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
-              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
-            }
+          if (isDollarBill) {
+            data[i4 + 3] = 255;
+            continue;
           }
-          if (px < w - 1) {
-            const n = p + 1;
-            if (visited[n] !== visitId) {
-              visited[n] = visitId;
-              const n4 = n * 4;
-              const ng = data[n4 + 1];
-              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
-              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
-            }
-          }
-          if (py > 0) {
-            const n = p - w;
-            if (visited[n] !== visitId) {
-              visited[n] = visitId;
-              const n4 = n * 4;
-              const ng = data[n4 + 1];
-              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
-              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
-            }
-          }
-          if (py < h - 1) {
-            const n = p + w;
-            if (visited[n] !== visitId) {
-              visited[n] = visitId;
-              const n4 = n * 4;
-              const ng = data[n4 + 1];
-              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
-              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
-            }
+
+          // 3. Fundo verde Chroma Key e sombras no vão entre cabeça e braço/dólares:
+          if ((g > 115 && diff > 15) || (g > 65 && diff > 22) || (diff > 35)) {
+            data[i4 + 3] = 0; // Transparente total
+          } else if (diff > 4 && g > 20) {
+            // Transição verde / despill suave
+            const factor = Math.max(0, 1 - (diff - 4) / 18);
+            data[i4 + 3] = Math.round(data[i4 + 3] * factor);
+            data[i4 + 1] = maxRB;
+          } else if (diff > 0 && !isDollarBill) {
+            // Neutraliza qualquer sombra ou contorno verde fora das notas de dólar
+            data[i4 + 1] = maxRB;
           }
         }
 
-        // Pass 2: Defringe / Suavização da borda externa (elimina o serrilhado branco/cinza e verde residual)
+        // PASS 2: Defringe / Suavização da borda externa (elimina o serrilhado branco/cinza e verde residual)
         const alphas = mem.alphas;
         for (let i = 0; i < total; i++) alphas[i] = data[i * 4 + 3];
 
@@ -265,7 +202,6 @@ export const TransparentVideo = ({
             const idx = rowStart + x;
             const a = alphas[idx];
             if (a > 10) {
-              // Verifica se o pixel faz fronteira com o fundo transparente
               const hasTranspNeighbor =
                 alphas[idx - 1] === 0 || alphas[idx + 1] === 0 ||
                 alphas[idx - w] === 0 || alphas[idx + w] === 0 ||
