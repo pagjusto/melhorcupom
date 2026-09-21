@@ -132,58 +132,130 @@ export const TransparentVideo = ({
       const total = w * h;
 
       // =========================================================================
-      // 1. PROCESSAMENTO DE CHROMA KEY VERDE (REMOVE FUNDO E BURACOS INTERNOS)
-      // Remove tanto o fundo externo quanto o verde entre o braço e a cabeça do boneco!
-      // Preserva 100% as notas de dinheiro, letras brancas e o mascote.
+      // =========================================================================
+      // 1. PROCESSAMENTO DE CHROMA KEY VERDE VIA BOUNDARY FLOOD-FILL
+      // Remove o fundo verde externo e o verde entre braço e cabeça com precisão absoluta,
+      // preservando 100% o interior das notas de dólar (sem furos) e eliminando qualquer
+      // serrilhado verde ou branco ao redor da logo.
       // =========================================================================
       if (removeGreen) {
-        // Pass 1: Identificação precisa de chroma verde e despill inteligente
-        for (let i = 0; i < total; i++) {
-          const i4 = i * 4;
-          const r = data[i4];
-          const g = data[i4 + 1];
-          const b = data[i4 + 2];
+        const mem = memoryRef.current;
+        if (!mem.visited || mem.lastWidth !== w || mem.lastHeight !== h) {
+          mem.visited = new Int32Array(total);
+          mem.queue = new Int32Array(total);
+          mem.alphas = new Uint8Array(total);
+          mem.lastWidth = w;
+          mem.lastHeight = h;
+          mem.visitId = 1;
+        } else {
+          mem.visitId++;
+          if (mem.visitId > 2000000000) {
+            mem.visited.fill(0);
+            mem.visitId = 1;
+          }
+        }
+
+        const visited = mem.visited;
+        const queue = mem.queue;
+        const visitId = mem.visitId;
+        let head = 0;
+        let tail = 0;
+
+        // Seed das 4 bordas do canvas (o fundo verde cerca o vídeo por fora)
+        for (let x = 0; x < w; x++) {
+          const top = x;
+          const bot = (h - 1) * w + x;
+          visited[top] = visitId; queue[tail++] = top;
+          visited[bot] = visitId; queue[tail++] = bot;
+        }
+        for (let y = 1; y < h - 1; y++) {
+          const left = y * w;
+          const right = y * w + w - 1;
+          visited[left] = visitId; queue[tail++] = left;
+          visited[right] = visitId; queue[tail++] = right;
+        }
+
+        // Também garante a inclusão do buraco interno entre a cabeça e o braço se não alcançado
+        const holeIdx = 230 * w + 745;
+        if (visited[holeIdx] !== visitId) {
+          const h4 = holeIdx * 4;
+          const hr = data[h4], hg = data[h4 + 1], hb = data[h4 + 2];
+          const hdiff = hg - Math.max(hr, hb);
+          if ((hg > 100 && hdiff > 15) || (hg > 70 && hdiff > 25)) {
+            visited[holeIdx] = visitId;
+            queue[tail++] = holeIdx;
+          }
+        }
+
+        // BFS: propaga exclusivamente através do verde de fundo e suas bordas de transição
+        // Não atravessa os contornos pretos fechados do mascote nem das notas de dólar!
+        while (head < tail) {
+          const p = queue[head++];
+          const p4 = p * 4;
+          const r = data[p4];
+          const g = data[p4 + 1];
+          const b = data[p4 + 2];
           const maxRB = Math.max(r, b);
           const diff = g - maxRB;
-          const px = i % w;
-          const py = (i / w) | 0;
 
-          // Barras pretas externas (Letterbox superior/inferior e Pillarbox laterais):
-          const isOuterBoundary = (px < 16 || px > w - 16 || py < 25 || py > h - 25);
-          const isBlackBar = isOuterBoundary && (r < 45 && g < 45 && b < 45);
-
-          if (isBlackBar) {
-            data[i4 + 3] = 0;
-            continue;
-          }
-
-          // Notas de Dólar (preservação do papel-moeda verde-oliva com pigmentos r e b):
-          const isDollarBill = (px > 740 && py < 400) &&
-                               (r >= 65 && b >= 42 && diff < 60 && g < 245);
-
-          if (isDollarBill) {
-            continue;
-          }
-
-          // Fundo verde Chroma Key (fundo externo E buraco entre braço e cabeça):
-          if ((g > 140 && diff > 30) || (g > 95 && diff > 45)) {
-            data[i4 + 3] = 0; // 100% transparente
+          if ((g > 130 && diff > 25) || (g > 95 && diff > 40)) {
+            data[p4 + 3] = 0; // 100% transparente
           } else if (diff > 8 && g > 35) {
-            // Borda verde de transição: elimina o serrilhado verde no contorno do rosto, mão e notas
+            // Borda verde de transição: suavização e despill total
             const factor = Math.max(0, 1 - (diff - 8) / 22);
-            data[i4 + 3] = Math.round(data[i4 + 3] * factor);
-            data[i4 + 1] = maxRB; // Despill total
+            data[p4 + 3] = Math.round(data[p4 + 3] * factor);
+            data[p4 + 1] = maxRB;
           } else if (diff > 2 && g > 20) {
-            // Despill sutil em contornos pretos e sombras
-            data[i4 + 1] = maxRB;
+            // Despill sutil em contornos escuros
+            data[p4 + 1] = maxRB;
+          }
+
+          const px = p % w;
+          const py = (p / w) | 0;
+
+          if (px > 0) {
+            const n = p - 1;
+            if (visited[n] !== visitId) {
+              visited[n] = visitId;
+              const n4 = n * 4;
+              const ng = data[n4 + 1];
+              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
+              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
+            }
+          }
+          if (px < w - 1) {
+            const n = p + 1;
+            if (visited[n] !== visitId) {
+              visited[n] = visitId;
+              const n4 = n * 4;
+              const ng = data[n4 + 1];
+              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
+              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
+            }
+          }
+          if (py > 0) {
+            const n = p - w;
+            if (visited[n] !== visitId) {
+              visited[n] = visitId;
+              const n4 = n * 4;
+              const ng = data[n4 + 1];
+              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
+              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
+            }
+          }
+          if (py < h - 1) {
+            const n = p + w;
+            if (visited[n] !== visitId) {
+              visited[n] = visitId;
+              const n4 = n * 4;
+              const ng = data[n4 + 1];
+              const ndiff = ng - Math.max(data[n4], data[n4 + 2]);
+              if ((ng > 100 && ndiff > 15) || (ng > 70 && ndiff > 25)) queue[tail++] = n;
+            }
           }
         }
 
         // Pass 2: Defringe / Suavização da borda externa (elimina o serrilhado branco/cinza e verde residual)
-        const mem = memoryRef.current;
-        if (!mem.alphas || mem.alphas.length !== total) {
-          mem.alphas = new Uint8Array(total);
-        }
         const alphas = mem.alphas;
         for (let i = 0; i < total; i++) alphas[i] = data[i * 4 + 3];
 
