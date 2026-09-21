@@ -157,37 +157,29 @@ export const TransparentVideo = ({
             continue;
           }
 
-          // Região da nota de dinheiro (apenas no quadrante superior direito):
-          const isMoneyArea = (px > 780 && px < 1000 && py < 330);
+          // Notas de Dólar (preservação do papel-moeda verde-oliva com pigmentos r e b):
+          const isDollarBill = (px > 740 && py < 400) &&
+                               (r >= 65 && b >= 42 && diff < 60 && g < 245);
 
-          if (isMoneyArea) {
-            // Na área de dinheiro, preserva notas verdes (diff moderado com r e b mais altos)
-            // O fundo verde puro na área de dinheiro tem g > 175 e diff > 90
-            if (g > 175 && diff > 90) {
-              data[i4 + 3] = 0;
-            } else if (diff > 55 && g > 130) {
-              const factor = Math.max(0, 1 - (diff - 55) / 35);
-              data[i4 + 3] = Math.round(data[i4 + 3] * factor);
-              data[i4 + 1] = maxRB;
-            }
-          } else {
-            // Fora da área de dinheiro (onde fica 95% do logo, texto Melhor Cupom e mascote):
-            // O fundo verde puro e bordas de transição são 100% limpos, sem deixar serrilhado
-            if (g > 115 && diff > 30) {
-              data[i4 + 3] = 0; // Transparência total no verde e bordas verdes
-            } else if (diff > 12 && g > 60) {
-              // Transição suave com despill
-              const factor = Math.max(0, 1 - (diff - 12) / 20);
-              data[i4 + 3] = Math.round(data[i4 + 3] * factor);
-              data[i4 + 1] = maxRB;
-            } else if (diff > 4 && g > 30) {
-              // Despill sutil nos contornos pretos
-              data[i4 + 1] = maxRB;
-            }
+          if (isDollarBill) {
+            continue;
+          }
+
+          // Fundo verde Chroma Key (fundo externo E buraco entre braço e cabeça):
+          if ((g > 140 && diff > 30) || (g > 95 && diff > 45)) {
+            data[i4 + 3] = 0; // 100% transparente
+          } else if (diff > 8 && g > 35) {
+            // Borda verde de transição: elimina o serrilhado verde no contorno do rosto, mão e notas
+            const factor = Math.max(0, 1 - (diff - 8) / 22);
+            data[i4 + 3] = Math.round(data[i4 + 3] * factor);
+            data[i4 + 1] = maxRB; // Despill total
+          } else if (diff > 2 && g > 20) {
+            // Despill sutil em contornos pretos e sombras
+            data[i4 + 1] = maxRB;
           }
         }
 
-        // Pass 2: Defringe / Suavização da borda externa (elimina o serrilhado branco/cinza residual)
+        // Pass 2: Defringe / Suavização da borda externa (elimina o serrilhado branco/cinza e verde residual)
         const mem = memoryRef.current;
         if (!mem.alphas || mem.alphas.length !== total) {
           mem.alphas = new Uint8Array(total);
@@ -213,20 +205,23 @@ export const TransparentVideo = ({
                 const r = data[i4];
                 const g = data[i4 + 1];
                 const b = data[i4 + 2];
-                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
 
-                // Não mexe no amarelo do mascote nem nas notas de dinheiro
-                const isMascotYellow = (r > 190 && g > 140 && b < 110);
-                const isMoney = (x > 780 && x < 1000 && y < 330 && g > r);
+                // Elimina qualquer tom verde residual na borda externa (no rosto, mão e dólares)
+                if (g > r || g > b) {
+                  data[i4 + 1] = Math.max(r, b);
+                }
 
-                if (!isMascotYellow && !isMoney) {
-                  // Se for um pixel claro/cinza na borda externa (o serrilhado branco residual do contorno preto):
+                const lum = 0.299 * r + 0.587 * data[i4 + 1] + 0.114 * b;
+                const isMascotYellow = (r > 190 && g > 140 && b < 100 && r > g * 1.1);
+
+                if (!isMascotYellow) {
+                  // Se for um pixel claro/cinza na borda externa (o serrilhado residual do contorno preto):
                   if (lum > 70) {
                     const fade = Math.max(0, Math.min(1, (130 - lum) / 60));
                     data[i4] = Math.round(r * 0.25);
-                    data[i4 + 1] = Math.round(g * 0.25);
+                    data[i4 + 1] = Math.round(data[i4 + 1] * 0.25);
                     data[i4 + 2] = Math.round(b * 0.25);
-                    data[i4 + 3] = Math.round(a * (0.4 + 0.6 * fade));
+                    data[i4 + 3] = Math.round(a * (0.35 + 0.65 * fade));
                   }
                 }
               }
