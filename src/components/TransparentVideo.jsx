@@ -49,7 +49,8 @@ export const TransparentVideo = ({
     visitId: 0,
     lastWidth: 0,
     lastHeight: 0,
-    snapshot: null
+    snapshot: null,
+    alphas: null
   });
 
   // Ponto de início do vídeo (corta os primeiros segundos especificados)
@@ -136,6 +137,7 @@ export const TransparentVideo = ({
       // Preserva 100% as notas de dinheiro, letras brancas e o mascote.
       // =========================================================================
       if (removeGreen) {
+        // Pass 1: Identificação precisa de chroma verde e despill inteligente
         for (let i = 0; i < total; i++) {
           const i4 = i * 4;
           const r = data[i4];
@@ -146,24 +148,89 @@ export const TransparentVideo = ({
           const px = i % w;
           const py = (i / w) | 0;
 
-          // 1. CHROMA KEY VERDE (fundo geral E o buraco entre braço e cabeça):
-          // Fundo e buraco têm g > 140 e diff > 70 (as notas de dollar têm g <= 136 e diff <= 55 e NUNCA são vazadas!)
-          const isChromaGreen = (g > 140) && (diff > 70);
-
-          // 2. BARRAS PRETAS EXTERNAS (Letterbox superior/inferior E Pillarbox laterais):
+          // Barras pretas externas (Letterbox superior/inferior e Pillarbox laterais):
           const isOuterBoundary = (px < 16 || px > w - 16 || py < 25 || py > h - 25);
           const isBlackBar = isOuterBoundary && (r < 45 && g < 45 && b < 45);
 
-          if (isChromaGreen || isBlackBar) {
-            data[i4 + 3] = 0; // 100% transparente
-          } else if (py > 200 && diff > 8 && g > 35) {
-            // De-spill nos contornos pretos das letras (abaixo de y=200, onde NÃO há notas de dinheiro)
-            data[i4 + 1] = maxRB;
-          } else if (diff > 50 && g > 110) {
-            // Borda de transição verde do fundo
-            const factor = Math.max(0, 1 - (diff - 50) / 25);
-            data[i4 + 3] = Math.round(data[i4 + 3] * factor);
-            data[i4 + 1] = maxRB;
+          if (isBlackBar) {
+            data[i4 + 3] = 0;
+            continue;
+          }
+
+          // Região da nota de dinheiro (apenas no quadrante superior direito):
+          const isMoneyArea = (px > 780 && px < 1000 && py < 330);
+
+          if (isMoneyArea) {
+            // Na área de dinheiro, preserva notas verdes (diff moderado com r e b mais altos)
+            // O fundo verde puro na área de dinheiro tem g > 175 e diff > 90
+            if (g > 175 && diff > 90) {
+              data[i4 + 3] = 0;
+            } else if (diff > 55 && g > 130) {
+              const factor = Math.max(0, 1 - (diff - 55) / 35);
+              data[i4 + 3] = Math.round(data[i4 + 3] * factor);
+              data[i4 + 1] = maxRB;
+            }
+          } else {
+            // Fora da área de dinheiro (onde fica 95% do logo, texto Melhor Cupom e mascote):
+            // O fundo verde puro e bordas de transição são 100% limpos, sem deixar serrilhado
+            if (g > 115 && diff > 30) {
+              data[i4 + 3] = 0; // Transparência total no verde e bordas verdes
+            } else if (diff > 12 && g > 60) {
+              // Transição suave com despill
+              const factor = Math.max(0, 1 - (diff - 12) / 20);
+              data[i4 + 3] = Math.round(data[i4 + 3] * factor);
+              data[i4 + 1] = maxRB;
+            } else if (diff > 4 && g > 30) {
+              // Despill sutil nos contornos pretos
+              data[i4 + 1] = maxRB;
+            }
+          }
+        }
+
+        // Pass 2: Defringe / Suavização da borda externa (elimina o serrilhado branco/cinza residual)
+        const mem = memoryRef.current;
+        if (!mem.alphas || mem.alphas.length !== total) {
+          mem.alphas = new Uint8Array(total);
+        }
+        const alphas = mem.alphas;
+        for (let i = 0; i < total; i++) alphas[i] = data[i * 4 + 3];
+
+        for (let y = 1; y < h - 1; y++) {
+          const rowStart = y * w;
+          for (let x = 1; x < w - 1; x++) {
+            const idx = rowStart + x;
+            const a = alphas[idx];
+            if (a > 10) {
+              // Verifica se o pixel faz fronteira com o fundo transparente
+              const hasTranspNeighbor =
+                alphas[idx - 1] === 0 || alphas[idx + 1] === 0 ||
+                alphas[idx - w] === 0 || alphas[idx + w] === 0 ||
+                alphas[idx - w - 1] === 0 || alphas[idx - w + 1] === 0 ||
+                alphas[idx + w - 1] === 0 || alphas[idx + w + 1] === 0;
+
+              if (hasTranspNeighbor) {
+                const i4 = idx * 4;
+                const r = data[i4];
+                const g = data[i4 + 1];
+                const b = data[i4 + 2];
+                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                // Não mexe no amarelo do mascote nem nas notas de dinheiro
+                const isMascotYellow = (r > 190 && g > 140 && b < 110);
+                const isMoney = (x > 780 && x < 1000 && y < 330 && g > r);
+
+                if (!isMascotYellow && !isMoney) {
+                  // Se for um pixel claro/cinza na borda externa (o serrilhado branco residual do contorno preto):
+                  if (lum > 70) {
+                    const fade = Math.max(0, Math.min(1, (130 - lum) / 60));
+                    data[i4] = Math.round(r * 0.25);
+                    data[i4 + 1] = Math.round(g * 0.25);
+                    data[i4 + 2] = Math.round(b * 0.25);
+                    data[i4 + 3] = Math.round(a * (0.4 + 0.6 * fade));
+                  }
+                }
+              }
+            }
           }
         }
       }
