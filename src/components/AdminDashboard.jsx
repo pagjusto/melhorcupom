@@ -1707,11 +1707,11 @@ export const AdminDashboard = () => {
                 <h2 className="text-2xl sm:text-3xl font-black text-white font-display flex items-center gap-2.5">
                   <span>Central de APIs & Afiliados Oficiais</span>
                   <span className="text-xs bg-emerald-500/30 text-emerald-300 font-extrabold px-2.5 py-1 rounded-lg border border-emerald-500/40">
-                    4 Ativos
+                    {apiConnectors?.length || 5} Ativos
                   </span>
                 </h2>
                 <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-                  Gerencie a sincronização contínua de cupons, geração automática de SubIDs para rastreamento de compras e processamento de comissões/cashback das redes Awin, Lomadee, Shopee e Mercado Livre.
+                  Gerencie a sincronização contínua de cupons, geração automática de SubIDs para rastreamento de compras e processamento de comissões/cashback das redes Awin, Lomadee, Shopee, Mercado Livre e AliExpress.
                 </p>
               </div>
 
@@ -1753,11 +1753,11 @@ export const AdminDashboard = () => {
                 </div>
               </div>
               <div className="text-3xl font-black text-white font-display flex items-baseline gap-2">
-                <span>4 / 4</span>
+                <span>{apiConnectors?.length || 5} / {apiConnectors?.length || 5}</span>
                 <span className="text-xs font-bold text-emerald-400">100% Online</span>
               </div>
               <p className="text-[11px] text-gray-400 mt-1">
-                Awin, Lomadee, Shopee e Mercado Livre operando normalmente.
+                Awin, Lomadee, Shopee, Mercado Livre e AliExpress operando normalmente.
               </p>
             </div>
 
@@ -1943,8 +1943,8 @@ export const AdminDashboard = () => {
                         onClick={() => {
                           setEditingConnector(connector);
                           setEditCredentialsForm({
-                            publisherId: connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId || '',
-                            apiKey: connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret || '',
+                            publisherId: connector.credentials?.appKey || connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId || '',
+                            apiKey: connector.credentials?.appSecret || connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret || '',
                             subIdParam: connector.credentials?.subIdParam || '',
                             webhookEndpoint: connector.credentials?.webhookEndpoint || ''
                           });
@@ -1996,27 +1996,37 @@ export const AdminDashboard = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-300 mb-1">
-                        ID do Publisher / Conta ({editingConnector.id === 'awin' ? 'Account ID Awin' : 'ID do Parceiro'}):
+                        {editingConnector.id === 'aliexpress' 
+                          ? 'AppKey Oficial AliExpress:' 
+                          : editingConnector.id === 'awin' 
+                          ? 'Account ID Awin:' 
+                          : editingConnector.id === 'shopee'
+                          ? 'App ID Shopee:'
+                          : editingConnector.id === 'meli'
+                          ? 'Client ID Mercado Livre:'
+                          : 'ID do Publisher / Conta:'}
                       </label>
                       <input
                         type="text"
                         value={editCredentialsForm.publisherId}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, publisherId: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 focus:outline-none"
-                        placeholder="Ex: 3095275"
+                        placeholder={editingConnector.id === 'aliexpress' ? 'Ex: 548636' : 'Ex: 3095275'}
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-gray-300 mb-1">
-                        API Token / Secret Key Oficial:
+                        {editingConnector.id === 'aliexpress'
+                          ? 'App Secret Oficial AliExpress:'
+                          : 'API Token / Secret Key Oficial:'}
                       </label>
                       <input
                         type="text"
                         value={editCredentialsForm.apiKey}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, apiKey: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-mono focus:border-blue-500 focus:outline-none"
-                        placeholder="Insira o API Token da rede..."
+                        placeholder="Insira o API Token / Secret Key..."
                       />
                     </div>
 

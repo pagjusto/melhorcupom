@@ -552,15 +552,15 @@ export const INITIAL_STORES = [
     address: 'Portal Oficial AliExpress Brasil',
     rating: 4.7,
     reviewsCount: 28900,
-    badge: '🟢 API Awin Conectada',
+    badge: '🟢 API AliExpress Conectada',
     type: 'online',
     isApiIntegrated: true,
-    apiSource: 'Awin',
+    apiSource: 'AliExpress Open Platform',
     apiStatus: 'active',
     cashbackRate: 'Até 8.5% de Volta',
     cashbackPercent: 8.5,
     couponsCount: 14,
-    affiliateUrl: 'https://pt.aliexpress.com/?awin=melhorcupom'
+    affiliateUrl: 'https://pt.aliexpress.com/?sub_id=melhorcupom'
   },
   {
     id: 'store_casasbahia',
@@ -1269,7 +1269,7 @@ export const INITIAL_COUPONS = [
     storeId: 'store_aliexpress',
     merchantId: 'merchant_aliexpress',
     title: 'R$ 35 OFF em Pedidos Choice Acima de R$ 150 com Frete Grátis',
-    description: 'Integrado via Awin API. Itens do programa Choice entregues com impostos inclusos e envio prioritário.',
+    description: 'Integrado via AliExpress Open Platform. Itens do programa Choice entregues com impostos inclusos e envio prioritário.',
     originalPrice: 160.00,
     promoPrice: 125.00,
     discountType: 'fixed',
@@ -1282,11 +1282,11 @@ export const INITIAL_COUPONS = [
     type: 'online',
     codePrefix: 'ALIEX35VIP',
     isApiIntegrated: true,
-    apiSource: 'Awin',
-    apiLastSync: 'Hoje às 15:12',
+    apiSource: 'AliExpress Open Platform',
+    apiLastSync: 'Hoje às 14:19',
     cashbackRate: 'Até 8.5% de Volta',
     cashbackPercent: 8.5,
-    affiliateUrl: 'https://pt.aliexpress.com/?awin=melhorcupom',
+    affiliateUrl: 'https://pt.aliexpress.com/?sub_id=melhorcupom',
     validityType: 'unlimited',
     expiresAt: 'unlimited',
     usesCount: 890,
@@ -1766,7 +1766,7 @@ export const API_CONNECTORS = [
       webhookEndpoint: 'https://api.melhorcupom.com.br/webhooks/awin',
       subIdParam: 'clickref=melhorcupom_vip'
     },
-    topBrands: ['Amazon Brasil', 'Nike Brasil', 'Drogasil', 'AliExpress', 'Samsung'],
+    topBrands: ['Amazon Brasil', 'Nike Brasil', 'Drogasil', 'Centauro', 'Samsung'],
     avgCommission: '8.4%',
     userCashbackRate: 'Até 9.0%',
     platformMargin: '50% do spread de comissão'
@@ -1836,10 +1836,44 @@ export const API_CONNECTORS = [
     avgCommission: '6.0%',
     userCashbackRate: 'Até 5.0%',
     platformMargin: '40% retido pela plataforma'
+  },
+  {
+    id: 'aliexpress',
+    name: 'AliExpress Open Platform',
+    network: 'AliExpress Portals Affiliate API',
+    accountName: 'Melhor Cupom',
+    status: 'connected',
+    statusLabel: 'Autenticado (200 OK)',
+    pingMs: 42,
+    totalStores: 1,
+    totalCoupons: 85,
+    lastSync: 'Hoje, 14:19:29',
+    apiVersion: 'v3.0 REST Portals',
+    credentials: {
+      appKey: '548636',
+      appSecret: '8s2vBJvwsr4IVNqNHFBmWppZFKsdAX2f',
+      publisherId: '548636',
+      apiKey: '8s2vBJvwsr4IVNqNHFBmWppZFKsdAX2f',
+      webhookEndpoint: 'https://api.melhorcupom.com.br/webhooks/aliexpress',
+      subIdParam: 'sub_id=melhorcupom'
+    },
+    topBrands: ['AliExpress Choice', 'Eletrônicos Globais', 'Gadgets & Casa', 'Moda Internacional'],
+    avgCommission: '9.0%',
+    userCashbackRate: 'Até 8.5%',
+    platformMargin: '35% retido pela plataforma'
   }
 ];
 
 export const INITIAL_API_LOGS = [
+  {
+    id: 'log_aliexpress_auth',
+    timestamp: '14:19:29',
+    service: 'AliExpress Open API',
+    type: 'auth',
+    status: '200 OK',
+    message: 'AppKey 548636 autenticado via AliExpress Portals API. Assinatura AppSecret e chaves verificadas com sucesso.',
+    level: 'success'
+  },
   {
     id: 'log_1',
     timestamp: '14:32:05',

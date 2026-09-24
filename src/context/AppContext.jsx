@@ -1342,14 +1342,14 @@ export const AppProvider = ({ children }) => {
   };
 
   // ==========================================
-  // HUB DE INTEGRAÇÕES & APIS DE AFILIADOS (Awin, Lomadee, Shopee, Mercado Livre)
+  // HUB DE INTEGRAÇÕES & APIS DE AFILIADOS (Awin, Lomadee, Shopee, Mercado Livre, AliExpress)
   // ==========================================
   const [apiConnectors, setApiConnectors] = useState(() => {
     const saved = localStorage.getItem('melhor_cupom_api_connectors');
     if (!saved) return API_CONNECTORS;
     try {
       const parsed = JSON.parse(saved);
-      // Garantir que credenciais atualizadas de Awin (ex: token real) sejam incorporadas
+      // Garantir que conectores oficiais e chaves do AliExpress/Awin sejam incorporados
       return API_CONNECTORS.map(initConn => {
         const existing = parsed.find(p => p.id === initConn.id);
         if (!existing) return initConn;
@@ -1375,15 +1375,20 @@ export const AppProvider = ({ children }) => {
     setApiConnectors(prev => {
       const updated = prev.map(c => {
         if (c.id === connectorId) {
+          const updatedCreds = {
+            ...c.credentials,
+            ...newCredentials
+          };
+          if (connectorId === 'aliexpress') {
+            if (newCredentials.publisherId) updatedCreds.appKey = newCredentials.publisherId;
+            if (newCredentials.apiKey) updatedCreds.appSecret = newCredentials.apiKey;
+          }
           return {
             ...c,
             status: 'connected',
             statusLabel: 'Autenticado (200 OK)',
             lastSync: 'Agora mesmo',
-            credentials: {
-              ...c.credentials,
-              ...newCredentials
-            }
+            credentials: updatedCreds
           };
         }
         return c;
@@ -1393,13 +1398,18 @@ export const AppProvider = ({ children }) => {
     });
 
     const timeStr = new Date().toLocaleTimeString('pt-BR');
+    const serviceName = connectorId === 'awin' ? 'Awin API' : 
+                        connectorId === 'lomadee' ? 'Lomadee' : 
+                        connectorId === 'shopee' ? 'Shopee Open API' : 
+                        connectorId === 'meli' ? 'Mercado Livre API' : 
+                        connectorId === 'aliexpress' ? 'AliExpress Open API' : connectorId;
     const updateLog = {
       id: `log_update_${Date.now()}`,
       timestamp: timeStr,
-      service: connectorId === 'awin' ? 'Awin API' : connectorId === 'lomadee' ? 'Lomadee' : connectorId,
+      service: serviceName,
       type: 'auth',
       status: '200 OK',
-      message: `Credenciais e Token atualizados com sucesso para ${connectorId.toUpperCase()}!`,
+      message: `Credenciais e chaves atualizadas com sucesso para ${connectorId.toUpperCase()}!`,
       level: 'success'
     };
     setApiLogs(prev => [updateLog, ...prev]);
