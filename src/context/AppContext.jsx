@@ -48,7 +48,7 @@ export const AppProvider = ({ children }) => {
           apiLastSync: c.apiLastSync || init?.apiLastSync || null,
           cashbackRate: c.cashbackRate || init?.cashbackRate || null,
           cashbackPercent: c.cashbackPercent || init?.cashbackPercent || 0,
-          affiliateUrl: (c.storeId === 'store_shopee' || c.merchantId === 'merchant_shopee') ? (init?.affiliateUrl || c.affiliateUrl) : (c.affiliateUrl || init?.affiliateUrl || null)
+          affiliateUrl: (c.storeId === 'store_shopee' || c.merchantId === 'merchant_shopee' || c.storeId === 'store_shein' || c.merchantId === 'merchant_shein') ? (init?.affiliateUrl || c.affiliateUrl) : (c.affiliateUrl || init?.affiliateUrl || null)
         };
       });
     } catch {
@@ -80,7 +80,7 @@ export const AppProvider = ({ children }) => {
           cashbackRate: s.cashbackRate || init?.cashbackRate || null,
           cashbackPercent: s.cashbackPercent || init?.cashbackPercent || 0,
           couponsCount: s.couponsCount ?? init?.couponsCount ?? 1,
-          affiliateUrl: (s.id === 'store_shopee') ? (init?.affiliateUrl || s.affiliateUrl) : (s.affiliateUrl || init?.affiliateUrl || null),
+          affiliateUrl: (s.id === 'store_shopee' || s.id === 'store_shein') ? (init?.affiliateUrl || s.affiliateUrl) : (s.affiliateUrl || init?.affiliateUrl || null),
           referralCode: storeRefCode,
           referralBalance: typeof s.referralBalance === 'number' ? s.referralBalance : 25.00,
           referrals: s.referrals || [
@@ -1361,6 +1361,11 @@ export const AppProvider = ({ children }) => {
           mergedCreds.affiliateId = '18305641225';
           mergedCreds.subIdParam = 'af=18305641225&af_sub1=melhorcupom';
         }
+        if (initConn.id === 'shein') {
+          mergedCreds.appId = '5005674890';
+          mergedCreds.affiliateId = '5005674890';
+          mergedCreds.subIdParam = 'aff_id=5005674890&sub_id=melhorcupom';
+        }
         return {
           ...initConn,
           ...existing,
@@ -1388,6 +1393,12 @@ export const AppProvider = ({ children }) => {
             if (newCredentials.publisherId) updatedCreds.appKey = newCredentials.publisherId;
             if (newCredentials.apiKey) updatedCreds.appSecret = newCredentials.apiKey;
           }
+          if (connectorId === 'shein') {
+            if (newCredentials.publisherId) {
+              updatedCreds.appId = newCredentials.publisherId;
+              updatedCreds.affiliateId = newCredentials.publisherId;
+            }
+          }
           return {
             ...c,
             status: 'connected',
@@ -1406,6 +1417,7 @@ export const AppProvider = ({ children }) => {
     const serviceName = connectorId === 'awin' ? 'Awin API' : 
                         connectorId === 'lomadee' ? 'Lomadee' : 
                         connectorId === 'shopee' ? 'Shopee Open API' : 
+                        connectorId === 'shein' ? 'SHEIN Open Platform' :
                         connectorId === 'meli' ? 'Mercado Livre API' : 
                         connectorId === 'aliexpress' ? 'AliExpress Open API' : connectorId;
     const updateLog = {
@@ -1471,6 +1483,15 @@ export const AppProvider = ({ children }) => {
         type: 'sync',
         status: '200 OK',
         message: 'GET /sites/MLB/deals -> 45 cupons oficiais Full atualizados com sucesso.',
+        level: 'success'
+      },
+      {
+        id: `log_${Date.now()}_5`,
+        timestamp: timeStr,
+        service: 'SHEIN Open Platform',
+        type: 'sync',
+        status: '200 OK',
+        message: 'GET /publisher/v3/vouchers -> ID 5005674890 autenticado. 6 cupons e vouchers oficiais SHEIN Brasil sincronizados com cashback de 10% e SubID ativo.',
         level: 'success'
       }
     ];

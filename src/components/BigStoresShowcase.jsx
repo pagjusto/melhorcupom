@@ -16,6 +16,8 @@ const QUICK_SEARCH_CHIPS = [
   { label: 'Amazon', query: 'Amazon', icon: '📦' },
   { label: 'Nike', query: 'Nike', icon: '✔️' },
   { label: 'Shopee', query: 'Shopee', icon: '🧡' },
+  { label: 'SHEIN', query: 'SHEIN', icon: '🖤' },
+  { label: 'AliExpress', query: 'AliExpress', icon: '🔴' },
   { label: 'Mercado Livre', query: 'Mercado Livre', icon: '🤝' },
   { label: 'Samsung', query: 'Samsung', icon: '📱' },
   { label: 'Magazine Luiza', query: 'Magazine Luiza', icon: '🛍️' },

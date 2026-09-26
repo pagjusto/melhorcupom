@@ -2002,6 +2002,8 @@ export const AdminDashboard = () => {
                           ? 'Account ID Awin:' 
                           : editingConnector.id === 'shopee'
                           ? 'App ID Shopee:'
+                          : editingConnector.id === 'shein'
+                          ? 'ID de Afiliado SHEIN:'
                           : editingConnector.id === 'meli'
                           ? 'Client ID Mercado Livre:'
                           : 'ID do Publisher / Conta:'}
@@ -2011,7 +2013,7 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.publisherId}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, publisherId: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 focus:outline-none"
-                        placeholder={editingConnector.id === 'aliexpress' ? 'Ex: 548636' : 'Ex: 3095275'}
+                        placeholder={editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : 'Ex: 3095275'}
                       />
                     </div>
 
@@ -2146,7 +2148,7 @@ export const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {stores.filter(s => s.isApiIntegrated || s.apiSource).map((store) => {
-                    const comBruta = store.name.includes('Amazon') ? '9.0%' : store.name.includes('Shopee') ? '8.0%' : store.name.includes('Nike') ? '7.5%' : store.name.includes('Magalu') ? '6.5%' : store.name.includes('Drogasil') ? '5.5%' : store.name.includes('Mercado') ? '5.0%' : '4.0%';
+                    const comBruta = store.name.includes('SHEIN') ? '12.0%' : store.name.includes('Amazon') ? '9.0%' : store.name.includes('Shopee') ? '8.0%' : store.name.includes('Nike') ? '7.5%' : store.name.includes('Magalu') ? '6.5%' : store.name.includes('Drogasil') ? '5.5%' : store.name.includes('Mercado') ? '5.0%' : '4.0%';
                     const cashbackUser = store.cashbackRate || 'Até 6%';
                     const margemPlataforma = '50% do Spread';
 
