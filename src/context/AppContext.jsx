@@ -48,7 +48,7 @@ export const AppProvider = ({ children }) => {
           apiLastSync: c.apiLastSync || init?.apiLastSync || null,
           cashbackRate: c.cashbackRate || init?.cashbackRate || null,
           cashbackPercent: c.cashbackPercent || init?.cashbackPercent || 0,
-          affiliateUrl: c.affiliateUrl || init?.affiliateUrl || null
+          affiliateUrl: (c.storeId === 'store_shopee' || c.merchantId === 'merchant_shopee') ? (init?.affiliateUrl || c.affiliateUrl) : (c.affiliateUrl || init?.affiliateUrl || null)
         };
       });
     } catch {
@@ -80,7 +80,7 @@ export const AppProvider = ({ children }) => {
           cashbackRate: s.cashbackRate || init?.cashbackRate || null,
           cashbackPercent: s.cashbackPercent || init?.cashbackPercent || 0,
           couponsCount: s.couponsCount ?? init?.couponsCount ?? 1,
-          affiliateUrl: s.affiliateUrl || init?.affiliateUrl || null,
+          affiliateUrl: (s.id === 'store_shopee') ? (init?.affiliateUrl || s.affiliateUrl) : (s.affiliateUrl || init?.affiliateUrl || null),
           referralCode: storeRefCode,
           referralBalance: typeof s.referralBalance === 'number' ? s.referralBalance : 25.00,
           referrals: s.referrals || [
@@ -1349,17 +1349,22 @@ export const AppProvider = ({ children }) => {
     if (!saved) return API_CONNECTORS;
     try {
       const parsed = JSON.parse(saved);
-      // Garantir que conectores oficiais e chaves do AliExpress/Awin sejam incorporados
       return API_CONNECTORS.map(initConn => {
         const existing = parsed.find(p => p.id === initConn.id);
         if (!existing) return initConn;
+        const mergedCreds = {
+          ...initConn.credentials,
+          ...(existing.credentials || {})
+        };
+        if (initConn.id === 'shopee') {
+          mergedCreds.appId = '18305641225';
+          mergedCreds.affiliateId = '18305641225';
+          mergedCreds.subIdParam = 'af=18305641225&af_sub1=melhorcupom';
+        }
         return {
           ...initConn,
           ...existing,
-          credentials: {
-            ...initConn.credentials,
-            ...(existing.credentials || {})
-          }
+          credentials: mergedCreds
         };
       });
     } catch {
@@ -1456,7 +1461,7 @@ export const AppProvider = ({ children }) => {
         service: 'Shopee Open Platform',
         type: 'sync',
         status: '200 OK',
-        message: 'POST /api/v2/affiliate/vouchers -> 64 cupons atualizados com cashback de 8%.',
+        message: 'POST /api/v2/affiliate/vouchers -> ID 18305641225 autenticado. 6 cupons e vouchers oficiais Shopee Brasil sincronizados com cashback de 8% e SubID ativo.',
         level: 'success'
       },
       {
