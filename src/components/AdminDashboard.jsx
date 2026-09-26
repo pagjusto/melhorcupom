@@ -77,13 +77,7 @@ export const AdminDashboard = () => {
   } = useApp();
 
   // Aba ativa do Painel ADM ('overview' | 'cities' | 'financial' | 'stores' | 'users' | 'divulgacao' | 'simulador' | 'integrations')
-  const [activeAdminTab, setActiveAdminTab] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('adminTab')) return params.get('adminTab');
-    }
-    return 'overview';
-  });
+  const [activeAdminTab, setActiveAdminTab] = useState('overview');
 
   // Filtros Globais
   const [selectedCityFilter, setSelectedCityFilter] = useState('all');
