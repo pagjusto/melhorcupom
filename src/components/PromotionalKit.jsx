@@ -15,9 +15,13 @@ import {
   Instagram, 
   Zap,
   MapPin,
-  Plus
+  Plus,
+  Film
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+import { AnimatedStoriesStudio } from './AnimatedStoriesStudio';
+
+export { AnimatedStoriesStudio };
 
 // Utilitário para formatar a localização da loja:
 // "abaixo do nome apareça a cidade ,loja online aparecer brasil"
@@ -569,6 +573,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 // 2. COMPONENTE: PAINEL DE DIVULGAÇÃO & INSTAGRAM DO ADMIN (AdminPromoManager)
 // ============================================================================
 export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
+  const [activePromoTab, setActivePromoTab] = useState('stories'); // 'stories' (9:16 animado) ou 'static' (posts de parceria)
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id || '');
   const [format, setFormat] = useState('feed'); // 'feed' (1:1) ou 'story' (9:16)
   const [isInstagramConnected, setIsInstagramConnected] = useState(true);
@@ -929,7 +934,48 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   return (
     <div className="space-y-8 animate-fade-in max-w-6xl mx-auto">
       
-      {/* 1. Integração com Instagram (@melhorcupom.oficial) */}
+      {/* SELETOR DE MODO: STORIES ANIMADOS (9:16) vs POSTS ESTÁTICOS DE PARCERIAS */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#14141F] border border-white/10 rounded-3xl p-3 shadow-xl">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setActivePromoTab('stories')}
+            className={`px-5 py-3 rounded-2xl font-black text-xs flex items-center gap-2.5 transition-all cursor-pointer ${
+              activePromoTab === 'stories'
+                ? 'bg-gradient-to-r from-orange-500 via-rose-500 to-fuchsia-600 text-white shadow-lg shadow-orange-500/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Film size={16} className={activePromoTab === 'stories' ? 'animate-pulse' : ''} />
+            <span>🎬 Estúdio de Stories Animados (9:16)</span>
+            <span className="px-2 py-0.5 rounded-full text-[9px] bg-white/20 text-white uppercase font-black tracking-wider">
+              Vídeo & Reels
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActivePromoTab('static')}
+            className={`px-5 py-3 rounded-2xl font-black text-xs flex items-center gap-2.5 transition-all cursor-pointer ${
+              activePromoTab === 'static'
+                ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg shadow-purple-500/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Instagram size={16} />
+            <span>📸 Posts Estáticos de Parcerias (1:1 & 9:16)</span>
+          </button>
+        </div>
+
+        <div className="text-xs text-gray-400 hidden sm:flex items-center gap-2 px-3">
+          <Sparkles size={14} className="text-amber-400" />
+          <span>Marketing Oficial @melhorcupom.oficial</span>
+        </div>
+      </div>
+
+      {activePromoTab === 'stories' ? (
+        <AnimatedStoriesStudio stores={stores} showToast={showToast} />
+      ) : (
+        <>
+          {/* 1. Integração com Instagram (@melhorcupom.oficial) */}
       <div className="bg-gradient-to-r from-[#20132A] via-[#1B162E] to-[#12111E] border border-fuchsia-500/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-fuchsia-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -1207,6 +1253,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           ))}
         </div>
       </div>
+        </>
+      )}
 
     </div>
   );

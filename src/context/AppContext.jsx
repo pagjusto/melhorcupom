@@ -17,7 +17,13 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   // Aba Ativa Global da Aplicação ('explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons' | 'user-profile')
-  const [activeTab, setActiveTab] = useState('explore');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab')) return params.get('tab');
+    }
+    return 'explore';
+  });
 
   // Aba Interna do Painel do Lojista ('coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals')
   const [merchantDashboardTab, setMerchantDashboardTab] = useState('coupons');
@@ -25,6 +31,11 @@ export const AppProvider = ({ children }) => {
   // Estado de Perfil Atual (Role)
   // 'visitor' | 'vip' | 'merchant_burger' | 'merchant_barber' | 'admin'
   const [currentRole, setCurrentRole] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('role')) return params.get('role');
+      if (params.get('tab') === 'admin-dashboard') return 'admin';
+    }
     return localStorage.getItem('melhor_cupom_role') || 'visitor';
   });
 
