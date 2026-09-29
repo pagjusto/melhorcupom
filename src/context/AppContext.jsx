@@ -1379,6 +1379,13 @@ export const AppProvider = ({ children }) => {
           mergedCreds.affiliateId = '5005674890';
           mergedCreds.subIdParam = 'aff_id=5005674890&sub_id=melhorcupom';
         }
+        if (initConn.id === 'lomadee') {
+          mergedCreds.publisherId = '2324685';
+          mergedCreds.subIdParam = 'sourceId=2324685&subId=melhorcupom';
+          if (!mergedCreds.apiKey || mergedCreds.apiKey.startsWith('lom_prod_***')) {
+            mergedCreds.apiKey = initConn.credentials.apiKey;
+          }
+        }
         return {
           ...initConn,
           ...existing,
@@ -1412,10 +1419,17 @@ export const AppProvider = ({ children }) => {
               updatedCreds.affiliateId = newCredentials.publisherId;
             }
           }
+          if (connectorId === 'lomadee') {
+            if (newCredentials.publisherId) updatedCreds.publisherId = newCredentials.publisherId;
+            if (newCredentials.apiKey) updatedCreds.apiKey = newCredentials.apiKey;
+          }
           return {
             ...c,
             status: 'connected',
-            statusLabel: 'Autenticado (200 OK)',
+            statusLabel: connectorId === 'lomadee' ? 'Autenticado via x-api-key (200 OK)' :
+                         connectorId === 'shopee' ? 'Autenticado com ID 18305641225 (200 OK)' : 
+                         connectorId === 'shein' ? 'Autenticado com ID 5005674890 (200 OK)' :
+                         connectorId === 'aliexpress' ? 'Autenticado com AppKey 548636 (200 OK)' : c.statusLabel,
             lastSync: 'Agora mesmo',
             credentials: updatedCreds
           };
@@ -1428,7 +1442,7 @@ export const AppProvider = ({ children }) => {
 
     const timeStr = new Date().toLocaleTimeString('pt-BR');
     const serviceName = connectorId === 'awin' ? 'Awin API' : 
-                        connectorId === 'lomadee' ? 'Lomadee' : 
+                        connectorId === 'lomadee' ? 'Lomadee (SocialSoul)' : 
                         connectorId === 'shopee' ? 'Shopee Open API' : 
                         connectorId === 'shein' ? 'SHEIN Open Platform' :
                         connectorId === 'meli' ? 'Mercado Livre API' : 
@@ -1477,7 +1491,7 @@ export const AppProvider = ({ children }) => {
         service: 'Lomadee API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /v3/offers/coupons -> 96 cupons ativos sincronizados (Magalu, KaBuM!).',
+        message: 'GET /affiliate/campaigns -> x-api-key autenticado. Canal 2324685 validado com 96 ofertas e cupons sincronizados (Magalu, KaBuM, Casas Bahia, Netshoes).',
         level: 'success'
       },
       {

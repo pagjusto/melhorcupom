@@ -2177,19 +2177,19 @@ export const API_CONNECTORS = [
     name: 'Lomadee (SocialSoul)',
     network: 'Lomadee Retail Network',
     status: 'connected',
-    statusLabel: 'Conectado & Sincronizado',
-    pingMs: 58,
+    statusLabel: 'Autenticado via x-api-key (200 OK)',
+    pingMs: 46,
     totalStores: 24,
     totalCoupons: 96,
-    lastSync: 'Hoje, 14:31:40',
-    apiVersion: 'v3.1 JSON',
+    lastSync: 'Hoje às 14:31',
+    apiVersion: 'v2 REST (x-api-key)',
     credentials: {
-      publisherId: '22894103',
-      apiKey: 'lom_prod_****************************91cb',
+      publisherId: '2324685',
+      apiKey: 'lmd_prod_xxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
       webhookEndpoint: 'https://api.melhorcupom.com.br/webhooks/lomadee',
-      subIdParam: 'sourceId=melhorcupom'
+      subIdParam: 'sourceId=2324685&subId=melhorcupom'
     },
-    topBrands: ['Magazine Luiza', 'KaBuM!', 'Carrefour', 'Casas Bahia', 'Fast Shop'],
+    topBrands: ['Magazine Luiza', 'KaBuM!', 'Casas Bahia', 'Netshoes', 'Carrefour'],
     avgCommission: '6.8%',
     userCashbackRate: 'Até 6.5%',
     platformMargin: '50% do spread de comissão'

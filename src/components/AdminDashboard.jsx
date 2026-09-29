@@ -2006,6 +2006,8 @@ export const AdminDashboard = () => {
                           ? 'ID de Afiliado SHEIN:'
                           : editingConnector.id === 'meli'
                           ? 'Client ID Mercado Livre:'
+                          : editingConnector.id === 'lomadee'
+                          ? 'ID do Canal / Site Lomadee (sourceId):'
                           : 'ID do Publisher / Conta:'}
                       </label>
                       <input
@@ -2013,7 +2015,7 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.publisherId}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, publisherId: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 focus:outline-none"
-                        placeholder={editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : 'Ex: 3095275'}
+                        placeholder={editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : editingConnector.id === 'lomadee' ? 'Ex: 2324685' : 'Ex: 3095275'}
                       />
                     </div>
 
@@ -2021,6 +2023,8 @@ export const AdminDashboard = () => {
                       <label className="block text-xs font-bold text-gray-300 mb-1">
                         {editingConnector.id === 'aliexpress'
                           ? 'App Secret Oficial AliExpress:'
+                          : editingConnector.id === 'lomadee'
+                          ? 'Chave x-api-key Oficial Lomadee (v2):'
                           : 'API Token / Secret Key Oficial:'}
                       </label>
                       <input
@@ -2028,7 +2032,7 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.apiKey}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, apiKey: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-mono focus:border-blue-500 focus:outline-none"
-                        placeholder="Insira o API Token / Secret Key..."
+                        placeholder={editingConnector.id === 'lomadee' ? 'Ex: lmd_prod_...' : 'Insira o API Token / Secret Key...'}
                       />
                     </div>
 
