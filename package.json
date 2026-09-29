@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "sync:lomadee": "node scripts/sync-lomadee.js"
+    "sync:lomadee": "node scripts/sync-lomadee.cjs",
+    "sync:shopee": "node scripts/sync-shopee.cjs",
+    "sync:shein": "node scripts/sync-shein.cjs",
+    "sync:aliexpress": "node scripts/sync-aliexpress.cjs",
+    "sync:all": "node scripts/sync-all.cjs"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.3",

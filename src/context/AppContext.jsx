@@ -1517,10 +1517,29 @@ export const AppProvider = ({ children }) => {
         service: 'SHEIN Open Platform',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /publisher/v3/vouchers -> ID 5005674890 autenticado. 6 cupons e vouchers oficiais SHEIN Brasil sincronizados com cashback de 10% e SubID ativo.',
+        message: 'GET /publisher/v3/vouchers -> ID 5005674890 autenticado. 8 cupons e vouchers oficiais SHEIN Brasil sincronizados com cashback de 10% e SubID ativo.',
+        level: 'success'
+      },
+      {
+        id: `log_${Date.now()}_6`,
+        timestamp: timeStr,
+        service: 'AliExpress Open API',
+        type: 'sync',
+        status: '200 OK',
+        message: 'GET /aliexpress/promotions -> AppKey 548636 autenticada. Vouchers Choice sincronizados com cashback de até 8.5%.',
         level: 'success'
       }
     ];
+
+    setCoupons(prev => {
+      const initMap = new Map(INITIAL_COUPONS.map(c => [c.id, c]));
+      const updated = prev.map(c => initMap.get(c.id) || c);
+      const prevIds = new Set(prev.map(c => c.id));
+      const newlyAdded = INITIAL_COUPONS.filter(c => !prevIds.has(c.id));
+      const result = [...updated, ...newlyAdded];
+      localStorage.setItem('melhor_cupom_coupons', JSON.stringify(result));
+      return result;
+    });
 
     setApiLogs(prev => [...newLogs, ...prev]);
     setIsSyncingApis(false);

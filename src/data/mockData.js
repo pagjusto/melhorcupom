@@ -1,4 +1,4 @@
-import lomadeeCoupons from './lomadeeCoupons.json';
+import liveAffiliateCoupons from './liveAffiliateCoupons.json';
 
 export const POPULAR_CITIES = [
   'Todas as Cidades',
@@ -1827,7 +1827,7 @@ export const INITIAL_COUPONS = [
     highlight: true,
     vipOnly: true
   },
-  ...(Array.isArray(lomadeeCoupons) ? lomadeeCoupons : [])
+  ...(Array.isArray(liveAffiliateCoupons) ? liveAffiliateCoupons : [])
 ];
 
 export const SUBSCRIPTION_PLANS = [
