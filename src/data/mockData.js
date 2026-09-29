@@ -392,7 +392,7 @@ export const INITIAL_STORES = [
     cashbackRate: 'Até 6.5% de Volta',
     cashbackPercent: 6.5,
     couponsCount: 9,
-    affiliateUrl: 'https://www.magazineluiza.com.br/?utm_source=melhorcupom'
+    affiliateUrl: 'https://www.magazineluiza.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
   },
   {
     id: 'store_shopee',
@@ -512,7 +512,7 @@ export const INITIAL_STORES = [
     cashbackRate: 'Até 4.0% de Volta',
     cashbackPercent: 4.0,
     couponsCount: 7,
-    affiliateUrl: 'https://www.kabum.com.br/?lomadee=melhorcupom'
+    affiliateUrl: 'https://www.kabum.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
   },
   {
     id: 'store_drogasil',
@@ -608,7 +608,7 @@ export const INITIAL_STORES = [
     cashbackRate: 'Até 6.0% de Volta',
     cashbackPercent: 6.0,
     couponsCount: 10,
-    affiliateUrl: 'https://www.casasbahia.com.br/?lomadee=melhorcupom'
+    affiliateUrl: 'https://www.casasbahia.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
   },
   {
     id: 'store_adidas',
@@ -656,7 +656,7 @@ export const INITIAL_STORES = [
     cashbackRate: 'Até 5.0% de Volta',
     cashbackPercent: 5.0,
     couponsCount: 8,
-    affiliateUrl: 'https://www.netshoes.com.br/?lomadee=melhorcupom'
+    affiliateUrl: 'https://www.netshoes.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
   }
 ];
 
@@ -1068,7 +1068,7 @@ export const INITIAL_COUPONS = [
     apiLastSync: 'Hoje às 14:31',
     cashbackRate: 'Até 6.5% de Volta',
     cashbackPercent: 6.5,
-    affiliateUrl: 'https://www.magazineluiza.com.br/?utm_source=melhorcupom',
+    affiliateUrl: 'https://www.magazineluiza.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom',
     validityType: 'unlimited',
     expiresAt: 'unlimited',
     usesCount: 620,
@@ -1584,7 +1584,7 @@ export const INITIAL_COUPONS = [
     apiLastSync: 'Hoje às 14:31',
     cashbackRate: 'Até 4.0% de Volta',
     cashbackPercent: 4.0,
-    affiliateUrl: 'https://www.kabum.com.br/?lomadee=melhorcupom',
+    affiliateUrl: 'https://www.kabum.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom',
     validityType: 'unlimited',
     expiresAt: 'unlimited',
     usesCount: 410,
@@ -1721,7 +1721,7 @@ export const INITIAL_COUPONS = [
     apiLastSync: 'Hoje às 15:05',
     cashbackRate: 'Até 6.0% de Volta',
     cashbackPercent: 6.0,
-    affiliateUrl: 'https://www.casasbahia.com.br/?lomadee=melhorcupom',
+    affiliateUrl: 'https://www.casasbahia.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom',
     validityType: 'unlimited',
     expiresAt: 'unlimited',
     usesCount: 470,
@@ -1789,7 +1789,7 @@ export const INITIAL_COUPONS = [
     apiLastSync: 'Hoje às 15:08',
     cashbackRate: 'Até 5.0% de Volta',
     cashbackPercent: 5.0,
-    affiliateUrl: 'https://www.netshoes.com.br/?lomadee=melhorcupom',
+    affiliateUrl: 'https://www.netshoes.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom',
     validityType: 'unlimited',
     expiresAt: 'unlimited',
     usesCount: 520,
@@ -2186,7 +2186,7 @@ export const API_CONNECTORS = [
     credentials: {
       publisherId: '2324685',
       channelId: '54abf0ab-1918-4568-a9be-a621d48f2aae',
-      apiKey: 'lmd_prod_xxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      apiKey: 'lmd_production_vy4D30qnUJ_bq0IJ2CYLLJc3JFjXofHhB9a1BozypX0',
       webhookEndpoint: 'https://api.melhorcupom.com.br/webhooks/lomadee',
       subIdParam: 'sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
     },
