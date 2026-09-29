@@ -24,3 +24,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Sessões e Cookies de Automação
+*cookies.json
+.meli-session/
+

@@ -45,9 +45,17 @@ async function syncAll() {
     console.error('Erro no AliExpress:', e.message);
   }
 
-  // 5. Consolidar todos os cupons em liveAffiliateCoupons.json
+  // 5. Mercado Livre Automation (Puppeteer / Barra de Afiliados)
+  console.log('\n5️⃣  Executando automação Mercado Livre (Barra de Afiliados / Puppeteer)...');
+  try {
+    execSync(`node "${path.join(scriptsDir, 'sync-mercadolivre.cjs')}"`, { stdio: 'inherit' });
+  } catch (e) {
+    console.error('Erro no Mercado Livre:', e.message);
+  }
+
+  // 6. Consolidar todos os cupons em liveAffiliateCoupons.json
   console.log('\n📦 Consolidando base unificada de cupons...');
-  const files = ['lomadeeCoupons.json', 'shopeeCoupons.json', 'sheinCoupons.json', 'aliexpressCoupons.json'];
+  const files = ['lomadeeCoupons.json', 'shopeeCoupons.json', 'sheinCoupons.json', 'aliexpressCoupons.json', 'meliCoupons.json'];
   let allCoupons = [];
 
   files.forEach(file => {

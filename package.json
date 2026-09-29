@@ -10,12 +10,15 @@
     "sync:shopee": "node scripts/sync-shopee.cjs",
     "sync:shein": "node scripts/sync-shein.cjs",
     "sync:aliexpress": "node scripts/sync-aliexpress.cjs",
+    "sync:meli": "node scripts/sync-mercadolivre.cjs",
+    "meli:login": "node scripts/meli-login.cjs",
     "sync:all": "node scripts/sync-all.cjs"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.3",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.453.0",
+    "puppeteer": "^25.12.0",
     "qrcode.react": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
