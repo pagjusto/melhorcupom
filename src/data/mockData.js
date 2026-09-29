@@ -1,3 +1,5 @@
+import lomadeeCoupons from './lomadeeCoupons.json';
+
 export const POPULAR_CITIES = [
   'Todas as Cidades',
   'São Paulo - SP',
@@ -657,6 +659,30 @@ export const INITIAL_STORES = [
     cashbackPercent: 5.0,
     couponsCount: 8,
     affiliateUrl: 'https://www.netshoes.com.br/?sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
+  },
+  {
+    id: 'store_lomadee',
+    name: 'Rede Lomadee',
+    merchantId: 'merchant_lomadee',
+    tier: 'gold',
+    category: 'outros',
+    city: 'Todo o Brasil (Online)',
+    phone: '0800 591 2117',
+    logo: '🔴',
+    logoImage: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=160&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=700&auto=format&fit=crop&q=80',
+    address: 'Rede Oficial Lomadee (Mais de 200 Marcas)',
+    rating: 4.9,
+    reviewsCount: 34200,
+    badge: '🟢 Lomadee Sincronizada',
+    type: 'online',
+    isApiIntegrated: true,
+    apiSource: 'Lomadee',
+    apiStatus: 'active',
+    cashbackRate: 'Até 6.0% de Volta',
+    cashbackPercent: 6.0,
+    couponsCount: 20,
+    affiliateUrl: 'https://app.lomadee.com.br'
   }
 ];
 
@@ -1800,7 +1826,8 @@ export const INITIAL_COUPONS = [
     ],
     highlight: true,
     vipOnly: true
-  }
+  },
+  ...(Array.isArray(lomadeeCoupons) ? lomadeeCoupons : [])
 ];
 
 export const SUBSCRIPTION_PLANS = [
