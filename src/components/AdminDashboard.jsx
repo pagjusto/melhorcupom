@@ -1890,6 +1890,15 @@ export const AdminDashboard = () => {
                         </span>
                       </div>
 
+                      {connector.credentials?.channelId && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500">Channel ID (v2):</span>
+                          <span className="text-gray-300 font-bold truncate max-w-[160px]" title={connector.credentials.channelId}>
+                            {connector.credentials.channelId}
+                          </span>
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-gray-500 flex-shrink-0">API Key:</span>
                         <div className="flex items-center gap-1.5 min-w-0">

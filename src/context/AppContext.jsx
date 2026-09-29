@@ -1381,7 +1381,8 @@ export const AppProvider = ({ children }) => {
         }
         if (initConn.id === 'lomadee') {
           mergedCreds.publisherId = '2324685';
-          mergedCreds.subIdParam = 'sourceId=2324685&subId=melhorcupom';
+          mergedCreds.channelId = '54abf0ab-1918-4568-a9be-a621d48f2aae';
+          mergedCreds.subIdParam = 'sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom';
           if (!mergedCreds.apiKey || mergedCreds.apiKey.startsWith('lom_prod_***')) {
             mergedCreds.apiKey = initConn.credentials.apiKey;
           }
@@ -1491,7 +1492,7 @@ export const AppProvider = ({ children }) => {
         service: 'Lomadee API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /affiliate/campaigns -> x-api-key autenticado. Canal 2324685 validado com 96 ofertas e cupons sincronizados (Magalu, KaBuM, Casas Bahia, Netshoes).',
+        message: 'GET /affiliate/channels/54abf0ab-1918-4568-a9be-a621d48f2aae -> Canal oficial 2324685 autenticado. 96 ofertas e cupons sincronizados (Magalu, KaBuM, Casas Bahia, Netshoes).',
         level: 'success'
       },
       {

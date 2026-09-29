@@ -2185,9 +2185,10 @@ export const API_CONNECTORS = [
     apiVersion: 'v2 REST (x-api-key)',
     credentials: {
       publisherId: '2324685',
+      channelId: '54abf0ab-1918-4568-a9be-a621d48f2aae',
       apiKey: 'lmd_prod_xxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
       webhookEndpoint: 'https://api.melhorcupom.com.br/webhooks/lomadee',
-      subIdParam: 'sourceId=2324685&subId=melhorcupom'
+      subIdParam: 'sourceId=2324685&channelId=54abf0ab-1918-4568-a9be-a621d48f2aae&subId=melhorcupom'
     },
     topBrands: ['Magazine Luiza', 'KaBuM!', 'Casas Bahia', 'Netshoes', 'Carrefour'],
     avgCommission: '6.8%',
