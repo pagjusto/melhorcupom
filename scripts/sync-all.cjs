@@ -53,9 +53,17 @@ async function syncAll() {
     console.error('Erro no Mercado Livre:', e.message);
   }
 
-  // 6. Consolidar todos os cupons em liveAffiliateCoupons.json
+  // 6. Amazon Brasil (SiteStripe & Tag de Associado)
+  console.log('\n6️⃣  Executando sincronização Amazon Brasil (SiteStripe & Tag)...');
+  try {
+    execSync(`node "${path.join(scriptsDir, 'sync-amazon.cjs')}"`, { stdio: 'inherit' });
+  } catch (e) {
+    console.error('Erro na Amazon:', e.message);
+  }
+
+  // 7. Consolidar todos os cupons em liveAffiliateCoupons.json
   console.log('\n📦 Consolidando base unificada de cupons...');
-  const files = ['lomadeeCoupons.json', 'shopeeCoupons.json', 'sheinCoupons.json', 'aliexpressCoupons.json', 'meliCoupons.json'];
+  const files = ['lomadeeCoupons.json', 'shopeeCoupons.json', 'sheinCoupons.json', 'aliexpressCoupons.json', 'meliCoupons.json', 'amazonCoupons.json'];
   let allCoupons = [];
 
   files.forEach(file => {

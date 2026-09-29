@@ -12,6 +12,8 @@
     "sync:aliexpress": "node scripts/sync-aliexpress.cjs",
     "sync:meli": "node scripts/sync-mercadolivre.cjs",
     "meli:login": "node scripts/meli-login.cjs",
+    "sync:amazon": "node scripts/sync-amazon.cjs",
+    "amazon:login": "node scripts/amazon-login.cjs",
     "sync:all": "node scripts/sync-all.cjs"
   },
   "dependencies": {
