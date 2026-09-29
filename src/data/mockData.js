@@ -370,7 +370,7 @@ export const INITIAL_STORES = [
     cashbackRate: 'Até 9.0% de Volta',
     cashbackPercent: 9.0,
     couponsCount: 12,
-    affiliateUrl: 'https://www.amazon.com.br/?tag=melhorcupom-20'
+    affiliateUrl: 'https://www.amazon.com.br/?tag=melhorcupo00b-20'
   },
   {
     id: 'store_magalu',
@@ -1058,7 +1058,7 @@ export const INITIAL_COUPONS = [
     apiLastSync: 'Hoje às 14:32',
     cashbackRate: 'Até 9.0% de Volta',
     cashbackPercent: 9.0,
-    affiliateUrl: 'https://www.amazon.com.br/?tag=melhorcupom-20',
+    affiliateUrl: 'https://www.amazon.com.br/?tag=melhorcupo00b-20',
     validityType: 'unlimited',
     expiresAt: 'unlimited',
     usesCount: 840,

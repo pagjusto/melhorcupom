@@ -5,8 +5,8 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-// Tag padrão de associado Amazon Brasil (pode ser personalizada via env AMAZON_TAG)
-const AMAZON_TAG = process.env.AMAZON_TAG || 'melhorcupom-20';
+// Tag oficial de associado Amazon Brasil do usuário (melhorcupo00b-20)
+const AMAZON_TAG = process.env.AMAZON_TAG || 'melhorcupo00b-20';
 
 const AMAZON_COUPONS_DATA = [
   {
