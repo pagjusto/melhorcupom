@@ -39,17 +39,30 @@ export const AppProvider = ({ children }) => {
       const combined = [...parsed, ...missing];
       return combined.map(c => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
-        return {
-          ...c,
-          banner: c.banner || init?.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
-          viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init?.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
-          isApiIntegrated: c.isApiIntegrated ?? init?.isApiIntegrated ?? false,
-          apiSource: c.apiSource || init?.apiSource || null,
-          apiLastSync: c.apiLastSync || init?.apiLastSync || null,
-          cashbackRate: c.cashbackRate || init?.cashbackRate || null,
-          cashbackPercent: c.cashbackPercent || init?.cashbackPercent || 0,
-          affiliateUrl: (c.storeId === 'store_shopee' || c.merchantId === 'merchant_shopee' || c.storeId === 'store_shein' || c.merchantId === 'merchant_shein') ? (init?.affiliateUrl || c.affiliateUrl) : (c.affiliateUrl || init?.affiliateUrl || null)
-        };
+        if (init) {
+          return {
+            ...c,
+            title: init.title,
+            description: init.description,
+            codePrefix: init.codePrefix,
+            rules: init.rules || c.rules,
+            banner: init.banner || c.banner,
+            viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
+            isApiIntegrated: init.isApiIntegrated ?? c.isApiIntegrated ?? false,
+            apiSource: init.apiSource || c.apiSource || null,
+            apiLastSync: init.apiLastSync || c.apiLastSync || null,
+            cashbackRate: init.cashbackRate || c.cashbackRate || null,
+            cashbackPercent: init.cashbackPercent || c.cashbackPercent || 0,
+            affiliateUrl: init.affiliateUrl || c.affiliateUrl || null,
+            discountType: init.discountType || c.discountType,
+            discountValue: init.discountValue || c.discountValue,
+            discountBadge: init.discountBadge || c.discountBadge,
+            estimatedSavings: init.estimatedSavings ?? c.estimatedSavings,
+            originalPrice: init.originalPrice ?? c.originalPrice,
+            promoPrice: init.promoPrice ?? c.promoPrice
+          };
+        }
+        return c;
       });
     } catch {
       return INITIAL_COUPONS;
@@ -70,17 +83,17 @@ export const AppProvider = ({ children }) => {
         const storeRefCode = s.referralCode || init?.referralCode || (s.name ? s.name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         return {
           ...s,
-          logoImage: s.logoImage || init?.logoImage || '',
+          logoImage: init?.logoImage || s.logoImage || '',
           tier: s.tier || init?.tier || 'free',
           phone: s.phone || init?.phone || '(11) 98123-4567',
-          address: s.address || init?.address || '',
-          isApiIntegrated: s.isApiIntegrated ?? init?.isApiIntegrated ?? false,
-          apiSource: s.apiSource || init?.apiSource || null,
-          apiStatus: s.apiStatus || init?.apiStatus || null,
-          cashbackRate: s.cashbackRate || init?.cashbackRate || null,
-          cashbackPercent: s.cashbackPercent || init?.cashbackPercent || 0,
-          couponsCount: s.couponsCount ?? init?.couponsCount ?? 1,
-          affiliateUrl: (s.id === 'store_shopee' || s.id === 'store_shein') ? (init?.affiliateUrl || s.affiliateUrl) : (s.affiliateUrl || init?.affiliateUrl || null),
+          address: init?.address || s.address || '',
+          isApiIntegrated: init?.isApiIntegrated ?? s.isApiIntegrated ?? false,
+          apiSource: init?.apiSource || s.apiSource || null,
+          apiStatus: init?.apiStatus || s.apiStatus || null,
+          cashbackRate: init?.cashbackRate || s.cashbackRate || null,
+          cashbackPercent: init?.cashbackPercent || s.cashbackPercent || 0,
+          couponsCount: init?.couponsCount ?? s.couponsCount ?? 1,
+          affiliateUrl: init?.affiliateUrl || s.affiliateUrl || null,
           referralCode: storeRefCode,
           referralBalance: typeof s.referralBalance === 'number' ? s.referralBalance : 25.00,
           referrals: s.referrals || [
