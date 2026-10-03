@@ -62,7 +62,9 @@ export const AppProvider = ({ children }) => {
             discountBadge: init.discountBadge || c.discountBadge,
             estimatedSavings: init.estimatedSavings ?? c.estimatedSavings,
             originalPrice: init.originalPrice ?? c.originalPrice,
-            promoPrice: init.promoPrice ?? c.promoPrice
+            promoPrice: init.promoPrice ?? c.promoPrice,
+            city: init.city || c.city,
+            cities: init.cities || c.cities || (init.city ? [init.city] : [])
           };
         }
         return c;
@@ -74,9 +76,9 @@ export const AppProvider = ({ children }) => {
 
   // Estado de Lojas / Comerciantes (com auto-mesclagem de todas as marcas reais da rede)
   const [stores, setStores] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_stores_v6');
+    const saved = localStorage.getItem('melhor_cupom_stores_v7');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_stores_v6', JSON.stringify(INITIAL_STORES));
+      localStorage.setItem('melhor_cupom_stores_v7', JSON.stringify(INITIAL_STORES));
       return INITIAL_STORES;
     }
     try {
@@ -96,6 +98,7 @@ export const AppProvider = ({ children }) => {
           tier: init?.tier || s.tier || 'free',
           category: init?.category || s.category || 'gastronomia',
           city: init?.city || s.city || 'Todo o Brasil (Online)',
+          cities: init?.cities || s.cities || (init?.city ? [init.city] : []),
           phone: init?.phone || s.phone || '(11) 98123-4567',
           address: init?.address || s.address || '',
           badge: init?.badge || s.badge || '',
@@ -236,7 +239,7 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_stores_v6', JSON.stringify(stores));
+    localStorage.setItem('melhor_cupom_stores_v7', JSON.stringify(stores));
   }, [stores]);
 
   useEffect(() => {
@@ -1061,7 +1064,7 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('melhor_cupom_coupons');
     localStorage.removeItem('melhor_cupom_stores');
     localStorage.removeItem('melhor_cupom_stores_v5');
-    localStorage.removeItem('melhor_cupom_stores_v6');
+    localStorage.removeItem('melhor_cupom_stores_v7');
     localStorage.removeItem('melhor_cupom_redemptions');
     localStorage.removeItem('melhor_cupom_redemptions_v3');
     localStorage.removeItem('melhor_cupom_user');

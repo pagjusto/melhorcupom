@@ -70,30 +70,29 @@ const MainLayout = () => {
       return false;
     }
 
-    // 1. Filtro pela Cidade Selecionada
-    if (selectedCity && selectedCity !== 'Todas as Cidades') {
-      const cityTarget = selectedCity.toLowerCase();
-      const matchesCity = couponCity.includes(cityTarget) || 
-                          (store && store.city && store.city.toLowerCase().includes(cityTarget)) ||
-                          (store && Array.isArray(store.cities) && store.cities.some(c => c.toLowerCase().includes(cityTarget))) ||
-                          (Array.isArray(coupon.cities) && coupon.cities.some(c => c.toLowerCase().includes(cityTarget)));
-      
-      // Cupons online são válidos em todo o Brasil
-      if (!matchesCity && !isOnline) {
-        return false;
-      }
-    }
+    // 1. Filtro estrito pela Cidade Selecionada ou Digitada
+    const activeCityFilter = (selectedCity && selectedCity !== 'Todas as Cidades')
+      ? selectedCity
+      : citySearchQuery.trim();
 
-    // 2. Busca por texto da Cidade
-    if (citySearchQuery.trim()) {
-      const q = citySearchQuery.toLowerCase();
-      const matchesSearch = couponCity.includes(q) || 
-                            (store && store.city && store.city.toLowerCase().includes(q)) ||
-                            (store && Array.isArray(store.cities) && store.cities.some(c => c.toLowerCase().includes(q))) ||
-                            (Array.isArray(coupon.cities) && coupon.cities.some(c => c.toLowerCase().includes(q))) ||
-                            (store && store.address && store.address.toLowerCase().includes(q));
-      
-      if (!matchesSearch && !isOnline) {
+    if (activeCityFilter) {
+      const q = activeCityFilter.toLowerCase().trim();
+      const baseCity = q.split('-')[0].trim(); // ex: 'Campinas - SP' -> 'campinas'
+
+      const matchCity = (field) => {
+        if (!field) return false;
+        const lower = String(field).toLowerCase();
+        return lower.includes(q) || (baseCity.length >= 3 && lower.includes(baseCity));
+      };
+
+      const matchesCity = matchCity(coupon.city) ||
+                          matchCity(store?.city) ||
+                          matchCity(store?.address) ||
+                          (Array.isArray(store?.cities) && store.cities.some(matchCity)) ||
+                          (Array.isArray(coupon.cities) && coupon.cities.some(matchCity));
+
+      // Se filtrou por cidade, NÃO exibe cupons que não pertençam à cidade!
+      if (!matchesCity) {
         return false;
       }
     }
@@ -256,6 +255,11 @@ const MainLayout = () => {
                               <MapPin size={12} />
                               <span>{selectedCity}</span>
                             </span>
+                          ) : citySearchQuery.trim() ? (
+                            <span className="text-xs bg-[#FF5F00] text-white font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+                              <MapPin size={12} />
+                              <span>Buscando: {citySearchQuery.trim()}</span>
+                            </span>
                           ) : (
                             <span className="text-xs bg-white/10 text-gray-300 font-bold px-3 py-1 rounded-full border border-white/10">
                               Todas as Cidades
@@ -268,18 +272,20 @@ const MainLayout = () => {
                         <p className="text-xs text-gray-400 mt-1">
                           {selectedCity !== 'Todas as Cidades'
                             ? `Exibindo ofertas de estabelecimentos credenciados em ${selectedCity}.`
+                            : citySearchQuery.trim()
+                            ? `Exibindo ofertas de estabelecimentos credenciados em "${citySearchQuery.trim()}".`
                             : 'Exibindo ofertas exclusivas de comércios locais parceiros em todo o Brasil.'}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {selectedCity !== 'Todas as Cidades' && (
+                        {(selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()) && (
                           <button
                             onClick={() => {
                               setSelectedCity('Todas as Cidades');
                               setCitySearchQuery('');
                             }}
-                            className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
+                            className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors cursor-pointer"
                           >
                             Ver Todas as Cidades
                           </button>
@@ -328,24 +334,41 @@ const MainLayout = () => {
 
                     {/* Grid de Cupons no formato de Ticket */}
                     {filteredCoupons.length === 0 ? (
-                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-16 text-center max-w-lg mx-auto">
-                        <div className="text-4xl mb-3">🔍</div>
-                        <h3 className="text-lg font-bold text-white mb-2">Nenhum cupom encontrado</h3>
-                        <p className="text-xs text-gray-400 mb-6">
-                          Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.
+                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-10 sm:p-14 text-center max-w-lg mx-auto shadow-2xl">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 text-3xl">
+                          📍
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-2">
+                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
+                            ? `Nenhum estabelecimento encontrado em "${selectedCity !== 'Todas as Cidades' ? selectedCity : citySearchQuery.trim()}"`
+                            : 'Nenhum cupom encontrado'}
+                        </h3>
+                        <p className="text-xs text-gray-400 mb-6 leading-relaxed">
+                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
+                            ? 'Ainda não temos estabelecimentos parceiros credenciados cadastrados nesta cidade. Você pode indicar seu comércio favorito e ganhar R$ 5,00 no Pix, ou explorar todas as ofertas do Brasil!'
+                            : 'Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.'}
                         </p>
-                        <button
-                          onClick={() => {
-                            setSelectedCategory('all');
-                            setTypeFilter('all');
-                            setHighDiscountOnly(false);
-                            setSelectedCity('Todas as Cidades');
-                            setCitySearchQuery('');
-                          }}
-                          className="bg-[#FF5F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs"
-                        >
-                          Limpar Todos os Filtros
-                        </button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                          <button
+                            onClick={() => {
+                              setSelectedCategory('all');
+                              setTypeFilter('all');
+                              setHighDiscountOnly(false);
+                              setSelectedCity('Todas as Cidades');
+                              setCitySearchQuery('');
+                            }}
+                            className="w-full sm:w-auto bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer"
+                          >
+                            Ver Todas as Cidades
+                          </button>
+                          <button
+                            onClick={() => setIsReferralModalOpen(true)}
+                            className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-amber-300 border border-amber-500/30 font-bold px-5 py-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <span>Indicar Comércio da Minha Cidade</span>
+                            <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-400 font-bold">R$ 5</span>
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
@@ -377,6 +400,11 @@ const MainLayout = () => {
                               <MapPin size={12} />
                               <span>{selectedCity}</span>
                             </span>
+                          ) : citySearchQuery.trim() ? (
+                            <span className="text-xs bg-[#FF5F00] text-white font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+                              <MapPin size={12} />
+                              <span>Buscando: {citySearchQuery.trim()}</span>
+                            </span>
                           ) : (
                             <span className="text-xs bg-white/10 text-gray-300 font-bold px-3 py-1 rounded-full border border-white/10">
                               Todas as Cidades
@@ -389,18 +417,20 @@ const MainLayout = () => {
                         <p className="text-xs text-gray-400 mt-1">
                           {selectedCity !== 'Todas as Cidades'
                             ? `Exibindo ofertas de estabelecimentos credenciados em ${selectedCity}.`
+                            : citySearchQuery.trim()
+                            ? `Exibindo ofertas de estabelecimentos credenciados em "${citySearchQuery.trim()}".`
                             : 'Exibindo ofertas exclusivas de comércios locais parceiros em todo o Brasil.'}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {selectedCity !== 'Todas as Cidades' && (
+                        {(selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()) && (
                           <button
                             onClick={() => {
                               setSelectedCity('Todas as Cidades');
                               setCitySearchQuery('');
                             }}
-                            className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
+                            className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors cursor-pointer"
                           >
                             Ver Todas as Cidades
                           </button>
@@ -449,24 +479,41 @@ const MainLayout = () => {
 
                     {/* Grid de Cupons no formato de Ticket */}
                     {filteredCoupons.length === 0 ? (
-                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-16 text-center max-w-lg mx-auto">
-                        <div className="text-4xl mb-3">🔍</div>
-                        <h3 className="text-lg font-bold text-white mb-2">Nenhum cupom encontrado</h3>
-                        <p className="text-xs text-gray-400 mb-6">
-                          Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.
+                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-10 sm:p-14 text-center max-w-lg mx-auto shadow-2xl">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 text-3xl">
+                          📍
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-2">
+                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
+                            ? `Nenhum estabelecimento encontrado em "${selectedCity !== 'Todas as Cidades' ? selectedCity : citySearchQuery.trim()}"`
+                            : 'Nenhum cupom encontrado'}
+                        </h3>
+                        <p className="text-xs text-gray-400 mb-6 leading-relaxed">
+                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
+                            ? 'Ainda não temos estabelecimentos parceiros credenciados cadastrados nesta cidade. Você pode indicar seu comércio favorito e ganhar R$ 5,00 no Pix, ou explorar todas as ofertas do Brasil!'
+                            : 'Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.'}
                         </p>
-                        <button
-                          onClick={() => {
-                            setSelectedCategory('all');
-                            setTypeFilter('all');
-                            setHighDiscountOnly(false);
-                            setSelectedCity('Todas as Cidades');
-                            setCitySearchQuery('');
-                          }}
-                          className="bg-[#FF5F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs"
-                        >
-                          Limpar Todos os Filtros
-                        </button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                          <button
+                            onClick={() => {
+                              setSelectedCategory('all');
+                              setTypeFilter('all');
+                              setHighDiscountOnly(false);
+                              setSelectedCity('Todas as Cidades');
+                              setCitySearchQuery('');
+                            }}
+                            className="w-full sm:w-auto bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer"
+                          >
+                            Ver Todas as Cidades
+                          </button>
+                          <button
+                            onClick={() => setIsReferralModalOpen(true)}
+                            className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-amber-300 border border-amber-500/30 font-bold px-5 py-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <span>Indicar Comércio da Minha Cidade</span>
+                            <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-400 font-bold">R$ 5</span>
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">

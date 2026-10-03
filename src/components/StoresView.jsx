@@ -60,6 +60,8 @@ export const StoresView = ({ onSelectStore }) => {
         store.name.toLowerCase().includes(q) ||
         (store.category && store.category.toLowerCase().includes(q)) ||
         (store.city && store.city.toLowerCase().includes(q)) ||
+        (Array.isArray(store.cities) && store.cities.some(c => c.toLowerCase().includes(q))) ||
+        (store.address && store.address.toLowerCase().includes(q)) ||
         (store.apiSource && store.apiSource.toLowerCase().includes(q));
 
       if (!matchesSearch) return false;

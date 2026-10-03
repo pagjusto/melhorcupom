@@ -61,6 +61,26 @@ export const HeroBanner = ({
     setShowDropdown(false);
   };
 
+  const handleApplyCitySearch = () => {
+    const query = citySearchQuery.trim();
+    if (!query) {
+      setSelectedCity('Todas as Cidades');
+      setShowDropdown(false);
+      return;
+    }
+    const matched = POPULAR_CITIES.find(c => 
+      c.toLowerCase().includes(query.toLowerCase()) && c !== 'Todas as Cidades'
+    );
+    if (matched) {
+      setSelectedCity(matched);
+      setCitySearchQuery('');
+    } else {
+      setSelectedCity(query);
+      setCitySearchQuery('');
+    }
+    setShowDropdown(false);
+  };
+
   return (
     <div 
       style={{
@@ -167,6 +187,12 @@ export const HeroBanner = ({
                 setShowDropdown(true);
               }}
               onFocus={() => setShowDropdown(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleApplyCitySearch();
+                }
+              }}
               placeholder="Digite sua cidade (ex: São Paulo, Rio de Janeiro, Curitiba...)"
               className="w-full bg-transparent px-3 py-2 text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none font-semibold"
             />
@@ -185,12 +211,8 @@ export const HeroBanner = ({
             ) : null}
 
             <button
-              onClick={() => {
-                if (filteredCities.length > 0) {
-                  handleSelectCity(filteredCities[0]);
-                }
-              }}
-              className="bg-[#FF5F00] hover:bg-[#E04F00] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition-all flex-shrink-0"
+              onClick={handleApplyCitySearch}
+              className="bg-[#FF5F00] hover:bg-[#E04F00] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition-all flex-shrink-0 cursor-pointer"
             >
               <Navigation size={14} />
               <span className="hidden sm:inline">Filtrar Cidade</span>
