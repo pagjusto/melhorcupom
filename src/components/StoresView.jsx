@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import { CityEmptyState } from './CityEmptyState';
 import { 
   Search, 
   Store, 
@@ -34,7 +35,7 @@ const CATEGORY_CHIPS = [
 ];
 
 export const StoresView = ({ onSelectStore }) => {
-  const { stores, openAuthModal } = useApp();
+  const { stores, openAuthModal, userProfile, setIsReferralModalOpen } = useApp();
   const [search, setSearch] = useState('');
   const [storeTypeFilter, setStoreTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -282,23 +283,18 @@ export const StoresView = ({ onSelectStore }) => {
 
       {/* 3. LISTA / GRID DE LOJAS PARCEIRAS */}
       {filteredStores.length === 0 ? (
-        <div className="bg-[#171722] border border-white/10 rounded-3xl p-12 text-center max-w-md mx-auto">
-          <div className="text-4xl mb-3">🔍</div>
-          <h3 className="text-lg font-bold text-white mb-1">Nenhuma loja encontrada</h3>
-          <p className="text-xs text-gray-400 mb-6">
-            Não encontramos nenhum estabelecimento com os filtros selecionados.
-          </p>
-          <button
-            onClick={() => {
-              setSearch('');
-              setStoreTypeFilter('all');
-              setSelectedCategory('all');
-            }}
-            className="px-4 py-2 bg-[#FF5F00] hover:bg-[#E04F00] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
-          >
-            Ver todas as {stores.length} marcas
-          </button>
-        </div>
+        <CityEmptyState
+          cityName={search.trim()}
+          onResetCity={() => {
+            setSearch('');
+            setStoreTypeFilter('all');
+            setSelectedCategory('all');
+          }}
+          referralCode={userProfile?.referralCode || 'CUPOM5'}
+          onOpenReferralModal={() => setIsReferralModalOpen(true)}
+          onOpenMerchantRegister={() => openAuthModal('merchant_register')}
+          totalOffersCount={stores.length}
+        />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-5">
           

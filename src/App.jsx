@@ -18,6 +18,7 @@ import { SavingsModal } from './components/SavingsModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { BigStoresShowcase } from './components/BigStoresShowcase';
 import { BigStoreFreeRegisterModal } from './components/BigStoreFreeRegisterModal';
+import { CityEmptyState } from './components/CityEmptyState';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin } from 'lucide-react';
 
@@ -32,6 +33,8 @@ const MainLayout = () => {
     isSimulatingRole,
     exitSimulation,
     setIsSubscriptionModalOpen,
+    setIsReferralModalOpen,
+    openAuthModal,
     recordCouponView,
     activeTab,
     setActiveTab,
@@ -334,42 +337,21 @@ const MainLayout = () => {
 
                     {/* Grid de Cupons no formato de Ticket */}
                     {filteredCoupons.length === 0 ? (
-                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-10 sm:p-14 text-center max-w-lg mx-auto shadow-2xl">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 text-3xl">
-                          📍
-                        </div>
-                        <h3 className="text-lg font-bold text-white mb-2">
-                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
-                            ? `Nenhum estabelecimento encontrado em "${selectedCity !== 'Todas as Cidades' ? selectedCity : citySearchQuery.trim()}"`
-                            : 'Nenhum cupom encontrado'}
-                        </h3>
-                        <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
-                            ? 'Ainda não temos estabelecimentos parceiros credenciados cadastrados nesta cidade. Você pode indicar seu comércio favorito e ganhar R$ 5,00 no Pix, ou explorar todas as ofertas do Brasil!'
-                            : 'Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.'}
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                          <button
-                            onClick={() => {
-                              setSelectedCategory('all');
-                              setTypeFilter('all');
-                              setHighDiscountOnly(false);
-                              setSelectedCity('Todas as Cidades');
-                              setCitySearchQuery('');
-                            }}
-                            className="w-full sm:w-auto bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer"
-                          >
-                            Ver Todas as Cidades
-                          </button>
-                          <button
-                            onClick={() => setIsReferralModalOpen(true)}
-                            className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-amber-300 border border-amber-500/30 font-bold px-5 py-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                          >
-                            <span>Indicar Comércio da Minha Cidade</span>
-                            <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-400 font-bold">R$ 5</span>
-                          </button>
-                        </div>
-                      </div>
+                      <CityEmptyState
+                        cityName={selectedCity !== 'Todas as Cidades' ? selectedCity : citySearchQuery.trim()}
+                        onResetCity={() => {
+                          setSelectedCategory('all');
+                          setTypeFilter('all');
+                          setHighDiscountOnly(false);
+                          setSelectedCity('Todas as Cidades');
+                          setCitySearchQuery('');
+                          setSelectedStoreFilter(null);
+                        }}
+                        referralCode={userProfile?.referralCode || 'CUPOM5'}
+                        onOpenReferralModal={() => setIsReferralModalOpen(true)}
+                        onOpenMerchantRegister={() => openAuthModal('merchant_register')}
+                        totalOffersCount={coupons.length}
+                      />
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                         {filteredCoupons.map((coupon) => {
@@ -479,42 +461,21 @@ const MainLayout = () => {
 
                     {/* Grid de Cupons no formato de Ticket */}
                     {filteredCoupons.length === 0 ? (
-                      <div className="bg-[#171722] border border-white/10 rounded-3xl p-10 sm:p-14 text-center max-w-lg mx-auto shadow-2xl">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 text-3xl">
-                          📍
-                        </div>
-                        <h3 className="text-lg font-bold text-white mb-2">
-                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
-                            ? `Nenhum estabelecimento encontrado em "${selectedCity !== 'Todas as Cidades' ? selectedCity : citySearchQuery.trim()}"`
-                            : 'Nenhum cupom encontrado'}
-                        </h3>
-                        <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-                          {selectedCity !== 'Todas as Cidades' || citySearchQuery.trim()
-                            ? 'Ainda não temos estabelecimentos parceiros credenciados cadastrados nesta cidade. Você pode indicar seu comércio favorito e ganhar R$ 5,00 no Pix, ou explorar todas as ofertas do Brasil!'
-                            : 'Tente buscar por outro termo ou remova os filtros ativos para ver mais opções.'}
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                          <button
-                            onClick={() => {
-                              setSelectedCategory('all');
-                              setTypeFilter('all');
-                              setHighDiscountOnly(false);
-                              setSelectedCity('Todas as Cidades');
-                              setCitySearchQuery('');
-                            }}
-                            className="w-full sm:w-auto bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer"
-                          >
-                            Ver Todas as Cidades
-                          </button>
-                          <button
-                            onClick={() => setIsReferralModalOpen(true)}
-                            className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-amber-300 border border-amber-500/30 font-bold px-5 py-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                          >
-                            <span>Indicar Comércio da Minha Cidade</span>
-                            <span className="text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-400 font-bold">R$ 5</span>
-                          </button>
-                        </div>
-                      </div>
+                      <CityEmptyState
+                        cityName={selectedCity !== 'Todas as Cidades' ? selectedCity : citySearchQuery.trim()}
+                        onResetCity={() => {
+                          setSelectedCategory('all');
+                          setTypeFilter('all');
+                          setHighDiscountOnly(false);
+                          setSelectedCity('Todas as Cidades');
+                          setCitySearchQuery('');
+                          setSelectedStoreFilter(null);
+                        }}
+                        referralCode={userProfile?.referralCode || 'CUPOM5'}
+                        onOpenReferralModal={() => setIsReferralModalOpen(true)}
+                        onOpenMerchantRegister={() => openAuthModal('merchant_register')}
+                        totalOffersCount={coupons.length}
+                      />
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                         {filteredCoupons.map((coupon) => {
