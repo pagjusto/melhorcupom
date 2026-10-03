@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="100%" height="100%">
+  <rect width="320" height="100" rx="16" fill="#FFE600"/>
+  <g transform="translate(18, 16) scale(0.68)">
+    <path fill="#2D3277" d="M38.5 45c-2.3-3.6-7-4.6-10.6-2.3l-10.2 6.5c-3.6 2.3-4.6 7-2.3 10.6 2.3 3.6 7 4.6 10.6 2.3l10.2-6.5c3.6-2.3 4.6-7 2.3-10.6z"/>
+    <path fill="#2D3277" d="M62 45c2.3-3.6 7-4.6 10.6-2.3l10.2 6.5c3.6 2.3 4.6 7 2.3 10.6-2.3 3.6-7 4.6-10.6 2.3L64.3 55.6C60.7 53.3 59.7 48.6 62 45z"/>
+    <path fill="#2D3277" d="M50 32c-7.7 0-14 6.3-14 14s6.3 14 14 14 14-6.3 14-14-6.3-14-14-14zm0 22c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+  </g>
+  <text x="85" y="48" font-family="'Proxima Nova', Arial, sans-serif" font-weight="900" font-size="24" fill="#2D3277">mercado</text>
+  <text x="85" y="74" font-family="'Proxima Nova', Arial, sans-serif" font-weight="900" font-size="24" fill="#2D3277">livre</text>
+  <circle cx="275" cy="50" r="14" fill="#2D3277"/>
+  <path fill="#FFE600" d="M270 45l4 4 7-7" stroke="#FFE600" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

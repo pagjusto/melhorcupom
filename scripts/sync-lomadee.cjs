@@ -1,5 +1,5 @@
-// scripts/sync-lomadee.js
-// Sincronizador automático de cupons oficiais da Lomadee v2
+// scripts/sync-lomadee.cjs
+// Sincronizador automático de cupons oficiais da Lomadee v2 com Logotipos e Imagens Originais
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -35,20 +35,61 @@ function extractDiscount(name) {
   return 'SUPER DESCONTO';
 }
 
-function extractCategory(name) {
-  const n = name.toLowerCase();
-  if (n.includes('placa') || n.includes('fonte') || n.includes('monitor') || n.includes('asus') || n.includes('gamer') || n.includes('notebook')) return 'servicos';
-  if (n.includes('vestido') || n.includes('roupa') || n.includes('moda') || n.includes('calçado') || n.includes('tênis') || n.includes('sapato')) return 'moda';
-  if (n.includes('móveis') || n.includes('cozinha') || n.includes('casa') || n.includes('cama') || n.includes('mesa') || n.includes('banho')) return 'outros';
+function extractCategory(name, segment) {
+  const n = (name + ' ' + (segment || '')).toLowerCase();
+  if (n.includes('placa') || n.includes('fonte') || n.includes('monitor') || n.includes('asus') || n.includes('gamer') || n.includes('notebook') || n.includes('eletr')) return 'servicos';
+  if (n.includes('vestido') || n.includes('roupa') || n.includes('moda') || n.includes('calçado') || n.includes('tênis') || n.includes('sapato') || n.includes('jeans')) return 'moda';
+  if (n.includes('móveis') || n.includes('cozinha') || n.includes('casa') || n.includes('cama') || n.includes('mesa') || n.includes('banho') || n.includes('colchão') || n.includes('panela')) return 'outros';
+  if (n.includes('perfum') || n.includes('beleza') || n.includes('cabelo') || n.includes('cosmético') || n.includes('batom') || n.includes('farmácia')) return 'beleza';
   if (n.includes('pneu') || n.includes('auto') || n.includes('carro')) return 'servicos';
-  if (n.includes('viagem') || n.includes('passagem') || n.includes('ida e volta')) return 'lazer';
+  if (n.includes('viagem') || n.includes('passagem') || n.includes('hotel') || n.includes('ida e volta')) return 'lazer';
+  if (n.includes('livro') || n.includes('educa')) return 'outros';
+  if (n.includes('comida') || n.includes('restaurante') || n.includes('pizza') || n.includes('hambúrguer') || n.includes('vinho') || n.includes('box')) return 'gastronomia';
   return 'outros';
+}
+
+function extractBrandFromUrl(url) {
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '').split('.')[0];
+    if (host.length <= 2) return null;
+    return host.charAt(0).toUpperCase() + host.slice(1);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchBrandsMap() {
+  console.log('🖼️  Carregando catálogo de logotipos oficiais e marcas da Lomadee...');
+  const brandsMap = {};
+  for (let p = 1; p <= 12; p++) {
+    try {
+      await new Promise(r => setTimeout(r, 60));
+      const res = await fetchUrl(`https://api.lomadee.com.br/affiliate/brands?page=${p}`);
+      if (!res.data || !Array.isArray(res.data) || res.data.length === 0) break;
+      res.data.forEach(b => {
+        brandsMap[b.id] = {
+          id: b.id,
+          name: b.name,
+          logo: b.logo || `https://cdn.lomadee.com.br/logos/${b.id}/logo`,
+          site: b.site,
+          segment: b.segment
+        };
+      });
+    } catch (e) {
+      break;
+    }
+  }
+  console.log(`   ✓ ${Object.keys(brandsMap).length} marcas e logotipos oficiais catalogados da CDN Lomadee!`);
+  return brandsMap;
 }
 
 async function syncLomadeeCoupons() {
   console.log('🚀 Iniciando sincronização em lote de cupons oficiais da Lomadee...');
   
   try {
+    const brandsMap = await fetchBrandsMap();
+
     // 1. Pega a primeira página para saber total de páginas e cupons disponíveis
     const firstPage = await fetchUrl('https://api.lomadee.com.br/affiliate/campaigns?types=GenericCoupon&limit=20&page=1');
     if (!firstPage.data || !Array.isArray(firstPage.data)) {
@@ -62,7 +103,7 @@ async function syncLomadeeCoupons() {
 
     let allItems = [...firstPage.data];
 
-    // Busca até 16 páginas (cerca de 300+ cupons oficiais)
+    // Busca até 16 páginas (para cobrir 300+ cupons oficiais)
     const maxPagesToFetch = Math.min(totalPages, 16);
     console.log(`🔄 Baixando em lote páginas 2 a ${maxPagesToFetch} (para sincronizar mais de 300 ofertas)...`);
 
@@ -86,14 +127,23 @@ async function syncLomadeeCoupons() {
     const formattedCoupons = allItems.map(item => {
       const shortUrl = item.channels?.[0]?.shortUrls?.[0] || item.url;
       const discountBadge = extractDiscount(item.name);
-      const category = extractCategory(item.name);
+      
+      const brand = brandsMap[item.organizationId];
+      const storeName = brand?.name || extractBrandFromUrl(item.url) || 'Loja Parceira';
+      const storeLogo = brand?.logo || `https://cdn.lomadee.com.br/logos/${item.organizationId}/logo`;
+      const banner = item.mediaKit?.banners?.[0] || storeLogo;
+      const category = extractCategory(item.name, brand?.segment);
+      const storeKey = (brand?.slug || storeName).toLowerCase().replace(/[^a-z0-9]/g, '_');
 
       return {
         id: `lmd_${item.id}`,
-        storeId: 'store_lomadee',
-        merchantId: 'merchant_lomadee',
+        storeId: `store_lmd_${storeKey}`,
+        merchantId: `merchant_lmd_${storeKey}`,
+        storeName: storeName,
+        storeLogo: storeLogo,
+        logoImage: storeLogo,
         title: item.name,
-        description: `Cupom verificado via Lomadee Open Platform. Sincronizado automaticamente com link de comissão e cashback ativo.`,
+        description: `Cupom oficial ${storeName} verificado via Lomadee Open Platform. Ative no checkout da loja oficial com comissão e cashback.`,
         originalPrice: 150.00,
         promoPrice: 120.00,
         discountType: discountBadge.includes('%') ? 'percentage' : 'fixed',
@@ -102,7 +152,7 @@ async function syncLomadeeCoupons() {
         estimatedSavings: 30.00,
         category: category,
         city: 'Todo o Brasil (Online)',
-        banner: item.mediaKit?.banners?.[0] || 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=700&auto=format&fit=crop&q=80',
+        banner: banner,
         type: 'online',
         codePrefix: item.code || 'CUPOM',
         isApiIntegrated: true,
@@ -116,7 +166,7 @@ async function syncLomadeeCoupons() {
         usesCount: Math.floor(Math.random() * 500) + 120,
         rules: [
           `Código promocional: ${item.code}`,
-          'Válido no checkout do site parceiro',
+          `Válido no checkout do site oficial ${storeName}`,
           'Link encurtado oficial com comissão e cashback garantidos'
         ],
         highlight: item.isHighlight || false,
@@ -128,7 +178,7 @@ async function syncLomadeeCoupons() {
     const outputPath = path.join(targetDir, 'lomadeeCoupons.json');
     fs.writeFileSync(outputPath, JSON.stringify(formattedCoupons, null, 2), 'utf8');
 
-    console.log(`💾 ${formattedCoupons.length} cupons salvos com sucesso em src/data/lomadeeCoupons.json!`);
+    console.log(`💾 ${formattedCoupons.length} cupons com marcas e logotipos oficiais salvos em src/data/lomadeeCoupons.json!`);
     console.log(`🎉 Sincronização concluída com sucesso!`);
   } catch (err) {
     console.error('❌ Erro durante a sincronização:', err);

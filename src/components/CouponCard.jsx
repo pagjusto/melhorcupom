@@ -18,6 +18,7 @@ import {
   Zap,
   ExternalLink
 } from 'lucide-react';
+import { getBrandLogo } from '../assets/brands';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen, recordCouponView } = useApp();
@@ -46,8 +47,10 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
     }
   };
 
-  const bannerImage = coupon.banner || store?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
-  const storeLogo = store?.logoImage;
+  const storeName = coupon.storeName || store?.name || 'Loja Parceira';
+  const storeLogo = coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
+  const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
+  const isLogoBanner = bannerImage && (bannerImage.includes('/logos/') || bannerImage.includes('/logo') || bannerImage.endsWith('.svg'));
 
   // Configuração visual de acordo com o plano de assinatura do lojista:
   // - Borda da logo do lojista na cor da assinatura (branca para Free)
@@ -89,14 +92,14 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       )}
       
       {/* 1. BANNER DA OFERTA (definido no card / upload do lojista) */}
-      <div className="relative h-24 sm:h-28 w-full overflow-hidden bg-black/60">
+      <div className={`relative h-24 sm:h-28 w-full overflow-hidden ${isLogoBanner ? 'bg-gradient-to-br from-[#1E1E2E] via-[#161624] to-[#101018] flex items-center justify-center p-3' : 'bg-black/60'}`}>
         <img
           src={bannerImage}
           alt={coupon.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className={isLogoBanner ? "h-12 sm:h-14 max-w-[70%] object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300" : "w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"}
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#17171E] via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#17171E] via-transparent to-black/40 pointer-events-none" />
 
         {/* Tag de Desconto no Topo do Banner */}
         <div className="absolute top-1.5 left-1.5 z-10">
@@ -159,8 +162,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             <>
               <img 
                 src={storeLogo} 
-                alt={store?.name} 
-                className="w-full h-full object-cover" 
+                alt={storeName} 
+                className="w-full h-full object-contain p-0.5 rounded-md" 
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const fallback = e.currentTarget.parentElement?.querySelector('.card-logo-fallback');
@@ -213,7 +216,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               <div className="flex items-center gap-1 line-clamp-1">
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                   <Crown size={10} fill="currentColor" className="text-amber-400 flex-shrink-0" />
-                  <span className="truncate">{store?.name || 'Loja Parceira'}</span>
+                  <span className="truncate">{storeName}</span>
                 </span>
                 <span className="text-[7px] bg-amber-400/20 text-amber-300 font-extrabold px-1 py-0.2 rounded border border-amber-400/40">
                   OURO
@@ -223,7 +226,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               <div className="flex items-center gap-1 line-clamp-1">
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                   <Award size={10} className="text-slate-300 flex-shrink-0" />
-                  <span className="truncate">{store?.name || 'Loja Parceira'}</span>
+                  <span className="truncate">{storeName}</span>
                 </span>
                 <span className="text-[7px] bg-slate-400/20 text-slate-200 font-extrabold px-1 py-0.2 rounded border border-slate-400/40">
                   PRATA
@@ -233,7 +236,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               <div className="flex items-center gap-1 line-clamp-1">
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                   <Medal size={10} className="text-[#CD7F32] flex-shrink-0" />
-                  <span className="truncate">{store?.name || 'Loja Parceira'}</span>
+                  <span className="truncate">{storeName}</span>
                 </span>
                 <span className="text-[7px] bg-[#CD7F32]/20 text-[#E09858] font-extrabold px-1 py-0.2 rounded border border-[#CD7F32]/50">
                   BRONZE
@@ -241,7 +244,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               </div>
             ) : (
               <span className="text-[11px] font-bold text-white uppercase tracking-wider line-clamp-1 truncate">
-                {store?.name || 'Loja Parceira'}
+                {storeName}
               </span>
             )}
             {store?.rating && (

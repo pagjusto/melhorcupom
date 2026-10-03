@@ -11,6 +11,7 @@ import {
   Store,
   ShoppingBag
 } from 'lucide-react';
+import { getBrandLogo } from '../assets/brands';
 
 const QUICK_SEARCH_CHIPS = [
   { label: 'Amazon', query: 'Amazon', icon: '📦' },
@@ -45,8 +46,8 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
 
     return bigStoreCoupons.filter(coupon => {
       const store = stores.find(s => s.id === coupon.storeId);
-      const storeName = (store?.name || '').toLowerCase();
-      const storeCategory = (store?.category || '').toLowerCase();
+      const storeName = (coupon.storeName || store?.name || '').toLowerCase();
+      const storeCategory = (store?.category || coupon.category || '').toLowerCase();
       const apiSource = (coupon.apiSource || store?.apiSource || '').toLowerCase();
       const title = (coupon.title || '').toLowerCase();
       const desc = (coupon.description || '').toLowerCase();
@@ -102,6 +103,10 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     const apiSource = coupon.apiSource || store?.apiSource || 'API Oficial';
     const cashbackRate = coupon.cashbackRate || store?.cashbackRate || 'Até 8.0% de Volta';
     const couponCode = coupon.codePrefix || 'MELHORVIP';
+    
+    // Suporte a nomes e logotipos originais das marcas e grandes lojas
+    const storeName = coupon.storeName || store?.name || 'Loja Parceira';
+    const storeLogo = coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || apiSource) || store?.logoImage;
 
     return (
       <div
@@ -114,12 +119,12 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
 
         {/* 1. Logo / Avatar da Grande Loja */}
         <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-inner relative z-10">
-          {store?.logoImage ? (
+          {storeLogo ? (
             <>
               <img 
-                src={store.logoImage} 
-                alt={store?.name || 'Loja'} 
-                className="w-full h-full object-cover rounded-lg"
+                src={storeLogo} 
+                alt={storeName} 
+                className="w-full h-full object-contain p-0.5 rounded-lg"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
@@ -139,7 +144,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         <div className="min-w-0 flex-1 flex flex-col justify-center relative z-10">
           <div className="flex items-center gap-1.5">
             <h4 className="text-xs font-bold text-white group-hover:text-orange-400 transition-colors truncate max-w-[130px] sm:max-w-[150px]">
-              {store?.name || 'Loja Parceira'}
+              {storeName}
             </h4>
             <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[9px] font-bold tracking-tight flex-shrink-0">
               <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />

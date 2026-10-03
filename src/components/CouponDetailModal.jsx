@@ -22,6 +22,7 @@ import {
   Zap,
   ArrowRight
 } from 'lucide-react';
+import { getBrandLogo } from '../assets/brands';
 
 export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerchant }) => {
   const { 
@@ -278,45 +279,52 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
       >
         
         {/* Header com Imagem e Fechar */}
-        <div className="relative h-40 bg-[#26150D] overflow-hidden">
-          <img 
-            src={coupon.banner || store?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700'} 
-            alt={coupon.title} 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#181822] via-[#181822]/40 to-black/50" />
-          
-          <button 
-            onClick={onClose}
-            className="absolute top-3 right-3 w-9 h-9 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors z-20 backdrop-blur-md"
-          >
-            <X size={18} />
-          </button>
+        {(() => {
+          const storeName = coupon.storeName || store?.name || 'Loja Parceira';
+          const storeLogo = coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
+          const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700';
+          const isLogoBanner = bannerImage && (bannerImage.includes('/logos/') || bannerImage.includes('/logo') || bannerImage.endsWith('.svg'));
 
-          <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
-            <div className="w-14 h-14 rounded-2xl bg-[#181822] flex items-center justify-center overflow-hidden shadow-xl">
-              {store?.logoImage ? (
-                <>
-                  <img 
-                    src={store.logoImage} 
-                    alt={store?.name} 
-                    className="w-full h-full object-cover" 
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.parentElement?.querySelector('.modal-hdr-logo-fallback');
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                  <span className="modal-hdr-logo-fallback hidden w-full h-full items-center justify-center text-2xl">
-                    {store?.logo || '🏪'}
-                  </span>
-                </>
-              ) : (
-                <span className="text-2xl">{store?.logo || '🏪'}</span>
-              )}
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-white leading-tight">{store?.name}</h3>
+          return (
+            <div className={`relative h-40 overflow-hidden ${isLogoBanner ? 'bg-gradient-to-br from-[#1E1E2E] via-[#161624] to-[#101018] flex items-center justify-center p-6' : 'bg-[#26150D]'}`}>
+              <img 
+                src={bannerImage} 
+                alt={coupon.title} 
+                className={isLogoBanner ? "h-20 max-w-[60%] object-contain drop-shadow-2xl" : "w-full h-full object-cover"}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#181822] via-[#181822]/40 to-black/50 pointer-events-none" />
+              
+              <button 
+                onClick={onClose}
+                className="absolute top-3 right-3 w-9 h-9 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors z-20 backdrop-blur-md"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
+                <div className="w-14 h-14 rounded-2xl bg-[#181822] border border-white/10 flex items-center justify-center overflow-hidden shadow-xl p-1">
+                  {storeLogo ? (
+                    <>
+                      <img 
+                        src={storeLogo} 
+                        alt={storeName} 
+                        className="w-full h-full object-contain" 
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.parentElement?.querySelector('.modal-hdr-logo-fallback');
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                      <span className="modal-hdr-logo-fallback hidden w-full h-full items-center justify-center text-2xl">
+                        {store?.logo || '🏪'}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-2xl">{store?.logo || '🏪'}</span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white leading-tight">{storeName}</h3>
               <p className="text-xs text-gray-300 flex items-center gap-1">
                 {coupon.type === 'physical' ? (
                   <>
@@ -333,6 +341,8 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
             </div>
           </div>
         </div>
+      );
+    })()}
 
         {/* Corpo do Ticket de Resgate */}
         <div className="p-6">
