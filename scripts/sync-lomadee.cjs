@@ -49,16 +49,41 @@ async function syncLomadeeCoupons() {
   console.log('🚀 Iniciando sincronização em lote de cupons oficiais da Lomadee...');
   
   try {
-    const res = await fetchUrl('https://api.lomadee.com.br/affiliate/campaigns?types=GenericCoupon&limit=50');
-    
-    if (!res.data || !Array.isArray(res.data)) {
-      console.error('❌ Resposta inesperada da API Lomadee:', res);
+    // 1. Pega a primeira página para saber total de páginas e cupons disponíveis
+    const firstPage = await fetchUrl('https://api.lomadee.com.br/affiliate/campaigns?types=GenericCoupon&limit=20&page=1');
+    if (!firstPage.data || !Array.isArray(firstPage.data)) {
+      console.error('❌ Resposta inesperada da API Lomadee:', firstPage);
       return;
     }
 
-    console.log(`✅ ${res.data.length} cupons recebidos da API (Total disponível na sua conta: ${res.meta?.total || res.data.length})`);
+    const totalInAccount = firstPage.meta?.total || firstPage.data.length;
+    const totalPages = firstPage.meta?.totalPages || 1;
+    console.log(`📡 Total disponível na sua conta Lomadee: ${totalInAccount} cupons em ${totalPages} páginas.`);
 
-    const formattedCoupons = res.data.map(item => {
+    let allItems = [...firstPage.data];
+
+    // Busca até 16 páginas (cerca de 300+ cupons oficiais)
+    const maxPagesToFetch = Math.min(totalPages, 16);
+    console.log(`🔄 Baixando em lote páginas 2 a ${maxPagesToFetch} (para sincronizar mais de 300 ofertas)...`);
+
+    for (let p = 2; p <= maxPagesToFetch; p++) {
+      try {
+        await new Promise(r => setTimeout(r, 60)); // Pausa de 60ms para respeitar a API
+        const pageRes = await fetchUrl(`https://api.lomadee.com.br/affiliate/campaigns?types=GenericCoupon&limit=20&page=${p}`);
+        if (pageRes.data && Array.isArray(pageRes.data) && pageRes.data.length > 0) {
+          allItems.push(...pageRes.data);
+          process.stdout.write(`   ✓ Página ${p}/${maxPagesToFetch} baixada (${allItems.length} cupons acumulados)\r`);
+        } else {
+          break;
+        }
+      } catch (err) {
+        console.warn(`\nAviso na página ${p}:`, err.message);
+      }
+    }
+
+    console.log(`\n✅ Total consolidado da Lomadee: ${allItems.length} cupons reais recebidos!`);
+
+    const formattedCoupons = allItems.map(item => {
       const shortUrl = item.channels?.[0]?.shortUrls?.[0] || item.url;
       const discountBadge = extractDiscount(item.name);
       const category = extractCategory(item.name);

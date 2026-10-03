@@ -80,11 +80,11 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
       else r3.push(coupon);
     });
 
-    // Função auxiliar para duplicar a lista garantindo looping infinito contínuo e suave
+    // Função auxiliar para duplicar a lista garantindo looping infinito contínuo e suave com alto desempenho
     const duplicateForLoop = (list) => {
       if (list.length === 0) return [];
-      // Repete 4 vezes para preencher larguras de tela ultra-wide sem cortes
-      return [...list, ...list, ...list, ...list];
+      const repeatCount = list.length < 10 ? 4 : list.length < 25 ? 3 : 2;
+      return Array(repeatCount).fill(list).flat();
     };
 
     return {
