@@ -18,6 +18,16 @@ import adidasLogo from './adidas.svg';
 import samsungLogo from './samsung.svg';
 import casasbahiaLogo from './casasbahia.svg';
 import subwayLogo from './subway.svg';
+import kabumLogo from './kabum.svg';
+import drogasilLogo from './drogasil.svg';
+import sephoraLogo from './sephora.svg';
+import petzLogo from './petz.svg';
+import spoletoLogo from './spoleto.svg';
+import netshoesLogo from './netshoes.svg';
+import maderoLogo from './madero.png';
+import fogodechaoLogo from './fogodechao.png';
+import appleLogo from './apple.svg';
+import paodeacucarLogo from './paodeacucar.svg';
 
 export const BRAND_LOGOS = {
   amazon: amazonLogo,
@@ -44,7 +54,19 @@ export const BRAND_LOGOS = {
   adidas: adidasLogo,
   samsung: samsungLogo,
   casasbahia: casasbahiaLogo,
-  subway: subwayLogo
+  subway: subwayLogo,
+  kabum: kabumLogo,
+  drogasil: drogasilLogo,
+  sephora: sephoraLogo,
+  petz: petzLogo,
+  spoleto: spoletoLogo,
+  netshoes: netshoesLogo,
+  madero: maderoLogo,
+  fogodechao: fogodechaoLogo,
+  iplace: appleLogo,
+  apple: appleLogo,
+  paodeacucar: paodeacucarLogo,
+  gpa: paodeacucarLogo
 };
 
 export const getBrandLogo = (identifier) => {

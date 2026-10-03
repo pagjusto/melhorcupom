@@ -328,7 +328,7 @@ export const StoresView = ({ onSelectStore }) => {
 
           {/* Cards das Lojas Cadastradas */}
           {filteredStores.map((store) => {
-            const storeLogo = getBrandLogo(store.id || store.name || store.apiSource) || store.logoImage;
+            const storeLogo = getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || store.logoImage;
             const isOnlineStore = store.isApiIntegrated || store.type === 'online';
 
             return (
@@ -381,8 +381,8 @@ export const StoresView = ({ onSelectStore }) => {
                   )}
                 </div>
 
-                {/* Logo da Marca Oficial com tratamento e contenção perfeitos */}
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/5 border border-white/10 group-hover:border-[#FF5F00]/50 p-2 flex items-center justify-center overflow-hidden shadow-inner transition-transform duration-300 group-hover:scale-105 relative z-10">
+                {/* Logo da Marca Oficial com tratamento e fundo nítido em branco */}
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-2 flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:shadow-orange-500/20 relative z-10">
                   {storeLogo ? (
                     <>
                       <img

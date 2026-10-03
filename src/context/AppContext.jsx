@@ -74,9 +74,9 @@ export const AppProvider = ({ children }) => {
 
   // Estado de Lojas / Comerciantes (com auto-mesclagem de todas as marcas reais da rede)
   const [stores, setStores] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_stores_v5');
+    const saved = localStorage.getItem('melhor_cupom_stores_v6');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_stores_v5', JSON.stringify(INITIAL_STORES));
+      localStorage.setItem('melhor_cupom_stores_v6', JSON.stringify(INITIAL_STORES));
       return INITIAL_STORES;
     }
     try {
@@ -532,7 +532,7 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_stores_v5', JSON.stringify(stores));
+    localStorage.setItem('melhor_cupom_stores_v6', JSON.stringify(stores));
   }, [stores]);
 
   useEffect(() => {
@@ -1354,6 +1354,7 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('melhor_cupom_coupons');
     localStorage.removeItem('melhor_cupom_stores');
     localStorage.removeItem('melhor_cupom_stores_v5');
+    localStorage.removeItem('melhor_cupom_stores_v6');
     localStorage.removeItem('melhor_cupom_redemptions');
     localStorage.removeItem('melhor_cupom_user');
     localStorage.removeItem('melhor_cupom_role');
