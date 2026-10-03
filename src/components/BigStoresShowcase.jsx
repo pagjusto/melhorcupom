@@ -68,17 +68,21 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
 
   const isSearching = searchQuery.trim().length > 0;
 
-  // Distribuir os cupons em 3 linhas distintas para o carrossel contínuo
-  const { row1, row2, row3 } = useMemo(() => {
+  // Distribuir os cupons em 5 linhas distintas para o carrossel contínuo
+  const { row1, row2, row3, row4, row5 } = useMemo(() => {
     const r1 = [];
     const r2 = [];
     const r3 = [];
+    const r4 = [];
+    const r5 = [];
 
     bigStoreCoupons.forEach((coupon, index) => {
-      const remainder = index % 3;
+      const remainder = index % 5;
       if (remainder === 0) r1.push(coupon);
       else if (remainder === 1) r2.push(coupon);
-      else r3.push(coupon);
+      else if (remainder === 2) r3.push(coupon);
+      else if (remainder === 3) r4.push(coupon);
+      else r5.push(coupon);
     });
 
     // Função auxiliar para duplicar a lista garantindo looping infinito contínuo e suave com alto desempenho
@@ -91,14 +95,16 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     return {
       row1: duplicateForLoop(r1),
       row2: duplicateForLoop(r2),
-      row3: duplicateForLoop(r3)
+      row3: duplicateForLoop(r3),
+      row4: duplicateForLoop(r4),
+      row5: duplicateForLoop(r5)
     };
   }, [bigStoreCoupons]);
 
   if (bigStoreCoupons.length === 0) return null;
 
-  // Renderizador de Card Compacto de Oferta
-  const renderCompactCard = (coupon, key, isGrid = false) => {
+  // Renderizador de Card de Oferta Estilo Card Completo e Ampliado
+  const renderCard = (coupon, key, isGrid = false) => {
     const store = stores.find(s => s.id === coupon.storeId);
     const apiSource = coupon.apiSource || store?.apiSource || 'API Oficial';
     const cashbackRate = coupon.cashbackRate || store?.cashbackRate || 'Até 8.0% de Volta';
@@ -112,72 +118,85 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
       <div
         key={key}
         onClick={() => onSelectCoupon && onSelectCoupon(coupon)}
-        className={`${isGrid ? 'w-full' : 'w-[290px] sm:w-[335px]'} h-[72px] sm:h-[76px] flex-shrink-0 bg-[#151522]/95 hover:bg-[#1C1C2E] border border-white/10 hover:border-[#FF5F00]/80 rounded-2xl px-3 py-2 flex items-center justify-between gap-2.5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-950/40 cursor-pointer group relative overflow-hidden select-none`}
+        className={`${
+          isGrid ? 'w-full' : 'w-[315px] sm:w-[345px]'
+        } h-[142px] sm:h-[148px] flex-shrink-0 bg-gradient-to-br from-[#161626]/95 via-[#131320]/95 to-[#0F0F1A]/95 hover:from-[#1E1E34] hover:to-[#17172B] border border-white/10 hover:border-[#FF5F00]/80 rounded-2xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-950/40 cursor-pointer group relative overflow-hidden select-none`}
       >
         {/* Efeito Glow sutil no canto do card ao passar o mouse */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-[#FF5F00]/20 transition-all pointer-events-none" />
+        <div className="absolute top-0 right-0 w-28 h-28 bg-[#FF5F00]/10 rounded-full blur-2xl group-hover:bg-[#FF5F00]/25 transition-all pointer-events-none" />
 
-        {/* 1. Logo / Avatar da Grande Loja */}
-        <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-inner relative z-10">
-          {storeLogo ? (
-            <>
-              <img 
-                src={storeLogo} 
-                alt={storeName} 
-                className="w-full h-full object-contain p-0.5 rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
-                  if (fb) fb.style.display = 'flex';
-                }}
-              />
-              <span className="store-fallback-icon hidden w-full h-full items-center justify-center text-base">
-                {store?.logo || '🛍️'}
-              </span>
-            </>
-          ) : (
-            <span className="text-base">{store?.logo || '🛍️'}</span>
-          )}
-        </div>
+        {/* 1. Header do Card: Logo da Loja, Nome, Origem API e Badge de Desconto */}
+        <div className="flex items-start justify-between gap-2 relative z-10">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Logo da Marca / Loja */}
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-inner relative">
+              {storeLogo ? (
+                <>
+                  <img 
+                    src={storeLogo} 
+                    alt={storeName} 
+                    className="w-full h-full object-contain p-0.5 rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
+                      if (fb) fb.style.display = 'flex';
+                    }}
+                  />
+                  <span className="store-fallback-icon hidden w-full h-full items-center justify-center text-base">
+                    {store?.logo || '🛍️'}
+                  </span>
+                </>
+              ) : (
+                <span className="text-base">{store?.logo || '🛍️'}</span>
+              )}
+            </div>
 
-        {/* 2. Informações Principais: Nome da Loja, Origem da API, Título e Cashback */}
-        <div className="min-w-0 flex-1 flex flex-col justify-center relative z-10">
-          <div className="flex items-center gap-1.5">
-            <h4 className="text-xs font-bold text-white group-hover:text-orange-400 transition-colors truncate max-w-[130px] sm:max-w-[150px]">
-              {storeName}
-            </h4>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[9px] font-bold tracking-tight flex-shrink-0">
-              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{apiSource}</span>
-            </span>
+            {/* Nome da Loja & Tag da Rede de Afiliados */}
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-orange-400 transition-colors truncate">
+                {storeName}
+              </h4>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold tracking-tight">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{apiSource}</span>
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Título da Oferta em linha única concisa */}
-          <p className="text-[11px] font-medium text-gray-200 group-hover:text-white truncate leading-tight mt-0.5" title={coupon.title}>
-            {coupon.title}
-          </p>
-
-          {/* Cashback & Cupom Preview */}
-          <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
-            <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-              <Coins size={10} className="text-amber-400" />
-              <span>{cashbackRate}</span>
-            </span>
-            <span className="text-gray-600">•</span>
-            <span className="font-mono text-orange-300/90 font-bold text-[10px] bg-black/40 px-1 rounded border border-orange-500/20">
-              {couponCode}
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Badge de Desconto & Ação */}
-        <div className="flex flex-col items-end justify-center flex-shrink-0 gap-1 relative z-10">
-          <span className="bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-black text-[11px] sm:text-xs px-2 py-0.5 rounded-lg shadow-sm whitespace-nowrap flex items-center gap-0.5">
-            <Tag size={10} />
+          {/* Badge de Desconto com Destaque */}
+          <span className="bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-sm whitespace-nowrap flex items-center gap-1 flex-shrink-0">
+            <Tag size={11} />
             <span>{coupon.discountBadge}</span>
           </span>
-          <div className="flex items-center gap-1 text-[10px] text-gray-400 group-hover:text-orange-400 transition-colors">
-            <span className="font-semibold hidden sm:inline">Pegar</span>
+        </div>
+
+        {/* 2. Corpo do Card: Título da Oferta em 2 Linhas com boa legibilidade */}
+        <div className="my-1 relative z-10">
+          <p className="text-xs sm:text-[13px] font-semibold text-gray-200 group-hover:text-white line-clamp-2 leading-snug" title={coupon.title}>
+            {coupon.title}
+          </p>
+        </div>
+
+        {/* 3. Rodapé do Card: Código com Borda Tracejada, Cashback & Botão Pegar */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5 relative z-10">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Caixa de Cupom com Borda Tracejada */}
+            <div className="font-mono text-[11px] font-bold text-orange-300 bg-orange-500/10 border border-dashed border-orange-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0">
+              <span>{couponCode}</span>
+            </div>
+
+            {/* Cashback Ativado */}
+            <span className="text-emerald-400 font-bold text-[11px] flex items-center gap-0.5 truncate">
+              <Coins size={11} className="text-amber-400 flex-shrink-0" />
+              <span className="truncate">{cashbackRate}</span>
+            </span>
+          </div>
+
+          {/* Botão de Ação / Pegar Cupom */}
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FF5F00]/15 group-hover:bg-[#FF5F00] text-orange-400 group-hover:text-white border border-[#FF5F00]/30 group-hover:border-[#FF5F00] text-xs font-bold transition-all flex-shrink-0 shadow-sm">
+            <span>Pegar</span>
             <ExternalLink size={12} className="group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
@@ -201,7 +220,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           </span>
         </h2>
         <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-          Ofertas compactas passando continuamente em 3 faixas simultâneas com cupons oficiais e cashback ativado.
+          Super cards de ofertas passando em 5 faixas simultâneas com cupons oficiais e cashback ativado em tempo real.
         </p>
       </div>
 
@@ -271,9 +290,9 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         </div>
       </div>
 
-      {/* RESULTADOS DA BUSCA OU CARROSSEL DE 3 LINHAS */}
+      {/* RESULTADOS DA BUSCA OU CARROSSEL DE 5 LINHAS */}
       {isSearching ? (
-        /* MODO DE BUSCA ATIVA: Exibe as ofertas filtradas de mercadorias ou lojas */
+        /* MODO DE BUSCA ATIVA: Exibe as ofertas filtradas em grid de até 5 colunas */
         <div className="relative z-10 py-1 space-y-3">
           <div className="flex items-center justify-between text-xs text-gray-300 px-1">
             <div className="flex items-center gap-2">
@@ -286,15 +305,15 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
               onClick={() => setSearchQuery('')}
               className="text-orange-400 hover:text-orange-300 text-xs font-semibold underline cursor-pointer"
             >
-              Ver todas as 12 ofertas
+              Ver todas as {bigStoreCoupons.length} ofertas
             </button>
           </div>
 
           {filteredCoupons.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5">
               {filteredCoupons.map((coupon, idx) => (
                 <div key={`search-result-${coupon.id}-${idx}`} className="w-full">
-                  {renderCompactCard(coupon, `search-card-${coupon.id}-${idx}`, true)}
+                  {renderCard(coupon, `search-card-${coupon.id}-${idx}`, true)}
                 </div>
               ))}
             </div>
@@ -316,40 +335,60 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           )}
         </div>
       ) : (
-        /* MODO PADRÃO: 3 LINHAS DE OFERTAS PASSANDO HORIZONTALMENTE */
-        <div className="relative z-10 space-y-2.5 sm:space-y-3 py-1 overflow-hidden">
+        /* MODO PADRÃO: 5 LINHAS DE OFERTAS PASSANDO HORIZONTALMENTE COM VELOCIDADE LENTA */
+        <div className="relative z-10 space-y-3 sm:space-y-3.5 py-1 overflow-hidden">
           
           {/* Efeito de fade lateral (vignette) nas bordas esquerda e direita */}
           <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-r from-[#14141E] via-[#14141E]/80 to-transparent z-20" />
           <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 sm:w-16 bg-gradient-to-l from-[#14141E] via-[#14141E]/80 to-transparent z-20" />
 
-          {/* LINHA 1 - Velocidade 45s */}
+          {/* LINHA 1 - Velocidade Lenta 180s */}
           <div className="overflow-hidden">
             <div 
-              className="flex gap-3 items-center animate-marquee-row-1"
+              className="flex gap-3.5 items-center animate-marquee-row-1"
               style={{ willChange: 'transform' }}
             >
-              {row1.map((coupon, idx) => renderCompactCard(coupon, `row1-${coupon.id}-${idx}`))}
+              {row1.map((coupon, idx) => renderCard(coupon, `row1-${coupon.id}-${idx}`))}
             </div>
           </div>
 
-          {/* LINHA 2 - Velocidade 38s (movimento ligeiramente mais rápido) */}
+          {/* LINHA 2 - Velocidade Lenta 210s */}
           <div className="overflow-hidden">
             <div 
-              className="flex gap-3 items-center animate-marquee-row-2"
+              className="flex gap-3.5 items-center animate-marquee-row-2"
               style={{ willChange: 'transform' }}
             >
-              {row2.map((coupon, idx) => renderCompactCard(coupon, `row2-${coupon.id}-${idx}`))}
+              {row2.map((coupon, idx) => renderCard(coupon, `row2-${coupon.id}-${idx}`))}
             </div>
           </div>
 
-          {/* LINHA 3 - Velocidade 42s (cadência alternada) */}
+          {/* LINHA 3 - Velocidade Lenta 165s */}
           <div className="overflow-hidden">
             <div 
-              className="flex gap-3 items-center animate-marquee-row-3"
+              className="flex gap-3.5 items-center animate-marquee-row-3"
               style={{ willChange: 'transform' }}
             >
-              {row3.map((coupon, idx) => renderCompactCard(coupon, `row3-${coupon.id}-${idx}`))}
+              {row3.map((coupon, idx) => renderCard(coupon, `row3-${coupon.id}-${idx}`))}
+            </div>
+          </div>
+
+          {/* LINHA 4 - Velocidade Lenta 195s */}
+          <div className="overflow-hidden">
+            <div 
+              className="flex gap-3.5 items-center animate-marquee-row-4"
+              style={{ willChange: 'transform' }}
+            >
+              {row4.map((coupon, idx) => renderCard(coupon, `row4-${coupon.id}-${idx}`))}
+            </div>
+          </div>
+
+          {/* LINHA 5 - Velocidade Lenta 175s */}
+          <div className="overflow-hidden">
+            <div 
+              className="flex gap-3.5 items-center animate-marquee-row-5"
+              style={{ willChange: 'transform' }}
+            >
+              {row5.map((coupon, idx) => renderCard(coupon, `row5-${coupon.id}-${idx}`))}
             </div>
           </div>
 

@@ -99,7 +99,7 @@
   scrollbar-width: none !important;
 }
 
-/* Animações de Carrossel Infinito da Direita para a Esquerda em 3 Linhas */
+/* Animações de Carrossel Infinito da Direita para a Esquerda em 5 Linhas - Velocidade Lenta e Confortável */
 @keyframes marqueeLeft1 {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
@@ -115,29 +115,53 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes marqueeLeft4 {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeLeft5 {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
 .animate-marquee-left,
 .animate-marquee-row-1 {
   display: flex;
   width: max-content;
-  animation: marqueeLeft1 45s linear infinite;
+  animation: marqueeLeft1 180s linear infinite;
 }
 
 .animate-marquee-row-2 {
   display: flex;
   width: max-content;
-  animation: marqueeLeft2 38s linear infinite;
+  animation: marqueeLeft2 210s linear infinite;
 }
 
 .animate-marquee-row-3 {
   display: flex;
   width: max-content;
-  animation: marqueeLeft3 42s linear infinite;
+  animation: marqueeLeft3 165s linear infinite;
+}
+
+.animate-marquee-row-4 {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft4 195s linear infinite;
+}
+
+.animate-marquee-row-5 {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft5 175s linear infinite;
 }
 
 .animate-marquee-left:hover,
 .animate-marquee-row-1:hover,
 .animate-marquee-row-2:hover,
 .animate-marquee-row-3:hover,
+.animate-marquee-row-4:hover,
+.animate-marquee-row-5:hover,
 .animate-marquee-paused {
   animation-play-state: paused !important;
 }
