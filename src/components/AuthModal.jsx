@@ -215,17 +215,6 @@ export const AuthModal = () => {
     }
   };
 
-  // Atalho de login rápido para testes
-  const handleQuickLogin = (identifier, password) => {
-    setLoginForm({ identifier, password });
-    const result = loginAccount(identifier, password);
-    if (result && !result.success) {
-      setErrorMsg(result.error || 'Credenciais inválidas.');
-    } else if (result && result.success) {
-      setErrorMsg('');
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
       <div 
@@ -852,38 +841,6 @@ export const AuthModal = () => {
                 <span>Entrar na Conta</span>
                 <ArrowRight size={16} />
               </button>
-
-              {/* Atalho de Acesso Direto do Administrador Master */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-3 text-xs text-gray-400">
-                <div className="text-[11px] font-bold text-gray-400 mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Shield size={13} className="text-blue-400" />
-                    <span>Acesso do Administrador Master:</span>
-                  </span>
-                  <span className="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Acesso Oficial</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('renanzanferrari@live.com', 'rEn@n1406')}
-                  className="w-full p-2.5 bg-blue-950/40 hover:bg-blue-900/50 rounded-xl text-left border border-blue-500/30 hover:border-blue-400 transition-all group flex items-center justify-between cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform">
-                      <Shield size={16} />
-                    </div>
-                    <div>
-                      <div className="font-bold text-white text-xs flex items-center gap-1.5 group-hover:text-blue-400">
-                        <span>Renan Zanferrari</span>
-                        <span className="text-[10px] text-blue-400 font-normal">(ADM Geral)</span>
-                      </div>
-                      <div className="text-[11px] text-blue-300/80 truncate">renanzanferrari@live.com</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold bg-blue-600/30 text-blue-300 px-3 py-1.5 rounded-lg border border-blue-500/30 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    Entrar como ADM →
-                  </span>
-                </button>
-              </div>
 
               {/* Link para cadastro */}
               <div className="border-t border-white/10 pt-4 text-center text-xs text-gray-400 space-y-1">
