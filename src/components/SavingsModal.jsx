@@ -130,7 +130,11 @@ export const SavingsModal = ({ onSelectCoupon }) => {
 
   // Compartilhar no WhatsApp
   const handleShareSavings = () => {
-    const text = `Olha só: já economizei R$ ${totalSavings.toFixed(2).replace('.', ',')} no Clube VIP Melhor Cupom! O investimento na assinatura é de apenas R$ 19,90 e o retorno é real no bolso. Cadastre-se pelo meu link: melhorcupom.com.br/convite/${userProfile.referralCode || 'VIP'}`;
+    const isRegistered = Boolean(userProfile?.isRegistered && userProfile?.isLoggedIn);
+    const linkPart = (isRegistered && userProfile?.referralCode)
+      ? ` Cadastre-se pelo meu link: melhorcupom.com.br/convite/${userProfile.referralCode}`
+      : ' Conheça o Clube VIP em: melhorcupom.com.br';
+    const text = `Olha só: já economizei R$ ${totalSavings.toFixed(2).replace('.', ',')} no Clube VIP Melhor Cupom! O investimento na assinatura é de apenas R$ 19,90 e o retorno é real no bolso.${linkPart}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
 

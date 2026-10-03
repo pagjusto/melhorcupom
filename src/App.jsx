@@ -180,7 +180,7 @@ const MainLayout = () => {
 
   // Identificação de visitante vs usuário logado/VIP/lojista
   const isMerchantRole = currentRole ? currentRole.startsWith('merchant_') : false;
-  const isUserLoggedIn = Boolean(isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user' || currentRole === 'admin');
+  const isUserLoggedIn = Boolean(currentRole !== 'visitor' && (isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user' || currentRole === 'admin'));
   const isVisitor = currentRole === 'visitor' || (!isUserLoggedIn && !isMerchantRole);
 
   return (
@@ -347,8 +347,10 @@ const MainLayout = () => {
                           setCitySearchQuery('');
                           setSelectedStoreFilter(null);
                         }}
-                        referralCode={userProfile?.referralCode || 'CUPOM5'}
+                        isRegistered={Boolean(userProfile?.isRegistered && userProfile?.isLoggedIn && currentRole !== 'visitor')}
+                        referralCode={userProfile?.referralCode || null}
                         onOpenReferralModal={() => setIsReferralModalOpen(true)}
+                        onOpenAuthModal={(mode) => openAuthModal(mode || 'user_register')}
                         onOpenMerchantRegister={() => openAuthModal('merchant_register')}
                         totalOffersCount={coupons.length}
                       />
@@ -471,8 +473,10 @@ const MainLayout = () => {
                           setCitySearchQuery('');
                           setSelectedStoreFilter(null);
                         }}
-                        referralCode={userProfile?.referralCode || 'CUPOM5'}
+                        isRegistered={Boolean(userProfile?.isRegistered && userProfile?.isLoggedIn && currentRole !== 'visitor')}
+                        referralCode={userProfile?.referralCode || null}
                         onOpenReferralModal={() => setIsReferralModalOpen(true)}
+                        onOpenAuthModal={(mode) => openAuthModal(mode || 'user_register')}
                         onOpenMerchantRegister={() => openAuthModal('merchant_register')}
                         totalOffersCount={coupons.length}
                       />

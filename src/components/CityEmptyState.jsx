@@ -12,14 +12,19 @@ import {
   Building2,
   CheckCircle2,
   TrendingUp,
-  RotateCcw
+  RotateCcw,
+  Lock,
+  UserPlus,
+  LogIn
 } from 'lucide-react';
 
 export const CityEmptyState = ({
   cityName = '',
   onResetCity,
-  referralCode = 'CUPOM5',
+  isRegistered = false,
+  referralCode = null,
   onOpenReferralModal,
+  onOpenAuthModal,
   onOpenMerchantRegister,
   totalOffersCount = '370+'
 }) => {
@@ -28,9 +33,12 @@ export const CityEmptyState = ({
   const isCitySpecific = Boolean(cityName && cityName.trim() && cityName !== 'Todas as Cidades');
   const displayCity = isCitySpecific ? cityName.trim() : 'sua região';
 
-  const referralUrl = `https://melhorcupom.com.br/convite/${referralCode}`;
+  // O link de afiliado só é disponibilizado se o usuário estiver devidamente cadastrado e logado
+  const activeReferralCode = isRegistered && referralCode ? referralCode : null;
+  const referralUrl = activeReferralCode ? `https://melhorcupom.com.br/convite/${activeReferralCode}` : '';
 
   const handleCopyLink = () => {
+    if (!activeReferralCode) return;
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(referralUrl);
     }
@@ -39,6 +47,7 @@ export const CityEmptyState = ({
   };
 
   const handleShareWhatsApp = () => {
+    if (!activeReferralCode) return;
     const text = isCitySpecific
       ? `Olá! O Clube VIP Melhor Cupom está chegando em ${displayCity}! Economize até 50% em estabelecimentos parceiros ou cadastre seu comércio para receber mais clientes. Acesse pelo meu convite: ${referralUrl}`
       : `Olá! Conheça o Clube VIP Melhor Cupom e economize até 50% em restaurantes, lazer e compras! Cadastre-se pelo meu link de convite: ${referralUrl}`;
@@ -174,69 +183,124 @@ export const CityEmptyState = ({
               </div>
             </div>
 
-            {/* Caixa com o Link de Afiliado Real */}
-            <div className="space-y-1.5 mb-3.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400 font-bold flex items-center gap-1.5">
-                  <Sparkles size={12} className="text-amber-400" />
-                  Seu Link Exclusivo de Afiliado para Divulgar:
-                </span>
-                <span className="text-[10px] text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded font-mono font-bold">
-                  Código: {referralCode}
-                </span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#12121A] p-2 rounded-2xl border border-white/15 focus-within:border-amber-500/70 transition-colors">
-                <div className="flex-1 px-3 py-1.5 text-xs font-mono text-gray-200 truncate select-all">
-                  {referralUrl}
+            {/* EXIGÊNCIA DE CADASTRO PRÉVIO PARA DISPONIBILIZAR O LINK DE AFILIADO */}
+            {!isRegistered ? (
+              <div className="bg-[#12121A] border-2 border-dashed border-amber-500/40 rounded-2xl p-4 sm:p-5 relative overflow-hidden space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                      <Lock size={16} />
+                    </div>
+                    <div>
+                      <span className="text-xs sm:text-sm font-black text-white block">
+                        Link de Afiliado Exclusivo
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        Disponível imediatamente após cadastro gratuito
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] uppercase font-black tracking-wider text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/30">
+                    🔒 Bloqueado
+                  </span>
                 </div>
-                
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer flex-shrink-0 ${
-                    copied
-                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                      : 'bg-[#FF5F00] hover:bg-[#E04F00] text-white shadow-md'
-                  }`}
-                >
-                  {copied ? (
-                    <>
-                      <Check size={14} />
-                      <span>Link Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      <span>Copiar Link</span>
-                    </>
-                  )}
-                </button>
+
+                <div className="flex items-center gap-2.5 bg-black/50 border border-white/10 rounded-xl px-3.5 py-3 text-xs font-mono text-gray-400 select-none">
+                  <Lock size={14} className="text-amber-400 flex-shrink-0" />
+                  <span className="truncate">melhorcupom.com.br/convite/SEU-CODIGO-CADASTRADO</span>
+                </div>
+
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  Para gerar seu código pessoal de afiliado, divulgar comércios e receber comissões automáticas no seu Caixa, faça seu cadastro gratuito:
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => onOpenAuthModal && onOpenAuthModal('user_register')}
+                    className="flex-1 bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black px-4 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all cursor-pointer hover:scale-[1.01]"
+                  >
+                    <UserPlus size={16} />
+                    <span>Cadastrar Grátis para Ter Meu Link</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onOpenAuthModal && onOpenAuthModal('login')}
+                    className="bg-white/10 hover:bg-white/15 text-gray-200 hover:text-white border border-white/15 font-bold px-4 py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <LogIn size={15} className="text-amber-400" />
+                    <span>Já Tenho Cadastro • Fazer Login</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Caixa com o Link de Afiliado Real Ativo */}
+                <div className="space-y-1.5 mb-3.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-400 font-bold flex items-center gap-1.5">
+                      <Sparkles size={12} className="text-amber-400" />
+                      Seu Link Exclusivo de Afiliado para Divulgar:
+                    </span>
+                    <span className="text-[10px] text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded font-mono font-bold">
+                      Código: {activeReferralCode}
+                    </span>
+                  </div>
 
-            {/* Botões de Ação do Afiliado */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={handleShareWhatsApp}
-                className="w-full sm:flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20 transition-all cursor-pointer hover:scale-[1.01]"
-              >
-                <Share2 size={14} />
-                <span>Indicar Comércio no WhatsApp</span>
-              </button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-[#12121A] p-2 rounded-2xl border border-white/15 focus-within:border-amber-500/70 transition-colors">
+                    <div className="flex-1 px-3 py-1.5 text-xs font-mono text-gray-200 truncate select-all">
+                      {referralUrl}
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer flex-shrink-0 ${
+                        copied
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                          : 'bg-[#FF5F00] hover:bg-[#E04F00] text-white shadow-md'
+                      }`}
+                    >
+                      {copied ? (
+                        <>
+                          <Check size={14} />
+                          <span>Link Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={14} />
+                          <span>Copiar Link</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-              {onOpenReferralModal && (
-                <button
-                  type="button"
-                  onClick={onOpenReferralModal}
-                  className="w-full sm:w-auto bg-white/10 hover:bg-white/15 text-amber-300 hover:text-white border border-amber-500/30 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <Coins size={14} className="text-amber-400" />
-                  <span>Ver Meu Caixa & Painel de Afiliado</span>
-                </button>
-              )}
-            </div>
+                {/* Botões de Ação do Afiliado */}
+                <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleShareWhatsApp}
+                    className="w-full sm:flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20 transition-all cursor-pointer hover:scale-[1.01]"
+                  >
+                    <Share2 size={14} />
+                    <span>Indicar Comércio no WhatsApp</span>
+                  </button>
+
+                  {onOpenReferralModal && (
+                    <button
+                      type="button"
+                      onClick={onOpenReferralModal}
+                      className="w-full sm:w-auto bg-white/10 hover:bg-white/15 text-amber-300 hover:text-white border border-amber-500/30 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Coins size={14} className="text-amber-400" />
+                      <span>Ver Meu Caixa & Painel de Afiliado</span>
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
 
           </div>
 

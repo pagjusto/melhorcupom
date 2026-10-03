@@ -188,12 +188,40 @@ export const AppProvider = ({ children }) => {
       referrals: []
     };
 
+    const savedRole = localStorage.getItem('melhor_cupom_role');
+    if (savedRole === 'visitor') {
+      return {
+        ...adminDefaultUser,
+        isLoggedIn: false,
+        isRegistered: false,
+        isAdmin: false,
+        isVip: false,
+        vipPlan: null,
+        vipSince: null,
+        monthlySavings: 0,
+        referralCode: null,
+        referralBalance: 0.00,
+        referrals: []
+      };
+    }
+
     const saved = localStorage.getItem('melhor_cupom_user_v3') || localStorage.getItem('melhor_cupom_user');
     if (!saved) return adminDefaultUser;
     try {
       const parsed = JSON.parse(saved);
-      // Descartar cadastro simulado legado de Lucas Silva
-      if (!parsed || parsed.email === 'lucas.vip@email.com' || parsed.name === 'Lucas Silva' || !parsed.email) {
+      // Descartar cadastro simulado legado de Lucas Silva ou qualquer variação
+      if (
+        !parsed ||
+        parsed.referralCode === 'LUCAS5' ||
+        parsed.name === 'Lucas Silva' ||
+        parsed.email === 'lucas.vip@email.com' ||
+        (parsed.email && parsed.email.toLowerCase().includes('lucas')) ||
+        (parsed.name && parsed.name.toLowerCase().includes('lucas')) ||
+        (parsed.referralCode && String(parsed.referralCode).toUpperCase().includes('LUCAS')) ||
+        !parsed.email
+      ) {
+        localStorage.removeItem('melhor_cupom_user');
+        localStorage.setItem('melhor_cupom_user_v3', JSON.stringify(adminDefaultUser));
         return adminDefaultUser;
       }
       return {
@@ -346,6 +374,7 @@ export const AppProvider = ({ children }) => {
         vipPlan: null,
         vipSince: null,
         monthlySavings: 0,
+        referralCode: null,
         referralBalance: 0.00,
         referrals: []
       }));
@@ -853,7 +882,7 @@ export const AppProvider = ({ children }) => {
       isLoggedIn: true
     }));
 
-    setCurrentRole('visitor');
+    setCurrentRole('user_free');
     setActiveTab('user-profile');
 
     confetti({
@@ -1054,6 +1083,14 @@ export const AppProvider = ({ children }) => {
     setUserProfile(prev => ({
       ...prev,
       isLoggedIn: false,
+      isRegistered: false,
+      isVip: false,
+      vipPlan: null,
+      vipSince: null,
+      monthlySavings: 0,
+      referralCode: null,
+      referralBalance: 0.00,
+      referrals: [],
       isAdmin: false
     }));
     setActiveTab('explore');

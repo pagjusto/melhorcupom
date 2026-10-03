@@ -15,7 +15,10 @@ import {
   Store, 
   User,
   ExternalLink,
-  Coins
+  Coins,
+  Lock,
+  UserPlus,
+  LogIn
 } from 'lucide-react';
 
 export const ReferralModal = () => {
@@ -26,7 +29,8 @@ export const ReferralModal = () => {
     userProfile, 
     stores, 
     addReferral,
-    setIsSubscriptionModalOpen
+    setIsSubscriptionModalOpen,
+    openAuthModal
   } = useApp();
 
   const isMerchantRole = currentRole.startsWith('merchant_');
@@ -158,8 +162,71 @@ export const ReferralModal = () => {
           </div>
         )}
 
-        {/* Conteúdo Rolável */}
-        <div className="p-6 sm:p-7 space-y-6 overflow-y-auto flex-grow">
+                {/* Verificação de Usuário Cadastrado / Logado */}
+        {!isMerchantRole && (!userProfile?.isRegistered || !userProfile?.isLoggedIn || currentRole === 'visitor') ? (
+          <div className="p-6 sm:p-8 space-y-6 overflow-y-auto flex-grow text-center">
+            <div className="max-w-md mx-auto bg-gradient-to-br from-[#24130A] via-[#1B121A] to-[#141420] border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/30">
+                <Lock size={32} />
+              </div>
+
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30">
+                  Exige Cadastro Grátis
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white mt-2">
+                  Ative Seu Link Exclusivo de Afiliado
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                  Para gerar seu código pessoal, indicar amigos ou comércios e acumular comissões no seu Caixa, faça seu cadastro em instantes:
+                </p>
+              </div>
+
+              <div className="bg-black/50 border border-white/10 rounded-2xl p-3.5 text-xs font-mono text-gray-400 flex items-center justify-center gap-2 select-none">
+                <Lock size={14} className="text-amber-400" />
+                <span>melhorcupom.com.br/convite/SEU-CODIGO-CADASTRADO</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-left pt-1">
+                <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+                  <div className="text-emerald-400 font-black text-sm">+R$ 3,00</div>
+                  <div className="text-[11px] text-gray-300">por amigo assinante VIP</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+                  <div className="text-amber-400 font-black text-sm">+R$ 5,00</div>
+                  <div className="text-[11px] text-gray-300">por comércio cadastrado</div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReferralModalOpen(false);
+                    openAuthModal('user_register');
+                  }}
+                  className="w-full bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-xl shadow-orange-600/30 transition-all cursor-pointer hover:scale-[1.02]"
+                >
+                  <UserPlus size={18} />
+                  <span>Cadastrar Grátis para Ter Meu Link</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReferralModalOpen(false);
+                    openAuthModal('login');
+                  }}
+                  className="w-full bg-white/10 hover:bg-white/15 text-gray-200 hover:text-white border border-white/15 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <LogIn size={15} className="text-amber-400" />
+                  <span>Já Tenho Cadastro • Fazer Login</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 sm:p-7 space-y-6 overflow-y-auto flex-grow">
           
           {/* 1. CARD DE SALDO NO CAIXA */}
           <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-5 sm:p-6 border-2 border-amber-500/40 shadow-xl relative overflow-hidden">
@@ -354,8 +421,8 @@ export const ReferralModal = () => {
               </div>
             )}
           </div>
-
         </div>
+      )}
 
         {/* Footer do Modal */}
         <div className="p-4 sm:p-5 bg-[#12121A] border-t border-white/10 flex items-center justify-between text-xs text-gray-400 flex-shrink-0">

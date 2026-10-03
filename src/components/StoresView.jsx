@@ -35,7 +35,7 @@ const CATEGORY_CHIPS = [
 ];
 
 export const StoresView = ({ onSelectStore }) => {
-  const { stores, openAuthModal, userProfile, setIsReferralModalOpen } = useApp();
+  const { stores, openAuthModal, userProfile, currentRole, setIsReferralModalOpen } = useApp();
   const [search, setSearch] = useState('');
   const [storeTypeFilter, setStoreTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -290,8 +290,10 @@ export const StoresView = ({ onSelectStore }) => {
             setStoreTypeFilter('all');
             setSelectedCategory('all');
           }}
-          referralCode={userProfile?.referralCode || 'CUPOM5'}
+          isRegistered={Boolean(userProfile?.isRegistered && userProfile?.isLoggedIn && currentRole !== 'visitor')}
+          referralCode={userProfile?.referralCode || null}
           onOpenReferralModal={() => setIsReferralModalOpen(true)}
+          onOpenAuthModal={(mode) => openAuthModal(mode || 'user_register')}
           onOpenMerchantRegister={() => openAuthModal('merchant_register')}
           totalOffersCount={stores.length}
         />
