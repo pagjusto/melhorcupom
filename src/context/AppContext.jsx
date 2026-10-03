@@ -72,10 +72,13 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  // Estado de Lojas / Comerciantes (com auto-mesclagem de lojas de grandes redes)
+  // Estado de Lojas / Comerciantes (com auto-mesclagem de todas as marcas reais da rede)
   const [stores, setStores] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_stores');
-    if (!saved) return INITIAL_STORES;
+    const saved = localStorage.getItem('melhor_cupom_stores_v5');
+    if (!saved) {
+      localStorage.setItem('melhor_cupom_stores_v5', JSON.stringify(INITIAL_STORES));
+      return INITIAL_STORES;
+    }
     try {
       const parsed = JSON.parse(saved);
       const parsedIds = new Set(parsed.map(s => s.id));
@@ -83,13 +86,19 @@ export const AppProvider = ({ children }) => {
       const combined = [...parsed, ...missing];
       return combined.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
-        const storeRefCode = s.referralCode || init?.referralCode || (s.name ? s.name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
+        const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         return {
           ...s,
+          name: init?.name || s.name,
+          logo: init?.logo || s.logo || '🏪',
           logoImage: init?.logoImage || s.logoImage || '',
-          tier: s.tier || init?.tier || 'free',
-          phone: s.phone || init?.phone || '(11) 98123-4567',
+          image: init?.image || s.image || '',
+          tier: init?.tier || s.tier || 'free',
+          category: init?.category || s.category || 'gastronomia',
+          city: init?.city || s.city || 'Todo o Brasil (Online)',
+          phone: init?.phone || s.phone || '(11) 98123-4567',
           address: init?.address || s.address || '',
+          badge: init?.badge || s.badge || '',
           isApiIntegrated: init?.isApiIntegrated ?? s.isApiIntegrated ?? false,
           apiSource: init?.apiSource || s.apiSource || null,
           apiStatus: init?.apiStatus || s.apiStatus || null,
@@ -523,7 +532,7 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_stores', JSON.stringify(stores));
+    localStorage.setItem('melhor_cupom_stores_v5', JSON.stringify(stores));
   }, [stores]);
 
   useEffect(() => {
@@ -1344,6 +1353,7 @@ export const AppProvider = ({ children }) => {
   const resetToFactoryDefaults = () => {
     localStorage.removeItem('melhor_cupom_coupons');
     localStorage.removeItem('melhor_cupom_stores');
+    localStorage.removeItem('melhor_cupom_stores_v5');
     localStorage.removeItem('melhor_cupom_redemptions');
     localStorage.removeItem('melhor_cupom_user');
     localStorage.removeItem('melhor_cupom_role');

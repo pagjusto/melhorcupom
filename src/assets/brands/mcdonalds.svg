@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 130" width="100%" height="100%">
+  <rect width="300" height="130" rx="20" fill="#DA291C"/>
+  <path fill="#FFC72C" d="M95 105V55c0-18 10-27 23-27 15 0 24 11 27 25 3-14 12-25 27-25 13 0 23 9 23 27v50h-16V57c0-11-5-16-13-16-10 0-16 8-16 20v44h-16V57c0-11-5-16-13-16-10 0-16 8-16 20v44H95z"/>
+  <text x="150" y="122" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#FFFFFF" letter-spacing="1">MCDONALD'S</text>
+</svg>
