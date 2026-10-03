@@ -484,29 +484,23 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           </div>
 
-          {/* Troca Rápida de Estabelecimento (para testar) */}
-          <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
-            <span className="text-xs text-gray-400 px-2 font-medium">Trocar Loja:</span>
-            <button
-              onClick={() => switchRole('merchant_burger')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                currentStore.merchantId === 'merchant_burger'
-                  ? 'bg-[#FF5F00] text-white shadow-md'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              🍔 Smash Burger
-            </button>
-            <button
-              onClick={() => switchRole('merchant_barber')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                currentStore.merchantId === 'merchant_barber'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              💈 Barbearia
-            </button>
+          {/* Troca Rápida de Estabelecimento Parceiro */}
+          <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
+            <span className="text-xs text-gray-400 px-2 font-medium">Trocar Estabelecimento:</span>
+            {stores.filter(s => s.type === 'physical' || s.merchantId).slice(0, 4).map(st => (
+              <button
+                key={st.id}
+                onClick={() => switchRole(st.merchantId || st.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  (currentStore.merchantId === st.merchantId || currentStore.id === st.id)
+                    ? 'bg-[#FF5F00] text-white shadow-md'
+                    : 'text-gray-300 hover:text-white bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                <span>{st.logo || '🏪'}</span>
+                <span>{st.name}</span>
+              </button>
+            ))}
           </div>
         </div>
 

@@ -405,7 +405,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 </h3>
                 <p className="text-xs text-gray-300 leading-relaxed max-w-sm mx-auto">
                   Esta oferta possui limite de <strong>{coupon.maxUsesPerUser === 1 ? '1 resgate por CPF' : `${coupon.maxUsesPerUser} resgates por CPF`}</strong>.
-                  O seu CPF (<strong>{userProfile.cpf || '382.***.***-04'}</strong>) já atingiu o total de utilizações permitidas para esta promoção.
+                  O seu CPF (<strong>{userProfile.cpf || '***.***.***-**'}</strong>) já atingiu o total de utilizações permitidas para esta promoção.
                 </p>
               </div>
 

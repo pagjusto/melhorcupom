@@ -422,7 +422,7 @@ export const SubscriptionModal = () => {
                     <label className="text-[11px] text-gray-400 block mb-1">Nome no Cartão</label>
                     <input 
                       type="text" 
-                      defaultValue="LUCAS M SILVA" 
+                      placeholder="NOME COMO NO CARTÃO" 
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white uppercase"
                     />
                   </div>

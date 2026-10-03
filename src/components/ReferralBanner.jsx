@@ -36,8 +36,8 @@ export const ReferralBanner = () => {
   const currentStore = stores.find(s => s.merchantId === merchantId) || stores[0];
 
   const referralCode = isMerchantRole 
-    ? (currentStore.referralCode || 'SMASH5') 
-    : (userProfile.referralCode || 'LUCAS5');
+    ? (currentStore.referralCode || 'VIP5') 
+    : (userProfile.referralCode || 'CUPOM5');
 
   const referralBalance = isMerchantRole 
     ? (currentStore.referralBalance || 0) 

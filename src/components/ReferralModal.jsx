@@ -43,7 +43,7 @@ export const ReferralModal = () => {
   const isStoreView = activeView === 'store' && isMerchantRole;
 
   // Dados do Referrer selecionado
-  const referralCode = isStoreView ? (currentStore.referralCode || 'SMASH5') : (userProfile.referralCode || 'LUCAS5');
+  const referralCode = isStoreView ? (currentStore.referralCode || 'VIP5') : (userProfile.referralCode || 'CUPOM5');
   const referralBalance = isStoreView ? (currentStore.referralBalance || 0) : (userProfile.referralBalance || 0);
   const referralsList = isStoreView ? (currentStore.referrals || []) : (userProfile.referrals || []);
   const ownerName = isStoreView ? currentStore.name : userProfile.name;

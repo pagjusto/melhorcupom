@@ -9,8 +9,7 @@ import {
   RotateCcw, 
   Check, 
   ArrowRight, 
-  Crown, 
-  Building2 
+  Crown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -25,8 +24,8 @@ export const RoleSwitcher = () => {
 
   const [confirmReset, setConfirmReset] = useState(false);
 
-  const customStores = (stores || []).filter(
-    s => s.merchantId !== 'merchant_burger' && s.merchantId !== 'merchant_barber'
+  const realStores = (stores || []).filter(
+    s => s.type === 'physical' || s.merchantId
   );
 
   const roles = [
@@ -78,40 +77,22 @@ export const RoleSwitcher = () => {
       description: 'Todos os cupons desbloqueados com QR Code ativo, extrato detalhado de economia e prioridade máxima nas ofertas.',
       targetTab: 'explore'
     },
-    {
-      id: 'merchant_burger',
-      name: 'Lojista: Smash Burger Club',
-      roleType: 'Hamburgueria Física (Plano Ouro)',
-      icon: Store,
-      badge: 'Parceiro Ouro',
-      badgeColor: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      accentColor: 'border-orange-500/30 hover:border-orange-400 shadow-orange-950/30',
-      iconBg: 'bg-orange-500/20 text-orange-400',
-      description: 'Painel do lojista: publicação de cupons, validador de balcão (código de 6 dígitos e QR Code) e métricas de vendas.',
-      targetTab: 'merchant-dashboard'
-    },
-    {
-      id: 'merchant_barber',
-      name: 'Lojista: Barbearia Don Corleone',
-      roleType: 'Barbearia Física (Plano Prata)',
-      icon: Store,
-      badge: 'Parceiro Prata',
-      badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      accentColor: 'border-purple-500/30 hover:border-purple-400 shadow-purple-950/20',
-      iconBg: 'bg-purple-500/20 text-purple-400',
-      description: 'Painel do comerciante do ramo de beleza e bem-estar, com validações no caixa e kit de divulgação para redes sociais.',
-      targetTab: 'merchant-dashboard'
-    },
-    ...customStores.map(store => ({
+    ...realStores.slice(0, 6).map(store => ({
       id: store.merchantId || store.id,
       name: `Lojista: ${store.name}`,
-      roleType: `${store.category || 'Comércio'} (${store.city || 'Brasil'})`,
-      icon: Building2,
-      badge: `Plano ${(store.tier || 'free').toUpperCase()}`,
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-      accentColor: 'border-emerald-500/30 hover:border-emerald-400 shadow-emerald-950/20',
-      iconBg: 'bg-emerald-500/20 text-emerald-400',
-      description: `Painel da loja parceira ${store.name}, localizada em ${store.city || 'Brasil'}.`,
+      roleType: `${(store.category || 'Comércio').toUpperCase()} • ${store.city || 'Brasil'}`,
+      icon: Store,
+      badge: store.tier === 'gold' ? 'Parceiro Ouro' : store.tier === 'silver' ? 'Parceiro Prata' : 'Credenciado',
+      badgeColor: store.tier === 'gold' 
+        ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
+        : store.tier === 'silver'
+        ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      accentColor: store.tier === 'gold'
+        ? 'border-amber-500/30 hover:border-amber-400 shadow-amber-950/20'
+        : 'border-white/10 hover:border-white/20 shadow-black/40',
+      iconBg: store.tier === 'gold' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-emerald-400',
+      description: `Painel PDV do estabelecimento real ${store.name}: validação de cupons no caixa com QR Code e métricas de vendas.`,
       targetTab: 'merchant-dashboard'
     }))
   ];

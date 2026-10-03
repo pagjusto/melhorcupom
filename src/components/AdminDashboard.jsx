@@ -1606,7 +1606,7 @@ export const AdminDashboard = () => {
 
                         {/* CPF */}
                         <td className="py-3.5 px-4 text-gray-300 font-mono text-[11px]">
-                          {user.cpf || '382.***.***-04'}
+                          {user.cpf || '***.***.***-**'}
                         </td>
 
                         {/* Cidade */}
