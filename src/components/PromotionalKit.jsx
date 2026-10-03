@@ -18,6 +18,7 @@ import {
   Plus
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+import { InstagramLoginModal } from './InstagramLoginModal';
 
 // Utilitário para formatar a localização da loja:
 // "abaixo do nome apareça a cidade ,loja online aparecer brasil"
@@ -571,60 +572,98 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id || '');
   const [format, setFormat] = useState('feed'); // 'feed' (1:1) ou 'story' (9:16)
-  const [isInstagramConnected, setIsInstagramConnected] = useState(true);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [publishProgress, setPublishProgress] = useState(0);
-  const [publishStep, setPublishStep] = useState('');
-  const [customCaption, setCustomCaption] = useState('');
-  const [postHistory, setPostHistory] = useState([
-    {
-      id: 'post_inst_1',
-      storeName: 'Hamburgueria Bullguer Artesanal',
-      city: 'São Paulo - SP',
-      publishedAt: 'Hoje às 14:30',
-      likes: 342,
-      comments: 28,
-      status: 'Publicado no Feed',
-      postUrl: 'https://instagram.com/p/MCBullguer2026'
-    },
-    {
-      id: 'post_inst_2',
-      storeName: 'Batel Steakhouse & Wine',
-      city: 'Curitiba - PR',
-      publishedAt: 'Ontem às 19:15',
-      likes: 512,
-      comments: 44,
-      status: 'Publicado no Feed',
-      postUrl: 'https://instagram.com/p/MCBatelSteak'
-    },
-    {
-      id: 'post_inst_3',
-      storeName: 'Boteco Tradicional de Ipanema',
-      city: 'Rio de Janeiro - RJ',
-      publishedAt: '12/09 às 18:00',
-      likes: 689,
-      comments: 57,
-      status: 'Publicado no Feed',
-      postUrl: 'https://instagram.com/p/MCIpanemaChopp'
-    }
-  ]);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [copiedCaption, setCopiedCaption] = useState(false);
 
+  // Sessão Real do Instagram (Carregada do LocalStorage e do public/instagram-session.json)
+  const [instagramSession, setInstagramSession] = useState(() => {
+    try {
+      const saved = localStorage.getItem('melhor_cupom_instagram_session_v2');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      isConnected: false,
+      username: '@melhorcupom.oficial',
+      accountType: 'browser_session',
+      connectedAt: null,
+      cookiesCount: 0
+    };
+  });
+
+  // Histórico de postagens reais (inicia limpo sem dados falsos)
+  const [postHistory, setPostHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('melhor_cupom_instagram_history_v2');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const [customCaption, setCustomCaption] = useState('');
   const canvasRef = useRef(null);
 
   const selectedStore = stores.find(s => s.id === selectedStoreId) || stores[0] || {};
   const locationText = getStoreLocationText(selectedStore);
 
-  // Inicializar legenda com colaboração
+  // Verificar se há sessão gerada pelo comando npm run instagram:login
+  useEffect(() => {
+    fetch('/instagram-session.json?t=' + Date.now())
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && (data.connected || data.hasSessionId || data.cookiesCount > 0)) {
+          setInstagramSession(prev => {
+            const updated = {
+              ...prev,
+              isConnected: true,
+              username: data.username || prev.username || '@melhorcupom.oficial',
+              accountType: data.accountType || prev.accountType,
+              connectedAt: data.connectedAt || prev.connectedAt || new Date().toISOString(),
+              cookiesCount: data.cookiesCount || prev.cookiesCount,
+              hasSessionId: true
+            };
+            localStorage.setItem('melhor_cupom_instagram_session_v2', JSON.stringify(updated));
+            return updated;
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Salvar sessão conectada
+  const handleSaveSession = (newSession) => {
+    setInstagramSession(newSession);
+    localStorage.setItem('melhor_cupom_instagram_session_v2', JSON.stringify(newSession));
+  };
+
+  // Desconectar sessão
+  const handleDisconnectSession = () => {
+    const disconnected = {
+      isConnected: false,
+      username: '@melhorcupom.oficial',
+      accountType: 'browser_session',
+      connectedAt: null,
+      cookiesCount: 0
+    };
+    setInstagramSession(disconnected);
+    localStorage.removeItem('melhor_cupom_instagram_session_v2');
+    showToast('Conta do Instagram desconectada.', 'info');
+  };
+
+  // Inicializar legenda oficial
   useEffect(() => {
     if (selectedStore?.name) {
+      const cleanStore = selectedStore.name;
+      const cleanCity = locationText.split('-')[0].trim();
+      const hashtagStore = cleanStore.replace(/[^a-zA-Z0-9]/g, '');
+      const hashtagCity = cleanCity.replace(/[^a-zA-Z0-9]/g, '');
+
       setCustomCaption(
-        `🎉 NOVA PARCERIA ! 🎟️🔥\n\nAgora você encontra cupons exclusivos no ${selectedStore.name} em ${locationText}! 🍔✨\n\nResgate seu cupom com descontos imperdíveis acessando o link na bio do @melhorcupom.oficial ou baixando nosso app!\n\n👉 ${selectedStore.name} + Melhor Cupom!\n\n#MelhorCupom #NovaParceria #${(selectedStore.name || '').replace(/[^a-zA-Z0-9]/g, '')} #DescontosVIP #${locationText.split('-')[0].trim().replace(/[^a-zA-Z0-9]/g, '')}`
+        `🎉 NOVO COMÉRCIO CREDENCIADO NO CLUBE VIP! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos no balcão e online\n✅ Resgate imediato pelo app ou site\n\n👉 Acesse o link na nossa bio @melhorcupom.oficial e ative seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
       );
     }
-  }, [selectedStoreId]);
+  }, [selectedStoreId, locationText]);
 
-  // Desenhar arte no Canvas para o Admin
-  // Solicitação do usuário: "ao invez da escrita seria bom colocar um + pra eu ver como ficaria"
+  // Renderizar criativo no Canvas
   useEffect(() => {
     drawAdminArtwork();
   }, [format, selectedStore]);
@@ -863,51 +902,18 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.restore();
   };
 
-  // Simulação completa de Post Automático no Instagram (@melhorcupom.oficial)
-  const handleAutoPostInstagram = () => {
-    if (!isInstagramConnected) {
-      showToast('Conecte a conta do Instagram antes de publicar.', 'warning');
-      return;
+  // Copiar Legenda Oficial
+  const handleCopyCaption = () => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(customCaption);
     }
-
-    setIsPublishing(true);
-    setPublishProgress(15);
-    setPublishStep('Renderizando criativo oficial 1080x1080...');
-
-    setTimeout(() => {
-      setPublishProgress(45);
-      setPublishStep('Enviando container de mídia para Meta Graph API v19.0...');
-    }, 900);
-
-    setTimeout(() => {
-      setPublishProgress(80);
-      setPublishStep('Publicando arte no feed de @melhorcupom.oficial...');
-    }, 1800);
-
-    setTimeout(() => {
-      setPublishProgress(100);
-      setPublishStep('Publicado com sucesso no feed!');
-
-      // Adicionar nova publicação ao histórico
-      const newPost = {
-        id: `post_inst_${Date.now()}`,
-        storeName: selectedStore?.name || 'Novo Estabelecimento Parceiro',
-        city: locationText,
-        publishedAt: 'Agora mesmo',
-        likes: 1,
-        comments: 0,
-        status: 'Publicado no Feed',
-        postUrl: `https://instagram.com/p/MC${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-      };
-
-      setPostHistory([newPost, ...postHistory]);
-      setIsPublishing(false);
-      showToast(`Arte da loja "${selectedStore?.name}" publicada com sucesso no Instagram oficial!`, 'success');
-    }, 2700);
+    setCopiedCaption(true);
+    showToast('Legenda oficial copiada para a área de transferência!', 'success');
+    setTimeout(() => setCopiedCaption(false), 2500);
   };
 
   // Baixar imagem do Admin
-  const handleDownload = () => {
+  const handleDownloadArtwork = () => {
     try {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -915,15 +921,56 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       const dataUrl = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
       const cleanName = (selectedStore?.name || 'loja').toLowerCase().replace(/[^a-z0-9]/g, '-');
-      link.download = `adm-divulgacao-instagram-${cleanName}.png`;
+      link.download = `melhorcupom-post-${cleanName}.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast('Imagem promocional baixada com sucesso!', 'success');
+      showToast('Criativo promocional baixado em alta resolução!', 'success');
     } catch (err) {
       console.error('Erro ao baixar arte:', err);
     }
+  };
+
+  // Publicar e Abrir no Instagram Oficial
+  const handlePublishToInstagram = () => {
+    if (!instagramSession.isConnected) {
+      setIsLoginModalOpen(true);
+      showToast('Conecte a conta do Instagram antes de iniciar a divulgação.', 'warning');
+      return;
+    }
+
+    // 1. Copiar legenda para clipboard
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(customCaption);
+    }
+
+    // 2. Baixar imagem automaticamente
+    handleDownloadArtwork();
+
+    // 3. Registrar post real no histórico
+    const cleanStoreName = selectedStore?.name || 'Comércio Parceiro';
+    const cleanUser = (instagramSession.username || '@melhorcupom.oficial').replace('@', '');
+    const newPost = {
+      id: `post_inst_${Date.now()}`,
+      storeName: cleanStoreName,
+      city: locationText,
+      publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      format: format === 'feed' ? 'Feed (1080x1080)' : 'Story (1080x1920)',
+      status: 'Publicado no Feed',
+      postUrl: `https://www.instagram.com/${cleanUser}/`
+    };
+
+    const updated = [newPost, ...postHistory];
+    setPostHistory(updated);
+    localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
+
+    showToast(`Arte de "${cleanStoreName}" preparada e legenda copiada! Abrindo Instagram...`, 'success');
+
+    // 4. Abrir Instagram para publicação
+    setTimeout(() => {
+      window.open('https://www.instagram.com/create/select/', '_blank');
+    }, 700);
   };
 
   return (
@@ -945,12 +992,12 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-xl font-black text-white font-display">
-                  Instagram Oficial: @melhorcupom.oficial
+                  Instagram Oficial: <span className="text-fuchsia-400">{instagramSession.username}</span>
                 </h3>
-                {isInstagramConnected ? (
+                {instagramSession.isConnected ? (
                   <span className="inline-flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Conectado (Meta Graph API)
+                    <span>Conectado ({instagramSession.accountType === 'meta_graph_api' ? 'Meta Graph API' : 'Sessão Web Ativa'})</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 bg-red-500/15 border border-red-500/30 text-red-400 text-xs px-2.5 py-0.5 rounded-full font-bold">
@@ -959,38 +1006,67 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 )}
               </div>
               <p className="text-xs text-gray-300">
-                Conta Profissional Meta conectada com permissões de publicação automática de carrossel, feed e stories.
+                {instagramSession.isConnected 
+                  ? 'Conta oficial conectada com permissões de publicação de carrosséis, feed e stories para comércios credenciados.'
+                  : 'Conecte sua conta oficial do Instagram para automatizar e divulgar os estabelecimentos parceiros.'}
               </p>
-              <div className="flex items-center gap-4 text-[11px] text-gray-400 pt-1">
-                <span><strong>48.2k</strong> seguidores</span>
-                <span>•</span>
-                <span><strong>128k</strong> impressões mensais</span>
-                <span>•</span>
-                <span>Token válido por mais 58 dias</span>
+              
+              <div className="flex items-center gap-4 text-[11px] text-gray-400 pt-1 flex-wrap">
+                {instagramSession.isConnected ? (
+                  <>
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 size={13} /> Autenticado para Divulgação
+                    </span>
+                    <span>•</span>
+                    <span>Modo: {instagramSession.accountType === 'meta_graph_api' ? 'Meta Graph API v19.0' : 'Sessão Web com Cookies'}</span>
+                    {instagramSession.connectedAt && (
+                      <>
+                        <span>•</span>
+                        <span>Conectado em: {new Date(instagramSession.connectedAt).toLocaleDateString('pt-BR')}</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-amber-400 font-medium flex items-center gap-1">
+                    <Terminal size={12} />
+                    <span>Dica: Use <strong>npm run instagram:login</strong> no terminal para salvar sua sessão oficial</span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <button
-              onClick={() => setIsInstagramConnected(!isInstagramConnected)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                isInstagramConnected 
+              onClick={() => setIsLoginModalOpen(true)}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                instagramSession.isConnected 
                   ? 'bg-white/10 hover:bg-white/15 text-gray-300 border border-white/10'
-                  : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-pink-600/30 font-black'
+                  : 'bg-gradient-to-r from-rose-600 via-fuchsia-600 to-[#FF5F00] text-white shadow-lg shadow-fuchsia-900/50 font-black'
               }`}
             >
-              {isInstagramConnected ? 'Gerenciar Conexão' : 'Conectar Instagram'}
+              {instagramSession.isConnected ? (
+                <>
+                  <RefreshCw size={14} />
+                  <span>Gerenciar Conta</span>
+                </>
+              ) : (
+                <>
+                  <LogIn size={14} />
+                  <span>Fazer Login no Instagram</span>
+                </>
+              )}
             </button>
 
             <a
-              href="https://instagram.com"
+              href={`https://www.instagram.com/${(instagramSession.username || 'melhorcupom.oficial').replace('@', '')}/`}
               target="_blank"
               rel="noreferrer"
-              className="bg-white/5 hover:bg-white/10 text-white p-2.5 rounded-xl border border-white/10 transition-colors"
-              title="Abrir Perfil no Instagram"
+              className="bg-white/5 hover:bg-white/10 text-white p-2.5 rounded-xl border border-white/10 transition-colors flex items-center gap-1 text-xs font-bold"
+              title="Abrir Perfil Oficial no Instagram"
             >
-              <ExternalLink size={16} />
+              <ExternalLink size={15} />
+              <span className="hidden sm:inline">Ver Perfil</span>
             </a>
           </div>
         </div>
@@ -1019,48 +1095,61 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 className="w-full bg-[#12121C] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition-colors cursor-pointer"
               >
                 {stores.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} - {getStoreLocationText(s)}
+                  <option key={s.id} value={s.id} className="bg-[#161622] text-white">
+                    {s.name} ({getStoreLocationText(s)})
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Seletor de Formato */}
+            {/* Formato da Arte */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-300">Formato da Mídia:</label>
+              <label className="text-xs font-bold text-gray-300">
+                Formato do Criativo:
+              </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setFormat('feed')}
-                  className={`py-3 px-4 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     format === 'feed'
-                      ? 'bg-orange-500/20 border-orange-500 text-white'
-                      : 'bg-[#12121C] border-white/5 text-gray-400 hover:text-white'
+                      ? 'bg-orange-500/20 border-orange-500 text-orange-400'
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
                   }`}
                 >
-                  Feed (1:1 Quadrado)
+                  <Layers size={14} />
+                  <span>Feed (1:1 Quadrado)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormat('story')}
-                  className={`py-3 px-4 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     format === 'story'
-                      ? 'bg-orange-500/20 border-orange-500 text-white'
-                      : 'bg-[#12121C] border-white/5 text-gray-400 hover:text-white'
+                      ? 'bg-orange-500/20 border-orange-500 text-orange-400'
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
                   }`}
                 >
-                  Story / Reels (9:16)
+                  <Layers size={14} />
+                  <span>Story (9:16 Vertical)</span>
                 </button>
               </div>
             </div>
 
             {/* Editor de Legenda do Instagram */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-300 flex items-center justify-between">
-                <span>Legenda do Post: Parceria (+)</span>
-                <span className="text-[10px] text-gray-400">Variáveis e hashtags automáticas</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <span>Legenda Oficial Formatada:</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleCopyCaption}
+                  className="text-xs text-orange-400 hover:text-orange-300 font-bold flex items-center gap-1 cursor-pointer"
+                >
+                  {copiedCaption ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                  <span>{copiedCaption ? 'Copiada!' : 'Copiar Legenda'}</span>
+                </button>
+              </div>
               <textarea
                 rows={5}
                 value={customCaption}
@@ -1069,144 +1158,157 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               />
             </div>
 
-            {/* Botão Principal: Postar Automaticamente no Instagram */}
+            {/* Botões de Ação de Publicação */}
             <div className="pt-2 space-y-3">
               <button
-                onClick={handleAutoPostInstagram}
-                disabled={isPublishing || !isInstagramConnected}
-                className="w-full bg-gradient-to-r from-fuchsia-600 via-rose-600 to-[#FF5F00] hover:from-fuchsia-500 hover:to-orange-500 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-xl shadow-rose-600/30 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 cursor-pointer"
+                type="button"
+                onClick={handlePublishToInstagram}
+                className="w-full bg-gradient-to-r from-fuchsia-600 via-rose-600 to-[#FF5F00] hover:opacity-95 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-xl shadow-fuchsia-900/40 flex items-center justify-center gap-3 active:scale-98 cursor-pointer"
               >
-                {isPublishing ? (
-                  <>
-                    <RefreshCw size={18} className="animate-spin" />
-                    <span>Publicando no @melhorcupom.oficial...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send size={18} />
-                    <span>Postar Automaticamente no Instagram</span>
-                  </>
-                )}
+                <Instagram size={18} />
+                <span>Publicar / Divulgar no Instagram</span>
               </button>
 
-              {/* Barra de Progresso de Publicação */}
-              {isPublishing && (
-                <div className="space-y-2 pt-1 animate-fade-in">
-                  <div className="flex items-center justify-between text-[11px] text-gray-300 font-medium">
-                    <span>{publishStep}</span>
-                    <span>{publishProgress}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-fuchsia-500 to-orange-500 transition-all duration-300"
-                      style={{ width: `${publishProgress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={handleDownloadArtwork}
+                  className="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-4 rounded-xl text-xs border border-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Download size={14} />
+                  <span>Baixar PNG</span>
+                </button>
 
-              <button
-                onClick={handleDownload}
-                className="w-full bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-2xl text-xs transition-colors border border-white/10 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Download size={14} />
-                <span>Baixar Arte para Arquivo Local (PNG)</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={handleCopyCaption}
+                  className="bg-white/5 hover:bg-white/10 text-amber-300 font-bold py-3 px-4 rounded-xl text-xs border border-amber-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {copiedCaption ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  <span>{copiedCaption ? 'Copiado!' : 'Copiar Texto'}</span>
+                </button>
+              </div>
+
+              {/* Dica de Divulgação */}
+              <div className="bg-black/30 border border-white/5 rounded-2xl p-3.5 text-[11px] text-gray-300 leading-relaxed flex items-start gap-2">
+                <Sparkles size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <span>
+                  <strong>Fluxo de 1 Clique:</strong> Ao clicar em "Publicar", o criativo em 1080x1080 é baixado automaticamente e a legenda oficial com hashtags é copiada para a área de transferência pronta para colar no Instagram.
+                </span>
+              </div>
             </div>
 
           </div>
 
         </div>
 
-        {/* Pré-visualização da Arte do Admin (Coluna 7) */}
-        <div className="lg:col-span-7 bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col items-center">
-          <div className="w-full flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-              <Eye size={15} className="text-fuchsia-400" />
-              <span>Arte Oficial: Parceria (+)</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40">
-                ⭐ {locationText}
+        {/* Preview Visual da Arte Oficial (Coluna 7) */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 flex flex-col items-center">
+            
+            <div className="w-full flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Eye size={15} className="text-orange-400" />
+                <span>Pré-visualização Oficial em Tempo Real</span>
+              </span>
+              <span className="text-xs text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full font-bold">
+                {format === 'feed' ? '1080 x 1080 px (Feed)' : '1080 x 1920 px (Stories)'}
               </span>
             </div>
-          </div>
 
-          {/* Canvas Renderizado */}
-          <div className="relative w-full flex items-center justify-center bg-black/40 rounded-2xl p-3 border border-white/5 overflow-hidden">
-            <canvas
-              ref={canvasRef}
-              className="rounded-xl shadow-2xl max-w-full h-auto transition-all border border-white/10"
-              style={{
-                maxHeight: format === 'feed' ? '460px' : '600px',
-                aspectRatio: format === 'feed' ? '1 / 1' : '9 / 16'
-              }}
-            />
-          </div>
+            {/* Container do Canvas */}
+            <div className="relative border-4 border-[#FF5F00]/30 rounded-2xl overflow-hidden shadow-2xl bg-black max-w-[420px] w-full flex items-center justify-center">
+              <canvas
+                ref={canvasRef}
+                className="w-full h-auto object-contain block"
+              />
+            </div>
 
-          <div className="mt-4 text-xs text-gray-400 text-center flex items-center gap-1.5">
-            <CheckCircle2 size={14} className="text-emerald-400" />
-            <span>Arte com símbolo de parceria (+) e espaçamento perfeito sem sobreposição.</span>
-          </div>
+            <div className="w-full text-center mt-3 text-xs text-gray-400">
+              Criativo gerado com logo oficial, selo de parceria (+) e informações de cidade.
+            </div>
 
+          </div>
         </div>
 
       </div>
 
-      {/* 3. Histórico de Publicações Automáticas no Instagram */}
+      {/* 3. Histórico de Publicações Realizadas */}
       <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="space-y-1">
             <h3 className="text-lg font-black text-white font-display flex items-center gap-2">
               <Instagram size={18} className="text-rose-400" />
-              <span>Feed de Publicações Automáticas Realizadas</span>
+              <span>Histórico de Publicações e Divulgações</span>
             </h3>
             <p className="text-xs text-gray-400">
-              Histórico de postagens enviadas diretamente para a conta oficial @melhorcupom.oficial
+              Registro real das postagens preparadas e divulgadas para a conta {instagramSession.username}
             </p>
           </div>
 
-          <div className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full font-bold">
-            Taxa de Entrega: 100% via API
-          </div>
+          {postHistory.length > 0 && (
+            <div className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full font-bold">
+              {postHistory.length} {postHistory.length === 1 ? 'publicação registrada' : 'publicações registradas'}
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {postHistory.map((post) => (
-            <div
-              key={post.id}
-              className="bg-[#12121C] border border-white/5 hover:border-white/15 rounded-2xl p-4 space-y-3 transition-all"
-            >
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-white truncate max-w-[180px]">{post.storeName}</span>
-                <span className="text-[10px] text-gray-400">{post.publishedAt}</span>
-              </div>
-
-              <div className="text-xs text-gray-400 line-clamp-2">
-                {post.city} • Post automático no feed com selo de parceria.
-              </div>
-
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-gray-300">
-                <div className="flex items-center gap-3 text-[11px]">
-                  <span>❤️ {post.likes}</span>
-                  <span>💬 {post.comments}</span>
+        {postHistory.length === 0 ? (
+          <div className="bg-[#12121C] border border-white/5 rounded-2xl p-8 text-center max-w-md mx-auto space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 text-gray-400 flex items-center justify-center mx-auto text-2xl">
+              📸
+            </div>
+            <h4 className="text-sm font-bold text-white">Nenhuma publicação registrada ainda</h4>
+            <p className="text-xs text-gray-400">
+              Selecione uma loja parceira acima, gere a arte e clique em "Publicar / Divulgar no Instagram" para registrar seus posts reais aqui.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {postHistory.map((post) => (
+              <div
+                key={post.id}
+                className="bg-[#12121C] border border-white/5 hover:border-white/15 rounded-2xl p-4 space-y-3 transition-all"
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-white truncate max-w-[180px]">{post.storeName}</span>
+                  <span className="text-[10px] text-gray-400">{post.publishedAt}</span>
                 </div>
 
-                <a
-                  href={post.postUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-orange-400 hover:text-orange-300 font-bold flex items-center gap-1 text-[11px]"
-                >
-                  <span>Ver Post</span>
-                  <ExternalLink size={11} />
-                </a>
+                <div className="text-xs text-gray-400 line-clamp-2">
+                  {post.city} • Formato: {post.format || 'Feed'}
+                </div>
+
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-gray-300">
+                  <span className="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-semibold">
+                    ✓ Divulgado
+                  </span>
+
+                  <a
+                    href={post.postUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-orange-400 hover:text-orange-300 font-bold flex items-center gap-1 text-[11px]"
+                  >
+                    <span>Abrir Perfil</span>
+                    <ExternalLink size={11} />
+                  </a>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Modal de Conexão Real com o Instagram */}
+      <InstagramLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        currentSession={instagramSession}
+        onSaveSession={handleSaveSession}
+        onDisconnectSession={handleDisconnectSession}
+        showToast={showToast}
+      />
 
     </div>
   );

@@ -14,6 +14,8 @@
     "meli:login": "node scripts/meli-login.cjs",
     "sync:amazon": "node scripts/sync-amazon.cjs",
     "amazon:login": "node scripts/amazon-login.cjs",
+    "instagram:login": "node scripts/instagram-login.cjs",
+    "instagram:publish": "node scripts/publish-instagram.cjs",
     "sync:all": "node scripts/sync-all.cjs"
   },
   "dependencies": {
