@@ -15,7 +15,9 @@ import {
   Instagram, 
   Zap,
   MapPin,
-  Plus
+  Plus,
+  Terminal,
+  LogIn
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
