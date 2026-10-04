@@ -38,6 +38,7 @@ export const InstagramLoginModal = ({
   const [isLaunchingBrowser, setIsLaunchingBrowser] = useState(false);
   const [browserLoginStatus, setBrowserLoginStatus] = useState('');
   const [sessionIdInput, setSessionIdInput] = useState('');
+  const [isSavingCookie, setIsSavingCookie] = useState(false);
 
   if (!isOpen) return null;
 
@@ -107,45 +108,30 @@ export const InstagramLoginModal = ({
     }
   };
 
-  // Verificar arquivo de sessão real (public/instagram-session.json)
-  const handleCheckSavedSession = async () => {
-    setIsCheckingFile(true);
+  // Salvar diretamente o cookie sessionid no servidor
+  const handleSaveSessionId = async () => {
+    if (!sessionIdInput.trim()) {
+      showToast('Cole a chave de sessão (sessionid) no campo antes de salvar.', 'warning');
+      return;
+    }
+
+    setIsSavingCookie(true);
     try {
-      const res = await fetch('/instagram-session.json?t=' + Date.now());
-      if (res.ok) {
-        const data = await res.json();
-        if (data.connected || data.hasSessionId || data.cookiesCount > 0) {
-          const finalUser = data.username || username || '@omelhorcupom.com.br';
-          const sessionObj = {
-            isConnected: true,
-            username: finalUser.startsWith('@') ? finalUser : `@${finalUser}`,
-            accountType: 'browser_session',
-            connectedAt: data.connectedAt || new Date().toISOString(),
-            cookiesCount: data.cookiesCount || 0,
-            hasSessionId: true
-          };
-          onSaveSession(sessionObj);
-          showToast(`Sessão do Instagram detectada com sucesso para ${sessionObj.username}!`, 'success');
-          onClose();
-          return;
-        }
-      }
-      
-      // Caso tenha informado cookie sessionid ou queira salvar a sessão
       const cleanUser = username.trim() || '@omelhorcupom.com.br';
       const formattedUser = cleanUser.startsWith('@') ? cleanUser : `@${cleanUser}`;
 
-      if (sessionIdInput.trim()) {
-        try {
-          await fetch('/api/instagram-save-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              username: formattedUser,
-              sessionId: sessionIdInput.trim()
-            })
-          });
-        } catch (e) {}
+      const res = await fetch('/api/instagram-save-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formattedUser,
+          sessionId: sessionIdInput.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Falha ao salvar cookie no servidor');
       }
 
       const sessionObj = {
@@ -153,28 +139,53 @@ export const InstagramLoginModal = ({
         username: formattedUser,
         accountType: 'browser_session',
         connectedAt: new Date().toISOString(),
-        cookiesCount: sessionIdInput.trim() ? 20 : 15,
+        cookiesCount: data.session?.cookiesCount || 1,
         hasSessionId: true
       };
+
       onSaveSession(sessionObj);
-      showToast(`Conta ${sessionObj.username} conectada com sucesso!`, 'success');
+      showToast(`🎉 Cookie de sessão salvo com sucesso para ${sessionObj.username}! O robô de publicação está autenticado.`, 'success');
       onClose();
-      return;
     } catch (err) {
-      console.warn('Erro ao verificar sessão:', err);
-      // Fallback salvar usuário informado
-      const cleanUser = username.trim() || '@omelhorcupom.com.br';
-      const sessionObj = {
-        isConnected: true,
-        username: cleanUser.startsWith('@') ? cleanUser : `@${cleanUser}`,
-        accountType: 'browser_session',
-        connectedAt: new Date().toISOString(),
-        cookiesCount: 12,
-        hasSessionId: true
-      };
-      onSaveSession(sessionObj);
-      showToast(`Conta ${sessionObj.username} conectada com sucesso!`, 'success');
-      onClose();
+      console.error('Erro ao salvar cookie:', err);
+      showToast('Erro ao salvar cookie: ' + err.message, 'error');
+    } finally {
+      setIsSavingCookie(false);
+    }
+  };
+
+  // Verificar arquivo de sessão real ou salvar sessionid se preenchido
+  const handleCheckSavedSession = async () => {
+    // Se o usuário colou o sessionid, salva imediatamente
+    if (sessionIdInput.trim()) {
+      return handleSaveSessionId();
+    }
+
+    setIsCheckingFile(true);
+    try {
+      const res = await fetch('/instagram-session.json?t=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        if (data.connected && (data.cookiesCount > 0 || data.hasSessionId)) {
+          const finalUser = data.username || username || '@omelhorcupom.com.br';
+          const sessionObj = {
+            isConnected: true,
+            username: finalUser.startsWith('@') ? finalUser : `@${finalUser}`,
+            accountType: 'browser_session',
+            connectedAt: data.connectedAt || new Date().toISOString(),
+            cookiesCount: data.cookiesCount || 1,
+            hasSessionId: true
+          };
+          onSaveSession(sessionObj);
+          showToast(`Sessão ativa do Instagram confirmada para ${sessionObj.username}!`, 'success');
+          onClose();
+          return;
+        }
+      }
+
+      showToast('Nenhum login detectado ainda. Cole a chave sessionid abaixo ou use a janela automática.', 'warning');
+    } catch (err) {
+      showToast('Erro ao verificar sessão salva.', 'error');
     } finally {
       setIsCheckingFile(false);
     }
@@ -457,32 +468,58 @@ export const InstagramLoginModal = ({
                 </div>
               </div>
 
-              {/* CAMPO DE COOKIE SESSIONID (OPCIONAL PARA ATIVAÇÃO 100% DIRETA) */}
-              <div className="space-y-2 bg-white/5 border border-white/10 rounded-2xl p-4">
-                <label className="text-xs font-bold text-gray-300 flex items-center justify-between">
-                  <span>Chave de Sessão (Cookie sessionid) - Opcional:</span>
-                  <span className="text-[10px] text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
-                    Ativa Robô 100% Automático
+              {/* CAMPO DE COOKIE SESSIONID (ATIVAR ROBÔ 100% AUTOMÁTICO) */}
+              <div className="space-y-3 bg-gradient-to-br from-emerald-950/30 to-[#12121C] border-2 border-emerald-500/40 rounded-2xl p-4.5 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black text-white flex items-center gap-1.5">
+                    <Key size={14} className="text-emerald-400" />
+                    <span>Chave de Sessão (Cookie sessionid)</span>
+                  </label>
+                  <span className="text-[10px] text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded font-black uppercase tracking-wider">
+                    Ativa Robô Automático
                   </span>
-                </label>
-                <input
-                  type="password"
-                  value={sessionIdInput}
-                  onChange={(e) => setSessionIdInput(e.target.value)}
-                  placeholder="Cole aqui o valor do cookie sessionid se já estiver logado no Chrome"
-                  className="w-full bg-[#12121C] border border-white/15 focus:border-emerald-500 rounded-2xl px-4 py-2.5 text-xs text-white font-mono focus:outline-none"
-                />
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={sessionIdInput}
+                    onChange={(e) => setSessionIdInput(e.target.value)}
+                    placeholder="Cole aqui o valor de sessionid (ex: 68912345678%3AnzH8... ou o cookie completo)"
+                    className="w-full bg-[#0D0D14] border border-white/20 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs text-white font-mono focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSaveSessionId}
+                  disabled={isSavingCookie || !sessionIdInput.trim()}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black py-3 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingCookie ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      <span>Salvando e validando cookie no robô...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={15} />
+                      <span>💾 Salvar & Ativar Cookie no Robô</span>
+                    </>
+                  )}
+                </button>
+
                 <p className="text-[11px] text-gray-400 leading-relaxed">
-                  Como pegar no seu navegador logado: No Instagram aberto, tecle <strong>F12</strong> &gt; aba <strong>Application (Aplicativo)</strong> &gt; <strong>Cookies</strong> &gt; <strong>instagram.com</strong> &gt; copie o valor de <strong className="text-white">sessionid</strong> e cole aqui.
+                  💡 <strong>Como pegar no navegador logado:</strong> No Instagram logado no Chrome/Edge, tecle <kbd className="bg-white/10 px-1.5 py-0.5 rounded text-white font-mono">F12</kbd> &gt; aba <strong>Application (Aplicativo)</strong> &gt; <strong>Cookies</strong> &gt; <strong>https://www.instagram.com</strong> &gt; copie o valor de <code className="text-emerald-300 font-bold">sessionid</code> e clique no botão verde acima.
                 </p>
               </div>
 
-              {/* Botão de Salvar & Confirmar Conexão */}
+              {/* Botão Geral de Validação & Conexão */}
               <div className="pt-2">
                 <button
                   type="button"
                   onClick={handleCheckSavedSession}
-                  disabled={isCheckingFile}
+                  disabled={isCheckingFile || isSavingCookie}
                   className="w-full bg-gradient-to-r from-rose-600 via-fuchsia-600 to-[#FF5F00] hover:opacity-95 text-white font-extrabold py-3.5 px-6 rounded-2xl text-sm shadow-xl shadow-fuchsia-900/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isCheckingFile ? (

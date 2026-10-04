@@ -617,7 +617,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     fetch('/instagram-session.json?t=' + Date.now())
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && (data.connected || data.hasSessionId || data.cookiesCount > 0)) {
+        if (data && data.connected && (data.cookiesCount > 0 || data.hasSessionId)) {
           setInstagramSession(prev => {
             const updated = {
               ...prev,
@@ -627,6 +627,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               connectedAt: data.connectedAt || prev.connectedAt || new Date().toISOString(),
               cookiesCount: data.cookiesCount || prev.cookiesCount,
               hasSessionId: true
+            };
+            localStorage.setItem('melhor_cupom_instagram_session_v2', JSON.stringify(updated));
+            return updated;
+          });
+        } else if (data && !data.connected) {
+          setInstagramSession(prev => {
+            const updated = {
+              ...prev,
+              isConnected: false,
+              cookiesCount: 0,
+              hasSessionId: false
             };
             localStorage.setItem('melhor_cupom_instagram_session_v2', JSON.stringify(updated));
             return updated;

@@ -39,24 +39,86 @@ export default defineConfig({
               try {
                 const parsed = JSON.parse(body || '{}');
                 const username = parsed.username || '@omelhorcupom.com.br';
-                const sessionId = (parsed.sessionId || '').trim();
-                const cookies = parsed.cookies || (sessionId ? [{
-                  name: 'sessionid',
-                  value: sessionId,
-                  domain: '.instagram.com',
-                  path: '/',
-                  httpOnly: true,
-                  secure: true
-                }] : []);
+                const rawInput = (parsed.sessionId || '').trim();
+                let cookies = parsed.cookies || [];
+
+                if (rawInput && cookies.length === 0) {
+                  // 1. JSON Array (Cookie-Editor / EditThisCookie)
+                  if (rawInput.startsWith('[') && rawInput.endsWith(']')) {
+                    try {
+                      const jsonCookies = JSON.parse(rawInput);
+                      if (Array.isArray(jsonCookies)) {
+                        cookies = jsonCookies.map(c => ({
+                          name: c.name,
+                          value: c.value,
+                          domain: c.domain || '.instagram.com',
+                          path: c.path || '/',
+                          httpOnly: Boolean(c.httpOnly),
+                          secure: Boolean(c.secure ?? true)
+                        }));
+                      }
+                    } catch (e) {}
+                  }
+
+                  // 2. Cookie header string (sessionid=xyz; ds_user_id=123)
+                  if (cookies.length === 0 && rawInput.includes('=')) {
+                    const parts = rawInput.split(';');
+                    for (const part of parts) {
+                      const [k, ...v] = part.trim().split('=');
+                      if (k && v.length > 0) {
+                        cookies.push({
+                          name: k.trim(),
+                          value: v.join('=').trim(),
+                          domain: '.instagram.com',
+                          path: '/',
+                          httpOnly: k.trim() === 'sessionid',
+                          secure: true
+                        });
+                      }
+                    }
+                  }
+
+                  // 3. Raw sessionid value
+                  if (cookies.length === 0 && rawInput.length > 0) {
+                    let val = rawInput.replace(/^['"]|['"]$/g, '');
+                    cookies.push({
+                      name: 'sessionid',
+                      value: val,
+                      domain: '.instagram.com',
+                      path: '/',
+                      httpOnly: true,
+                      secure: true
+                    });
+                  }
+                }
+
+                // Extrair ds_user_id se presente no prefixo de sessionid (ex: 68912345678%3A...)
+                const sessionCookie = cookies.find(c => c.name === 'sessionid');
+                const dsCookie = cookies.find(c => c.name === 'ds_user_id');
+                if (sessionCookie && sessionCookie.value && !dsCookie) {
+                  const matchUser = sessionCookie.value.match(/^([0-9]+)(?:%3A|:)/);
+                  if (matchUser) {
+                    cookies.push({
+                      name: 'ds_user_id',
+                      value: matchUser[1],
+                      domain: '.instagram.com',
+                      path: '/',
+                      httpOnly: false,
+                      secure: true
+                    });
+                  }
+                }
+
+                const hasValidSession = Boolean(sessionCookie && sessionCookie.value && sessionCookie.value.length > 5);
 
                 const sessionData = {
-                  connected: true,
+                  connected: hasValidSession,
                   username: username.startsWith('@') ? username : `@${username}`,
                   accountType: 'browser_session',
                   connectedAt: new Date().toISOString(),
-                  cookiesCount: cookies.length || 1,
-                  hasSessionId: Boolean(sessionId || cookies.length > 0),
-                  userId: parsed.userId || 'admin',
+                  cookiesCount: cookies.length,
+                  hasSessionId: hasValidSession,
+                  userId: (cookies.find(c => c.name === 'ds_user_id') || {}).value || parsed.userId || 'admin',
                   cookies: cookies
                 };
 
@@ -65,14 +127,16 @@ export default defineConfig({
 
                 const publicSessionFile = path.resolve(__dirname, 'public/instagram-session.json');
                 fs.writeFileSync(publicSessionFile, JSON.stringify({
-                  connected: true,
+                  connected: hasValidSession,
                   username: sessionData.username,
                   accountType: sessionData.accountType,
                   connectedAt: sessionData.connectedAt,
                   cookiesCount: sessionData.cookiesCount,
-                  hasSessionId: sessionData.hasSessionId,
+                  hasSessionId: hasValidSession,
                   userId: sessionData.userId
                 }, null, 2), 'utf8');
+
+                console.log(`[Instagram Middleware] Sessão salva! Cookies: ${cookies.length}, sessionid válido: ${hasValidSession}`);
 
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ success: true, session: sessionData }));
