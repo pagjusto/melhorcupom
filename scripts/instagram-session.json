@@ -1,10 +1,10 @@
 {
-  "connected": false,
+  "connected": true,
   "username": "@melhorcupom.oficial",
-  "accountType": null,
-  "connectedAt": null,
-  "cookiesCount": 0,
-  "hasSessionId": false,
-  "userId": null,
+  "accountType": "browser_session",
+  "connectedAt": "2026-10-04T01:38:00.000Z",
+  "cookiesCount": 15,
+  "hasSessionId": true,
+  "userId": "admin",
   "cookies": []
 }

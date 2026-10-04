@@ -1030,8 +1030,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                   </>
                 ) : (
                   <span className="text-amber-400 font-medium flex items-center gap-1">
-                    <Terminal size={12} />
-                    <span>Dica: Use <strong>npm run instagram:login</strong> no terminal para salvar sua sessão oficial</span>
+                    <Sparkles size={12} />
+                    <span>Dica: Conecte em 1 clique pelo botão acima ou use <strong>node scripts/instagram-login.cjs</strong></span>
                   </span>
                 )}
               </div>
