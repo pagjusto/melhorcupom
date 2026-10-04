@@ -86,6 +86,74 @@ export default defineConfig({
             res.end();
           }
         });
+
+        server.middlewares.use('/api/instagram-publish', (req, res) => {
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => { body += chunk; });
+            req.on('end', async () => {
+              try {
+                const parsed = JSON.parse(body || '{}');
+                const sessionFile = path.resolve(__dirname, 'scripts/instagram-session.json');
+                if (!fs.existsSync(sessionFile)) {
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({
+                    success: false,
+                    needCookies: true,
+                    message: 'Sessão do Instagram não encontrada.'
+                  }));
+                }
+
+                const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+                const cookies = sessionData.cookies || [];
+                const sessionCookie = cookies.find(c => c.name === 'sessionid');
+
+                if (!sessionCookie) {
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({
+                    success: false,
+                    needCookies: true,
+                    message: 'Os cookies do robô ainda não foram sincronizados. Abra o arquivo "Conectar Instagram.bat" na sua Área de Trabalho para conectar o robô, ou copie o cookie sessionid.'
+                  }));
+                }
+
+                // Salvar imagem temporária
+                const tempDir = path.resolve(__dirname, 'temp');
+                if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+                const tempImagePath = path.join(tempDir, `post-${Date.now()}.png`);
+                
+                const base64Data = (parsed.imageBase64 || '').replace(/^data:image\/\w+;base64,/, '');
+                if (base64Data) {
+                  fs.writeFileSync(tempImagePath, Buffer.from(base64Data, 'base64'));
+                } else {
+                  fs.copyFileSync(path.resolve(__dirname, 'public/logo-melhor-cupom.png'), tempImagePath);
+                }
+
+                const publishMod = await import('./scripts/publish-post.cjs');
+                const publishPost = publishMod.publishPost || publishMod.default?.publishPost || publishMod.default;
+                if (typeof publishPost !== 'function') {
+                  throw new Error('Função de publicação não pôde ser carregada.');
+                }
+                const result = await publishPost({
+                  imagePath: tempImagePath,
+                  caption: parsed.caption || '🎉 Cupons exclusivos no Melhor Cupom!'
+                });
+
+                try { fs.unlinkSync(tempImagePath); } catch (e) {}
+
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: true, message: result.message || 'Publicado com sucesso!' }));
+              } catch (e) {
+                console.error('Erro na publicação automática:', e);
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, error: e.message }));
+              }
+            });
+          } else {
+            res.statusCode = 405;
+            res.end();
+          }
+        });
       }
     }
   ],

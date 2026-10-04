@@ -17,7 +17,10 @@ import {
   MapPin,
   Plus,
   Terminal,
-  LogIn
+  LogIn,
+  AlertCircle,
+  X,
+  Key
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
@@ -576,6 +579,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const [format, setFormat] = useState('feed'); // 'feed' (1:1) ou 'story' (9:16)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishErrorModal, setPublishErrorModal] = useState(null);
 
   // Sessão Real do Instagram (Carregada do LocalStorage e do public/instagram-session.json)
   const [instagramSession, setInstagramSession] = useState(() => {
@@ -939,32 +944,89 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     }
   };
 
-  // Publicar e Abrir no Instagram Oficial
-  const handlePublishToInstagram = () => {
+  // Publicar no Instagram (Automático via Robô ou Assistido)
+  const handlePublishToInstagram = async (mode = 'auto') => {
     if (!instagramSession.isConnected) {
       setIsLoginModalOpen(true);
       showToast('Conecte a conta do Instagram antes de iniciar a divulgação.', 'warning');
       return;
     }
 
-    // 1. Copiar legenda para clipboard
+    const cleanStoreName = selectedStore?.name || 'Comércio Parceiro';
+    const cleanUser = (instagramSession.username || '@omelhorcupom.com.br').replace('@', '');
+
+    // MODO 1: Publicação 100% Automática em Background via Puppeteer
+    if (mode === 'auto') {
+      setIsPublishing(true);
+      try {
+        const canvas = canvasRef.current;
+        const imageBase64 = canvas ? canvas.toDataURL('image/png', 1.0) : '';
+
+        const res = await fetch('/api/instagram-publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64,
+            caption: customCaption,
+            storeName: cleanStoreName,
+            format
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          const newPost = {
+            id: `post_inst_${Date.now()}`,
+            storeName: cleanStoreName,
+            city: locationText,
+            publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            format: format === 'feed' ? 'Feed (1080x1080)' : 'Story (1080x1920)',
+            status: 'Publicado no Feed (Robô Automático)',
+            postUrl: `https://www.instagram.com/${cleanUser}/`
+          };
+          const updated = [newPost, ...postHistory];
+          setPostHistory(updated);
+          localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
+          showToast(`🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed de @omelhorcupom.com.br!`, 'success');
+          setIsPublishing(false);
+          return;
+        }
+
+        if (data.needCookies) {
+          setIsPublishing(false);
+          setPublishErrorModal({
+            title: 'Sincronizar Cookies para Publicação 100% Automática',
+            message: data.message
+          });
+          return;
+        }
+
+        throw new Error(data.error || 'Erro ao publicar no Instagram.');
+      } catch (err) {
+        setIsPublishing(false);
+        setPublishErrorModal({
+          title: 'Publicação Automática pelo Robô',
+          message: err.message || 'Os cookies da sessão não estão salvos. Abra o arquivo "Conectar Instagram.bat" na Área de Trabalho para sincronizar o robô.'
+        });
+        return;
+      }
+    }
+
+    // MODO 2: Modo Assistido (Baixa imagem, copia texto e abre Instagram para upload rápido)
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(customCaption);
     }
 
-    // 2. Baixar imagem automaticamente
     handleDownloadArtwork();
 
-    // 3. Registrar post real no histórico
-    const cleanStoreName = selectedStore?.name || 'Comércio Parceiro';
-    const cleanUser = (instagramSession.username || '@omelhorcupom.com.br').replace('@', '');
     const newPost = {
       id: `post_inst_${Date.now()}`,
       storeName: cleanStoreName,
       city: locationText,
       publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       format: format === 'feed' ? 'Feed (1080x1080)' : 'Story (1080x1920)',
-      status: 'Publicado no Feed',
+      status: 'Modo Assistido (Imagem baixada)',
       postUrl: `https://www.instagram.com/${cleanUser}/`
     };
 
@@ -972,12 +1034,11 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     setPostHistory(updated);
     localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
 
-    showToast(`Arte de "${cleanStoreName}" preparada e legenda copiada! Abrindo Instagram...`, 'success');
+    showToast(`Imagem salva em Downloads e legenda copiada! No Instagram que abriu, clique em "Selecionar do Computador" e cole o texto com Ctrl+V.`, 'success');
 
-    // 4. Abrir Instagram para publicação
     setTimeout(() => {
       window.open('https://www.instagram.com/create/select/', '_blank');
-    }, 700);
+    }, 600);
   };
 
   return (
@@ -1169,18 +1230,37 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             <div className="pt-2 space-y-3">
               <button
                 type="button"
-                onClick={handlePublishToInstagram}
-                className="w-full bg-gradient-to-r from-fuchsia-600 via-rose-600 to-[#FF5F00] hover:opacity-95 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-xl shadow-fuchsia-900/40 flex items-center justify-center gap-3 active:scale-98 cursor-pointer"
+                onClick={() => handlePublishToInstagram('auto')}
+                disabled={isPublishing}
+                className="w-full bg-gradient-to-r from-fuchsia-600 via-rose-600 to-[#FF5F00] hover:opacity-95 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-xl shadow-fuchsia-900/40 flex items-center justify-center gap-3 active:scale-98 cursor-pointer disabled:opacity-75"
               >
-                <Instagram size={18} />
-                <span>Publicar / Divulgar no Instagram</span>
+                {isPublishing ? (
+                  <>
+                    <RefreshCw size={18} className="animate-spin text-white" />
+                    <span>Publicando no Instagram via Robô...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} />
+                    <span>🚀 Publicar Automaticamente no Feed (Robô)</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handlePublishToInstagram('assisted')}
+                className="w-full bg-white/5 hover:bg-white/10 text-gray-200 font-bold py-3 px-4 rounded-xl text-xs border border-white/15 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Instagram size={15} className="text-rose-400" />
+                <span>📋 Modo Assistido (Baixar Imagem + Abrir Instagram)</span>
               </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={handleDownloadArtwork}
-                  className="bg-white/5 hover:bg-white/10 text-white font-bold py-3 px-4 rounded-xl text-xs border border-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="bg-white/5 hover:bg-white/10 text-white font-bold py-2.5 px-4 rounded-xl text-xs border border-white/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Download size={14} />
                   <span>Baixar PNG</span>
@@ -1189,10 +1269,10 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 <button
                   type="button"
                   onClick={handleCopyCaption}
-                  className="bg-white/5 hover:bg-white/10 text-amber-300 font-bold py-3 px-4 rounded-xl text-xs border border-amber-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="bg-white/5 hover:bg-white/10 text-amber-300 font-bold py-2.5 px-4 rounded-xl text-xs border border-amber-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {copiedCaption ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                  <span>{copiedCaption ? 'Copiado!' : 'Copiar Texto'}</span>
+                  <span>{copiedCaption ? 'Copiada!' : 'Copiar Legenda'}</span>
                 </button>
               </div>
 
@@ -1200,7 +1280,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               <div className="bg-black/30 border border-white/5 rounded-2xl p-3.5 text-[11px] text-gray-300 leading-relaxed flex items-start gap-2">
                 <Sparkles size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
                 <span>
-                  <strong>Fluxo de 1 Clique:</strong> Ao clicar em "Publicar", o criativo em 1080x1080 é baixado automaticamente e a legenda oficial com hashtags é copiada para a área de transferência pronta para colar no Instagram.
+                  <strong>Como funciona:</strong> A <em>Publicação Automática</em> usa o robô em segundo plano com cookies autenticados. No <em>Modo Assistido</em>, a imagem é baixada e você cola a legenda com Ctrl+V na tela de criação do Instagram.
                 </span>
               </div>
             </div>
@@ -1316,6 +1396,72 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         onDisconnectSession={handleDisconnectSession}
         showToast={showToast}
       />
+
+      {/* Modal Informativo: Falha/Orientação de Cookies para Publicação Automática */}
+      {publishErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#181824] border border-orange-500/30 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative space-y-5">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-[#FF5F00] flex items-center justify-center flex-shrink-0">
+                  <AlertCircle size={26} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white font-display">
+                    {publishErrorModal.title || 'Atenção na Publicação Automática'}
+                  </h3>
+                  <span className="text-xs text-orange-400 font-bold">Instagram @omelhorcupom.com.br</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPublishErrorModal(null)}
+                className="text-gray-400 hover:text-white p-2 rounded-xl bg-white/5 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="bg-black/40 border border-white/5 rounded-2xl p-4 text-xs text-gray-300 leading-relaxed space-y-3">
+              <p>
+                {publishErrorModal.message}
+              </p>
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-[11px] flex items-start gap-2">
+                <Sparkles size={14} className="flex-shrink-0 mt-0.5" />
+                <span>
+                  O robô automático precisa dos cookies da sua conta para realizar o envio em segundo plano. Enquanto isso, você pode usar o <strong>Modo Assistido</strong> em 1 clique!
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPublishErrorModal(null);
+                  handlePublishToInstagram('assisted');
+                }}
+                className="w-full bg-gradient-to-r from-fuchsia-600 to-[#FF5F00] hover:opacity-95 text-white font-bold py-3.5 rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Instagram size={15} />
+                <span>Usar Modo Assistido Agora (Baixar + Abrir Instagram)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPublishErrorModal(null);
+                  setIsLoginModalOpen(true);
+                }}
+                className="w-full bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl text-xs border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Key size={14} />
+                <span>Abrir Opções de Conexão / Inserir Cookies</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
