@@ -295,14 +295,14 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Texto: "resgate seu cupom!"
+    // Texto: "RESGATE SEU CUPOM EXCLUSIVO"
     ctx.fillStyle = '#FFFFFF';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
     ctx.shadowBlur = 10;
-    ctx.font = '900 34px "Inter", sans-serif';
+    ctx.font = format === 'feed' ? '900 24px "Inter", sans-serif' : '900 32px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🎟️ resgate seu cupom!', width / 2, ctaY + ctaHeight / 2);
+    ctx.fillText('RESGATE SEU CUPOM EXCLUSIVO', width / 2, ctaY + (ctaHeight / 2) - 1);
     ctx.restore();
 
     // 10. Rodapé informativo
@@ -315,7 +315,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
     ctx.fillStyle = '#FF9D5C';
     ctx.font = '900 28px "Inter", sans-serif';
-    ctx.fillText('melhorcupom.com.br', width / 2, footerY + 36);
+    ctx.fillText('www.omelhorcupom.com.br', width / 2, footerY + 36);
 
     ctx.fillStyle = '#6B7280';
     ctx.font = '500 16px "Inter", sans-serif';
@@ -349,7 +349,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
   // Copiar legenda sugerida
   const handleCopyCaption = () => {
-    const caption = `🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @omelhorcupom.com.br estão juntos!\n\nSe você é cliente ou quer aproveitar nossos produtos com economia real, nós disponibilizamos cupons exclusivos com descontos especiais para você resgatar gratuitamente agora mesmo!\n\n👉 COMO RESGATAR SEU CUPOM:\n1️⃣ Acesse o link na nossa bio ou baixe o app @omelhorcupom.com.br\n2️⃣ Procure por "${store?.name || 'nossa loja'}"\n3️⃣ Resgate seu cupom grátis e aproveite!\n\nMarque aquele amigo que adora economizar e vem aproveitar! 🔥\n\n#MelhorCupom #Parceria #${(store?.name || 'loja').replace(/\s+/g, '')} #${locationText.split('-')[0].trim().replace(/\s+/g, '')}`;
+    const caption = `🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @omelhorcupom.com.br estão juntos!\n\nSe você é cliente ou quer aproveitar nossos produtos com economia real, nós disponibilizamos cupons exclusivos com descontos especiais para você resgatar gratuitamente agora mesmo!\n\n👉 COMO RESGATAR SEU CUPOM:\n1️⃣ Acesse o link na nossa bio @omelhorcupom.com.br ou acesse www.omelhorcupom.com.br\n2️⃣ Procure por "${store?.name || 'nossa loja'}"\n3️⃣ Resgate seu cupom grátis e aproveite!\n\nMarque aquele amigo que adora economizar e vem aproveitar! 🔥\n\n#MelhorCupom #Parceria #${(store?.name || 'loja').replace(/\s+/g, '')} #${locationText.split('-')[0].trim().replace(/\s+/g, '')}`;
     
     navigator.clipboard.writeText(caption);
     setCopiedCaption(true);
@@ -498,7 +498,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
             </div>
 
             <div className="bg-[#12121B] border border-white/5 rounded-2xl p-4 text-xs text-gray-300 font-mono leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
-              {`🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @omelhorcupom.com.br estão juntos!\n\nResgate cupons exclusivos gratuitos e venha aproveitar com economia de verdade!\n\n👉 Acesse o link da nossa bio ou baixe o app Melhor Cupom!`}
+              {`🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @omelhorcupom.com.br estão juntos!\n\nResgate cupons exclusivos gratuitos e venha aproveitar com economia de verdade!\n\n👉 Acesse o link da nossa bio @omelhorcupom.com.br ou pelo site www.omelhorcupom.com.br!`}
             </div>
           </div>
 
@@ -658,12 +658,13 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       const cleanCity = locationText.split('-')[0].trim();
       const hashtagStore = cleanStore.replace(/[^a-zA-Z0-9]/g, '');
       const hashtagCity = cleanCity.replace(/[^a-zA-Z0-9]/g, '');
+      const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
 
       setCustomCaption(
-        `🎉 NOVO COMÉRCIO CREDENCIADO NO CLUBE VIP! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos no balcão e online\n✅ Resgate imediato pelo app ou site\n\n👉 Acesse o link na nossa bio @omelhorcupom.com.br e ative seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
+        `🎉 NOVO COMÉRCIO CREDENCIADO NO CLUBE VIP! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos no balcão e online\n✅ Resgate imediato pelo app ou site\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
       );
     }
-  }, [selectedStoreId, locationText]);
+  }, [selectedStoreId, locationText, selectedStore?.name, instagramSession?.username]);
 
   // Renderizar criativo no Canvas
   useEffect(() => {
@@ -862,9 +863,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       console.warn('Erro ao carregar logo do Melhor Cupom no admin:', e);
     }
 
-    // 9. BOTÃO DE RESGATE (Mais de 65px de espaço livre abaixo do logo)
-    const btnW = 560;
-    const btnH = 68;
+    // 9. BOTÃO DE RESGATE (Perfeitamente alinhado e centralizado)
+    const btnText = 'RESGATE SEU CUPOM EXCLUSIVO';
+    ctx.font = format === 'feed' ? '900 24px "Inter", sans-serif' : '900 32px "Inter", sans-serif';
+    const textMetrics = ctx.measureText(btnText);
+    const btnPaddingX = format === 'feed' ? 56 : 72;
+    const btnW = Math.max(format === 'feed' ? 560 : 750, textMetrics.width + (btnPaddingX * 2));
+    const btnH = format === 'feed' ? 68 : 88;
+    const btnRadius = btnH / 2;
     const btnX = (width - btnW) / 2;
     const botY = format === 'feed' ? Math.max(745, mcLogoBottom + 50) : 1330;
 
@@ -876,18 +882,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
     ctx.shadowBlur = 24;
     ctx.beginPath();
-    ctx.roundRect(btnX, botY, btnW, btnH, 34);
+    ctx.roundRect(btnX, botY, btnW, btnH, btnRadius);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 28px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🎟️ RESGATE SEU CUPOM EXCLUSIVO', width / 2, botY + btnH / 2);
+    ctx.fillText(btnText, width / 2, botY + (btnH / 2) - 1);
     ctx.restore();
 
     // 10. Rodapé de Canais
@@ -896,7 +901,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = '#E5E7EB';
     ctx.font = 'bold 20px "Inter", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Disponível no app e em melhorcupom.com.br', width / 2, footerY);
+    ctx.fillText('Disponível no app e em www.omelhorcupom.com.br', width / 2, footerY);
 
     ctx.fillStyle = '#9CA3AF';
     ctx.font = '600 16px "Inter", sans-serif';
