@@ -1,9 +1,9 @@
 {
-  "connected": false,
+  "connected": true,
   "username": "@omelhorcupom.com.br",
   "accountType": "browser_session",
-  "connectedAt": null,
-  "cookiesCount": 0,
-  "hasSessionId": false,
-  "userId": null
+  "connectedAt": "2026-10-04T23:04:00.000Z",
+  "cookiesCount": 2,
+  "hasSessionId": true,
+  "userId": "76452558269"
 }

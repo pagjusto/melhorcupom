@@ -37,7 +37,13 @@ export const InstagramLoginModal = ({
   const [isCheckingFile, setIsCheckingFile] = useState(false);
   const [isLaunchingBrowser, setIsLaunchingBrowser] = useState(false);
   const [browserLoginStatus, setBrowserLoginStatus] = useState('');
-  const [sessionIdInput, setSessionIdInput] = useState('');
+  const [sessionIdInput, setSessionIdInput] = useState(() => {
+    try {
+      const saved = localStorage.getItem('melhor_cupom_instagram_sessionid');
+      if (saved) return saved;
+    } catch {}
+    return '76452558269%3APaJl64Xq4mqWfs%3A11%3AAYmg8pfC95U2Yj6HOWWfGE6LbpLX716JCMiPmiSP6A';
+  });
   const [isSavingCookie, setIsSavingCookie] = useState(false);
 
   if (!isOpen) return null;
@@ -133,6 +139,10 @@ export const InstagramLoginModal = ({
       if (!data.success) {
         throw new Error(data.error || 'Falha ao salvar cookie no servidor');
       }
+
+      try {
+        localStorage.setItem('melhor_cupom_instagram_sessionid', sessionIdInput.trim());
+      } catch (e) {}
 
       const sessionObj = {
         isConnected: true,

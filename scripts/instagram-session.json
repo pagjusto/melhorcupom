@@ -1,10 +1,27 @@
 {
-  "connected": false,
+  "connected": true,
   "username": "@omelhorcupom.com.br",
   "accountType": "browser_session",
-  "connectedAt": null,
-  "cookiesCount": 0,
-  "hasSessionId": false,
-  "userId": null,
-  "cookies": []
+  "connectedAt": "2026-10-04T23:04:00.000Z",
+  "cookiesCount": 2,
+  "hasSessionId": true,
+  "userId": "76452558269",
+  "cookies": [
+    {
+      "name": "sessionid",
+      "value": "76452558269%3APaJl64Xq4mqWfs%3A11%3AAYmg8pfC95U2Yj6HOWWfGE6LbpLX716JCMiPmiSP6A",
+      "domain": ".instagram.com",
+      "path": "/",
+      "httpOnly": true,
+      "secure": true
+    },
+    {
+      "name": "ds_user_id",
+      "value": "76452558269",
+      "domain": ".instagram.com",
+      "path": "/",
+      "httpOnly": false,
+      "secure": true
+    }
+  ]
 }
