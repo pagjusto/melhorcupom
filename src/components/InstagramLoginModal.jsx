@@ -35,15 +35,75 @@ export const InstagramLoginModal = ({
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [apiTestResult, setApiTestResult] = useState(null);
   const [isCheckingFile, setIsCheckingFile] = useState(false);
+  const [isLaunchingBrowser, setIsLaunchingBrowser] = useState(false);
+  const [browserLoginStatus, setBrowserLoginStatus] = useState('');
 
   if (!isOpen) return null;
 
   const handleCopyCommand = () => {
     if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText('npm run instagram:login');
+      navigator.clipboard.writeText('node scripts/instagram-login.cjs');
     }
     setCopiedCommand(true);
     setTimeout(() => setCopiedCommand(false), 2500);
+  };
+
+  // Disparar abertura automática da janela do Instagram (1-clique)
+  const handleLaunchBrowserLogin = async () => {
+    setIsLaunchingBrowser(true);
+    setBrowserLoginStatus('Iniciando janela oficial do Instagram...');
+    try {
+      const res = await fetch('/api/instagram-login', { method: 'POST' });
+      if (!res.ok) throw new Error('Não foi possível iniciar o navegador.');
+      
+      setBrowserLoginStatus('Janela aberta! Faça login no Instagram na janela que surgiu.');
+      showToast('Janela do Instagram aberta na sua tela! Faça login com a conta oficial.', 'info');
+
+      // Polling a cada 2 segundos no arquivo de sessão
+      let attempts = 0;
+      const maxAttempts = 300; // 10 minutos
+      const interval = setInterval(async () => {
+        attempts++;
+        try {
+          const checkRes = await fetch('/instagram-session.json?t=' + Date.now());
+          if (checkRes.ok) {
+            const data = await checkRes.json();
+            if (data.connected && (data.hasSessionId || data.cookiesCount > 0)) {
+              clearInterval(interval);
+              setIsLaunchingBrowser(false);
+              setBrowserLoginStatus('Conectado com sucesso!');
+              const finalUser = data.username || username || '@melhorcupom.oficial';
+              const sessionObj = {
+                isConnected: true,
+                username: finalUser.startsWith('@') ? finalUser : `@${finalUser}`,
+                accountType: 'browser_session',
+                connectedAt: data.connectedAt || new Date().toISOString(),
+                cookiesCount: data.cookiesCount || 0,
+                hasSessionId: true
+              };
+              onSaveSession(sessionObj);
+              showToast(`🎉 Instagram Conectado com Sucesso para ${sessionObj.username}!`, 'success');
+              onClose();
+              return;
+            }
+          }
+        } catch (e) {
+          // Ignora erro eventual de rede durante a verificação contínua
+        }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          setIsLaunchingBrowser(false);
+          setBrowserLoginStatus('');
+        }
+      }, 2000);
+
+    } catch (err) {
+      console.error('Erro ao abrir navegador:', err);
+      setIsLaunchingBrowser(false);
+      setBrowserLoginStatus('');
+      showToast('Erro ao abrir navegador automaticamente. Você pode usar o botão "Verificar Sessão" após logar.', 'error');
+    }
   };
 
   // Verificar arquivo de sessão real (public/instagram-session.json)
@@ -261,23 +321,77 @@ export const InstagramLoginModal = ({
             </div>
           )}
 
-          {/* ABA 1: SESSÃO WEB VIA TERMINAL (PUPPETEER HEADLESS / VISUAL) */}
+          {/* ABA 1: CONEXÃO COM O INSTAGRAM (AUTOMÁTICA OU VIA TERMINAL) */}
           {activeTab === 'browser' && (
             <div className="space-y-5">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4.5 space-y-3">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-emerald-400" />
-                  <span>Como funciona o Login Real no Instagram:</span>
-                </h4>
-                <ol className="text-xs text-gray-300 space-y-2 list-decimal list-inside leading-relaxed">
-                  <li>
-                    Execute o comando abaixo no terminal do projeto para abrir a janela oficial do Instagram:
-                  </li>
-                </ol>
+              {/* BOTÃO PRINCIPAL: CONEXÃO 1-CLIQUE (SEM TERMINAL) */}
+              <div className="bg-gradient-to-br from-rose-500/20 via-fuchsia-500/25 to-purple-600/20 border-2 border-fuchsia-500/50 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-rose-500 to-fuchsia-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                    <Instagram size={22} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-extrabold text-white flex items-center gap-2">
+                      <span>Conectar Instagram Direto por Aqui</span>
+                      <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] px-2 py-0.5 rounded-full font-black uppercase">
+                        1 Clique • Sem Terminal
+                      </span>
+                    </h4>
+                    <p className="text-xs text-gray-300 mt-0.5">
+                      Abre a janela oficial do Instagram no seu computador e detecta seu login automaticamente.
+                    </p>
+                  </div>
+                </div>
 
-                {/* Box de Comando do Terminal */}
+                {isLaunchingBrowser ? (
+                  <div className="bg-black/60 border border-fuchsia-500/40 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2.5 animate-pulse">
+                    <div className="flex items-center gap-2 text-fuchsia-300 text-xs font-bold">
+                      <RefreshCw size={16} className="animate-spin text-fuchsia-400" />
+                      <span>{browserLoginStatus || 'Aguardando seu login na janela oficial do Instagram...'}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 max-w-md">
+                      Faça login com seu @ e senha na janela que abriu. O Melhor Cupom detecta a autenticação instantaneamente.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleCheckSavedSession}
+                      disabled={isCheckingFile}
+                      className="mt-1 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-emerald-950"
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>Já fiz login na janela! Validar Conexão</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleLaunchBrowserLogin}
+                    className="w-full bg-gradient-to-r from-rose-600 via-fuchsia-600 to-[#FF5F00] hover:opacity-95 text-white font-black py-4 px-6 rounded-2xl text-sm shadow-xl shadow-fuchsia-900/50 transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                  >
+                    <Sparkles size={18} className="group-hover:rotate-12 transition-transform" />
+                    <span>🚀 Abrir Janela do Instagram para Conectar Agora</span>
+                  </button>
+                )}
+              </div>
+
+              {/* OPÇÃO ALTERNATIVA: VIA TERMINAL OU MANUAL */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-300 flex items-center gap-2">
+                    <Terminal size={14} className="text-gray-400" />
+                    <span>Opção Alternativa: Comando no Terminal</span>
+                  </h4>
+                  <span className="text-[10px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                    Bypass de restrição PowerShell
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  Se você preferir executar pelo terminal, use o comando <strong className="text-white font-mono">node</strong> abaixo (ele contorna a restrição do PowerShell que bloqueia o <code className="text-rose-400">npm.ps1</code>):
+                </p>
+
+                {/* Box de Comando do Terminal com node */}
                 <div className="flex items-center justify-between gap-2 bg-black/60 p-2.5 px-3.5 rounded-xl border border-white/15 font-mono text-xs">
-                  <span className="text-rose-400 select-all font-bold">npm run instagram:login</span>
+                  <span className="text-rose-400 select-all font-bold">node scripts/instagram-login.cjs</span>
                   <button
                     type="button"
                     onClick={handleCopyCommand}
@@ -287,12 +401,6 @@ export const InstagramLoginModal = ({
                     <span>{copiedCommand ? 'Copiado!' : 'Copiar'}</span>
                   </button>
                 </div>
-
-                <ol start="2" className="text-xs text-gray-300 space-y-2 list-decimal list-inside leading-relaxed pt-1">
-                  <li>O navegador abrirá na tela de login oficial do Instagram.</li>
-                  <li>Faça login normalmente com suas credenciais do perfil oficial e passe por qualquer 2FA / código SMS.</li>
-                  <li>Ao terminar de logar, volte no terminal e tecle <strong className="text-white">[ENTER]</strong>. Os cookies da sua sessão serão salvos com segurança.</li>
-                </ol>
               </div>
 
               {/* Formulário de Identificação do Perfil */}
