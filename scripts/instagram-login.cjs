@@ -56,12 +56,18 @@ async function loginAndSaveInstagramSession() {
     }
 
     try {
-      if (page.isClosed()) {
-        console.log('Aba de navegação fechada.');
+      const pages = await browser.pages();
+      if (pages.length === 0) {
+        console.log('Todas as abas foram fechadas.');
         break;
       }
 
-      cookies = await page.cookies();
+      try {
+        cookies = await browser.defaultBrowserContext().cookies();
+      } catch (e) {
+        cookies = await page.cookies();
+      }
+
       sessionCookie = cookies.find(c => c.name === 'sessionid');
       dsUserCookie = cookies.find(c => c.name === 'ds_user_id');
 

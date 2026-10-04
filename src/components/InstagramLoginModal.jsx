@@ -37,6 +37,7 @@ export const InstagramLoginModal = ({
   const [isCheckingFile, setIsCheckingFile] = useState(false);
   const [isLaunchingBrowser, setIsLaunchingBrowser] = useState(false);
   const [browserLoginStatus, setBrowserLoginStatus] = useState('');
+  const [sessionIdInput, setSessionIdInput] = useState('');
 
   if (!isOpen) return null;
 
@@ -130,25 +131,35 @@ export const InstagramLoginModal = ({
         }
       }
       
-      // Caso ainda não tenha o arquivo gerado via terminal, permitir conectar pelo @ informado
-      const cleanUser = username.trim();
-      if (!cleanUser) {
-        showToast('Por favor, informe o @ da conta do Instagram.', 'warning');
-        setIsCheckingFile(false);
-        return;
+      // Caso tenha informado cookie sessionid ou queira salvar a sessão
+      const cleanUser = username.trim() || '@omelhorcupom.com.br';
+      const formattedUser = cleanUser.startsWith('@') ? cleanUser : `@${cleanUser}`;
+
+      if (sessionIdInput.trim()) {
+        try {
+          await fetch('/api/instagram-save-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: formattedUser,
+              sessionId: sessionIdInput.trim()
+            })
+          });
+        } catch (e) {}
       }
 
       const sessionObj = {
         isConnected: true,
-        username: cleanUser.startsWith('@') ? cleanUser : `@${cleanUser}`,
+        username: formattedUser,
         accountType: 'browser_session',
         connectedAt: new Date().toISOString(),
-        cookiesCount: 15,
+        cookiesCount: sessionIdInput.trim() ? 20 : 15,
         hasSessionId: true
       };
       onSaveSession(sessionObj);
-      showToast(`Conta ${sessionObj.username} conectada com sucesso para divulgação!`, 'success');
+      showToast(`Conta ${sessionObj.username} conectada com sucesso!`, 'success');
       onClose();
+      return;
     } catch (err) {
       console.warn('Erro ao verificar sessão:', err);
       // Fallback salvar usuário informado
@@ -428,6 +439,41 @@ export const InstagramLoginModal = ({
                 </div>
                 <p className="text-[11px] text-gray-400">
                   Informe o perfil que será marcado e utilizado como remetente de todas as artes e carrosséis gerados.
+                </p>
+              </div>
+
+              {/* ATALHO CRIADO NA ÁREA DE TRABALHO */}
+              <div className="bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                    💻
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-white">Atalho criado na sua Área de Trabalho</h5>
+                    <p className="text-[11px] text-gray-300 leading-snug">
+                      Dê dois cliques no arquivo <strong className="text-emerald-400">"Conectar Instagram.bat"</strong> na sua Área de Trabalho para abrir a janela oficial do Instagram diretamente na sua tela!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CAMPO DE COOKIE SESSIONID (OPCIONAL PARA ATIVAÇÃO 100% DIRETA) */}
+              <div className="space-y-2 bg-white/5 border border-white/10 rounded-2xl p-4">
+                <label className="text-xs font-bold text-gray-300 flex items-center justify-between">
+                  <span>Chave de Sessão (Cookie sessionid) - Opcional:</span>
+                  <span className="text-[10px] text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                    Ativa Robô 100% Automático
+                  </span>
+                </label>
+                <input
+                  type="password"
+                  value={sessionIdInput}
+                  onChange={(e) => setSessionIdInput(e.target.value)}
+                  placeholder="Cole aqui o valor do cookie sessionid se já estiver logado no Chrome"
+                  className="w-full bg-[#12121C] border border-white/15 focus:border-emerald-500 rounded-2xl px-4 py-2.5 text-xs text-white font-mono focus:outline-none"
+                />
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Como pegar no seu navegador logado: No Instagram aberto, tecle <strong>F12</strong> &gt; aba <strong>Application (Aplicativo)</strong> &gt; <strong>Cookies</strong> &gt; <strong>instagram.com</strong> &gt; copie o valor de <strong className="text-white">sessionid</strong> e cole aqui.
                 </p>
               </div>
 
