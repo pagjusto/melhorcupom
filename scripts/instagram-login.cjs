@@ -81,7 +81,7 @@ async function loginAndSaveInstagramSession() {
   }
 
   // Tentar obter o nome de usuário ativo do perfil se o login foi realizado
-  let username = 'melhorcupom.oficial';
+  let username = 'omelhorcupom.com.br';
   if (sessionCookie) {
     try {
       const detectedUser = await page.evaluate(() => {

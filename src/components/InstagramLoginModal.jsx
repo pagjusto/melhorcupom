@@ -28,7 +28,7 @@ export const InstagramLoginModal = ({
   const [copiedCommand, setCopiedCommand] = useState(false);
   
   // Dados da Sessão / Conta
-  const [username, setUsername] = useState(currentSession?.username || '@melhorcupom.oficial');
+  const [username, setUsername] = useState(currentSession?.username || '@omelhorcupom.com.br');
   const [metaAccountId, setMetaAccountId] = useState(currentSession?.metaAccountId || '');
   const [metaAccessToken, setMetaAccessToken] = useState(currentSession?.metaAccessToken || '');
   
@@ -72,7 +72,7 @@ export const InstagramLoginModal = ({
               clearInterval(interval);
               setIsLaunchingBrowser(false);
               setBrowserLoginStatus('Conectado com sucesso!');
-              const finalUser = data.username || username || '@melhorcupom.oficial';
+              const finalUser = data.username || username || '@omelhorcupom.com.br';
               const sessionObj = {
                 isConnected: true,
                 username: finalUser.startsWith('@') ? finalUser : `@${finalUser}`,
@@ -114,7 +114,7 @@ export const InstagramLoginModal = ({
       if (res.ok) {
         const data = await res.json();
         if (data.connected || data.hasSessionId || data.cookiesCount > 0) {
-          const finalUser = data.username || username || '@melhorcupom.oficial';
+          const finalUser = data.username || username || '@omelhorcupom.com.br';
           const sessionObj = {
             isConnected: true,
             username: finalUser.startsWith('@') ? finalUser : `@${finalUser}`,
@@ -152,7 +152,7 @@ export const InstagramLoginModal = ({
     } catch (err) {
       console.warn('Erro ao verificar sessão:', err);
       // Fallback salvar usuário informado
-      const cleanUser = username.trim() || '@melhorcupom.oficial';
+      const cleanUser = username.trim() || '@omelhorcupom.com.br';
       const sessionObj = {
         isConnected: true,
         username: cleanUser.startsWith('@') ? cleanUser : `@${cleanUser}`,
@@ -195,7 +195,7 @@ export const InstagramLoginModal = ({
         });
         showToast(`Erro Meta: ${data.error.message}`, 'error');
       } else {
-        const foundUser = data.username ? `@${data.username}` : (username || '@melhorcupom.oficial');
+        const foundUser = data.username ? `@${data.username}` : (username || '@omelhorcupom.com.br');
         setApiTestResult({
           success: true,
           message: `Conexão bem sucedida com o perfil ${data.name || foundUser} (ID: ${data.id})`
@@ -422,7 +422,7 @@ export const InstagramLoginModal = ({
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="@melhorcupom.oficial"
+                    placeholder="@omelhorcupom.com.br"
                     className="w-full bg-[#12121C] border border-white/15 focus:border-fuchsia-500 rounded-2xl px-4 py-3 text-sm text-white font-mono focus:outline-none transition-colors"
                   />
                 </div>

@@ -349,7 +349,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
   // Copiar legenda sugerida
   const handleCopyCaption = () => {
-    const caption = `🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @melhorcupom.oficial estão juntos!\n\nSe você é cliente ou quer aproveitar nossos produtos com economia real, nós disponibilizamos cupons exclusivos com descontos especiais para você resgatar gratuitamente agora mesmo!\n\n👉 COMO RESGATAR SEU CUPOM:\n1️⃣ Acesse o link na nossa bio ou baixe o app @melhorcupom.oficial\n2️⃣ Procure por "${store?.name || 'nossa loja'}"\n3️⃣ Resgate seu cupom grátis e aproveite!\n\nMarque aquele amigo que adora economizar e vem aproveitar! 🔥\n\n#MelhorCupom #Parceria #${(store?.name || 'loja').replace(/\s+/g, '')} #${locationText.split('-')[0].trim().replace(/\s+/g, '')}`;
+    const caption = `🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @omelhorcupom.com.br estão juntos!\n\nSe você é cliente ou quer aproveitar nossos produtos com economia real, nós disponibilizamos cupons exclusivos com descontos especiais para você resgatar gratuitamente agora mesmo!\n\n👉 COMO RESGATAR SEU CUPOM:\n1️⃣ Acesse o link na nossa bio ou baixe o app @omelhorcupom.com.br\n2️⃣ Procure por "${store?.name || 'nossa loja'}"\n3️⃣ Resgate seu cupom grátis e aproveite!\n\nMarque aquele amigo que adora economizar e vem aproveitar! 🔥\n\n#MelhorCupom #Parceria #${(store?.name || 'loja').replace(/\s+/g, '')} #${locationText.split('-')[0].trim().replace(/\s+/g, '')}`;
     
     navigator.clipboard.writeText(caption);
     setCopiedCaption(true);
@@ -498,7 +498,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
             </div>
 
             <div className="bg-[#12121B] border border-white/5 rounded-2xl p-4 text-xs text-gray-300 font-mono leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
-              {`🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @melhorcupom.oficial estão juntos!\n\nResgate cupons exclusivos gratuitos e venha aproveitar com economia de verdade!\n\n👉 Acesse o link da nossa bio ou baixe o app Melhor Cupom!`}
+              {`🎉 TEMOS UMA NOVIDADE INCRÍVEL! 🎟️✨\n\nAgora o ${store?.name || 'nosso estabelecimento'} + @omelhorcupom.com.br estão juntos!\n\nResgate cupons exclusivos gratuitos e venha aproveitar com economia de verdade!\n\n👉 Acesse o link da nossa bio ou baixe o app Melhor Cupom!`}
             </div>
           </div>
 
@@ -511,7 +511,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
             <ul className="space-y-2 text-xs text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="text-[#FF5F00] font-black">•</span>
-                <span><strong>Marque @melhorcupom.oficial no Story:</strong> Nossa equipe reposta lojas parceiras para milhares de membros VIP.</span>
+                <span><strong>Marque @omelhorcupom.com.br no Story:</strong> Nossa equipe reposta lojas parceiras para milhares de membros VIP.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#FF5F00] font-black">•</span>
@@ -585,7 +585,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     } catch {}
     return {
       isConnected: false,
-      username: '@melhorcupom.oficial',
+      username: '@omelhorcupom.com.br',
       accountType: 'browser_session',
       connectedAt: null,
       cookiesCount: 0
@@ -617,7 +617,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             const updated = {
               ...prev,
               isConnected: true,
-              username: data.username || prev.username || '@melhorcupom.oficial',
+              username: data.username || prev.username || '@omelhorcupom.com.br',
               accountType: data.accountType || prev.accountType,
               connectedAt: data.connectedAt || prev.connectedAt || new Date().toISOString(),
               cookiesCount: data.cookiesCount || prev.cookiesCount,
@@ -641,7 +641,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const handleDisconnectSession = () => {
     const disconnected = {
       isConnected: false,
-      username: '@melhorcupom.oficial',
+      username: '@omelhorcupom.com.br',
       accountType: 'browser_session',
       connectedAt: null,
       cookiesCount: 0
@@ -660,7 +660,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       const hashtagCity = cleanCity.replace(/[^a-zA-Z0-9]/g, '');
 
       setCustomCaption(
-        `🎉 NOVO COMÉRCIO CREDENCIADO NO CLUBE VIP! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos no balcão e online\n✅ Resgate imediato pelo app ou site\n\n👉 Acesse o link na nossa bio @melhorcupom.oficial e ative seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
+        `🎉 NOVO COMÉRCIO CREDENCIADO NO CLUBE VIP! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos no balcão e online\n✅ Resgate imediato pelo app ou site\n\n👉 Acesse o link na nossa bio @omelhorcupom.com.br e ative seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
       );
     }
   }, [selectedStoreId, locationText]);
@@ -900,7 +900,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     ctx.fillStyle = '#9CA3AF';
     ctx.font = '600 16px "Inter", sans-serif';
-    ctx.fillText('Siga @melhorcupom.oficial para não perder nenhuma oferta', width / 2, footerY + 34);
+    ctx.fillText(`Siga ${instagramSession.username || '@omelhorcupom.com.br'} para não perder nenhuma oferta`, width / 2, footerY + 34);
     ctx.restore();
   };
 
@@ -952,7 +952,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     // 3. Registrar post real no histórico
     const cleanStoreName = selectedStore?.name || 'Comércio Parceiro';
-    const cleanUser = (instagramSession.username || '@melhorcupom.oficial').replace('@', '');
+    const cleanUser = (instagramSession.username || '@omelhorcupom.com.br').replace('@', '');
     const newPost = {
       id: `post_inst_${Date.now()}`,
       storeName: cleanStoreName,
@@ -978,7 +978,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   return (
     <div className="space-y-8 animate-fade-in max-w-6xl mx-auto">
       
-      {/* 1. Integração com Instagram (@melhorcupom.oficial) */}
+      {/* 1. Integração com Instagram (@omelhorcupom.com.br) */}
       <div className="bg-gradient-to-r from-[#20132A] via-[#1B162E] to-[#12111E] border border-fuchsia-500/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-fuchsia-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -1061,7 +1061,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             </button>
 
             <a
-              href={`https://www.instagram.com/${(instagramSession.username || 'melhorcupom.oficial').replace('@', '')}/`}
+              href={`https://www.instagram.com/${(instagramSession.username || 'omelhorcupom.com.br').replace('@', '')}/`}
               target="_blank"
               rel="noreferrer"
               className="bg-white/5 hover:bg-white/10 text-white p-2.5 rounded-xl border border-white/10 transition-colors flex items-center gap-1 text-xs font-bold"

@@ -1678,7 +1678,7 @@ export const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ABA 6: DIVULGAÇÃO & INSTAGRAM OFICIAL (@melhorcupom.oficial) */}
+      {/* ABA 6: DIVULGAÇÃO & INSTAGRAM OFICIAL (@omelhorcupom.com.br) */}
       {activeAdminTab === 'divulgacao' && (
         <AdminPromoManager stores={stores} showToast={showToast} />
       )}
