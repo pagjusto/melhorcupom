@@ -117,7 +117,7 @@ async function publishDirectToInstagram({
       'offset': '0',
       'x-entity-length': String(feedBuffer.length),
       'x-ig-app-id': '936619743392459',
-      'content-type': 'image/png',
+      'content-type': 'image/jpeg',
       'user-agent': userAgent,
       'cookie': cookieHeader
     },
@@ -183,7 +183,7 @@ async function publishDirectToInstagram({
           'offset': '0',
           'x-entity-length': String(storyBuffer.length),
           'x-ig-app-id': '936619743392459',
-          'content-type': 'image/png',
+          'content-type': 'image/jpeg',
           'user-agent': userAgent,
           'cookie': cookieHeader
         },

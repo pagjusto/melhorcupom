@@ -1081,26 +1081,26 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     if (mode === 'auto') {
       setIsPublishing(true);
       try {
-        // 1. Gerar criativo quadrado do Feed (1080x1080)
+        // 1. Gerar criativo quadrado do Feed (1080x1080) otimizado em JPEG
         let feedImageBase64 = '';
         try {
           const feedCanvas = document.createElement('canvas');
           await renderAdminArtworkToCanvas(feedCanvas, 'feed');
-          feedImageBase64 = feedCanvas.toDataURL('image/png', 0.95);
+          feedImageBase64 = feedCanvas.toDataURL('image/jpeg', 0.88);
         } catch (feedCanvasErr) {
           console.warn('Fallback canvas feed:', feedCanvasErr);
-          if (canvasRef.current) feedImageBase64 = canvasRef.current.toDataURL('image/png', 0.95);
+          if (canvasRef.current) feedImageBase64 = canvasRef.current.toDataURL('image/jpeg', 0.88);
         }
 
-        // 2. Gerar criativo vertical dos Stories (1080x1920)
+        // 2. Gerar criativo vertical dos Stories (1080x1920) otimizado em JPEG
         let storyImageBase64 = '';
         try {
           const storyCanvas = document.createElement('canvas');
           await renderAdminArtworkToCanvas(storyCanvas, 'story');
-          storyImageBase64 = storyCanvas.toDataURL('image/png', 0.95);
+          storyImageBase64 = storyCanvas.toDataURL('image/jpeg', 0.88);
         } catch (storyCanvasErr) {
           console.warn('Fallback canvas story:', storyCanvasErr);
-          if (canvasRef.current) storyImageBase64 = canvasRef.current.toDataURL('image/png', 0.95);
+          if (canvasRef.current) storyImageBase64 = canvasRef.current.toDataURL('image/jpeg', 0.88);
         }
 
         const savedSessionId = localStorage.getItem('melhor_cupom_instagram_sessionid') || '';

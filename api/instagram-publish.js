@@ -7,6 +7,15 @@ const DEFAULT_SESSION_ID = "76452558269%3APaJl64Xq4mqWfs%3A11%3AAYmg8pfC95U2Yj6H
 const DEFAULT_USER_ID = "76452558269";
 const CSRF_TOKEN = "VZIHRZEAMZn5f7uBmvOqmt1wg6ikfwey";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  },
+  maxDuration: 60
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -98,7 +107,7 @@ export default async function handler(req, res) {
         'offset': '0',
         'x-entity-length': String(feedBuffer.length),
         'x-ig-app-id': '936619743392459',
-        'content-type': 'image/png',
+        'content-type': 'image/jpeg',
         'user-agent': userAgent,
         'cookie': cookieHeader
       },
@@ -169,7 +178,7 @@ export default async function handler(req, res) {
             'offset': '0',
             'x-entity-length': String(storyBuffer.length),
             'x-ig-app-id': '936619743392459',
-            'content-type': 'image/png',
+            'content-type': 'image/jpeg',
             'user-agent': userAgent,
             'cookie': cookieHeader
           },
