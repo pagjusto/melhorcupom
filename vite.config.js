@@ -195,21 +195,36 @@ export default defineConfig({
                   fs.copyFileSync(path.resolve(__dirname, 'public/logo-melhor-cupom.png'), tempImagePath);
                 }
 
-                const publishScriptPath = path.resolve(__dirname, 'scripts/publish-post.cjs');
-                delete nodeRequire.cache[publishScriptPath];
-                const { publishPost } = nodeRequire(publishScriptPath);
-                if (typeof publishPost !== 'function') {
-                  throw new Error('Função de publicação não pôde ser carregada.');
+                let result = null;
+                try {
+                  const directModPath = path.resolve(__dirname, 'scripts/direct-publish.cjs');
+                  delete nodeRequire.cache[directModPath];
+                  const { publishDirectToInstagram } = nodeRequire(directModPath);
+                  result = await publishDirectToInstagram({
+                    imagePath: tempImagePath,
+                    caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br',
+                    sessionId: parsed.sessionId || sessionCookie.value,
+                    dsUserId: sessionData.userId
+                  });
+                } catch (httpErr) {
+                  console.warn('Tentativa via HTTP direto falhou, acionando Puppeteer:', httpErr.message);
+                  const publishScriptPath = path.resolve(__dirname, 'scripts/publish-post.cjs');
+                  delete nodeRequire.cache[publishScriptPath];
+                  const { publishPost } = nodeRequire(publishScriptPath);
+                  result = await publishPost({
+                    imagePath: tempImagePath,
+                    caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br'
+                  });
                 }
-                const result = await publishPost({
-                  imagePath: tempImagePath,
-                  caption: parsed.caption || '🎉 Cupons exclusivos no Melhor Cupom!'
-                });
 
                 try { fs.unlinkSync(tempImagePath); } catch (e) {}
 
                 res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ success: true, message: result.message || 'Publicado com sucesso!' }));
+                res.end(JSON.stringify({
+                  success: true,
+                  postUrl: result.postUrl,
+                  message: result.message || 'Publicado com sucesso no feed!'
+                }));
               } catch (e) {
                 console.error('Erro na publicação automática:', e);
                 res.setHeader('Content-Type', 'application/json');

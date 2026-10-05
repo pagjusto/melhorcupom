@@ -966,12 +966,19 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     const cleanStoreName = selectedStore?.name || 'Comércio Parceiro';
     const cleanUser = (instagramSession.username || '@omelhorcupom.com.br').replace('@', '');
 
-    // MODO 1: Publicação 100% Automática em Background via Puppeteer
+    // MODO 1: Publicação 100% Automática em Background via Robô Oficial
     if (mode === 'auto') {
       setIsPublishing(true);
       try {
         const canvas = canvasRef.current;
-        const imageBase64 = canvas ? canvas.toDataURL('image/png', 1.0) : '';
+        let imageBase64 = '';
+        try {
+          if (canvas) imageBase64 = canvas.toDataURL('image/png', 0.95);
+        } catch (canvasErr) {
+          console.warn('Canvas toDataURL fallback:', canvasErr);
+        }
+
+        const savedSessionId = localStorage.getItem('melhor_cupom_instagram_sessionid') || '';
 
         const res = await fetch('/api/instagram-publish', {
           method: 'POST',
@@ -980,26 +987,33 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             imageBase64,
             caption: customCaption,
             storeName: cleanStoreName,
+            sessionId: savedSessionId,
             format
           })
         });
 
-        const data = await res.json();
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          throw new Error(`Falha na resposta do servidor (Código HTTP ${res.status}).`);
+        }
 
         if (data.success) {
+          const finalPostUrl = data.postUrl || `https://www.instagram.com/${cleanUser}/`;
           const newPost = {
             id: `post_inst_${Date.now()}`,
             storeName: cleanStoreName,
             city: locationText,
             publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             format: format === 'feed' ? 'Feed (1080x1080)' : 'Story (1080x1920)',
-            status: 'Publicado no Feed (Robô Automático)',
-            postUrl: `https://www.instagram.com/${cleanUser}/`
+            status: 'Publicado no Feed Oficial',
+            postUrl: finalPostUrl
           };
           const updated = [newPost, ...postHistory];
           setPostHistory(updated);
           localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
-          showToast(`🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed de @omelhorcupom.com.br!`, 'success');
+          showToast(`🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`, 'success');
           setIsPublishing(false);
           return;
         }
@@ -1007,7 +1021,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         if (data.needCookies) {
           setIsPublishing(false);
           setPublishErrorModal({
-            title: 'Sincronizar Cookies para Publicação 100% Automática',
+            title: 'Sincronizar Chave do Instagram',
             message: data.message
           });
           return;
@@ -1018,7 +1032,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         setIsPublishing(false);
         setPublishErrorModal({
           title: 'Publicação Automática pelo Robô',
-          message: err.message || 'Os cookies da sessão não estão salvos. Abra o arquivo "Conectar Instagram.bat" na Área de Trabalho para sincronizar o robô.'
+          message: err.message || 'Erro ao conectar com o serviço de publicação. Verifique a sessão do Instagram.'
         });
         return;
       }
