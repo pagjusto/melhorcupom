@@ -671,13 +671,13 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   useEffect(() => {
     if (selectedStore?.name) {
       const cleanStore = selectedStore.name;
-      const cleanCity = locationText.split('-')[0].trim();
-      const hashtagStore = cleanStore.replace(/[^a-zA-Z0-9]/g, '');
-      const hashtagCity = cleanCity.replace(/[^a-zA-Z0-9]/g, '');
+      const cleanCity = (locationText || 'Brasil').split('-')[0].trim();
+      const hashtagStore = cleanStore.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
+      const hashtagCity = cleanCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
 
       setCustomCaption(
-        `🎉 NOVO COMÉRCIO CREDENCIADO NO CLUBE VIP! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos no balcão e online\n✅ Resgate imediato pelo app ou site\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
+        `🎉 NOVA PARCERIA CREDENCIADO NO MELHOR CUPOM! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
       );
     }
   }, [selectedStoreId, locationText, selectedStore?.name, instagramSession?.username]);
