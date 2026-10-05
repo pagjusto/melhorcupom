@@ -47,6 +47,21 @@ export const getStoreLocationText = (store) => {
   return store.city || 'Brasil';
 };
 
+// Utilitário para identificar redes grandes, franquias nacionais e lojas integradas via API
+export const isBigNetworkOrApiStore = (store) => {
+  if (!store) return false;
+  if (store.isApiIntegrated || store.apiSource || store.apiStatus) return true;
+  if (store.type === 'online' || store.type === 'api' || store.type === 'affiliate' || store.isOnline) return true;
+  if (Array.isArray(store.cities) && store.cities.length > 1) return true;
+  if (store.isNational || store.isChain || store.network) return true;
+  if (store.category === 'redes-nacionais' || store.category === 'grandes-redes' || store.category === 'afiliados') return true;
+  const city = (store.city || '').toLowerCase();
+  if (city.includes('online') || city.includes('todo o brasil') || city.includes('brasil')) return true;
+  const badge = (store.badge || '').toLowerCase();
+  if (badge.includes('api') || badge.includes('lomadee') || badge.includes('awin') || badge.includes('shopee') || badge.includes('afiliado')) return true;
+  return false;
+};
+
 // ============================================================================
 // 1. COMPONENTE: KIT DE DIVULGAÇÃO DO LOJISTA (MerchantPromoKit)
 // ============================================================================
@@ -115,7 +130,15 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     const logoCenterY = format === 'feed' ? 195 : 360;
     const logoRadius = format === 'feed' ? 125 : 170;
 
-    // Borda Padrão Oficial Melhor Cupom (Laranja Oficial + Anel Interno Branco)
+    // 1. Fundo Branco Sólido no Interior do Círculo
+    ctx.save();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Borda Padrão Oficial Melhor Cupom (Laranja Oficial + Anel Interno Branco)
     ctx.save();
     ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
     ctx.shadowBlur = 28;
@@ -132,7 +155,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.stroke();
     ctx.restore();
 
-    // Tentar desenhar imagem real da logo da loja dentro do círculo
+    // 3. Desenhar imagem real da logo da loja proporcionalmente (Sem distorção)
     let logoDrawn = false;
     if (store?.logoImage || store?.image) {
       try {
@@ -144,12 +167,40 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
           storeImg.src = store.logoImage || store.image;
         });
 
-        if (storeImg.width > 0) {
+        const naturalW = storeImg.naturalWidth || storeImg.width;
+        const naturalH = storeImg.naturalHeight || storeImg.height;
+
+        if (naturalW > 0 && naturalH > 0) {
+          const aspect = naturalW / naturalH;
+          const innerR = logoRadius - 16;
+          const maxBoxW = innerR * 1.55;
+          const maxBoxH = innerR * 1.35;
+
+          let drawW, drawH;
+          if (aspect >= 1) {
+            drawW = maxBoxW;
+            drawH = drawW / aspect;
+            if (drawH > maxBoxH) {
+              drawH = maxBoxH;
+              drawW = drawH * aspect;
+            }
+          } else {
+            drawH = maxBoxH;
+            drawW = drawH * aspect;
+            if (drawW > maxBoxW) {
+              drawW = maxBoxW;
+              drawW = maxBoxW / aspect;
+            }
+          }
+
+          const drawX = (width / 2) - (drawW / 2);
+          const drawY = logoCenterY - (drawH / 2);
+
           ctx.save();
           ctx.beginPath();
           ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
           ctx.clip();
-          ctx.drawImage(storeImg, (width / 2) - logoRadius, logoCenterY - logoRadius, logoRadius * 2, logoRadius * 2);
+          ctx.drawImage(storeImg, drawX, drawY, drawW, drawH);
           ctx.restore();
           logoDrawn = true;
         }
@@ -161,12 +212,13 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     // Fallback: se a imagem não carregar ou não existir
     if (!logoDrawn) {
       ctx.save();
+      ctx.beginPath();
+      ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
+      ctx.clip();
       const circleGrad = ctx.createLinearGradient(width / 2 - logoRadius, logoCenterY - logoRadius, width / 2 + logoRadius, logoCenterY + logoRadius);
       circleGrad.addColorStop(0, '#1F1F2E');
       circleGrad.addColorStop(1, '#111119');
       ctx.fillStyle = circleGrad;
-      ctx.beginPath();
-      ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.textAlign = 'center';
@@ -192,15 +244,18 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     const storeName = store?.name || 'Nossa Loja Parceira';
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
-    // 5. ABAIXO DO NOME APARECER A CIDADE (LOJA ONLINE APARECER BRASIL)
-    const cityY = storeNameY + 34;
-    ctx.fillStyle = '#FF9D5C';
-    ctx.font = '700 24px "Inter", sans-serif';
-    ctx.fillText(locationText, width / 2, cityY);
+    // 5. ABAIXO DO NOME APARECER A CIDADE (SOMENTE SE NÃO FOR REDE GRANDE / API)
+    const isBig = isBigNetworkOrApiStore(store);
+    if (!isBig && locationText && locationText !== 'Brasil') {
+      const cityY = storeNameY + 34;
+      ctx.fillStyle = '#FF9D5C';
+      ctx.font = '700 24px "Inter", sans-serif';
+      ctx.fillText(locationText, width / 2, cityY);
+    }
     ctx.restore();
 
     // 6. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
-    const plusY = format === 'feed' ? 445 : 710;
+    const plusY = format === 'feed' ? (isBig ? 425 : 445) : (isBig ? 685 : 710);
     ctx.save();
     const plusGrad = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     plusGrad.addColorStop(0, '#FFFFFF');
@@ -671,16 +726,26 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   useEffect(() => {
     if (selectedStore?.name) {
       const cleanStore = selectedStore.name;
+      const isBig = isBigNetworkOrApiStore(selectedStore);
       const cleanCity = (locationText || 'Brasil').split('-')[0].trim();
       const hashtagStore = cleanStore.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
       const hashtagCity = cleanCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
 
+      // Redes grandes / APIs: NÃO adicionar a cidade na imagem e na legenda
+      const introLine = isBig
+        ? `Agora você economiza com cupons exclusivos no ${cleanStore}! ✨`
+        : `Agora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨`;
+
+      const hashtags = isBig
+        ? `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #Economia #CuponsBrasil`
+        : `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`;
+
       setCustomCaption(
-        `🎉 NOVA PARCERIA CREDENCIADO NO MELHOR CUPOM! 🎟️🔥\n\nAgora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`
+        `🎉 NOVA PARCERIA CREDENCIADO NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n${hashtags}`
       );
     }
-  }, [selectedStoreId, locationText, selectedStore?.name, instagramSession?.username]);
+  }, [selectedStoreId, locationText, selectedStore?.name, selectedStore?.isApiIntegrated, selectedStore?.cities, instagramSession?.username]);
 
   // Renderizar criativo no Canvas
   useEffect(() => {
@@ -746,11 +811,19 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = aura;
     ctx.fillRect(0, 0, width, height);
 
-    // 4. Logo do Lojista em Destaque com Borda Padronizada Oficial em Destaque Maior
+    // 4. Logo do Lojista em Destaque com Fundo Branco Sólido e Enquadramento Proporcional
     const logoY = format === 'feed' ? 195 : 360;
     const logoRadius = format === 'feed' ? 125 : 170;
 
-    // Borda Padronizada Oficial
+    // 1. Fundo Branco Sólido no Interior do Círculo
+    ctx.save();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Borda Padronizada Oficial
     ctx.save();
     ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
     ctx.shadowBlur = 28;
@@ -768,7 +841,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.stroke();
     ctx.restore();
 
-    // Imagem da Logo da Loja
+    // 3. Imagem da Logo da Loja Proporcional (Sem Distorção)
     let logoDrawn = false;
     if (selectedStore?.logoImage || selectedStore?.image) {
       try {
@@ -780,12 +853,40 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           logoImg.src = selectedStore.logoImage || selectedStore.image;
         });
 
-        if (logoImg.width > 0) {
+        const naturalW = logoImg.naturalWidth || logoImg.width;
+        const naturalH = logoImg.naturalHeight || logoImg.height;
+
+        if (naturalW > 0 && naturalH > 0) {
+          const aspect = naturalW / naturalH;
+          const innerR = logoRadius - 16;
+          const maxBoxW = innerR * 1.55;
+          const maxBoxH = innerR * 1.35;
+
+          let drawW, drawH;
+          if (aspect >= 1) {
+            drawW = maxBoxW;
+            drawH = drawW / aspect;
+            if (drawH > maxBoxH) {
+              drawH = maxBoxH;
+              drawW = drawH * aspect;
+            }
+          } else {
+            drawH = maxBoxH;
+            drawW = drawH * aspect;
+            if (drawW > maxBoxW) {
+              drawW = maxBoxW;
+              drawW = maxBoxW / aspect;
+            }
+          }
+
+          const drawX = (width / 2) - (drawW / 2);
+          const drawY = logoY - (drawH / 2);
+
           ctx.save();
           ctx.beginPath();
           ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
           ctx.clip();
-          ctx.drawImage(logoImg, (width / 2) - logoRadius, logoY - logoRadius, logoRadius * 2, logoRadius * 2);
+          ctx.drawImage(logoImg, drawX, drawY, drawW, drawH);
           ctx.restore();
           logoDrawn = true;
         }
@@ -796,22 +897,23 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     if (!logoDrawn) {
       ctx.save();
+      ctx.beginPath();
+      ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+      ctx.clip();
       const circleGrad = ctx.createLinearGradient(width / 2 - logoRadius, logoY - logoRadius, width / 2 + logoRadius, logoY + logoRadius);
       circleGrad.addColorStop(0, '#1F1F2E');
       circleGrad.addColorStop(1, '#111119');
       ctx.fillStyle = circleGrad;
-      ctx.beginPath();
-      ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = format === 'feed' ? 'bold 90px "Inter", sans-serif' : 'bold 120px "Inter", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (selectedStore?.logo && selectedStore.logo.length <= 4) {
         ctx.font = format === 'feed' ? '96px "Inter", sans-serif' : '130px "Inter", sans-serif';
         ctx.fillText(selectedStore.logo, width / 2, logoY);
       } else {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = format === 'feed' ? 'bold 90px "Inter", sans-serif' : 'bold 120px "Inter", sans-serif';
         ctx.fillText((selectedStore?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoY);
       }
       ctx.restore();
@@ -827,15 +929,18 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     const storeName = selectedStore?.name || 'Estabelecimento Parceiro';
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
-    // 6. ABAIXO DO NOME APARECER A CIDADE (LOJA ONLINE APARECER BRASIL)
-    const cityY = storeNameY + 34;
-    ctx.fillStyle = '#FF9D5C';
-    ctx.font = '700 24px "Inter", sans-serif';
-    ctx.fillText(locationText, width / 2, cityY);
+    // 6. ABAIXO DO NOME APARECER A CIDADE (SOMENTE SE NÃO FOR REDE GRANDE / API)
+    const isBig = isBigNetworkOrApiStore(selectedStore);
+    if (!isBig && locationText && locationText !== 'Brasil') {
+      const cityY = storeNameY + 34;
+      ctx.fillStyle = '#FF9D5C';
+      ctx.font = '700 24px "Inter", sans-serif';
+      ctx.fillText(locationText, width / 2, cityY);
+    }
     ctx.restore();
 
     // 7. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
-    const plusY = format === 'feed' ? 445 : 710;
+    const plusY = format === 'feed' ? (isBig ? 425 : 445) : (isBig ? 685 : 710);
     ctx.save();
     const gradText = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     gradText.addColorStop(0, '#FFFFFF');
