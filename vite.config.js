@@ -4,8 +4,10 @@ import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const nodeRequire = createRequire(import.meta.url)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -193,8 +195,9 @@ export default defineConfig({
                   fs.copyFileSync(path.resolve(__dirname, 'public/logo-melhor-cupom.png'), tempImagePath);
                 }
 
-                const publishMod = await import('./scripts/publish-post.cjs');
-                const publishPost = publishMod.publishPost || publishMod.default?.publishPost || publishMod.default;
+                const publishScriptPath = path.resolve(__dirname, 'scripts/publish-post.cjs');
+                delete nodeRequire.cache[publishScriptPath];
+                const { publishPost } = nodeRequire(publishScriptPath);
                 if (typeof publishPost !== 'function') {
                   throw new Error('Função de publicação não pôde ser carregada.');
                 }
