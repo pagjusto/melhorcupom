@@ -1,5 +1,5 @@
 // api/instagram-publish.js
-// Vercel Serverless Function para publicação direta no feed do Instagram (@omelhorcupom.com.br)
+// Vercel Serverless Function para publicação simultânea no FEED e STORIES do Instagram (@omelhorcupom.com.br)
 import fs from 'fs';
 import path from 'path';
 
@@ -27,8 +27,12 @@ export default async function handler(req, res) {
     }
     body = body || {};
 
-    const imageBase64 = body.imageBase64 || '';
+    const feedImageBase64 = body.feedImageBase64 || body.imageBase64 || '';
+    const storyImageBase64 = body.storyImageBase64 || body.imageBase64 || '';
     const caption = body.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br';
+    const storyLinkUrl = body.storyLinkUrl || 'https://www.omelhorcupom.com.br';
+    const publishStory = body.publishStory !== false;
+
     let sessionId = body.sessionId || process.env.INSTAGRAM_SESSION_ID || DEFAULT_SESSION_ID;
     let userId = body.userId || DEFAULT_USER_ID;
 
@@ -41,20 +45,29 @@ export default async function handler(req, res) {
       }
     } catch (e) {}
 
-    let buffer = null;
-    if (imageBase64) {
-      const clean = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      buffer = Buffer.from(clean, 'base64');
+    let feedBuffer = null;
+    if (feedImageBase64) {
+      const clean = feedImageBase64.replace(/^data:image\/\w+;base64,/, '');
+      feedBuffer = Buffer.from(clean, 'base64');
     }
 
-    if (!buffer || buffer.length === 0) {
+    let storyBuffer = null;
+    if (storyImageBase64) {
+      const cleanStory = storyImageBase64.replace(/^data:image\/\w+;base64,/, '');
+      storyBuffer = Buffer.from(cleanStory, 'base64');
+    } else {
+      storyBuffer = feedBuffer;
+    }
+
+    if (!feedBuffer || feedBuffer.length === 0) {
       const logoPath = path.resolve(process.cwd(), 'public/logo-melhor-cupom.png');
       if (fs.existsSync(logoPath)) {
-        buffer = fs.readFileSync(logoPath);
+        feedBuffer = fs.readFileSync(logoPath);
+        if (!storyBuffer) storyBuffer = feedBuffer;
       }
     }
 
-    if (!buffer || buffer.length === 0) {
+    if (!feedBuffer || feedBuffer.length === 0) {
       return res.status(400).json({ success: false, error: 'Imagem não fornecida' });
     }
 
@@ -67,47 +80,49 @@ export default async function handler(req, res) {
     const cookieHeader = `sessionid=${sessionId}; ds_user_id=${userId}; csrftoken=${CSRF_TOKEN}`;
     const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
 
-    const uploadId = String(Date.now());
-    const ruploadParams = JSON.stringify({
+    // ==========================================
+    // ETAPA 1: PUBLICAÇÃO NO FEED (1080x1080)
+    // ==========================================
+    const uploadIdFeed = String(Date.now());
+    const ruploadParamsFeed = JSON.stringify({
       media_type: 1,
-      upload_id: uploadId,
+      upload_id: uploadIdFeed,
       upload_media_height: 1080,
       upload_media_width: 1080
     });
 
-    // 1. Upload para rupload_igphoto
-    const uploadRes = await fetch(`https://i.instagram.com/rupload_igphoto/fb_uploader_${uploadId}`, {
+    const uploadFeedRes = await fetch(`https://i.instagram.com/rupload_igphoto/fb_uploader_${uploadIdFeed}`, {
       method: 'POST',
       headers: {
-        'x-instagram-rupload-params': ruploadParams,
+        'x-instagram-rupload-params': ruploadParamsFeed,
         'offset': '0',
-        'x-entity-length': String(buffer.length),
+        'x-entity-length': String(feedBuffer.length),
         'x-ig-app-id': '936619743392459',
         'content-type': 'image/png',
         'user-agent': userAgent,
         'cookie': cookieHeader
       },
-      body: buffer
+      body: feedBuffer
     });
 
-    const uploadJson = await uploadRes.json();
-    if (uploadJson.status !== 'ok') {
+    const uploadFeedJson = await uploadFeedRes.json();
+    if (uploadFeedJson.status !== 'ok') {
       return res.status(500).json({
         success: false,
-        error: `Falha no upload para o Instagram: ${uploadJson.message || JSON.stringify(uploadJson)}`
+        error: `Falha no upload para o feed do Instagram: ${uploadFeedJson.message || JSON.stringify(uploadFeedJson)}`
       });
     }
 
-    // 2. Configurar no feed (/api/v1/media/configure/)
-    const bodyParams = new URLSearchParams({
-      upload_id: uploadId,
+    // Configurar mídia no feed (/api/v1/media/configure/)
+    const bodyParamsFeed = new URLSearchParams({
+      upload_id: uploadIdFeed,
       caption: caption,
       source_type: 'library',
       disable_comments: '0',
       like_and_view_counts_disabled: '0'
     });
 
-    const configRes = await fetch('https://www.instagram.com/api/v1/media/configure/', {
+    const configFeedRes = await fetch('https://www.instagram.com/api/v1/media/configure/', {
       method: 'POST',
       headers: {
         'x-csrftoken': CSRF_TOKEN,
@@ -118,27 +133,116 @@ export default async function handler(req, res) {
         'origin': 'https://www.instagram.com',
         'referer': 'https://www.instagram.com/'
       },
-      body: bodyParams.toString()
+      body: bodyParamsFeed.toString()
     });
 
-    const configJson = await configRes.json();
-    if (configJson.status !== 'ok') {
+    const configFeedJson = await configFeedRes.json();
+    if (configFeedJson.status !== 'ok') {
       return res.status(500).json({
         success: false,
-        error: `Instagram rejeitou publicação: ${configJson.message || JSON.stringify(configJson)}`
+        error: `Instagram rejeitou publicação no feed: ${configFeedJson.message || JSON.stringify(configFeedJson)}`
       });
     }
 
-    const media = configJson.media || {};
-    const code = media.code || '';
-    const postUrl = code ? `https://www.instagram.com/p/${code}/` : `https://www.instagram.com/omelhorcupom.com.br/`;
+    const feedMedia = configFeedJson.media || {};
+    const feedCode = feedMedia.code || '';
+    const postUrl = feedCode ? `https://www.instagram.com/p/${feedCode}/` : `https://www.instagram.com/omelhorcupom.com.br/`;
+
+    // ==========================================
+    // ETAPA 2: PUBLICAÇÃO NOS STORIES COM LINK (1080x1920)
+    // ==========================================
+    let storyResult = null;
+    if (publishStory && storyBuffer && storyBuffer.length > 0) {
+      try {
+        const uploadIdStory = String(Date.now() + 150);
+        const ruploadParamsStory = JSON.stringify({
+          media_type: 1,
+          upload_id: uploadIdStory,
+          upload_media_height: 1920,
+          upload_media_width: 1080
+        });
+
+        const uploadStoryRes = await fetch(`https://i.instagram.com/rupload_igphoto/fb_uploader_${uploadIdStory}`, {
+          method: 'POST',
+          headers: {
+            'x-instagram-rupload-params': ruploadParamsStory,
+            'offset': '0',
+            'x-entity-length': String(storyBuffer.length),
+            'x-ig-app-id': '936619743392459',
+            'content-type': 'image/png',
+            'user-agent': userAgent,
+            'cookie': cookieHeader
+          },
+          body: storyBuffer
+        });
+
+        const uploadStoryJson = await uploadStoryRes.json();
+        if (uploadStoryJson.status === 'ok') {
+          // Link sticker clicável apontando para o site oficial
+          const linkStickers = [
+            {
+              story_link_sticker: {
+                url: storyLinkUrl
+              },
+              x: 0.5,
+              y: 0.82,
+              width: 0.55,
+              height: 0.11,
+              rotation: 0.0
+            }
+          ];
+
+          const bodyParamsStory = new URLSearchParams({
+            upload_id: uploadIdStory,
+            source_type: 'library',
+            configure_mode: '1',
+            story_link_stickers: JSON.stringify(linkStickers),
+            client_shared_at: String(Math.floor(Date.now() / 1000))
+          });
+
+          const configStoryRes = await fetch('https://www.instagram.com/api/v1/media/configure_to_story/', {
+            method: 'POST',
+            headers: {
+              'x-csrftoken': CSRF_TOKEN,
+              'x-ig-app-id': '936619743392459',
+              'content-type': 'application/x-www-form-urlencoded',
+              'user-agent': userAgent,
+              'cookie': cookieHeader,
+              'origin': 'https://www.instagram.com',
+              'referer': 'https://www.instagram.com/'
+            },
+            body: bodyParamsStory.toString()
+          });
+
+          const configStoryJson = await configStoryRes.json();
+          if (configStoryJson.status === 'ok') {
+            const storyMedia = configStoryJson.media || {};
+            storyResult = {
+              success: true,
+              code: storyMedia.code || '',
+              mediaId: storyMedia.id || storyMedia.pk,
+              storyUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/'
+            };
+          } else {
+            console.warn('Instagram rejeitou story:', configStoryJson);
+          }
+        }
+      } catch (storyErr) {
+        console.warn('Falha na publicação do Story:', storyErr.message);
+      }
+    }
 
     return res.status(200).json({
       success: true,
-      code,
+      code: feedCode,
       postUrl,
-      mediaId: media.id || media.pk,
-      message: 'Post publicado com sucesso no feed oficial de @omelhorcupom.com.br!'
+      mediaId: feedMedia.id || feedMedia.pk,
+      storyPublished: !!storyResult?.success,
+      storyCode: storyResult?.code || '',
+      storyUrl: storyResult?.storyUrl || 'https://www.instagram.com/stories/omelhorcupom.com.br/',
+      message: storyResult?.success
+        ? 'Publicado com sucesso no feed e nos stories com link oficial de @omelhorcupom.com.br!'
+        : 'Post publicado com sucesso no feed oficial de @omelhorcupom.com.br!'
     });
   } catch (err) {
     console.error('Erro na publicação automática:', err);

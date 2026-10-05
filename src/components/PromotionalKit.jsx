@@ -752,17 +752,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     drawAdminArtwork();
   }, [format, selectedStore]);
 
-  const drawAdminArtwork = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+  const renderAdminArtworkToCanvas = async (targetCanvas, targetFormat = format) => {
+    if (!targetCanvas) return;
+    const ctx = targetCanvas.getContext('2d');
     if (!ctx) return;
 
+    const currentFormat = targetFormat || format;
     const width = 1080;
-    const height = format === 'feed' ? 1080 : 1920;
+    const height = currentFormat === 'feed' ? 1080 : 1920;
 
-    canvas.width = width;
-    canvas.height = height;
+    targetCanvas.width = width;
+    targetCanvas.height = height;
 
     // 1. Fundo Gradiente Luxury Dark
     const bgGrad = ctx.createLinearGradient(0, 0, width, height);
@@ -774,7 +774,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillRect(0, 0, width, height);
 
     // 2. Banner da Loja como Fundo Superior Estilizado
-    const bannerHeight = format === 'feed' ? 340 : 540;
+    const bannerHeight = currentFormat === 'feed' ? 340 : 540;
     if (selectedStore?.image) {
       try {
         const bannerImg = new Image();
@@ -804,7 +804,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     }
 
     // 3. Aura Luminosa Laranja Padrão
-    const aura = ctx.createRadialGradient(width * 0.5, format === 'feed' ? 520 : 880, 20, width * 0.5, format === 'feed' ? 520 : 880, 480);
+    const aura = ctx.createRadialGradient(width * 0.5, currentFormat === 'feed' ? 520 : 880, 20, width * 0.5, currentFormat === 'feed' ? 520 : 880, 480);
     aura.addColorStop(0, 'rgba(255, 95, 0, 0.35)');
     aura.addColorStop(0.5, 'rgba(255, 95, 0, 0.1)');
     aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -812,8 +812,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillRect(0, 0, width, height);
 
     // 4. Logo do Lojista em Destaque com Fundo Branco Sólido e Enquadramento Proporcional
-    const logoY = format === 'feed' ? 195 : 360;
-    const logoRadius = format === 'feed' ? 125 : 170;
+    const logoY = currentFormat === 'feed' ? 195 : 360;
+    const logoRadius = currentFormat === 'feed' ? 125 : 170;
 
     // 1. Fundo Branco Sólido no Interior do Círculo
     ctx.save();
@@ -909,11 +909,11 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (selectedStore?.logo && selectedStore.logo.length <= 4) {
-        ctx.font = format === 'feed' ? '96px "Inter", sans-serif' : '130px "Inter", sans-serif';
+        ctx.font = currentFormat === 'feed' ? '96px "Inter", sans-serif' : '130px "Inter", sans-serif';
         ctx.fillText(selectedStore.logo, width / 2, logoY);
       } else {
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = format === 'feed' ? 'bold 90px "Inter", sans-serif' : 'bold 120px "Inter", sans-serif';
+        ctx.font = currentFormat === 'feed' ? 'bold 90px "Inter", sans-serif' : 'bold 120px "Inter", sans-serif';
         ctx.fillText((selectedStore?.name || 'MC').substring(0, 2).toUpperCase(), width / 2, logoY);
       }
       ctx.restore();
@@ -940,7 +940,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.restore();
 
     // 7. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
-    const plusY = format === 'feed' ? (isBig ? 425 : 445) : (isBig ? 685 : 710);
+    const plusY = currentFormat === 'feed' ? (isBig ? 425 : 445) : (isBig ? 685 : 710);
     ctx.save();
     const gradText = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     gradText.addColorStop(0, '#FFFFFF');
@@ -949,7 +949,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = gradText;
     ctx.shadowColor = 'rgba(255, 95, 0, 0.75)';
     ctx.shadowBlur = 28;
-    ctx.font = format === 'feed' ? '900 68px "Inter", sans-serif' : '900 84px "Inter", sans-serif';
+    ctx.font = currentFormat === 'feed' ? '900 68px "Inter", sans-serif' : '900 84px "Inter", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('+', width / 2, plusY);
@@ -968,10 +968,10 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       });
 
       if (mcLogoImg.width > 0) {
-        const mcLogoWidth = format === 'feed' ? 340 : 470;
+        const mcLogoWidth = currentFormat === 'feed' ? 340 : 470;
         const mcLogoHeight = (mcLogoImg.height / mcLogoImg.width) * mcLogoWidth;
         const mcLogoX = (width - mcLogoWidth) / 2;
-        const mcLogoY = plusY + (format === 'feed' ? 46 : 65);
+        const mcLogoY = plusY + (currentFormat === 'feed' ? 46 : 65);
         mcLogoBottom = mcLogoY + mcLogoHeight;
 
         ctx.save();
@@ -986,14 +986,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     // 9. BOTÃO DE RESGATE (Perfeitamente alinhado e centralizado)
     const btnText = 'RESGATE SEU CUPOM EXCLUSIVO';
-    ctx.font = format === 'feed' ? '900 24px "Inter", sans-serif' : '900 32px "Inter", sans-serif';
+    ctx.font = currentFormat === 'feed' ? '900 24px "Inter", sans-serif' : '900 32px "Inter", sans-serif';
     const textMetrics = ctx.measureText(btnText);
-    const btnPaddingX = format === 'feed' ? 56 : 72;
-    const btnW = Math.max(format === 'feed' ? 560 : 750, textMetrics.width + (btnPaddingX * 2));
-    const btnH = format === 'feed' ? 68 : 88;
+    const btnPaddingX = currentFormat === 'feed' ? 56 : 72;
+    const btnW = Math.max(currentFormat === 'feed' ? 560 : 750, textMetrics.width + (btnPaddingX * 2));
+    const btnH = currentFormat === 'feed' ? 68 : 88;
     const btnRadius = btnH / 2;
     const btnX = (width - btnW) / 2;
-    const botY = format === 'feed' ? Math.max(745, mcLogoBottom + 50) : 1330;
+    const botY = currentFormat === 'feed' ? Math.max(745, mcLogoBottom + 50) : 1330;
 
     ctx.save();
     const btnGrad = ctx.createLinearGradient(btnX, botY, btnX + btnW, botY + btnH);
@@ -1017,7 +1017,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.restore();
 
     // 10. Rodapé de Canais
-    const footerY = format === 'feed' ? 880 : 1520;
+    const footerY = currentFormat === 'feed' ? 880 : 1520;
     ctx.save();
     ctx.fillStyle = '#E5E7EB';
     ctx.font = 'bold 20px "Inter", sans-serif';
@@ -1028,6 +1028,12 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.font = '600 16px "Inter", sans-serif';
     ctx.fillText(`Siga ${instagramSession.username || '@omelhorcupom.com.br'} para não perder nenhuma oferta`, width / 2, footerY + 34);
     ctx.restore();
+  };
+
+  const drawAdminArtwork = async () => {
+    if (canvasRef.current) {
+      await renderAdminArtworkToCanvas(canvasRef.current, format);
+    }
   };
 
   // Copiar Legenda Oficial
@@ -1071,16 +1077,30 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     const cleanStoreName = selectedStore?.name || 'Comércio Parceiro';
     const cleanUser = (instagramSession.username || '@omelhorcupom.com.br').replace('@', '');
 
-    // MODO 1: Publicação 100% Automática em Background via Robô Oficial
+    // MODO 1: Publicação 100% Automática no Feed e Stories via Robô Oficial
     if (mode === 'auto') {
       setIsPublishing(true);
       try {
-        const canvas = canvasRef.current;
-        let imageBase64 = '';
+        // 1. Gerar criativo quadrado do Feed (1080x1080)
+        let feedImageBase64 = '';
         try {
-          if (canvas) imageBase64 = canvas.toDataURL('image/png', 0.95);
-        } catch (canvasErr) {
-          console.warn('Canvas toDataURL fallback:', canvasErr);
+          const feedCanvas = document.createElement('canvas');
+          await renderAdminArtworkToCanvas(feedCanvas, 'feed');
+          feedImageBase64 = feedCanvas.toDataURL('image/png', 0.95);
+        } catch (feedCanvasErr) {
+          console.warn('Fallback canvas feed:', feedCanvasErr);
+          if (canvasRef.current) feedImageBase64 = canvasRef.current.toDataURL('image/png', 0.95);
+        }
+
+        // 2. Gerar criativo vertical dos Stories (1080x1920)
+        let storyImageBase64 = '';
+        try {
+          const storyCanvas = document.createElement('canvas');
+          await renderAdminArtworkToCanvas(storyCanvas, 'story');
+          storyImageBase64 = storyCanvas.toDataURL('image/png', 0.95);
+        } catch (storyCanvasErr) {
+          console.warn('Fallback canvas story:', storyCanvasErr);
+          if (canvasRef.current) storyImageBase64 = canvasRef.current.toDataURL('image/png', 0.95);
         }
 
         const savedSessionId = localStorage.getItem('melhor_cupom_instagram_sessionid') || '';
@@ -1089,11 +1109,15 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            imageBase64,
+            imageBase64: feedImageBase64,
+            feedImageBase64,
+            storyImageBase64,
+            publishStory: true,
+            storyLinkUrl: 'https://www.omelhorcupom.com.br',
             caption: customCaption,
             storeName: cleanStoreName,
             sessionId: savedSessionId,
-            format
+            format: 'feed_and_story'
           })
         });
 
@@ -1106,19 +1130,24 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
         if (data.success) {
           const finalPostUrl = data.postUrl || `https://www.instagram.com/${cleanUser}/`;
+          const isStoryOk = !!data.storyPublished;
           const newPost = {
             id: `post_inst_${Date.now()}`,
             storeName: cleanStoreName,
             city: locationText,
             publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            format: format === 'feed' ? 'Feed (1080x1080)' : 'Story (1080x1920)',
-            status: 'Publicado no Feed Oficial',
-            postUrl: finalPostUrl
+            format: isStoryOk ? 'Feed (1080x1080) + Stories (1080x1920)' : 'Feed (1080x1080)',
+            status: isStoryOk ? 'Publicado no Feed & Stories (com link do site)' : 'Publicado no Feed Oficial',
+            postUrl: finalPostUrl,
+            storyUrl: data.storyUrl || 'https://www.instagram.com/stories/omelhorcupom.com.br/'
           };
           const updated = [newPost, ...postHistory];
           setPostHistory(updated);
           localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
-          showToast(`🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`, 'success');
+          const toastMsg = isStoryOk
+            ? `🎉 Arte de "${cleanStoreName}" publicada com sucesso no FEED e no STORIES (com link do site) de @omelhorcupom.com.br!`
+            : `🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`;
+          showToast(toastMsg, 'success');
           setIsPublishing(false);
           return;
         }
@@ -1367,12 +1396,12 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 {isPublishing ? (
                   <>
                     <RefreshCw size={18} className="animate-spin text-white" />
-                    <span>Publicando no Instagram via Robô...</span>
+                    <span>Publicando no Feed e Stories com Link...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles size={18} />
-                    <span>🚀 Publicar Automaticamente no Feed (Robô)</span>
+                    <span>🚀 Publicar no Feed e Stories com Link (Robô)</span>
                   </>
                 )}
               </button>
@@ -1410,7 +1439,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               <div className="bg-black/30 border border-white/5 rounded-2xl p-3.5 text-[11px] text-gray-300 leading-relaxed flex items-start gap-2">
                 <Sparkles size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
                 <span>
-                  <strong>Como funciona:</strong> A <em>Publicação Automática</em> usa o robô em segundo plano com cookies autenticados. No <em>Modo Assistido</em>, a imagem é baixada e você cola a legenda com Ctrl+V na tela de criação do Instagram.
+                  <strong>Como funciona:</strong> Ao clicar em <em>Publicar</em>, o robô compartilha automaticamente no <strong>Feed oficial</strong> e também nos <strong>Stories</strong> de @omelhorcupom.com.br com adesivo/link interativo direcionando para <em>www.omelhorcupom.com.br</em>.
                 </span>
               </div>
             </div>
@@ -1501,15 +1530,28 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                     ✓ Divulgado
                   </span>
 
-                  <a
-                    href={post.postUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-orange-400 hover:text-orange-300 font-bold flex items-center gap-1 text-[11px]"
-                  >
-                    <span>Abrir Perfil</span>
-                    <ExternalLink size={11} />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={post.postUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-orange-400 hover:text-orange-300 font-bold flex items-center gap-1 text-[11px]"
+                    >
+                      <span>Feed</span>
+                      <ExternalLink size={11} />
+                    </a>
+                    {post.storyUrl && (
+                      <a
+                        href={post.storyUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-fuchsia-400 hover:text-fuchsia-300 font-bold flex items-center gap-1 text-[11px]"
+                      >
+                        <span>Stories</span>
+                        <ExternalLink size={11} />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

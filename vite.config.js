@@ -188,11 +188,18 @@ export default defineConfig({
                 if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
                 const tempImagePath = path.join(tempDir, `post-${Date.now()}.png`);
                 
-                const base64Data = (parsed.imageBase64 || '').replace(/^data:image\/\w+;base64,/, '');
-                if (base64Data) {
-                  fs.writeFileSync(tempImagePath, Buffer.from(base64Data, 'base64'));
+                const feedBase64 = (parsed.feedImageBase64 || parsed.imageBase64 || '').replace(/^data:image\/\w+;base64,/, '');
+                if (feedBase64) {
+                  fs.writeFileSync(tempImagePath, Buffer.from(feedBase64, 'base64'));
                 } else {
                   fs.copyFileSync(path.resolve(__dirname, 'public/logo-melhor-cupom.png'), tempImagePath);
+                }
+
+                let tempStoryImagePath = null;
+                const storyBase64 = (parsed.storyImageBase64 || '').replace(/^data:image\/\w+;base64,/, '');
+                if (storyBase64) {
+                  tempStoryImagePath = path.join(tempDir, `story-${Date.now()}.png`);
+                  fs.writeFileSync(tempStoryImagePath, Buffer.from(storyBase64, 'base64'));
                 }
 
                 let result = null;
@@ -202,6 +209,9 @@ export default defineConfig({
                   const { publishDirectToInstagram } = nodeRequire(directModPath);
                   result = await publishDirectToInstagram({
                     imagePath: tempImagePath,
+                    storyImagePath: tempStoryImagePath,
+                    publishStory: parsed.publishStory !== false,
+                    storyLinkUrl: parsed.storyLinkUrl || 'https://www.omelhorcupom.com.br',
                     caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br',
                     sessionId: parsed.sessionId || sessionCookie.value,
                     dsUserId: sessionData.userId
@@ -218,12 +228,17 @@ export default defineConfig({
                 }
 
                 try { fs.unlinkSync(tempImagePath); } catch (e) {}
+                if (tempStoryImagePath) {
+                  try { fs.unlinkSync(tempStoryImagePath); } catch (e) {}
+                }
 
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({
                   success: true,
                   postUrl: result.postUrl,
-                  message: result.message || 'Publicado com sucesso no feed!'
+                  storyPublished: result.storyPublished,
+                  storyUrl: result.storyUrl,
+                  message: result.message || 'Publicado com sucesso no feed e stories!'
                 }));
               } catch (e) {
                 console.error('Erro na publicação automática:', e);
