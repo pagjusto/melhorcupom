@@ -55,6 +55,7 @@ export const AuthModal = () => {
     cities: ['São Paulo - SP'],
     email: '',
     phone: '',
+    instagram: '',
     category: 'gastronomia',
     password: ''
   });
@@ -736,6 +737,27 @@ export const AuthModal = () => {
                       className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none font-mono"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Instagram Oficial da Loja */}
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1.5 flex items-center justify-between">
+                  <span>Instagram Oficial (@) (Opcional)</span>
+                  <span className="text-[10px] text-fuchsia-400 font-bold">Para marcar seu perfil nas divulgações</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">@</span>
+                  <input
+                    type="text"
+                    placeholder="Ex: seurestaurante.oficial"
+                    value={(merchantForm.instagram || '').replace(/^@/, '')}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/^@/, '').trim();
+                      setMerchantForm({ ...merchantForm, instagram: clean ? `@${clean}` : '' });
+                    }}
+                    className="w-full bg-[#101017] border border-white/10 focus:border-fuchsia-500 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none font-mono"
+                  />
                 </div>
               </div>
 

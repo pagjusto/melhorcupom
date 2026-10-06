@@ -897,9 +897,9 @@ export const AppProvider = ({ children }) => {
     return { success: true, name: cleanName, referralCode: generatedReferralCode };
   };
 
-  // Cadastrar Novo Lojista / Franquia (com Nome, CNPJ, CEP, Cidades Franquia, Email, WhatsApp, Senha)
+  // Cadastrar Novo Lojista / Franquia (com Nome, CNPJ, CEP, Cidades Franquia, Email, WhatsApp, Senha, Instagram)
   const registerMerchant = (merchantData) => {
-    const { name, legalName, cnpj, cep, cities, email, phone, category } = merchantData;
+    const { name, legalName, cnpj, cep, cities, email, phone, category, instagram } = merchantData;
     const storeId = `store_${Date.now()}`;
     const merchantId = `merchant_${Date.now()}`;
     const cleanName = name?.trim() || 'Nova Loja Parceira';
@@ -922,6 +922,7 @@ export const AppProvider = ({ children }) => {
       city: selectedCities[0] || 'São Paulo - SP',
       phone: phone || '(11) 98123-4567',
       email: email || 'contato@lojaparceira.com.br',
+      instagram: (instagram || '').trim(),
       address: `${selectedCities[0] || 'Brasil'}`,
       hours: 'Seg a Sáb: 10h às 22h',
       tier: 'free',

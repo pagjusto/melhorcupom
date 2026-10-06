@@ -790,7 +790,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     showToast('Conta do Instagram desconectada.', 'info');
   };
 
-  // Inicializar legenda oficial
+  // Estado de Instagram do Parceiro
+  const [partnerInstagram, setPartnerInstagram] = useState(selectedStore?.instagram || '');
+
+  useEffect(() => {
+    setPartnerInstagram(selectedStore?.instagram || '');
+  }, [selectedStoreId, selectedStore?.instagram]);
+
+  // Inicializar legenda oficial com marcação do @ do parceiro
   useEffect(() => {
     if (selectedStore?.name) {
       const cleanStore = selectedStore.name;
@@ -800,25 +807,30 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       const hashtagCity = cleanCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
 
+      const rawInsta = (partnerInstagram || selectedStore?.instagram || '').trim();
+      const partnerHandle = rawInsta 
+        ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
+        : `@${cleanStore.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+
       // Redes grandes / APIs: NÃO adicionar a cidade na imagem e na legenda
       const introLine = isBig
-        ? `Agora você economiza com cupons exclusivos no ${cleanStore}! ✨`
-        : `Agora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨`;
+        ? `Agora você economiza com cupons exclusivos no ${cleanStore} (${partnerHandle})! ✨`
+        : `Agora você economiza com cupons exclusivos no ${cleanStore} (${partnerHandle}) em ${locationText}! ✨`;
 
       const hashtags = isBig
         ? `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #Economia #CuponsBrasil`
         : `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`;
 
       setCustomCaption(
-        `🎉 NOVA PARCERIA CREDENCIADA NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n${hashtags}`
+        `🎉 NOVA PARCERIA CREDENCIADA NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Siga ${partnerHandle} e não perca nenhuma novidade!\n✅ Resgate gratuito pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou no link direto dos Stories para resgatar seus cupons!\n\nParceria oficial: ${partnerHandle} + ${activeHandle}! 🤝\n\n${hashtags}`
       );
     }
-  }, [selectedStoreId, locationText, selectedStore?.name, selectedStore?.isApiIntegrated, selectedStore?.cities, instagramSession?.username]);
+  }, [selectedStoreId, locationText, selectedStore?.name, selectedStore?.isApiIntegrated, selectedStore?.cities, instagramSession?.username, partnerInstagram]);
 
   // Renderizar criativo no Canvas
   useEffect(() => {
     drawAdminArtwork();
-  }, [format, selectedStore]);
+  }, [format, selectedStore, partnerInstagram]);
 
   const renderAdminArtworkToCanvas = async (targetCanvas, targetFormat = format) => {
     if (!targetCanvas) return;
@@ -997,13 +1009,26 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     const storeName = selectedStore?.name || 'Estabelecimento Parceiro';
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
+    // 5.1 @ do Instagram do Parceiro
+    const rawInsta = (partnerInstagram || selectedStore?.instagram || '').trim();
+    const partnerHandle = rawInsta 
+      ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
+      : `@${storeName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+
+    let nextY = storeNameY + 34;
+    if (partnerHandle) {
+      ctx.fillStyle = '#FFAA77';
+      ctx.font = '700 22px "Inter", sans-serif';
+      ctx.fillText(partnerHandle, width / 2, nextY);
+      nextY += 28;
+    }
+
     // 6. ABAIXO DO NOME APARECER A CIDADE (SOMENTE SE NÃO FOR REDE GRANDE / API)
     const isBig = isBigNetworkOrApiStore(selectedStore);
     if (!isBig && locationText && locationText !== 'Brasil') {
-      const cityY = storeNameY + 34;
       ctx.fillStyle = '#FF9D5C';
-      ctx.font = '700 24px "Inter", sans-serif';
-      ctx.fillText(locationText, width / 2, cityY);
+      ctx.font = '600 20px "Inter", sans-serif';
+      ctx.fillText(locationText, width / 2, nextY);
     }
     ctx.restore();
 
@@ -1486,6 +1511,29 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 <span className="text-emerald-400 font-semibold">
                   ✓ {stores.length - pendingStores.length} já publicadas
                 </span>
+              </div>
+            </div>
+
+            {/* Instagram Oficial do Parceiro */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-300">
+                  Instagram Oficial do Parceiro (@):
+                </label>
+                <span className="text-[10px] text-fuchsia-400 font-bold">Marcado na legenda e na arte</span>
+              </div>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">@</span>
+                <input
+                  type="text"
+                  value={(partnerInstagram || '').replace(/^@/, '')}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/^@/, '').trim();
+                    setPartnerInstagram(clean ? `@${clean}` : '');
+                  }}
+                  placeholder="Ex: nomedoparceiro"
+                  className="w-full bg-[#12121C] border border-white/10 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-fuchsia-500 font-mono"
+                />
               </div>
             </div>
 

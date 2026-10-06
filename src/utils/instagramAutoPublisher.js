@@ -39,6 +39,11 @@ export const isBigNetworkOrApiStore = (store) => {
 // Formatar Legenda Oficial do Instagram
 export const formatStoreCaption = (store, activeHandle = '@omelhorcupom.com.br') => {
   const cleanStore = store?.name || 'Comércio Parceiro';
+  const rawInsta = (store?.instagram || '').trim();
+  const partnerHandle = rawInsta 
+    ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
+    : `@${cleanStore.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+
   const locationText = getStoreLocationText(store);
   const isBig = isBigNetworkOrApiStore(store);
   const cleanCity = (locationText || 'Brasil').split('-')[0].trim();
@@ -46,14 +51,14 @@ export const formatStoreCaption = (store, activeHandle = '@omelhorcupom.com.br')
   const hashtagCity = cleanCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
 
   const introLine = isBig
-    ? `Agora você economiza com cupons exclusivos no ${cleanStore}! ✨`
-    : `Agora você economiza com cupons exclusivos no ${cleanStore} em ${locationText}! ✨`;
+    ? `Agora você economiza com cupons exclusivos no ${cleanStore} (${partnerHandle})! ✨`
+    : `Agora você economiza com cupons exclusivos no ${cleanStore} (${partnerHandle}) em ${locationText}! ✨`;
 
   const hashtags = isBig
     ? `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #Economia #CuponsBrasil`
     : `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`;
 
-  return `🎉 NOVA PARCERIA CREDENCIADA NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n${hashtags}`;
+  return `🎉 NOVA PARCERIA CREDENCIADA NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Siga ${partnerHandle} e não perca nenhuma promoção!\n✅ Resgate gratuito pelo site oficial!\n\n👉 Acesse o link da nossa bio ${activeHandle} ou no link direto dos Stories para resgatar seus cupons!\n\nParceria oficial: ${partnerHandle} + ${activeHandle}! 🤝\n\n${hashtags}`;
 };
 
 // Renderizar arte em Canvas (para Feed 1080x1080 ou Stories 1080x1920)
@@ -226,11 +231,24 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   const storeName = store.name || 'Estabelecimento Parceiro';
   ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
+  // 5.1 @ do Instagram do Parceiro destacado na arte
+  const rawInsta = (store?.instagram || '').trim();
+  const partnerHandle = rawInsta 
+    ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
+    : `@${storeName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+
+  let nextInfoY = storeNameY + 34;
+  if (partnerHandle) {
+    ctx.fillStyle = '#FFAA77';
+    ctx.font = '700 22px "Inter", sans-serif';
+    ctx.fillText(partnerHandle, width / 2, nextInfoY);
+    nextInfoY += 28;
+  }
+
   if (!isBig && locationText && locationText !== 'Brasil') {
-    const cityY = storeNameY + 34;
     ctx.fillStyle = '#FF9D5C';
-    ctx.font = '700 24px "Inter", sans-serif';
-    ctx.fillText(locationText, width / 2, cityY);
+    ctx.font = '600 20px "Inter", sans-serif';
+    ctx.fillText(locationText, width / 2, nextInfoY);
   }
   ctx.restore();
 
