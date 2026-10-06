@@ -55,6 +55,41 @@ const MainLayout = () => {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [prefilledValidatorCode, setPrefilledValidatorCode] = useState('');
 
+  // Deep-linking automático: quando o visitante clica no Story do Instagram (?loja=... ou ?cupom=...)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const lojaQuery = params.get('loja') || params.get('store');
+      const cupomQuery = params.get('cupom') || params.get('coupon');
+
+      if (lojaQuery && stores.length > 0) {
+        const cleanQuery = lojaQuery.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const foundStore = stores.find(s => 
+          String(s.id).toLowerCase() === lojaQuery.toLowerCase() ||
+          s.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanQuery ||
+          s.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(cleanQuery)
+        );
+        if (foundStore) {
+          if (foundStore.city) setSelectedCity(foundStore.city);
+          setSelectedStoreFilter(foundStore);
+          setActiveTab('explore');
+        }
+      }
+
+      if (cupomQuery && coupons.length > 0) {
+        const foundCoupon = coupons.find(c => 
+          String(c.id).toLowerCase() === cupomQuery.toLowerCase() ||
+          String(c.code || '').toLowerCase() === cupomQuery.toLowerCase()
+        );
+        if (foundCoupon) {
+          setSelectedCoupon(foundCoupon);
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao processar parâmetros de URL:', e);
+    }
+  }, [stores, coupons]);
+
   // Filtrar Cupons por Cidade, Categoria e Tipo
   const filteredCoupons = coupons.filter(coupon => {
     const store = stores.find(s => s.id === coupon.storeId);

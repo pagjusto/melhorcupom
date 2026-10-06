@@ -187,17 +187,34 @@ export default async function handler(req, res) {
 
         const uploadStoryJson = await uploadStoryRes.json();
         if (uploadStoryJson.status === 'ok') {
-          // Link sticker clicável apontando para o site oficial
+          // Link sticker clicável posicionado EXATAMENTE em cima do botão "RESGATE SEU CUPOM EXCLUSIVO"
+          const linkTitle = body.linkTitle || 'RESGATAR CUPOM';
           const linkStickers = [
             {
-              story_link_sticker: {
-                url: storyLinkUrl
-              },
               x: 0.5,
-              y: 0.82,
-              width: 0.55,
-              height: 0.11,
-              rotation: 0.0
+              y: 0.715, // Exatamente no botão de resgate da arte oficial (1374px / 1920px)
+              z: 0,
+              width: 0.69,
+              height: 0.08,
+              rotation: 0.0,
+              is_pinned: 0,
+              is_hidden: 0,
+              is_sticker: 1,
+              is_fb_sticker: 0,
+              story_link: {
+                link_type: 'web',
+                url: storyLinkUrl,
+                link_title: linkTitle,
+                display_url: 'omelhorcupom.com.br'
+              },
+              story_link_sticker: {
+                url: storyLinkUrl,
+                link_title: linkTitle,
+                display_url: 'omelhorcupom.com.br'
+              },
+              url: storyLinkUrl,
+              web_uri: storyLinkUrl,
+              link_type: 'web'
             }
           ];
 
@@ -205,7 +222,10 @@ export default async function handler(req, res) {
             upload_id: uploadIdStory,
             source_type: 'library',
             configure_mode: '1',
+            story_sticker_ids: 'link_sticker_default',
             story_link_stickers: JSON.stringify(linkStickers),
+            tap_models: JSON.stringify(linkStickers),
+            story_cta: JSON.stringify([{ links: [{ webUri: storyLinkUrl }] }]),
             client_shared_at: String(Math.floor(Date.now() / 1000))
           });
 

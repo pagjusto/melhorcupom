@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
+import { useApp } from '../context/AppContext';
 
 // Utilitário para formatar a localização da loja:
 // "abaixo do nome apareça a cidade ,loja online aparecer brasil"
@@ -630,6 +631,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 // 2. COMPONENTE: PAINEL DE DIVULGAÇÃO & INSTAGRAM DO ADMIN (AdminPromoManager)
 // ============================================================================
 export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
+  const { coupons = [] } = useApp();
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id || '');
   const [format, setFormat] = useState('feed'); // 'feed' (1:1) ou 'story' (9:16)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -666,6 +668,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
   const selectedStore = stores.find(s => s.id === selectedStoreId) || stores[0] || {};
   const locationText = getStoreLocationText(selectedStore);
+
+  // Encontrar o cupom em destaque/disponível desta loja
+  const storeCoupons = coupons.filter(c => c.storeId === selectedStore?.id);
+  const featuredCoupon = storeCoupons[0];
+
+  // URL direta da oferta/cupom da loja no site
+  const storyOfferUrl = selectedStore?.id
+    ? (featuredCoupon 
+        ? `https://www.omelhorcupom.com.br/?loja=${selectedStore.id}&cupom=${featuredCoupon.id}`
+        : `https://www.omelhorcupom.com.br/?loja=${selectedStore.id}`)
+    : 'https://www.omelhorcupom.com.br';
 
   // Verificar se há sessão gerada pelo comando npm run instagram:login
   useEffect(() => {
@@ -1113,7 +1126,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             feedImageBase64,
             storyImageBase64,
             publishStory: true,
-            storyLinkUrl: 'https://www.omelhorcupom.com.br',
+            storyLinkUrl: storyOfferUrl,
+            linkTitle: 'RESGATAR CUPOM',
             caption: customCaption,
             storeName: cleanStoreName,
             sessionId: savedSessionId,
@@ -1435,11 +1449,31 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 </button>
               </div>
 
+              {/* Exibição do Link Oficial Direto do Story */}
+              <div className="bg-orange-500/10 border border-orange-500/25 rounded-2xl p-3 space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-orange-400 font-bold">
+                  <span className="flex items-center gap-1.5">
+                    <ExternalLink size={13} />
+                    <span>Link Direto no Story (Adesivo Interativo):</span>
+                  </span>
+                  {featuredCoupon ? (
+                    <span className="bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded text-[10px]">
+                      Cupom: {featuredCoupon.title?.slice(0, 18)}...
+                    </span>
+                  ) : (
+                    <span className="bg-white/10 text-gray-400 px-2 py-0.5 rounded text-[10px]">Página da Loja</span>
+                  )}
+                </div>
+                <div className="text-[11px] text-gray-300 font-mono break-all truncate">
+                  {storyOfferUrl}
+                </div>
+              </div>
+
               {/* Dica de Divulgação */}
               <div className="bg-black/30 border border-white/5 rounded-2xl p-3.5 text-[11px] text-gray-300 leading-relaxed flex items-start gap-2">
                 <Sparkles size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
                 <span>
-                  <strong>Como funciona:</strong> Ao clicar em <em>Publicar</em>, o robô compartilha automaticamente no <strong>Feed oficial</strong> e também nos <strong>Stories</strong> de @omelhorcupom.com.br com adesivo/link interativo direcionando para <em>www.omelhorcupom.com.br</em>.
+                  <strong>Como funciona:</strong> Ao clicar em <em>Publicar</em>, o robô compartilha automaticamente no <strong>Feed oficial</strong> e também nos <strong>Stories</strong> de @omelhorcupom.com.br com o adesivo de link posicionado <strong>exatamente sobre o botão "RESGATE SEU CUPOM EXCLUSIVO"</strong>, levando direto aos cupons desta loja.
                 </span>
               </div>
             </div>
