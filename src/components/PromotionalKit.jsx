@@ -25,6 +25,10 @@ import {
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
 import { useApp } from '../context/AppContext';
+import { 
+  isStoreAlreadyPublished, 
+  markStoreAsPublished 
+} from '../utils/instagramAutoPublisher';
 
 // Utilitário para formatar a localização da loja:
 // "abaixo do nome apareça a cidade ,loja online aparecer brasil"
@@ -666,8 +670,59 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const [customCaption, setCustomCaption] = useState('');
   const canvasRef = useRef(null);
 
-  const selectedStore = stores.find(s => s.id === selectedStoreId) || stores[0] || {};
+  // Lojas já publicadas (ocultar por padrão para facilitar novas divulgações)
+  const [showAllStores, setShowAllStores] = useState(false);
+  const [autoPublishEnabled, setAutoPublishEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem('melhor_cupom_auto_publish_new_partners');
+      if (saved !== null) return JSON.parse(saved);
+    } catch {}
+    return true; // Ativado por padrão para novos parceiros
+  });
+
+  const toggleAutoPublish = () => {
+    const next = !autoPublishEnabled;
+    setAutoPublishEnabled(next);
+    localStorage.setItem('melhor_cupom_auto_publish_new_partners', JSON.stringify(next));
+    showToast(
+      next 
+        ? '⚡ Piloto Automático ATIVADO: Novos parceiros cadastrados a partir de agora serão postados sozinhos!' 
+        : 'Piloto Automático DESATIVADO: Novos parceiros aguardarão seu clique manual.',
+      next ? 'success' : 'info'
+    );
+  };
+
+  // Filtrar lojas pendentes (que ainda não foram publicadas)
+  const pendingStores = stores.filter(s => !isStoreAlreadyPublished(s, postHistory));
+  const selectableStores = showAllStores ? stores : (pendingStores.length > 0 ? pendingStores : []);
+
+  const selectedStore = stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {};
   const locationText = getStoreLocationText(selectedStore);
+
+  // Auto-selecionar primeira loja pendente
+  useEffect(() => {
+    if (!showAllStores && pendingStores.length > 0) {
+      const isCurrentPending = pendingStores.some(s => s.id === selectedStoreId);
+      if (!isCurrentPending) {
+        setSelectedStoreId(pendingStores[0].id);
+      }
+    }
+  }, [pendingStores.length, showAllStores]);
+
+  // Ouvir publicações automáticas disparadas em tempo real
+  useEffect(() => {
+    const handleStorePublishedEvent = () => {
+      try {
+        const rawHistory = localStorage.getItem('melhor_cupom_instagram_history_v2');
+        if (rawHistory) {
+          setPostHistory(JSON.parse(rawHistory));
+        }
+      } catch (err) {}
+    };
+
+    window.addEventListener('melhor-cupom-store-published', handleStorePublishedEvent);
+    return () => window.removeEventListener('melhor-cupom-store-published', handleStorePublishedEvent);
+  }, []);
 
   // Encontrar o cupom em destaque/disponível desta loja
   const storeCoupons = coupons.filter(c => c.storeId === selectedStore?.id);
@@ -1147,6 +1202,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           const isStoryOk = !!data.storyPublished;
           const newPost = {
             id: `post_inst_${Date.now()}`,
+            storeId: selectedStore?.id,
             storeName: cleanStoreName,
             city: locationText,
             publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -1158,6 +1214,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           const updated = [newPost, ...postHistory];
           setPostHistory(updated);
           localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
+          markStoreAsPublished(selectedStore, newPost);
+
           const toastMsg = isStoryOk
             ? `🎉 Arte de "${cleanStoreName}" publicada com sucesso no FEED e no STORIES (com link do site) de @omelhorcupom.com.br!`
             : `🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`;
@@ -1200,6 +1258,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     const newPost = {
       id: `post_inst_${Date.now()}`,
+      storeId: selectedStore?.id,
       storeName: cleanStoreName,
       city: locationText,
       publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -1211,6 +1270,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     const updated = [newPost, ...postHistory];
     setPostHistory(updated);
     localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
+    markStoreAsPublished(selectedStore, newPost);
 
     showToast(`Imagem salva em Downloads e legenda copiada! No Instagram que abriu, clique em "Selecionar do Computador" e cole o texto com Ctrl+V.`, 'success');
 
@@ -1318,7 +1378,47 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         </div>
       </div>
 
-      {/* 2. Área de Criação de Post & Seleção de Lojista */}
+      {/* 2. Banner de Automação de Publicação de Novos Parceiros */}
+      <div className="bg-gradient-to-r from-orange-500/15 via-[#181824] to-fuchsia-600/15 border border-orange-500/30 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-start gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-orange-500/20 text-[#FF5F00] flex items-center justify-center flex-shrink-0 text-xl font-bold shadow-md">
+            ⚡
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-sm font-black text-white uppercase tracking-wider">
+                Publicação Automática de Novos Parceiros
+              </h4>
+              <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wide border ${
+                autoPublishEnabled 
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
+                  : 'bg-white/10 text-gray-400 border-white/10'
+              }`}>
+                {autoPublishEnabled ? '● Piloto Automático Ativo' : '○ Pausado'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-300 mt-1 leading-snug">
+              {autoPublishEnabled 
+                ? 'Novos parceiros cadastrados a partir de agora serão publicados automaticamente no Feed e Stories de @omelhorcupom.com.br!' 
+                : 'A automação está pausada. Novos parceiros cadastrados ficarão aguardando publicação manual nesta lista.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={toggleAutoPublish}
+          className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer shadow-md ${
+            autoPublishEnabled
+              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/60'
+              : 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
+          }`}
+        >
+          <span>{autoPublishEnabled ? '✓ Piloto Automático Ligado' : 'Ativar Piloto Automático'}</span>
+        </button>
+      </div>
+
+      {/* 3. Área de Criação de Post & Seleção de Lojista */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Formulário de Configuração do Post (Coluna 5) */}
@@ -1330,22 +1430,63 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               <span>Configurar Divulgação do Lojista</span>
             </h3>
 
-            {/* Selecionar Estabelecimento */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-300">
-                Selecione a Loja para Divulgar no Feed Oficial:
-              </label>
-              <select
-                value={selectedStoreId}
-                onChange={(e) => setSelectedStoreId(e.target.value)}
-                className="w-full bg-[#12121C] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition-colors cursor-pointer"
-              >
-                {stores.map((s) => (
-                  <option key={s.id} value={s.id} className="bg-[#161622] text-white">
-                    {s.name} ({getStoreLocationText(s)})
-                  </option>
-                ))}
-              </select>
+            {/* Selecionar Estabelecimento (Ocultando já publicados por padrão) */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <label className="text-xs font-bold text-gray-300">
+                  Selecione a Loja para Divulgar no Feed Oficial:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowAllStores(prev => !prev)}
+                  className="text-[11px] text-orange-400 hover:text-orange-300 font-bold transition-colors cursor-pointer"
+                >
+                  {showAllStores ? 'Ocultar já publicadas' : `Ver já publicadas (${stores.length - pendingStores.length})`}
+                </button>
+              </div>
+
+              {selectableStores.length > 0 ? (
+                <select
+                  value={selectedStoreId}
+                  onChange={(e) => setSelectedStoreId(e.target.value)}
+                  className="w-full bg-[#12121C] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition-colors cursor-pointer"
+                >
+                  {selectableStores.map((s) => {
+                    const isPub = isStoreAlreadyPublished(s, postHistory);
+                    return (
+                      <option key={s.id} value={s.id} className="bg-[#161622] text-white">
+                        {s.name} ({getStoreLocationText(s)}) {isPub ? '✓ (Já Publicado)' : '• Pendente de Divulgação'}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-xs text-emerald-300 space-y-2">
+                  <div className="font-bold flex items-center gap-1.5 text-sm">
+                    <CheckCircle2 size={16} className="text-emerald-400" />
+                    <span>Todas as lojas parceiras já foram divulgadas!</span>
+                  </div>
+                  <p className="text-gray-300 text-[11px] leading-relaxed">
+                    Nenhum estabelecimento pendente de divulgação no momento. Novos parceiros cadastrados a partir de agora aparecerão aqui e serão publicados automaticamente no Instagram!
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllStores(true)}
+                    className="text-xs font-bold text-orange-400 hover:underline pt-1 inline-block cursor-pointer"
+                  >
+                    Clique aqui para ver as lojas já publicadas (republicar)
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-[11px] text-gray-400 pt-0.5">
+                <span>
+                  {pendingStores.length} {pendingStores.length === 1 ? 'loja pendente' : 'lojas pendentes'} de divulgação
+                </span>
+                <span className="text-emerald-400 font-semibold">
+                  ✓ {stores.length - pendingStores.length} já publicadas
+                </span>
+              </div>
             </div>
 
             {/* Formato da Arte */}

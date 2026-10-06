@@ -12,6 +12,7 @@ import {
   INITIAL_API_LOGS
 } from '../data/mockData';
 import confetti from 'canvas-confetti';
+import { autoPublishStoreToInstagram } from '../utils/instagramAutoPublisher';
 
 const AppContext = createContext();
 
@@ -929,6 +930,8 @@ export const AppProvider = ({ children }) => {
       referrals: [],
       rating: 5.0,
       reviewsCount: 1,
+      createdAt: new Date().toISOString(),
+      isNewPartner: true,
       image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
       logo: '🏪',
       logoImage: ''
@@ -946,6 +949,20 @@ export const AppProvider = ({ children }) => {
     });
 
     setIsAuthModalOpen(false);
+
+    // Publicação 100% Automática no Instagram para este novo parceiro cadastrado a partir de agora
+    setTimeout(() => {
+      autoPublishStoreToInstagram(newStore, coupons)
+        .then(res => {
+          if (res?.success) {
+            console.log(`[AutoPublish] Novo parceiro "${newStore.name}" postado no Instagram com sucesso!`);
+          }
+        })
+        .catch(err => {
+          console.warn('[AutoPublish] Falha em segundo plano:', err);
+        });
+    }, 1500);
+
     return { success: true, store: newStore };
   };
 
