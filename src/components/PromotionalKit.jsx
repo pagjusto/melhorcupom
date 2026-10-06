@@ -742,7 +742,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         : `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`;
 
       setCustomCaption(
-        `🎉 NOVA PARCERIA CREDENCIADO NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n${hashtags}`
+        `🎉 NOVA PARCERIA CREDENCIADA NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Resgate imediato pelo site!\n\n👉 Acesse o link na nossa bio ${activeHandle} ou acesse www.omelhorcupom.com.br para resgatar seus cupons!\n\n${cleanStore} + Melhor Cupom! 🤝\n\n${hashtags}`
       );
     }
   }, [selectedStoreId, locationText, selectedStore?.name, selectedStore?.isApiIntegrated, selectedStore?.cities, instagramSession?.username]);
