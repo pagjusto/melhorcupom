@@ -2061,6 +2061,29 @@ export const ADMIN_CREDENTIALS = {
 
 export const API_CONNECTORS = [
   {
+    id: 'mercadopago',
+    name: 'Mercado Pago (Gateway Oficial)',
+    network: 'Mercado Pago Pagamentos / PIX Dinâmico',
+    accountName: 'O Melhor Cupom Serviços',
+    status: 'connected',
+    statusLabel: 'Pronto para Recebimentos (PIX / Cartão)',
+    pingMs: 24,
+    totalStores: 0,
+    totalCoupons: 0,
+    lastSync: 'Sincronizado Agora',
+    apiVersion: 'v1 REST / SDK v2',
+    credentials: {
+      publicKey: 'APP_USR-789a42b1-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      accessToken: 'APP_USR-6523910293847561-032912-abcdef1234567890abcdef1234567890-764525582',
+      webhookEndpoint: 'https://www.omelhorcupom.com.br/api/mercadopago',
+      subIdParam: 'payment_method=pix,card'
+    },
+    topBrands: ['PIX com QR Code Dinâmico', 'Cartão de Crédito', 'Checkout Pro'],
+    avgCommission: 'Taxa PIX: 0.99%',
+    userCashbackRate: 'Ativação Instantânea',
+    platformMargin: '100% recebimento direto na sua conta'
+  },
+  {
     id: 'awin',
     name: 'Awin Brasil & Global',
     network: 'Awin Affiliate Network',

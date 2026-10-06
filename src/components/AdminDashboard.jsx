@@ -2005,7 +2005,9 @@ export const AdminDashboard = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-300 mb-1">
-                        {editingConnector.id === 'aliexpress' 
+                        {editingConnector.id === 'mercadopago'
+                          ? 'Public Key Oficial Mercado Pago:'
+                          : editingConnector.id === 'aliexpress' 
                           ? 'AppKey Oficial AliExpress:' 
                           : editingConnector.id === 'awin' 
                           ? 'Account ID Awin:' 
@@ -2024,13 +2026,15 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.publisherId}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, publisherId: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 focus:outline-none"
-                        placeholder={editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : editingConnector.id === 'lomadee' ? 'Ex: 2324685' : 'Ex: 3095275'}
+                        placeholder={editingConnector.id === 'mercadopago' ? 'Ex: APP_USR-...' : editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : editingConnector.id === 'lomadee' ? 'Ex: 2324685' : 'Ex: 3095275'}
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-gray-300 mb-1">
-                        {editingConnector.id === 'aliexpress'
+                        {editingConnector.id === 'mercadopago'
+                          ? 'Access Token de Produção / Sandbox:'
+                          : editingConnector.id === 'aliexpress'
                           ? 'App Secret Oficial AliExpress:'
                           : editingConnector.id === 'lomadee'
                           ? 'Chave x-api-key Oficial Lomadee (v2):'
@@ -2041,7 +2045,7 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.apiKey}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, apiKey: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-mono focus:border-blue-500 focus:outline-none"
-                        placeholder={editingConnector.id === 'lomadee' ? 'Ex: lmd_prod_...' : 'Insira o API Token / Secret Key...'}
+                        placeholder={editingConnector.id === 'mercadopago' ? 'Ex: APP_USR-65239... ou TEST-...' : editingConnector.id === 'lomadee' ? 'Ex: lmd_prod_...' : 'Insira o API Token / Secret Key...'}
                       />
                     </div>
 

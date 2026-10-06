@@ -251,6 +251,69 @@ export default defineConfig({
             res.end();
           }
         });
+
+        // 3. Rota Local /api/mercadopago para testes no ambiente Vite Dev
+        server.middlewares.use('/api/mercadopago', async (req, res) => {
+          if (req.method === 'OPTIONS') {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            res.statusCode = 200;
+            return res.end();
+          }
+
+          try {
+            const apiModPath = path.resolve(__dirname, 'api/mercadopago.js');
+            // Carregar dinamicamente o handler serverless
+            const { default: handler } = await import(`file://${apiModPath}?t=${Date.now()}`);
+
+            // Simular objeto de resposta compatível com Vercel/Express
+            const mockRes = {
+              statusCode: 200,
+              headers: {},
+              setHeader(k, v) { this.headers[k] = v; res.setHeader(k, v); return this; },
+              status(code) { this.statusCode = code; res.statusCode = code; return this; },
+              json(data) {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(data));
+                return this;
+              },
+              end(data) {
+                res.end(data);
+                return this;
+              }
+            };
+
+            if (req.method === 'GET') {
+              const urlObj = new URL(req.url, 'http://localhost:3000');
+              const query = Object.fromEntries(urlObj.searchParams.entries());
+              await handler({ ...req, query }, mockRes);
+              return;
+            }
+
+            if (req.method === 'POST') {
+              let bodyStr = '';
+              req.on('data', chunk => { bodyStr += chunk; });
+              req.on('end', async () => {
+                try {
+                  const parsedBody = bodyStr ? JSON.parse(bodyStr) : {};
+                  await handler({ ...req, body: parsedBody }, mockRes);
+                } catch (err) {
+                  mockRes.status(500).json({ success: false, error: err.message });
+                }
+              });
+              return;
+            }
+
+            res.statusCode = 405;
+            res.end('Method Not Allowed');
+          } catch (err) {
+            console.error('Erro no middleware do Mercado Pago:', err);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: false, error: err.message }));
+          }
+        });
       }
     }
   ],

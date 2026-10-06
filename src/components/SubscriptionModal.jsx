@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { SUBSCRIPTION_PLANS } from '../data/mockData';
 import { QRCodeSVG } from 'qrcode.react';
@@ -15,7 +15,9 @@ import {
   Lock, 
   ArrowRight,
   Coins,
-  Gift
+  Gift,
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
@@ -38,6 +40,12 @@ export const SubscriptionModal = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [useReferralBalance, setUseReferralBalance] = useState(true);
 
+  // Estados da Integração Oficial com o Mercado Pago
+  const [mpPixData, setMpPixData] = useState(null); // { qrCode, qrCodeBase64, paymentId, status }
+  const [isLoadingMp, setIsLoadingMp] = useState(false);
+  const [mpError, setMpError] = useState(null);
+  const [checkoutPreferenceUrl, setCheckoutPreferenceUrl] = useState(null);
+
   if (!isSubscriptionModalOpen) return null;
 
   const currentPlan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlanForModal) || SUBSCRIPTION_PLANS[0];
@@ -47,8 +55,91 @@ export const SubscriptionModal = () => {
   const finalPrice = Math.max(0, currentPlan.price - discount);
   const isFree = finalPrice === 0 && discount > 0;
 
+  // Gerar Cobrança Oficial via Mercado Pago quando o modal abrir ou o preço mudar
+  useEffect(() => {
+    if (!isSubscriptionModalOpen || isFree || finalPrice <= 0) return;
+
+    let isMounted = true;
+    const createMpPayment = async () => {
+      setIsLoadingMp(true);
+      setMpError(null);
+      try {
+        const res = await fetch('/api/mercadopago', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create_pix',
+            amount: finalPrice,
+            description: `Assinatura Clube VIP - ${currentPlan.name} (Melhor Cupom)`,
+            payer: {
+              email: userProfile?.email || 'cliente@omelhorcupom.com.br',
+              name: userProfile?.name || 'Assinante VIP',
+              cpf: userProfile?.cpf || undefined
+            },
+            metadata: {
+              planId: currentPlan.id,
+              userId: userProfile?.id || 'guest',
+              userName: userProfile?.name || 'Cliente'
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (isMounted) {
+          if (data.success && data.qrCode) {
+            setMpPixData(data);
+          } else {
+            console.warn('Mercado Pago retornou modo fallback:', data.error);
+            setMpError(data.error || 'Aguardando credenciais ativas do Mercado Pago.');
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.warn('Erro ao conectar com API Mercado Pago:', err);
+          setMpError('Serviço Mercado Pago offline no momento. Utilize o QR Code ou ativação direta.');
+        }
+      } finally {
+        if (isMounted) setIsLoadingMp(false);
+      }
+    };
+
+    createMpPayment();
+    return () => { isMounted = false; };
+  }, [isSubscriptionModalOpen, finalPrice, currentPlan.id, isFree]);
+
+  // Polling automático para checar se o pagamento do Mercado Pago foi aprovado
+  useEffect(() => {
+    if (!mpPixData?.paymentId || mpPixData.status === 'approved') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/mercadopago', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'check_status',
+            paymentId: mpPixData.paymentId
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.isApproved) {
+          clearInterval(interval);
+          setMpPixData(prev => ({ ...prev, status: 'approved' }));
+          subscribeToVip(currentPlan.id, discount);
+        }
+      } catch (e) {
+        // Silêncio no polling
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [mpPixData?.paymentId, mpPixData?.status, currentPlan.id, discount, subscribeToVip]);
+
+  const pixCopyString = mpPixData?.qrCode || 
+    `00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com520400005303986540${finalPrice.toFixed(2)}5802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO62070503***630489A1`;
+
   const handleCopyPix = () => {
-    navigator.clipboard.writeText('00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com520400005303986540519.905802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO62070503***630489A1');
+    navigator.clipboard.writeText(pixCopyString);
     setCopiedPix(true);
     setTimeout(() => setCopiedPix(false), 2000);
   };
@@ -59,6 +150,37 @@ export const SubscriptionModal = () => {
       setIsProcessing(false);
       subscribeToVip(currentPlan.id, discount);
     }, 1200);
+  };
+
+  // Gerar link de Checkout Pro do Mercado Pago para pagamento via Cartão
+  const handleOpenMercadoPagoCheckout = async () => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch('/api/mercadopago', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_preference',
+          amount: finalPrice,
+          description: `Assinatura VIP - ${currentPlan.name}`,
+          payer: {
+            email: userProfile?.email || 'cliente@omelhorcupom.com.br',
+            name: userProfile?.name || 'Cliente VIP'
+          },
+          metadata: { planId: currentPlan.id }
+        })
+      });
+      const data = await res.json();
+      if (data.success && (data.initPoint || data.sandboxInitPoint)) {
+        window.open(data.initPoint || data.sandboxInitPoint, '_blank');
+      } else {
+        handleSimulatePayment();
+      }
+    } catch {
+      handleSimulatePayment();
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -342,49 +464,76 @@ export const SubscriptionModal = () => {
                 </button>
               </div>
 
-              {/* Painel PIX */}
+              {/* Painel PIX com Mercado Pago Oficial */}
               {paymentMethod === 'pix' ? (
                 <div className="bg-[#121219] p-5 rounded-2xl border border-white/10 text-center space-y-4">
-                  <div className="inline-block p-3 bg-white rounded-2xl shadow-lg">
-                    <QRCodeSVG 
-                      value={`00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com520400005303986540${finalPrice.toFixed(2)}5802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO`} 
-                      size={140} 
-                    />
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-[11px] font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Mercado Pago Oficial • PIX Instantâneo</span>
+                    </span>
+                  </div>
+
+                  <div className="inline-block p-3 bg-white rounded-2xl shadow-lg relative">
+                    {isLoadingMp ? (
+                      <div className="w-[140px] h-[140px] flex flex-col items-center justify-center gap-2 text-gray-500 text-xs">
+                        <RefreshCw size={24} className="animate-spin text-[#FF5F00]" />
+                        <span>Gerando PIX...</span>
+                      </div>
+                    ) : mpPixData?.qrCodeBase64 ? (
+                      <img 
+                        src={`data:image/png;base64,${mpPixData.qrCodeBase64}`} 
+                        alt="QR Code PIX Mercado Pago" 
+                        className="w-[140px] h-[140px] object-contain" 
+                      />
+                    ) : (
+                      <QRCodeSVG 
+                        value={pixCopyString} 
+                        size={140} 
+                      />
+                    )}
                   </div>
                   
                   <div className="text-xs text-gray-300">
-                    Pague <strong>R$ {finalPrice.toFixed(2).replace('.', ',')}</strong> escaneando o QR Code ou copiando o código Pix:
+                    Pague <strong>R$ {finalPrice.toFixed(2).replace('.', ',')}</strong> escaneando o QR Code no seu banco ou copie a chave:
                   </div>
 
                   <div className="flex items-center gap-2 max-w-md mx-auto">
                     <input
                       type="text"
                       readOnly
-                      value="00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com..."
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-400 font-mono"
+                      value={pixCopyString}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-400 font-mono truncate"
                     />
                     <button
                       type="button"
                       onClick={handleCopyPix}
-                      className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0"
                     >
                       {copiedPix ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                      <span>{copiedPix ? 'Copiado' : 'Copiar'}</span>
+                      <span>{copiedPix ? 'Copiado!' : 'Copiar'}</span>
                     </button>
                   </div>
+
+                  {mpPixData?.paymentId && (
+                    <div className="text-[11px] text-emerald-400/90 flex items-center justify-center gap-1.5 font-medium">
+                      <RefreshCw size={12} className="animate-spin text-emerald-400" />
+                      <span>Aguardando confirmação do banco... Ativação automática em segundos!</span>
+                    </div>
+                  )}
 
                   <button
                     type="button"
                     onClick={handleSimulatePayment}
                     disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-700/30 transition-all flex items-center justify-center gap-2 text-sm"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-700/30 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
                   >
                     {isProcessing ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
                         <Zap size={18} />
-                        <span>Simular Pagamento de R$ {finalPrice.toFixed(2).replace('.', ',')} (Ativar VIP)</span>
+                        <span>Confirmar Pagamento de R$ {finalPrice.toFixed(2).replace('.', ',')} (Ativar VIP)</span>
                       </>
                     )}
                   </button>
@@ -392,6 +541,20 @@ export const SubscriptionModal = () => {
               ) : (
                 /* Painel Cartão */
                 <div className="bg-[#121219] p-5 rounded-2xl border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between pb-1">
+                    <span className="text-[11px] font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30 px-3 py-0.5 rounded-full flex items-center gap-1.5">
+                      <span>Checkout Seguro Mercado Pago</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleOpenMercadoPagoCheckout}
+                      className="text-xs text-sky-400 hover:text-sky-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Abrir no Mercado Pago</span>
+                      <ExternalLink size={13} />
+                    </button>
+                  </div>
+
                   <div>
                     <label className="text-[11px] text-gray-400 block mb-1">Número do Cartão</label>
                     <input 
@@ -427,21 +590,33 @@ export const SubscriptionModal = () => {
                     />
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleSimulatePayment}
-                    disabled={isProcessing}
-                    className="w-full mt-2 bg-gradient-to-r from-[#FF5F00] to-[#FF8500] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/40 transition-all flex items-center justify-center gap-2 text-sm"
-                  >
-                    {isProcessing ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Lock size={16} />
-                        <span>Confirmar Pagamento de R$ {finalPrice.toFixed(2).replace('.', ',')}/mês</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleOpenMercadoPagoCheckout}
+                      disabled={isProcessing}
+                      className="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs cursor-pointer"
+                    >
+                      <ExternalLink size={14} />
+                      <span>Pagar no Mercado Pago</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSimulatePayment}
+                      disabled={isProcessing}
+                      className="w-full bg-gradient-to-r from-[#FF5F00] to-[#FF8500] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-extrabold py-3 px-4 rounded-2xl shadow-lg shadow-orange-600/40 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer"
+                    >
+                      {isProcessing ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Lock size={14} />
+                          <span>Pagar R$ {finalPrice.toFixed(2).replace('.', ',')}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

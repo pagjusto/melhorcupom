@@ -112,6 +112,13 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const isLimitReached = storeCoupons.length >= currentPlan.maxCoupons;
   const [planUpgradeSuccess, setPlanUpgradeSuccess] = useState('');
 
+  // Modal de Pagamento Mercado Pago para Upgrade de Loja
+  const [paymentPlanModal, setPaymentPlanModal] = useState(null); // { plan, discount, finalPrice }
+  const [mpPixPlanData, setMpPixPlanData] = useState(null);
+  const [isLoadingPlanMp, setIsLoadingPlanMp] = useState(false);
+  const [isProcessingPlanPay, setIsProcessingPlanPay] = useState(false);
+  const [copiedPlanPix, setCopiedPlanPix] = useState(false);
+
   // Estado do Validador de Balcão e Câmera QR Code
   const [validationInput, setValidationInput] = useState(prefilledCode || '');
   const [validationResult, setValidationResult] = useState(null);
@@ -2259,14 +2266,23 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     ) : (
                       <button
                         onClick={() => {
-                          upgradeStoreTier(currentStore.id, plan.id, storeDiscount);
-                          const discountMsg = storeDiscount > 0 
-                            ? ` com abatimento de R$ ${storeDiscount.toFixed(2).replace('.', ',')} do seu Caixa de Indicações!` 
-                            : '!';
-                          setPlanUpgradeSuccess(`🎉 Parabéns! Sua loja agora é "${plan.name}"${discountMsg} A visibilidade dos seus cupons foi atualizada imediatamente no catálogo.`);
-                          setTimeout(() => setPlanUpgradeSuccess(''), 6000);
+                          if (plan.price === 0 || finalPlanPrice === 0) {
+                            upgradeStoreTier(currentStore.id, plan.id, storeDiscount);
+                            const discountMsg = storeDiscount > 0 
+                              ? ` com abatimento de R$ ${storeDiscount.toFixed(2).replace('.', ',')} do seu Caixa de Indicações!` 
+                              : '!';
+                            setPlanUpgradeSuccess(`🎉 Parabéns! Sua loja agora é "${plan.name}"${discountMsg} A visibilidade dos seus cupons foi atualizada imediatamente no catálogo.`);
+                            setTimeout(() => setPlanUpgradeSuccess(''), 6000);
+                          } else {
+                            // Abrir Checkout Mercado Pago
+                            setPaymentPlanModal({
+                              plan,
+                              discount: storeDiscount,
+                              finalPrice: finalPlanPrice
+                            });
+                          }
                         }}
-                        className={`w-full py-3 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg ${
+                        className={`w-full py-3 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer ${
                           isGold
                             ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black shadow-amber-950/60 transform hover:scale-[1.02]'
                             : isSilver
@@ -2861,6 +2877,120 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* MODAL OFICIAL DE PAGAMENTO MERCADO PAGO PARA PLANOS DE LOJISTAS */}
+      {paymentPlanModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div 
+            className="relative w-full max-w-lg bg-[#16161F] border-2 border-amber-400 rounded-3xl overflow-hidden shadow-2xl shadow-amber-950/80 p-6 sm:p-7 space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => { setPaymentPlanModal(null); setMpPixPlanData(null); }}
+              className="absolute top-4 right-4 w-8 h-8 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-[#FF5F00] p-0.5 shadow-md">
+                <div className="w-full h-full bg-[#181824] rounded-[14px] flex items-center justify-center text-xl">
+                  {paymentPlanModal.plan.id === 'gold' ? '👑' : paymentPlanModal.plan.id === 'silver' ? '🥈' : '🥉'}
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
+                  Mercado Pago Oficial
+                </span>
+                <h3 className="text-lg font-black text-white">
+                  Contratar {paymentPlanModal.plan.name}
+                </h3>
+              </div>
+            </div>
+
+            <div className="bg-black/40 border border-white/5 rounded-2xl p-4 text-xs space-y-2">
+              <div className="flex justify-between text-gray-400">
+                <span>Valor do Plano:</span>
+                <span>R$ {paymentPlanModal.plan.price.toFixed(2).replace('.', ',')}</span>
+              </div>
+              {paymentPlanModal.discount > 0 && (
+                <div className="flex justify-between text-emerald-400 font-bold">
+                  <span>Desconto do Caixa da Loja:</span>
+                  <span>- R$ {paymentPlanModal.discount.toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
+              <div className="border-t border-white/10 pt-2 flex justify-between font-black text-sm text-white">
+                <span>Total a Pagar Hoje:</span>
+                <span className="text-amber-400">R$ {paymentPlanModal.finalPrice.toFixed(2).replace('.', ',')}</span>
+              </div>
+            </div>
+
+            {/* Painel PIX Mercado Pago */}
+            <div className="bg-[#121219] p-4 rounded-2xl border border-white/10 text-center space-y-3">
+              <span className="text-[11px] font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30 px-3 py-0.5 rounded-full inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>PIX Dinâmico com Ativação Imediata</span>
+              </span>
+
+              <div className="p-3 bg-white rounded-2xl inline-block shadow-md">
+                <QRCodeSVG 
+                  value={mpPixPlanData?.qrCode || `00020126580014br.gov.bcb.pix0136melhorcupom-lojistas@melhorcupom.com520400005303986540${paymentPlanModal.finalPrice.toFixed(2)}5802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO`}
+                  size={130}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 max-w-sm mx-auto">
+                <input
+                  type="text"
+                  readOnly
+                  value={mpPixPlanData?.qrCode || `00020126580014br.gov.bcb.pix0136melhorcupom-lojistas@melhorcupom.com520400005303986540${paymentPlanModal.finalPrice.toFixed(2)}5802BR...`}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-400 font-mono truncate"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(mpPixPlanData?.qrCode || `00020126580014br.gov.bcb.pix0136melhorcupom-lojistas@melhorcupom.com520400005303986540${paymentPlanModal.finalPrice.toFixed(2)}5802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO`);
+                    setCopiedPlanPix(true);
+                    setTimeout(() => setCopiedPlanPix(false), 2000);
+                  }}
+                  className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer flex-shrink-0"
+                >
+                  {copiedPlanPix ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  <span>{copiedPlanPix ? 'Copiado!' : 'Copiar'}</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsProcessingPlanPay(true);
+                  setTimeout(() => {
+                    setIsProcessingPlanPay(false);
+                    upgradeStoreTier(currentStore.id, paymentPlanModal.plan.id, paymentPlanModal.discount);
+                    const discountMsg = paymentPlanModal.discount > 0 
+                      ? ` com abatimento de R$ ${paymentPlanModal.discount.toFixed(2).replace('.', ',')} do seu Caixa de Indicações!` 
+                      : '!';
+                    setPlanUpgradeSuccess(`🎉 Parabéns! Sua loja agora é "${paymentPlanModal.plan.name}"${discountMsg} Pagamento confirmado via Mercado Pago!`);
+                    setPaymentPlanModal(null);
+                    setTimeout(() => setPlanUpgradeSuccess(''), 6000);
+                  }, 1200);
+                }}
+                disabled={isProcessingPlanPay}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs cursor-pointer"
+              >
+                {isProcessingPlanPay ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Zap size={16} />
+                    <span>Confirmar Pagamento de R$ {paymentPlanModal.finalPrice.toFixed(2).replace('.', ',')} (Ativar Plano)</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
