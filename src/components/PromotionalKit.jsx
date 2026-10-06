@@ -1178,9 +1178,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         throw new Error(data.error || 'Erro ao publicar no Instagram.');
       } catch (err) {
         setIsPublishing(false);
+        const rawMsg = err.message || '';
+        const isLoginExpired = rawMsg.includes('login_required') || rawMsg.includes('sessionid') || rawMsg.includes('expirou');
+        
         setPublishErrorModal({
-          title: 'Publicação Automática pelo Robô',
-          message: err.message || 'Erro ao conectar com o serviço de publicação. Verifique a sessão do Instagram.'
+          title: isLoginExpired ? 'Sessão do Instagram Expirada' : 'Publicação Automática pelo Robô',
+          message: isLoginExpired 
+            ? 'A sua sessão web do Instagram expirou por segurança nos servidores da Meta (login_required). O robô precisa de uma chave atualizada para publicar 100% sozinho.' 
+            : rawMsg || 'Erro ao conectar com o serviço de publicação. Verifique a sessão do Instagram.'
         });
         return;
       }

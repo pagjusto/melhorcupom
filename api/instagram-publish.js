@@ -45,6 +45,12 @@ export default async function handler(req, res) {
     let sessionId = body.sessionId || process.env.INSTAGRAM_SESSION_ID || DEFAULT_SESSION_ID;
     let userId = body.userId || DEFAULT_USER_ID;
 
+    // Se o sessionId contiver o ID de usuário no prefixo (ex: 76452558269%3A...), atualizar userId
+    if (sessionId) {
+      const match = sessionId.match(/^([0-9]+)(?:%3A|:)/);
+      if (match) userId = match[1];
+    }
+
     // Tentar ler de public/instagram-session.json caso exista
     try {
       const pubFile = path.resolve(process.cwd(), 'public/instagram-session.json');
