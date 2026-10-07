@@ -257,8 +257,15 @@ export const ImperdiveisView = () => {
                 <img
                   src={deal.image}
                   alt={deal.title}
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
+                  onError={(e) => {
+                    if (!e.currentTarget.dataset.fallback) {
+                      e.currentTarget.dataset.fallback = '1';
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=700&auto=format&fit=crop&q=80';
+                    }
+                  }}
                 />
                 {deal.freeShipping && (
                   <div className="absolute bottom-2 left-2 bg-emerald-600/95 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-sm backdrop-blur-sm">
