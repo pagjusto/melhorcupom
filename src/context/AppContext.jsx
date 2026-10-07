@@ -237,14 +237,22 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee (Robô de Ofertas)
+  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee (Robô de Ofertas - 50+ achadinhos)
   const [hotDeals, setHotDeals] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_hot_deals_v2');
-    if (!saved) return INITIAL_HOT_DEALS;
+    const saved = localStorage.getItem('melhor_cupom_hot_deals_v3');
+    if (!saved) {
+      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(INITIAL_HOT_DEALS));
+      return INITIAL_HOT_DEALS;
+    }
     try {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      return INITIAL_HOT_DEALS;
+      if (Array.isArray(parsed) && parsed.length >= INITIAL_HOT_DEALS.length) return parsed;
+      // Se houver menos ofertas que o catálogo padrão (ex: versão antiga com apenas 12), mesclar / atualizar
+      const existingIds = new Set(parsed.map(p => p.id));
+      const missing = INITIAL_HOT_DEALS.filter(d => !existingIds.has(d.id));
+      const updated = [...parsed, ...missing];
+      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+      return updated;
     } catch {
       return INITIAL_HOT_DEALS;
     }
@@ -274,7 +282,7 @@ export const AppProvider = ({ children }) => {
     };
     setHotDeals(prev => {
       const updated = [newDeal, ...prev];
-      localStorage.setItem('melhor_cupom_hot_deals_v2', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
       return updated;
     });
 
@@ -291,7 +299,7 @@ export const AppProvider = ({ children }) => {
   const deleteHotDeal = (id) => {
     setHotDeals(prev => {
       const updated = prev.filter(d => d.id !== id);
-      localStorage.setItem('melhor_cupom_hot_deals_v2', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
       return updated;
     });
   };
@@ -302,7 +310,7 @@ export const AppProvider = ({ children }) => {
       lastSync: 'Sincronizado Agora'
     }));
     setHotDeals(synced);
-    localStorage.setItem('melhor_cupom_hot_deals_v2', JSON.stringify(synced));
+    localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(synced));
     return { count: synced.length };
   };
 
