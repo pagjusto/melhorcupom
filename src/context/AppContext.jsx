@@ -258,26 +258,43 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  const formatShopeeAffiliateUrl = (rawUrl) => {
-    if (!rawUrl) return `https://shopee.com.br/?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+  const formatAffiliateUrl = (rawUrl, storeType = 'auto') => {
+    if (!rawUrl) return 'https://shopee.com.br/?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom';
+    
+    // Se for link Magalu / Magazine Você / Influencer Magalu
+    if (storeType === 'magalu' || rawUrl.includes('magazinevoce.com.br') || rawUrl.includes('magazineluiza.com.br') || rawUrl.includes('maga.lu')) {
+      // Já é o link direto de vitrine ou produto do parceiro Magalu
+      return rawUrl;
+    }
+
+    // Se for Shopee
     if (rawUrl.includes('af=18305641225')) return rawUrl;
-    const separator = rawUrl.includes('?') ? '&' : '?';
-    return `${rawUrl}${separator}af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+    if (rawUrl.includes('shopee.com') || rawUrl.includes('s.shopee.com')) {
+      const separator = rawUrl.includes('?') ? '&' : '?';
+      return `${rawUrl}${separator}af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+    }
+
+    return rawUrl;
   };
 
   const addHotDeal = (dealData) => {
-    const affiliateUrl = formatShopeeAffiliateUrl(dealData.affiliateUrl || dealData.link);
+    const isMagalu = (dealData.store && dealData.store.toLowerCase().includes('magalu')) ||
+                     (dealData.affiliateUrl && (dealData.affiliateUrl.includes('magazinevoce') || dealData.affiliateUrl.includes('magazineluiza') || dealData.affiliateUrl.includes('maga.lu')));
+    
+    const storeName = dealData.store || (isMagalu ? 'Magazine Luiza' : 'Shopee Oficial');
+    const affiliateUrl = formatAffiliateUrl(dealData.affiliateUrl || dealData.link, isMagalu ? 'magalu' : 'shopee');
+    
     const newDeal = {
       id: `deal_${Date.now()}`,
       rating: 4.9,
       salesCount: '1.2k vendidos',
-      tag: '🔥 Oferta Imperdível',
-      badgeColor: 'bg-red-500',
-      freeShipping: true,
-      store: 'Shopee Oficial',
+      tag: isMagalu ? '💙 Oferta Magalu' : '🔥 Oferta Imperdível',
+      badgeColor: isMagalu ? 'bg-blue-600' : 'bg-red-500',
+      freeShipping: dealData.freeShipping ?? true,
       category: dealData.category || 'utilidades',
       categoryLabel: dealData.categoryLabel || 'Achadinhos & Utilidades',
       ...dealData,
+      store: storeName,
       affiliateUrl
     };
     setHotDeals(prev => {

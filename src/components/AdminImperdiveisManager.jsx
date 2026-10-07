@@ -32,9 +32,10 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   const [isExtracting, setIsExtracting] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
 
-  // Formulário de Cadastro Rápido de Oferta da Shopee
+  // Formulário de Cadastro Rápido de Oferta (Shopee ou Magalu Influencer)
   const [newDealForm, setNewDealForm] = useState({
     title: '',
+    store: 'shopee', // 'shopee' | 'magalu'
     category: 'tech',
     categoryLabel: 'Tecnologia & Gadgets',
     originalPrice: '',
@@ -123,8 +124,12 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     const promoPrice = parseFloat(newDealForm.promoPrice);
     const discountPercent = Math.max(5, Math.round(((origPrice - promoPrice) / origPrice) * 100));
 
+    const isMagalu = newDealForm.store === 'magalu' || 
+                     (newDealForm.affiliateUrl && (newDealForm.affiliateUrl.includes('magazinevoce') || newDealForm.affiliateUrl.includes('magazineluiza') || newDealForm.affiliateUrl.includes('maga.lu')));
+
     addHotDeal({
       title: newDealForm.title.trim(),
+      store: isMagalu ? 'Magazine Luiza' : 'Shopee Oficial',
       category: newDealForm.category,
       categoryLabel: categoriesMap[newDealForm.category] || 'Ofertas Imperdíveis',
       originalPrice: origPrice,
@@ -132,19 +137,21 @@ export const AdminImperdiveisManager = ({ showToast }) => {
       discountBadge: `${discountPercent}% OFF`,
       discountPercent: discountPercent,
       savings: Math.max(0, origPrice - promoPrice),
-      image: newDealForm.image.trim() || 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=700&auto=format&fit=crop&q=80',
-      affiliateUrl: newDealForm.affiliateUrl.trim() || 'https://shopee.com.br/',
-      tag: newDealForm.tag.trim() || '🔥 Oferta Imperdível',
+      image: newDealForm.image.trim() || (isMagalu ? 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=700&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=700&auto=format&fit=crop&q=80'),
+      affiliateUrl: newDealForm.affiliateUrl.trim() || (isMagalu ? 'https://www.magazinevoce.com.br/' : 'https://shopee.com.br/'),
+      tag: newDealForm.tag.trim() || (isMagalu ? '💙 Oferta Magalu' : '🔥 Oferta Imperdível'),
+      badgeColor: isMagalu ? 'bg-blue-600' : 'bg-red-500',
       freeShipping: newDealForm.freeShipping,
-      description: newDealForm.description.trim() || 'Produto verificado em promoção oficial com frete grátis Shopee.'
+      description: newDealForm.description.trim() || (isMagalu ? 'Oferta verificada Magazine Luiza com entrega rápida e garantia oficial.' : 'Produto verificado em promoção oficial com frete grátis Shopee.')
     });
 
     if (showToast) {
-      showToast('Nova Oferta Imperdível publicada com sucesso!');
+      showToast(isMagalu ? 'Oferta do Parceiro Magalu cadastrada com sucesso!' : 'Nova Oferta Imperdível publicada com sucesso!');
     }
 
     setNewDealForm({
       title: '',
+      store: 'shopee',
       category: 'tech',
       categoryLabel: 'Tecnologia & Gadgets',
       originalPrice: '',
@@ -250,17 +257,33 @@ export const AdminImperdiveisManager = ({ showToast }) => {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-white">
-                Cadastrar Oferta Específica da Shopee (Achadinho)
+                Cadastrar Oferta Específica (Shopee ou Magazine Luiza)
               </h3>
               <p className="text-xs text-gray-400">
-                Cole o link de qualquer produto em promoção e o robô insere sua comissão automaticamente.
+                Cole o link de qualquer produto da Shopee ou da sua loja de Influencer Magalu (Magazine Você) com foto real e rastreamento.
               </p>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleCreateDeal} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-300 mb-1">Plataforma / Loja:</label>
+              <select
+                value={newDealForm.store}
+                onChange={(e) => setNewDealForm(prev => ({ 
+                  ...prev, 
+                  store: e.target.value,
+                  tag: e.target.value === 'magalu' ? '💙 Oferta Magalu' : '🔥 Oferta Imperdível'
+                }))}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-bold focus:border-orange-500 focus:outline-none cursor-pointer"
+              >
+                <option value="shopee">🧡 Shopee Oficial (Afiliado)</option>
+                <option value="magalu">💙 Magazine Luiza (Influencer Magalu)</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-gray-300 mb-1">Título do Produto / Achadinho:</label>
               <input
@@ -268,7 +291,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
                 required
                 value={newDealForm.title}
                 onChange={(e) => setNewDealForm(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Ex: Mini Processador Elétrico USB Bivolt"
+                placeholder="Ex: Fritadeira Air Fryer Philco ou Mini Processador"
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-orange-500 focus:outline-none"
               />
             </div>

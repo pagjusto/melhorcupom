@@ -272,7 +272,17 @@ export const ImperdiveisView = () => {
               <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-[11px] text-gray-400">
-                    <span className="font-semibold text-orange-400/90">{deal.categoryLabel}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-orange-400/90">{deal.categoryLabel}</span>
+                      <span className="text-gray-600">•</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        deal.store && deal.store.toLowerCase().includes('magalu') 
+                          ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' 
+                          : 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
+                      }`}>
+                        {deal.store || 'Shopee Oficial'}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1 text-amber-300 font-bold">
                       <Star size={11} className="fill-amber-400 text-amber-400" />
                       <span>{deal.rating}</span>
