@@ -19,6 +19,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { BigStoresShowcase } from './components/BigStoresShowcase';
 import { BigStoreFreeRegisterModal } from './components/BigStoreFreeRegisterModal';
 import { CityEmptyState } from './components/CityEmptyState';
+import { ImperdiveisView } from './components/ImperdiveisView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin } from 'lucide-react';
@@ -572,6 +573,11 @@ const MainLayout = () => {
         {/* ABA: LOJAS PARCEIRAS */}
         {activeTab === 'stores' && (
           <StoresView onSelectStore={handleSelectStoreFromDirectory} />
+        )}
+
+        {/* ABA: OFERTAS IMPERDÍVEIS (ACHADINHOS & PRODUTOS SHOPEE) */}
+        {activeTab === 'imperdiveis' && (
+          <ImperdiveisView />
         )}
 
         {/* ABA: COMO FUNCIONA */}

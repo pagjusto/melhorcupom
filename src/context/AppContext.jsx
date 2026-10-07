@@ -13,6 +13,7 @@ import {
 } from '../data/mockData';
 import confetti from 'canvas-confetti';
 import { autoPublishStoreToInstagram, getPartnerInstagramHandle } from '../utils/instagramAutoPublisher';
+import { INITIAL_HOT_DEALS } from '../data/hotDealsData';
 
 const AppContext = createContext();
 
@@ -235,6 +236,75 @@ export const AppProvider = ({ children }) => {
       return adminDefaultUser;
     }
   });
+
+  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee (Robô de Ofertas)
+  const [hotDeals, setHotDeals] = useState(() => {
+    const saved = localStorage.getItem('melhor_cupom_hot_deals_v2');
+    if (!saved) return INITIAL_HOT_DEALS;
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      return INITIAL_HOT_DEALS;
+    } catch {
+      return INITIAL_HOT_DEALS;
+    }
+  });
+
+  const formatShopeeAffiliateUrl = (rawUrl) => {
+    if (!rawUrl) return `https://shopee.com.br/?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+    if (rawUrl.includes('af=18305641225')) return rawUrl;
+    const separator = rawUrl.includes('?') ? '&' : '?';
+    return `${rawUrl}${separator}af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+  };
+
+  const addHotDeal = (dealData) => {
+    const affiliateUrl = formatShopeeAffiliateUrl(dealData.affiliateUrl || dealData.link);
+    const newDeal = {
+      id: `deal_${Date.now()}`,
+      rating: 4.9,
+      salesCount: '1.2k vendidos',
+      tag: '🔥 Oferta Imperdível',
+      badgeColor: 'bg-red-500',
+      freeShipping: true,
+      store: 'Shopee Oficial',
+      category: dealData.category || 'utilidades',
+      categoryLabel: dealData.categoryLabel || 'Achadinhos & Utilidades',
+      ...dealData,
+      affiliateUrl
+    };
+    setHotDeals(prev => {
+      const updated = [newDeal, ...prev];
+      localStorage.setItem('melhor_cupom_hot_deals_v2', JSON.stringify(updated));
+      return updated;
+    });
+
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ['#FF5F00', '#FF8500', '#10B981']
+    });
+
+    return newDeal;
+  };
+
+  const deleteHotDeal = (id) => {
+    setHotDeals(prev => {
+      const updated = prev.filter(d => d.id !== id);
+      localStorage.setItem('melhor_cupom_hot_deals_v2', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const syncShopeeHotDeals = async () => {
+    const synced = INITIAL_HOT_DEALS.map(d => ({
+      ...d,
+      lastSync: 'Sincronizado Agora'
+    }));
+    setHotDeals(synced);
+    localStorage.setItem('melhor_cupom_hot_deals_v2', JSON.stringify(synced));
+    return { count: synced.length };
+  };
 
   // Modal de Assinatura
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
@@ -1410,6 +1480,11 @@ export const AppProvider = ({ children }) => {
       setApiLogs,
       isSyncingApis,
       syncApisNow,
+      // Ofertas Imperdíveis (Robô Shopee)
+      hotDeals,
+      addHotDeal,
+      deleteHotDeal,
+      syncShopeeHotDeals,
       // Navegação Global
       activeTab,
       setActiveTab,

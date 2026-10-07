@@ -49,12 +49,14 @@ import {
   Edit3,
   Key,
   X,
-  MessageCircle
+  MessageCircle,
+  Flame
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
 import { RoleSwitcher } from './RoleSwitcher';
 import { AdminWhatsAppManager } from './AdminWhatsAppManager';
+import { AdminImperdiveisManager } from './AdminImperdiveisManager';
 
 export const AdminDashboard = () => {
   const { 
@@ -484,6 +486,18 @@ export const AdminDashboard = () => {
           >
             <MessageCircle size={15} />
             <span>💬 Mensagens WhatsApp</span>
+          </button>
+
+          <button
+            onClick={() => setActiveAdminTab('imperdiveis')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'imperdiveis'
+                ? 'bg-gradient-to-r from-orange-600 via-[#FF5F00] to-amber-500 text-white shadow-md shadow-orange-600/40 ring-1 ring-orange-400/50'
+                : 'bg-white/5 hover:bg-white/10 text-orange-300 hover:text-white border border-orange-500/30'
+            }`}
+          >
+            <Flame size={15} className="text-amber-300" />
+            <span>🔥 Ofertas Imperdíveis</span>
           </button>
 
           <button
@@ -2215,6 +2229,11 @@ export const AdminDashboard = () => {
       {/* ABA 9: GERENCIADOR DE MENSAGENS WHATSAPP POR CIDADE */}
       {activeAdminTab === 'mensagens' && (
         <AdminWhatsAppManager />
+      )}
+
+      {/* ABA 10: ROBÔ DE OFERTAS IMPERDÍVEIS & ACHADINHOS SHOPEE */}
+      {activeAdminTab === 'imperdiveis' && (
+        <AdminImperdiveisManager showToast={showToast} />
       )}
 
     </div>

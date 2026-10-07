@@ -20,7 +20,8 @@ import {
   LogIn,
   LogOut,
   Settings,
-  Gift
+  Gift,
+  Flame
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
@@ -92,6 +93,18 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 }`}
               >
                 Lojas Parceiras
+              </button>
+
+              <button
+                onClick={() => setActiveTab('imperdiveis')}
+                className={`px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all ${
+                  activeTab === 'imperdiveis'
+                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-600/30'
+                    : 'text-orange-400 hover:text-white hover:bg-orange-500/15'
+                }`}
+              >
+                <Flame size={14} className="text-amber-300 animate-pulse" />
+                <span>Ofertas Imperdíveis</span>
               </button>
 
               <button
@@ -517,6 +530,17 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               <span className="text-[10px] bg-[#FF5F00] text-white px-2 py-0.5 rounded-full font-black uppercase">Grátis</span>
             </button>
           )}
+          <button
+            onClick={() => { setActiveTab('imperdiveis'); setMobileMenuOpen(false); }}
+            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors ${
+              activeTab === 'imperdiveis' 
+                ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white' 
+                : 'text-orange-400 hover:bg-orange-500/10'
+            }`}
+          >
+            <Flame size={16} className="text-amber-300" />
+            <span>🔥 Ofertas Imperdíveis</span>
+          </button>
           <button
             onClick={() => { setActiveTab('how-it-works'); setMobileMenuOpen(false); }}
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5"
