@@ -106,7 +106,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 <Flame size={14} className="text-amber-300 animate-pulse" />
                 <span>Ofertas Imperdíveis</span>
                 <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-0.5">
-                  <span>👑 VIP</span>
+                  <span>MEMBROS</span>
                 </span>
               </button>
 
@@ -545,8 +545,8 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               <Flame size={16} className="text-amber-300" />
               <span>🔥 Ofertas Imperdíveis</span>
             </div>
-            <span className="bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-              👑 VIP
+            <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+              MEMBROS
             </span>
           </button>
           <button
