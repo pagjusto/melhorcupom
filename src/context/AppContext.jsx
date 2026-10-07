@@ -393,6 +393,19 @@ export const AppProvider = ({ children }) => {
     setIsAuthModalOpen(false);
   };
 
+  // Modal de Termos de Uso e Política de Privacidade (LGPD)
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState('terms'); // 'terms' | 'privacy'
+
+  const openLegalModal = (tab = 'terms') => {
+    setLegalModalTab(tab);
+    setIsLegalModalOpen(true);
+  };
+
+  const closeLegalModal = () => {
+    setIsLegalModalOpen(false);
+  };
+
   // Salvar no LocalStorage sempre que houver alteração
   useEffect(() => {
     localStorage.setItem('melhor_cupom_role', currentRole);
@@ -1529,6 +1542,13 @@ export const AppProvider = ({ children }) => {
       setAuthModalMode,
       openAuthModal,
       closeAuthModal,
+      // Termos de Uso e Política de Privacidade
+      isLegalModalOpen,
+      setIsLegalModalOpen,
+      legalModalTab,
+      setLegalModalTab,
+      openLegalModal,
+      closeLegalModal,
       registerUser,
       registerMerchant,
       loginAccount,

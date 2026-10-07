@@ -32,7 +32,8 @@ export const AuthModal = () => {
     registerUser,
     registerMerchant,
     loginAccount,
-    setActiveTab
+    setActiveTab,
+    openLegalModal
   } = useApp();
 
   // Formulário Usuário
@@ -493,10 +494,30 @@ export const AuthModal = () => {
                 </div>
               </div>
 
+              {/* Aceite dos Termos e Privacidade */}
+              <div className="text-[11px] text-gray-400 text-center px-2 pt-1 leading-relaxed">
+                Ao cadastrar-se, você concorda com nossos{' '}
+                <button
+                  type="button"
+                  onClick={() => openLegalModal('terms')}
+                  className="text-orange-400 font-bold hover:underline cursor-pointer"
+                >
+                  Termos de Uso
+                </button>
+                {' '}e{' '}
+                <button
+                  type="button"
+                  onClick={() => openLegalModal('privacy')}
+                  className="text-emerald-400 font-bold hover:underline cursor-pointer"
+                >
+                  Política de Privacidade (LGPD)
+                </button>.
+              </div>
+
               {/* Botão de Concluir */}
               <button
                 type="submit"
-                className="w-full mt-3 bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
+                className="w-full mt-2 bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
               >
                 <Sparkles size={16} />
                 <span>Finalizar Cadastro de Usuário</span>
@@ -779,10 +800,30 @@ export const AuthModal = () => {
                 </div>
               </div>
 
+              {/* Aceite dos Termos e Privacidade Comercial */}
+              <div className="text-[11px] text-gray-400 text-center px-2 pt-1 leading-relaxed">
+                Ao cadastrar sua loja, você concorda com nossos{' '}
+                <button
+                  type="button"
+                  onClick={() => openLegalModal('terms')}
+                  className="text-amber-400 font-bold hover:underline cursor-pointer"
+                >
+                  Termos de Uso
+                </button>
+                {' '}e{' '}
+                <button
+                  type="button"
+                  onClick={() => openLegalModal('privacy')}
+                  className="text-emerald-400 font-bold hover:underline cursor-pointer"
+                >
+                  Política de Privacidade (LGPD)
+                </button>.
+              </div>
+
               {/* Botão de Concluir */}
               <button
                 type="submit"
-                className="w-full mt-3 bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
+                className="w-full mt-2 bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
               >
                 <Store size={18} />
                 <span>Cadastrar Estabelecimento e Começar</span>

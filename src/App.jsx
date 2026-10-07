@@ -20,6 +20,7 @@ import { BigStoresShowcase } from './components/BigStoresShowcase';
 import { BigStoreFreeRegisterModal } from './components/BigStoreFreeRegisterModal';
 import { CityEmptyState } from './components/CityEmptyState';
 import { ImperdiveisView } from './components/ImperdiveisView';
+import { LegalModal } from './components/LegalModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin } from 'lucide-react';
@@ -37,6 +38,10 @@ const MainLayout = () => {
     setIsSubscriptionModalOpen,
     setIsReferralModalOpen,
     openAuthModal,
+    isLegalModalOpen,
+    closeLegalModal,
+    legalModalTab,
+    openLegalModal,
     recordCouponView,
     activeTab,
     setActiveTab,
@@ -685,6 +690,22 @@ const MainLayout = () => {
                 <p className="text-gray-500">
                   Pagamentos criptografados via PIX e Cartão de Crédito. Garantia incondicional de satisfação de 7 dias.
                 </p>
+                <div className="pt-2 flex flex-col gap-1.5 border-t border-white/5">
+                  <button 
+                    type="button"
+                    onClick={() => openLegalModal('terms')} 
+                    className="text-left text-gray-400 hover:text-orange-400 transition-colors flex items-center gap-1.5 cursor-pointer text-[11px]"
+                  >
+                    <span>📄 Termos de Uso da Plataforma</span>
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => openLegalModal('privacy')} 
+                    className="text-left text-gray-400 hover:text-emerald-400 transition-colors flex items-center gap-1.5 cursor-pointer text-[11px]"
+                  >
+                    <span>🔒 Política de Privacidade (LGPD)</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -704,9 +725,21 @@ const MainLayout = () => {
                 <span>🛡️ Painel ADM</span>
               </button>
               <span>•</span>
-              <span>Termos de Uso</span>
+              <button
+                type="button"
+                onClick={() => openLegalModal('terms')}
+                className="hover:text-orange-400 text-gray-400 transition-colors cursor-pointer"
+              >
+                Termos de Uso
+              </button>
               <span>•</span>
-              <span>Política de Privacidade</span>
+              <button
+                type="button"
+                onClick={() => openLegalModal('privacy')}
+                className="hover:text-emerald-400 text-gray-400 transition-colors cursor-pointer"
+              >
+                Política de Privacidade
+              </button>
               <span>•</span>
               <span className="text-[#FF5F00] font-semibold">Feito com base na logo oficial</span>
             </div>
@@ -741,6 +774,11 @@ const MainLayout = () => {
       <ReferralModal />
       <AuthModal />
       <SavingsModal onSelectCoupon={(coupon) => setSelectedCoupon(coupon)} />
+      <LegalModal 
+        isOpen={isLegalModalOpen} 
+        onClose={closeLegalModal} 
+        initialTab={legalModalTab} 
+      />
 
     </div>
   );
