@@ -61,10 +61,26 @@ export const isBigNetworkOrApiStore = (store) => {
   if (Array.isArray(store.cities) && store.cities.length > 1) return true;
   if (store.isNational || store.isChain || store.network) return true;
   if (store.category === 'redes-nacionais' || store.category === 'grandes-redes' || store.category === 'afiliados') return true;
+  
   const city = (store.city || '').toLowerCase();
   if (city.includes('online') || city.includes('todo o brasil') || city.includes('brasil')) return true;
+  
   const badge = (store.badge || '').toLowerCase();
   if (badge.includes('api') || badge.includes('lomadee') || badge.includes('awin') || badge.includes('shopee') || badge.includes('afiliado')) return true;
+
+  // Grandes marcas e franquias nacionais (Track & Field, McDonald's, Outback, Sephora, etc.)
+  const name = (store.name || '').toLowerCase();
+  const bigBrandKeywords = [
+    'track & field', 'track&field', 'mcdonald', 'burger king', 'outback', 'smart fit',
+    'starbucks', 'cacau show', 'cinemark', 'fogo de chão', 'madero', 'spoleto',
+    'drogasil', 'magazine luiza', 'magalu', 'centauro', 'casas bahia', 'kabum',
+    'aliexpress', 'amazon', 'shopee', 'shein', 'mercado livre', 'boticário',
+    'iplace', 'sephora', 'subway', 'pão de açúcar', 'petz', 'nike', 'adidas', 'samsung'
+  ];
+  if (bigBrandKeywords.some(keyword => name.includes(keyword))) {
+    return true;
+  }
+
   return false;
 };
 

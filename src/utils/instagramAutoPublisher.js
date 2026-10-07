@@ -33,6 +33,20 @@ export const isBigNetworkOrApiStore = (store) => {
   if (city.includes('online') || city.includes('todo o brasil') || city.includes('brasil')) return true;
   const badge = (store.badge || '').toLowerCase();
   if (badge.includes('api') || badge.includes('lomadee') || badge.includes('awin') || badge.includes('shopee') || badge.includes('afiliado')) return true;
+
+  // Grandes marcas e franquias nacionais (Track & Field, McDonald's, Outback, Sephora, etc.)
+  const name = (store.name || '').toLowerCase();
+  const bigBrandKeywords = [
+    'track & field', 'track&field', 'mcdonald', 'burger king', 'outback', 'smart fit',
+    'starbucks', 'cacau show', 'cinemark', 'fogo de chão', 'madero', 'spoleto',
+    'drogasil', 'magazine luiza', 'magalu', 'centauro', 'casas bahia', 'kabum',
+    'aliexpress', 'amazon', 'shopee', 'shein', 'mercado livre', 'boticário',
+    'iplace', 'sephora', 'subway', 'pão de açúcar', 'petz', 'nike', 'adidas', 'samsung'
+  ];
+  if (bigBrandKeywords.some(keyword => name.includes(keyword))) {
+    return true;
+  }
+
   return false;
 };
 
@@ -64,7 +78,24 @@ export const KNOWN_BRAND_INSTAGRAMS = {
   'aliexpress': '@aliexpressbr',
   'amazon': '@amazonbrasil',
   'shopee': '@shopee_br',
-  'shein': '@sheinbrasil',
+  'track & field': '@trackfieldoficial',
+  'track & field leblon': '@trackfieldoficial',
+  'track&field': '@trackfieldoficial',
+  'o boticário': '@oboticario',
+  'boticário': '@oboticario',
+  'sephora brasil': '@sephora_brasil',
+  'sephora': '@sephora_brasil',
+  'petz': '@petz',
+  'petz megastore': '@petz',
+  'subway brasil': '@subwaybrasil',
+  'subway': '@subwaybrasil',
+  'iplace': '@iplace',
+  'iplace apple premium reseller': '@iplace',
+  'boteco belmonte': '@boteco_belmonte',
+  'boteco belmonte rio': '@boteco_belmonte',
+  'choperia pinguim': '@pinguimofficial',
+  'choperia pinguim bh': '@pinguimofficial',
+  'fogo de chão batel': '@fogodechaobr',
   'mercado livre': '@mercadolivre'
 };
 
