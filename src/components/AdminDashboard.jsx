@@ -1966,8 +1966,8 @@ export const AdminDashboard = () => {
                         onClick={() => {
                           setEditingConnector(connector);
                           setEditCredentialsForm({
-                            publisherId: connector.credentials?.appKey || connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId || '',
-                            apiKey: connector.credentials?.appSecret || connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret || '',
+                            publisherId: connector.credentials?.publicKey || connector.credentials?.appKey || connector.credentials?.publisherId || connector.credentials?.appId || connector.credentials?.clientId || '',
+                            apiKey: connector.credentials?.accessToken || connector.credentials?.appSecret || connector.credentials?.apiKey || connector.credentials?.secretKey || connector.credentials?.clientSecret || '',
                             subIdParam: connector.credentials?.subIdParam || '',
                             webhookEndpoint: connector.credentials?.webhookEndpoint || ''
                           });
