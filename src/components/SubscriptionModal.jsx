@@ -47,16 +47,32 @@ export const SubscriptionModal = () => {
   const [mpError, setMpError] = useState(null);
   const [checkoutPreferenceUrl, setCheckoutPreferenceUrl] = useState(null);
 
-  if (!isSubscriptionModalOpen) return null;
+  // Plano padrão de segurança para garantir integridade caso SUBSCRIPTION_PLANS falhe
+  const DEFAULT_PLAN = {
+    id: 'plan_vip',
+    name: 'Assinatura VIP',
+    tag: 'Acesso Total',
+    price: 19.90,
+    period: 'por mês',
+    billingInfo: 'Cobrança mensal recorrente de R$ 19,90 no PIX ou Cartão. Cancele quando quiser.',
+    features: [],
+    popular: true,
+    color: 'border-[#FF5F00] shadow-glow'
+  };
 
-  const currentPlan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlanForModal) || SUBSCRIPTION_PLANS[0];
+  const currentPlan = (Array.isArray(SUBSCRIPTION_PLANS) && SUBSCRIPTION_PLANS.find(p => p.id === selectedPlanForModal))
+    || (Array.isArray(SUBSCRIPTION_PLANS) && SUBSCRIPTION_PLANS[0])
+    || DEFAULT_PLAN;
+
   const isVisitor = currentRole === 'visitor';
-  const userBalance = userProfile?.referralBalance || 0;
-  const discount = (useReferralBalance && userBalance > 0) ? Math.min(currentPlan.price, userBalance) : 0;
-  const finalPrice = Math.max(0, currentPlan.price - discount);
+  const planPrice = typeof currentPlan?.price === 'number' ? currentPlan.price : 19.90;
+  const userBalance = typeof userProfile?.referralBalance === 'number' ? userProfile.referralBalance : 0;
+  const discount = (useReferralBalance && userBalance > 0) ? Math.min(planPrice, userBalance) : 0;
+  const finalPrice = Math.max(0, planPrice - discount);
   const isFree = finalPrice === 0 && discount > 0;
 
   // Gerar Cobrança Oficial via Mercado Pago quando o modal abrir ou o preço mudar
+  // NOTA: Deve ser chamado incondicionalmente em todos os renders para seguir as Regras dos Hooks do React
   useEffect(() => {
     if (!isSubscriptionModalOpen || isFree || finalPrice <= 0) return;
 
@@ -110,11 +126,11 @@ export const SubscriptionModal = () => {
 
     createMpPayment();
     return () => { isMounted = false; };
-  }, [isSubscriptionModalOpen, finalPrice, currentPlan.id, isFree]);
+  }, [isSubscriptionModalOpen, finalPrice, currentPlan?.id, isFree, apiConnectors, userProfile]);
 
   // Polling automático para checar se o pagamento do Mercado Pago foi aprovado
   useEffect(() => {
-    if (!mpPixData?.paymentId || mpPixData.status === 'approved') return;
+    if (!isSubscriptionModalOpen || !mpPixData?.paymentId || mpPixData.status === 'approved') return;
 
     const interval = setInterval(async () => {
       try {
@@ -138,7 +154,10 @@ export const SubscriptionModal = () => {
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [mpPixData?.paymentId, mpPixData?.status, currentPlan.id, discount, subscribeToVip]);
+  }, [isSubscriptionModalOpen, mpPixData?.paymentId, mpPixData?.status, currentPlan?.id, discount, subscribeToVip]);
+
+  // Se o modal estiver fechado, não renderiza a árvore visual (após todos os hooks terem sido executados!)
+  if (!isSubscriptionModalOpen) return null;
 
   const pixCopyString = mpPixData?.qrCode || 
     `00020126580014br.gov.bcb.pix0136melhorcupom-vip-pagamentos@melhorcupom.com520400005303986540${finalPrice.toFixed(2)}5802BR5925MELHOR CUPOM SERVICOS LTDA6009SAO PAULO62070503***630489A1`;

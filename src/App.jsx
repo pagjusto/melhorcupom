@@ -19,6 +19,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { BigStoresShowcase } from './components/BigStoresShowcase';
 import { BigStoreFreeRegisterModal } from './components/BigStoreFreeRegisterModal';
 import { CityEmptyState } from './components/CityEmptyState';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import logoMelhorCupom from './assets/logo-melhor-cupom.png';
 import { Sparkles, ArrowRight, ShieldCheck, Shield, Heart, ExternalLink, QrCode, MapPin } from 'lucide-react';
 
@@ -741,8 +742,10 @@ const MainLayout = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <MainLayout />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <MainLayout />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
