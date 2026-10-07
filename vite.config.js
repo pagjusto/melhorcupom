@@ -375,6 +375,31 @@ export default defineConfig({
             res.end(JSON.stringify({ success: false, error: err.message }));
           }
         });
+
+        // 5. Rota Local /api/magalu-sync para sincronizar vitrine de Influencer Magalu
+        server.middlewares.use('/api/magalu-sync', async (req, res) => {
+          if (req.method === 'OPTIONS') {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+            res.statusCode = 200;
+            return res.end();
+          }
+
+          try {
+            const syncScriptPath = path.resolve(__dirname, 'scripts/sync-magalu-store.cjs');
+            delete nodeRequire.cache[syncScriptPath];
+            const { syncMagaluOffers } = nodeRequire(syncScriptPath);
+            const offers = await syncMagaluOffers();
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: true, count: offers.length, offers }));
+          } catch (err) {
+            console.error('Erro na sincronizacao Magalu:', err);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: false, error: err.message }));
+          }
+        });
       }
     }
   ],

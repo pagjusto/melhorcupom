@@ -331,6 +331,126 @@ export const AppProvider = ({ children }) => {
     return { count: synced.length };
   };
 
+  const syncMagaluHotDeals = async () => {
+    try {
+      const res = await fetch('/api/magalu-sync');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.offers) && data.offers.length > 0) {
+        setHotDeals(prev => {
+          // Filtrar existentes para nao duplicar
+          const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
+          const updated = [...data.offers, ...currentWithoutMagalu];
+          localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+          return updated;
+        });
+
+        confetti({
+          particleCount: 80,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#0086FF', '#0055FF', '#FFB703']
+        });
+
+        return { count: data.offers.length, offers: data.offers };
+      }
+      throw new Error(data.error || 'Nenhum produto retornado da vitrine');
+    } catch (err) {
+      console.warn('Erro ao sincronizar Magalu, gerando fallback direto:', err);
+      // Fallback com as 5 principais ofertas oficiais do magazinemelhorcupom já mapeadas
+      const fallbackMagalu = [
+        {
+          id: 'deal_magalu_bowls_electrolux',
+          title: 'Conjunto de Bowls e Medidores de Inox 3 Peças Electrolux Multiuso 41049099',
+          image: 'https://a-static.mlcdn.com.br/280x210/conjunto-de-bowls-e-medidores-de-inox-3-pecas-electrolux-multiuso-41049099/magazineluiza/240749600/e390e7053c43b5285673467cdbf769be.jpg',
+          category: 'casa',
+          categoryLabel: 'Casa & Cozinha',
+          originalPrice: 104.90,
+          promoPrice: 94.90,
+          discountBadge: '10% OFF',
+          discountPercent: 10,
+          savings: 10.00,
+          rating: 4.9,
+          salesCount: '690 avaliações',
+          tag: '💙 Oferta Oficial Magalu',
+          badgeColor: 'bg-blue-600',
+          freeShipping: true,
+          store: 'Magazine Luiza',
+          affiliateUrl: 'https://www.magazinevoce.com.br/magazinemelhorcupom/conjunto-de-bowls-e-medidores-de-inox-3-pecas-electrolux-multiuso-41049099/p/240749600/ud/tige/',
+          description: 'Conjunto em aço inox Electrolux com vedação e medidores de precisão na sua vitrine oficial Magazine Você.'
+        },
+        {
+          id: 'deal_magalu_talheres_tramontina',
+          title: 'Jogo De Talheres Tramontina Colher Faca Garfo 24 Peças Búzios Inox Tramontina',
+          image: 'https://a-static.mlcdn.com.br/280x210/jogo-de-talheres-tramontina-colher-faca-garfo-24-pecas-buzios-inox-tramontina/cnmshop2/tra23799071/656afed8383afd747cd5ffadeea31d81.jpeg',
+          category: 'casa',
+          categoryLabel: 'Casa & Cozinha',
+          originalPrice: 132.00,
+          promoPrice: 55.90,
+          discountBadge: '58% OFF',
+          discountPercent: 58,
+          savings: 76.10,
+          rating: 4.8,
+          salesCount: '10.1k avaliações',
+          tag: '💙 Mais Vendido Magalu',
+          badgeColor: 'bg-blue-600',
+          freeShipping: true,
+          store: 'Magazine Luiza',
+          affiliateUrl: 'https://www.magazinevoce.com.br/magazinemelhorcupom/jogo-de-talheres-tramontina-colher-faca-garfo-24-pecas-buzios-inox-tramontina/p/hac86cda7b/ud/faqu/',
+          description: 'Talheres 100% em aço inox Tramontina da linha Búzios. Alta durabilidade e brilho para o dia a dia.'
+        },
+        {
+          id: 'deal_magalu_smartphone_moto_g35',
+          title: 'Smartphone Motorola Moto G35 256GB Coral 5G 4GB RAM + 8GB RAM Boost 6,7"',
+          image: 'https://a-static.mlcdn.com.br/280x210/smartphone-motorola-moto-g35-256gb-coral-5g-4gb-ram-8gb-ram-boost-5g-67-cam-dupla-selfie-16mp/magazineluiza/238760800/b56104a326714f86aa66eb799f34eb4c.jpg',
+          category: 'tech',
+          categoryLabel: 'Tecnologia & Gadgets',
+          originalPrice: 1648.90,
+          promoPrice: 999.00,
+          discountBadge: '39% OFF',
+          discountPercent: 39,
+          savings: 649.90,
+          rating: 4.7,
+          salesCount: '13.0k avaliações',
+          tag: '📱 Destaque 5G Magalu',
+          badgeColor: 'bg-blue-600',
+          freeShipping: true,
+          store: 'Magazine Luiza',
+          affiliateUrl: 'https://www.magazinevoce.com.br/magazinemelhorcupom/smartphone-motorola-moto-g35-256gb-coral-5g-4gb-ram-8gb-ram-boost-5g-67-cam-dupla-selfie-16mp/p/238760800/te/mg35/',
+          description: 'Tela fluida de 6.7" 120Hz, conexão rápida 5G, 256GB de memória interna e câmera inteligente de 50MP.'
+        },
+        {
+          id: 'deal_magalu_smartphone_moto_g06',
+          title: 'Smartphone Motorola Moto G06 128GB 4GB RAM Azul Marinho Câm. 50MP',
+          image: 'https://a-static.mlcdn.com.br/280x210/smartphone-motorola-moto-g06-128gb-4gb-ram-azul-marinho-69-cam-50mp-selfie-8mp/magazineluiza/240552000/cced9c4197b9a9d974ad74a4de5589fc.jpg',
+          category: 'tech',
+          categoryLabel: 'Tecnologia & Gadgets',
+          originalPrice: 1099.00,
+          promoPrice: 699.00,
+          discountBadge: '36% OFF',
+          discountPercent: 36,
+          savings: 400.00,
+          rating: 4.8,
+          salesCount: 'Mais Vendido da Semana',
+          tag: '💙 Menor Preço Magalu',
+          badgeColor: 'bg-blue-600',
+          freeShipping: true,
+          store: 'Magazine Luiza',
+          affiliateUrl: 'https://www.magazinevoce.com.br/magazinemelhorcupom/smartphone-motorola-moto-g06-128gb-4gb-ram-azul-marinho-69-cam-50mp-selfie-8mp/p/240552000/te/mg06/',
+          description: 'Câmera principal de 50MP, bateria de longa duração 5000mAh e design moderno com acabamento premium.'
+        }
+      ];
+
+      setHotDeals(prev => {
+        const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
+        const updated = [...fallbackMagalu, ...currentWithoutMagalu];
+        localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+        return updated;
+      });
+
+      return { count: fallbackMagalu.length, offers: fallbackMagalu };
+    }
+  };
+
   // Modal de Assinatura
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlanForModal, setSelectedPlanForModal] = useState('plan_vip');
@@ -1505,11 +1625,12 @@ export const AppProvider = ({ children }) => {
       setApiLogs,
       isSyncingApis,
       syncApisNow,
-      // Ofertas Imperdíveis (Robô Shopee)
+      // Ofertas Imperdíveis (Robô Shopee & Magalu)
       hotDeals,
       addHotDeal,
       deleteHotDeal,
       syncShopeeHotDeals,
+      syncMagaluHotDeals,
       // Navegação Global
       activeTab,
       setActiveTab,

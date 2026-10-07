@@ -25,10 +25,12 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     hotDeals = [], 
     addHotDeal, 
     deleteHotDeal, 
-    syncShopeeHotDeals 
+    syncShopeeHotDeals,
+    syncMagaluHotDeals
   } = useApp();
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncingMagalu, setIsSyncingMagalu] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
 
@@ -59,7 +61,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   const handleAutoExtractMetadata = async (urlToFetch) => {
     const target = urlToFetch || newDealForm.affiliateUrl;
     if (!target || !target.startsWith('http')) {
-      if (showToast) showToast('Insira um link válido da Shopee para puxar a imagem.', 'warning');
+      if (showToast) showToast('Insira um link válido da Shopee ou Magalu para puxar a imagem.', 'warning');
       return;
     }
 
@@ -72,8 +74,11 @@ export const AdminImperdiveisManager = ({ showToast }) => {
       });
       const data = await res.json();
       if (data.success) {
+        const isMagaluLink = target.includes('magazinevoce') || target.includes('magazineluiza') || target.includes('maga.lu');
         setNewDealForm(prev => ({
           ...prev,
+          store: isMagaluLink ? 'magalu' : prev.store,
+          tag: isMagaluLink ? '💙 Oferta Magalu' : prev.tag,
           image: data.image || prev.image,
           title: prev.title || data.title || '',
           promoPrice: prev.promoPrice || (data.price ? String(data.price) : ''),
@@ -102,10 +107,29 @@ export const AdminImperdiveisManager = ({ showToast }) => {
         origin: { y: 0.6 }
       });
       if (showToast) {
-        showToast(`Robô de Ofertas executado com sucesso! ${res.count} produtos sincronizados na Shopee.`);
+        showToast(`Robô Shopee executado com sucesso! ${res.count} produtos sincronizados.`);
       }
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
+    }
+  };
+
+  const handleSyncMagaluStore = async () => {
+    setIsSyncingMagalu(true);
+    try {
+      if (showToast) {
+        showToast('Acessando vitrine oficial magazinevoce.com.br/magazinemelhorcupom/ ...', 'info');
+      }
+      const res = await syncMagaluHotDeals();
+      if (showToast) {
+        showToast(`🎉 Sucesso! ${res.count} ofertas da sua vitrine Magalu foram sincronizadas com suas fotos reais e links comissionados!`, 'success');
+      }
+    } catch (err) {
+      if (showToast) {
+        showToast('Erro ao sincronizar loja Magalu: ' + err.message, 'error');
+      }
+    } finally {
+      setIsSyncingMagalu(false);
     }
   };
 
@@ -186,10 +210,13 @@ export const AdminImperdiveisManager = ({ showToast }) => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF5F00] text-white text-xs font-black uppercase tracking-wider">
                 <Flame size={14} />
-                <span>Robô de Ofertas Imperdíveis Shopee</span>
+                <span>Robô de Ofertas Shopee & Magalu</span>
               </span>
               <span className="text-xs text-orange-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10 font-bold">
-                Tag Oficial: 18305641225
+                Shopee: 18305641225
+              </span>
+              <span className="text-xs text-blue-300 bg-blue-600/20 px-2.5 py-0.5 rounded-full border border-blue-500/30 font-bold">
+                Magalu: magazinemelhorcupom
               </span>
             </div>
 
@@ -198,18 +225,27 @@ export const AdminImperdiveisManager = ({ showToast }) => {
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              O robô monitora e organiza produtos virais da Shopee Brasil com descontos de 40% a 70% OFF. Qualquer produto cadastrado ou sincronizado recebe automaticamente sua tag de afiliado oficial para geração de comissões.
+              O robô monitora ofertas da Shopee Brasil e sincroniza automaticamente os produtos da sua vitrine oficial de <strong>Influencer Magalu (magazinemelhorcupom)</strong> com fotos reais, descontos e links diretos comissionados.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSyncMagaluStore}
+              disabled={isSyncingMagalu}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-blue-600/30 transition-all hover:scale-105 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw size={16} className={isSyncingMagalu ? 'animate-spin' : ''} />
+              <span>{isSyncingMagalu ? 'Puxando Vitrine Magalu...' : '💙 Puxar Minha Loja Magalu'}</span>
+            </button>
+
             <button
               onClick={handleSyncRobot}
               disabled={isSyncing}
-              className="bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7500] text-white font-black px-5 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-orange-600/40 transition-all hover:scale-105 cursor-pointer disabled:opacity-50"
+              className="bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7500] text-white font-black px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-orange-600/40 transition-all hover:scale-105 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-              <span>{isSyncing ? 'Executando Robô...' : 'Executar Robô Agora (Sincronizar)'}</span>
+              <span>{isSyncing ? 'Sincronizando Shopee...' : '🧡 Sincronizar Shopee'}</span>
             </button>
           </div>
         </div>
