@@ -32,7 +32,8 @@ export const SubscriptionModal = () => {
     userProfile,
     currentRole,
     setIsReferralModalOpen,
-    openAuthModal
+    openAuthModal,
+    apiConnectors
   } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState('pix'); // 'pix' | 'card'
@@ -64,11 +65,15 @@ export const SubscriptionModal = () => {
       setIsLoadingMp(true);
       setMpError(null);
       try {
+        const mpConnector = apiConnectors?.find(c => c.id === 'mercadopago');
+        const customToken = mpConnector?.credentials?.accessToken || '';
+
         const res = await fetch('/api/mercadopago', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'create_pix',
+            accessToken: customToken,
             amount: finalPrice,
             description: `Assinatura Clube VIP - ${currentPlan.name} (Melhor Cupom)`,
             payer: {
@@ -156,11 +161,15 @@ export const SubscriptionModal = () => {
   const handleOpenMercadoPagoCheckout = async () => {
     setIsProcessing(true);
     try {
+      const mpConnector = apiConnectors?.find(c => c.id === 'mercadopago');
+      const customToken = mpConnector?.credentials?.accessToken || '';
+
       const res = await fetch('/api/mercadopago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'create_preference',
+          accessToken: customToken,
           amount: finalPrice,
           description: `Assinatura VIP - ${currentPlan.name}`,
           payer: {
