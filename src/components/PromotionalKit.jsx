@@ -830,7 +830,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   // Renderizar criativo no Canvas
   useEffect(() => {
     drawAdminArtwork();
-  }, [format, selectedStore, partnerInstagram]);
+  }, [format, selectedStore]);
 
   const renderAdminArtworkToCanvas = async (targetCanvas, targetFormat = format) => {
     if (!targetCanvas) return;
@@ -1009,23 +1009,13 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     const storeName = selectedStore?.name || 'Estabelecimento Parceiro';
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
-    // 5.1 @ do Instagram do Parceiro
-    const partnerHandle = getPartnerInstagramHandle(selectedStore, partnerInstagram);
-
-    let nextY = storeNameY + 34;
-    if (partnerHandle) {
-      ctx.fillStyle = '#FFAA77';
-      ctx.font = '700 22px "Inter", sans-serif';
-      ctx.fillText(partnerHandle, width / 2, nextY);
-      nextY += 28;
-    }
-
     // 6. ABAIXO DO NOME APARECER A CIDADE (SOMENTE SE NÃO FOR REDE GRANDE / API)
     const isBig = isBigNetworkOrApiStore(selectedStore);
     if (!isBig && locationText && locationText !== 'Brasil') {
+      const cityY = storeNameY + 34;
       ctx.fillStyle = '#FF9D5C';
-      ctx.font = '600 20px "Inter", sans-serif';
-      ctx.fillText(locationText, width / 2, nextY);
+      ctx.font = '700 24px "Inter", sans-serif';
+      ctx.fillText(locationText, width / 2, cityY);
     }
     ctx.restore();
 
