@@ -118,11 +118,11 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     setIsSyncingMagalu(true);
     try {
       if (showToast) {
-        showToast('Acessando vitrine oficial magazinevoce.com.br/magazinemelhorcupom/ ...', 'info');
+        showToast('Validando Radar Top 10 Diário (1P Magalu Oficial) e vitrine magazinevoce.com.br/magazinemelhorcupom/ ...', 'info');
       }
       const res = await syncMagaluHotDeals();
       if (showToast) {
-        showToast(`🎉 Sucesso! ${res.count} ofertas da sua vitrine Magalu foram sincronizadas com suas fotos reais e links comissionados!`, 'success');
+        showToast(`🎉 Sucesso! ${res.count} ofertas sincronizadas (Top 10 Radar Diário 1P Magalu com estoque ativo + produtos da sua vitrine)!`, 'success');
       }
     } catch (err) {
       if (showToast) {
@@ -233,10 +233,10 @@ export const AdminImperdiveisManager = ({ showToast }) => {
             <button
               onClick={handleSyncMagaluStore}
               disabled={isSyncingMagalu}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-blue-600/30 transition-all hover:scale-105 cursor-pointer disabled:opacity-50"
+              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-blue-600/30 transition-all hover:scale-105 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={16} className={isSyncingMagalu ? 'animate-spin' : ''} />
-              <span>{isSyncingMagalu ? 'Puxando Vitrine Magalu...' : '💙 Puxar Minha Loja Magalu'}</span>
+              <span>{isSyncingMagalu ? 'Validando Estoque 1P...' : '💙 Sincronizar Radar Top 10 + Vitrine Magalu'}</span>
             </button>
 
             <button
