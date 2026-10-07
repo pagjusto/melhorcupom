@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    { "source": "/termos", "destination": "/termos.html" },
+    { "source": "/termos-de-uso", "destination": "/termos.html" },
+    { "source": "/terms", "destination": "/termos.html" },
+    { "source": "/privacidade", "destination": "/privacidade.html" },
+    { "source": "/politica-de-privacidade", "destination": "/privacidade.html" },
+    { "source": "/privacy", "destination": "/privacidade.html" },
+    { "source": "/exclusao-dados", "destination": "/exclusao-dados.html" },
+    { "source": "/data-deletion", "destination": "/exclusao-dados.html" },
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/((?!api|.*\\..*).*)$", "destination": "/index.html" }
+  ]
+}
