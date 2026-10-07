@@ -36,13 +36,71 @@ export const isBigNetworkOrApiStore = (store) => {
   return false;
 };
 
+export const KNOWN_BRAND_INSTAGRAMS = {
+  'outback steakhouse': '@outbackbrasil',
+  'outback': '@outbackbrasil',
+  'mcdonald\'s brasil': '@mcdonalds_br',
+  'mcdonalds': '@mcdonalds_br',
+  'mcdonald\'s': '@mcdonalds_br',
+  'burger king': '@burgerkingbr',
+  'barbearia corleone': '@barbeariacorleone',
+  'smart fit academias': '@smartfit',
+  'smart fit': '@smartfit',
+  'starbucks brasil': '@starbucksbrasil',
+  'starbucks': '@starbucksbrasil',
+  'cacau show': '@cacaushow',
+  'cinemark brasil': '@cinemarkoficial',
+  'cinemark': '@cinemarkoficial',
+  'fogo de chão': '@fogodechaobr',
+  'madero steakhouse': '@maderobrasil',
+  'madero': '@maderobrasil',
+  'spoleto': '@spoleto_oficial',
+  'drogasil': '@drogasiloficial',
+  'magazine luiza': '@magalu',
+  'magalu': '@magalu',
+  'centauro': '@centauroesporte',
+  'casas bahia': '@casasbahia',
+  'kabum': '@kabum.com.br',
+  'aliexpress': '@aliexpressbr',
+  'amazon': '@amazonbrasil',
+  'shopee': '@shopee_br',
+  'shein': '@sheinbrasil',
+  'mercado livre': '@mercadolivre'
+};
+
+export const getPartnerInstagramHandle = (store, overrideHandle = '') => {
+  if (overrideHandle?.trim()) {
+    const clean = overrideHandle.trim();
+    return clean.startsWith('@') ? clean : `@${clean}`;
+  }
+  if (store?.instagram?.trim()) {
+    const clean = store.instagram.trim();
+    return clean.startsWith('@') ? clean : `@${clean}`;
+  }
+  const lowerName = (store?.name || '').toLowerCase().trim();
+  if (KNOWN_BRAND_INSTAGRAMS[lowerName]) {
+    return KNOWN_BRAND_INSTAGRAMS[lowerName];
+  }
+  for (const [key, handle] of Object.entries(KNOWN_BRAND_INSTAGRAMS)) {
+    if (lowerName.includes(key) || key.includes(lowerName)) {
+      return handle;
+    }
+  }
+  if (store?.name) {
+    const handleSlug = store.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9._]/g, '');
+    if (handleSlug) return `@${handleSlug}`;
+  }
+  return '@lojaparceira';
+};
+
 // Formatar Legenda Oficial do Instagram
-export const formatStoreCaption = (store, activeHandle = '@omelhorcupom.com.br') => {
+export const formatStoreCaption = (store, activeHandle = '@omelhorcupom.com.br', overrideHandle = '') => {
   const cleanStore = store?.name || 'Comércio Parceiro';
-  const rawInsta = (store?.instagram || '').trim();
-  const partnerHandle = rawInsta 
-    ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
-    : `@${cleanStore.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+  const partnerHandle = getPartnerInstagramHandle(store, overrideHandle);
 
   const locationText = getStoreLocationText(store);
   const isBig = isBigNetworkOrApiStore(store);

@@ -12,7 +12,7 @@ import {
   INITIAL_API_LOGS
 } from '../data/mockData';
 import confetti from 'canvas-confetti';
-import { autoPublishStoreToInstagram } from '../utils/instagramAutoPublisher';
+import { autoPublishStoreToInstagram, getPartnerInstagramHandle } from '../utils/instagramAutoPublisher';
 
 const AppContext = createContext();
 
@@ -77,9 +77,9 @@ export const AppProvider = ({ children }) => {
 
   // Estado de Lojas / Comerciantes (com auto-mesclagem de todas as marcas reais da rede)
   const [stores, setStores] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_stores_v7');
+    const saved = localStorage.getItem('melhor_cupom_stores_v8') || localStorage.getItem('melhor_cupom_stores_v7');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_stores_v7', JSON.stringify(INITIAL_STORES));
+      localStorage.setItem('melhor_cupom_stores_v8', JSON.stringify(INITIAL_STORES));
       return INITIAL_STORES;
     }
     try {
@@ -90,9 +90,11 @@ export const AppProvider = ({ children }) => {
       return combined.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
+        const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
         return {
           ...s,
           name: init?.name || s.name,
+          instagram,
           logo: init?.logo || s.logo || '🏪',
           logoImage: init?.logoImage || s.logoImage || '',
           image: init?.image || s.image || '',
@@ -268,6 +270,7 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
+    localStorage.setItem('melhor_cupom_stores_v8', JSON.stringify(stores));
     localStorage.setItem('melhor_cupom_stores_v7', JSON.stringify(stores));
   }, [stores]);
 

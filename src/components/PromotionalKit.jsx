@@ -27,7 +27,8 @@ import { InstagramLoginModal } from './InstagramLoginModal';
 import { useApp } from '../context/AppContext';
 import { 
   isStoreAlreadyPublished, 
-  markStoreAsPublished 
+  markStoreAsPublished,
+  getPartnerInstagramHandle 
 } from '../utils/instagramAutoPublisher';
 
 // Utilitário para formatar a localização da loja:
@@ -791,11 +792,13 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   };
 
   // Estado de Instagram do Parceiro
-  const [partnerInstagram, setPartnerInstagram] = useState(selectedStore?.instagram || '');
+  const [partnerInstagram, setPartnerInstagram] = useState(() => 
+    getPartnerInstagramHandle(selectedStore, selectedStore?.instagram)
+  );
 
   useEffect(() => {
-    setPartnerInstagram(selectedStore?.instagram || '');
-  }, [selectedStoreId, selectedStore?.instagram]);
+    setPartnerInstagram(getPartnerInstagramHandle(selectedStore, selectedStore?.instagram));
+  }, [selectedStoreId, selectedStore?.id, selectedStore?.instagram]);
 
   // Inicializar legenda oficial com marcação do @ do parceiro
   useEffect(() => {
@@ -807,10 +810,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       const hashtagCity = cleanCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
 
-      const rawInsta = (partnerInstagram || selectedStore?.instagram || '').trim();
-      const partnerHandle = rawInsta 
-        ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
-        : `@${cleanStore.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+      const partnerHandle = getPartnerInstagramHandle(selectedStore, partnerInstagram);
 
       // Redes grandes / APIs: NÃO adicionar a cidade na imagem e na legenda
       const introLine = isBig
@@ -1010,10 +1010,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
     // 5.1 @ do Instagram do Parceiro
-    const rawInsta = (partnerInstagram || selectedStore?.instagram || '').trim();
-    const partnerHandle = rawInsta 
-      ? (rawInsta.startsWith('@') ? rawInsta : `@${rawInsta}`)
-      : `@${storeName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._]/g, '')}`;
+    const partnerHandle = getPartnerInstagramHandle(selectedStore, partnerInstagram);
 
     let nextY = storeNameY + 34;
     if (partnerHandle) {
