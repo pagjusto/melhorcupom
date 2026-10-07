@@ -16,12 +16,18 @@ import {
   CheckCircle2,
   Clock,
   Zap,
-  ShoppingBag
+  ShoppingBag,
+  Lock,
+  Crown
 } from 'lucide-react';
 import { BRAND_LOGOS } from '../assets/brands';
 
 export const ImperdiveisView = () => {
-  const { hotDeals = [] } = useApp();
+  const { 
+    hotDeals = [], 
+    isVipUser, 
+    setIsSubscriptionModalOpen 
+  } = useApp();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('discount'); // 'discount' | 'price_asc' | 'popular'
@@ -116,6 +122,40 @@ export const ImperdiveisView = () => {
           </div>
         </div>
       </div>
+
+      {/* BANNER DE BLOQUEIO / CONVITE VIP QUANDO O USUÁRIO NÃO É ASSINANTE */}
+      {!isVipUser && (
+        <div className="bg-gradient-to-r from-amber-500/20 via-orange-600/25 to-[#1c110b] border-2 border-[#FF5F00] rounded-3xl p-6 sm:p-8 shadow-2xl shadow-orange-950/60 relative overflow-hidden animate-fade-in">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-[#FF5F00] text-black font-black flex items-center justify-center text-2xl shadow-lg shadow-orange-600/40 flex-shrink-0">
+                <Crown size={28} className="text-white fill-white" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 bg-[#FF5F00] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                  <Lock size={11} />
+                  <span>Benefício Exclusivo para Assinantes VIP</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Desbloqueie os Links e Descontos Secretos da Shopee
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-xl">
+                  As Ofertas Imperdíveis são garimpadas diariamente com até 70% de desconto pelo nosso robô e estão disponíveis apenas para membros com assinatura ativa.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSubscriptionModalOpen(true)}
+              className="bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white font-extrabold px-6 py-4 rounded-2xl text-xs sm:text-sm shadow-xl shadow-orange-600/40 transition-all transform hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer flex-shrink-0"
+            >
+              <Sparkles size={18} className="text-amber-200" />
+              <span>Assinar VIP por R$ 19,90/mês para Liberar</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. BARRA DE BUSCA, CATEGORIAS & ORDENAÇÃO */}
       <div className="space-y-4">
@@ -272,35 +312,48 @@ export const ImperdiveisView = () => {
 
                 {/* Botões de Ação */}
                 <div className="pt-2 flex items-center gap-2">
-                  <a
-                    href={deal.affiliateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 bg-gradient-to-r from-[#FF5F00] via-[#FF7700] to-[#FF8C00] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-orange-600/30 transition-all transform hover:scale-[1.02] cursor-pointer"
-                  >
-                    <span>Pegar Oferta</span>
-                    <ExternalLink size={13} />
-                  </a>
+                  {isVipUser ? (
+                    <>
+                      <a
+                        href={deal.affiliateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 bg-gradient-to-r from-[#FF5F00] via-[#FF7700] to-[#FF8C00] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-orange-600/30 transition-all transform hover:scale-[1.02] cursor-pointer"
+                      >
+                        <span>Pegar Oferta</span>
+                        <ExternalLink size={13} />
+                      </a>
 
-                  {/* Compartilhar no WhatsApp */}
-                  <button
-                    type="button"
-                    onClick={() => handleShareWhatsApp(deal)}
-                    title="Compartilhar oferta no WhatsApp"
-                    className="p-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    <Share2 size={15} />
-                  </button>
+                      {/* Compartilhar no WhatsApp */}
+                      <button
+                        type="button"
+                        onClick={() => handleShareWhatsApp(deal)}
+                        title="Compartilhar oferta no WhatsApp"
+                        className="p-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 transition-colors cursor-pointer"
+                      >
+                        <Share2 size={15} />
+                      </button>
 
-                  {/* Copiar Link */}
-                  <button
-                    type="button"
-                    onClick={() => handleCopyLink(deal)}
-                    title="Copiar Link de Afiliado"
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {copiedId === deal.id ? <Check size={15} className="text-emerald-400" /> : <Tag size={15} />}
-                  </button>
+                      {/* Copiar Link */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyLink(deal)}
+                        title="Copiar Link de Afiliado"
+                        className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {copiedId === deal.id ? <Check size={15} className="text-emerald-400" /> : <Tag size={15} />}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsSubscriptionModalOpen(true)}
+                      className="w-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-[#FF5F00] hover:to-amber-500 text-amber-300 hover:text-white border border-amber-500/40 hover:border-[#FF5F00] font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-orange-600/30"
+                    >
+                      <Lock size={14} className="text-amber-400" />
+                      <span>Desbloquear Oferta com Assinatura VIP</span>
+                    </button>
+                  )}
                 </div>
 
               </div>

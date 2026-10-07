@@ -105,6 +105,9 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
               >
                 <Flame size={14} className="text-amber-300 animate-pulse" />
                 <span>Ofertas Imperdíveis</span>
+                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-0.5">
+                  <span>👑 VIP</span>
+                </span>
               </button>
 
               <button
@@ -532,14 +535,19 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           )}
           <button
             onClick={() => { setActiveTab('imperdiveis'); setMobileMenuOpen(false); }}
-            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors ${
+            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${
               activeTab === 'imperdiveis' 
                 ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white' 
                 : 'text-orange-400 hover:bg-orange-500/10'
             }`}
           >
-            <Flame size={16} className="text-amber-300" />
-            <span>🔥 Ofertas Imperdíveis</span>
+            <div className="flex items-center gap-2">
+              <Flame size={16} className="text-amber-300" />
+              <span>🔥 Ofertas Imperdíveis</span>
+            </div>
+            <span className="bg-amber-400 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+              👑 VIP
+            </span>
           </button>
           <button
             onClick={() => { setActiveTab('how-it-works'); setMobileMenuOpen(false); }}
