@@ -29,6 +29,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   } = useApp();
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
 
   // Formulário de Cadastro Rápido de Oferta da Shopee
@@ -51,6 +52,43 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     'beleza': 'Beleza & Cuidados',
     'moda': 'Moda & Viagem',
     'utilidades': 'Achadinhos & Utilidades'
+  };
+
+  // Puxar imagem e dados reais do anúncio colado
+  const handleAutoExtractMetadata = async (urlToFetch) => {
+    const target = urlToFetch || newDealForm.affiliateUrl;
+    if (!target || !target.startsWith('http')) {
+      if (showToast) showToast('Insira um link válido da Shopee para puxar a imagem.', 'warning');
+      return;
+    }
+
+    setIsExtracting(true);
+    try {
+      const res = await fetch('/api/extract-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: target })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNewDealForm(prev => ({
+          ...prev,
+          image: data.image || prev.image,
+          title: prev.title || data.title || '',
+          promoPrice: prev.promoPrice || (data.price ? String(data.price) : ''),
+          description: prev.description || data.description || ''
+        }));
+        if (showToast) {
+          showToast(data.image ? '📸 Imagem real do anúncio importada com sucesso!' : 'Metadados do produto localizados!', 'success');
+        }
+      } else {
+        if (showToast) showToast('Não foi possível puxar a imagem automaticamente. Você pode colar a URL da imagem abaixo.', 'warning');
+      }
+    } catch (err) {
+      console.warn('Erro ao extrair imagem do anúncio:', err);
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const handleSyncRobot = async () => {
@@ -295,29 +333,62 @@ export const AdminImperdiveisManager = ({ showToast }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-300 mb-1">
-                Link do Produto na Shopee (URL Normal ou de Afiliado):
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-gray-300">
+                  Link do Anúncio na Shopee:
+                </label>
+                <button
+                  type="button"
+                  disabled={isExtracting || !newDealForm.affiliateUrl}
+                  onClick={() => handleAutoExtractMetadata()}
+                  className="text-[11px] font-black text-amber-300 hover:text-white bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-2 py-0.5 rounded-lg flex items-center gap-1 transition-all disabled:opacity-40 cursor-pointer"
+                >
+                  <Sparkles size={11} className={isExtracting ? 'animate-spin' : ''} />
+                  <span>{isExtracting ? 'Puxando Foto...' : '📸 Puxar Foto Real'}</span>
+                </button>
+              </div>
               <input
                 type="url"
                 value={newDealForm.affiliateUrl}
-                onChange={(e) => setNewDealForm(prev => ({ ...prev, affiliateUrl: e.target.value }))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setNewDealForm(prev => ({ ...prev, affiliateUrl: val }));
+                  if (val.startsWith('http') && (val.includes('shopee') || val.includes('s.shopee'))) {
+                    // Puxar automaticamente se colou link
+                    handleAutoExtractMetadata(val);
+                  }
+                }}
                 placeholder="https://shopee.com.br/... ou https://s.shopee.com.br/..."
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-orange-500 focus:outline-none"
               />
+              <span className="text-[10px] text-gray-400 mt-1 block">
+                Ao colar o link, o robô puxa a foto real e o título original automaticamente.
+              </span>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-300 mb-1">
-                URL da Imagem do Produto (Opcional):
+                URL da Imagem Real do Anúncio:
               </label>
-              <input
-                type="url"
-                value={newDealForm.image}
-                onChange={(e) => setNewDealForm(prev => ({ ...prev, image: e.target.value }))}
-                placeholder="https://..."
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-orange-500 focus:outline-none"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="url"
+                  value={newDealForm.image}
+                  onChange={(e) => setNewDealForm(prev => ({ ...prev, image: e.target.value }))}
+                  placeholder="https://down-br.img.susercontent.com/file/... ou https://..."
+                  className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-orange-500 focus:outline-none"
+                />
+                {newDealForm.image && (
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-amber-500/50 flex-shrink-0 relative group">
+                    <img 
+                      src={newDealForm.image} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
