@@ -2042,7 +2042,7 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.publisherId}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, publisherId: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 focus:outline-none"
-                        placeholder={editingConnector.id === 'meta_graph' ? 'Ex: 1045481495202722' : editingConnector.id === 'mercadopago' ? 'Ex: APP_USR-...' : editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : editingConnector.id === 'lomadee' ? 'Ex: 2324685' : 'Ex: 3095275'}
+                        placeholder={editingConnector.id === 'meta_graph' ? 'Ex: 4514869808731364' : editingConnector.id === 'mercadopago' ? 'Ex: APP_USR-...' : editingConnector.id === 'aliexpress' ? 'Ex: 548636' : editingConnector.id === 'shein' ? 'Ex: 5005674890' : editingConnector.id === 'lomadee' ? 'Ex: 2324685' : 'Ex: 3095275'}
                       />
                     </div>
 
@@ -2063,7 +2063,7 @@ export const AdminDashboard = () => {
                         value={editCredentialsForm.apiKey}
                         onChange={(e) => setEditCredentialsForm(prev => ({ ...prev, apiKey: e.target.value }))}
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-mono focus:border-blue-500 focus:outline-none"
-                        placeholder={editingConnector.id === 'meta_graph' ? 'Ex: 0839370c8b5569f3aef538202862b2f1' : editingConnector.id === 'mercadopago' ? 'Ex: APP_USR-65239... ou TEST-...' : editingConnector.id === 'lomadee' ? 'Ex: lmd_prod_...' : 'Insira o API Token / Secret Key...'}
+                        placeholder={editingConnector.id === 'meta_graph' ? 'Ex: fed9c27495a56478bb6d0840d1f5ee2b' : editingConnector.id === 'mercadopago' ? 'Ex: APP_USR-65239... ou TEST-...' : editingConnector.id === 'lomadee' ? 'Ex: lmd_prod_...' : 'Insira o API Token / Secret Key...'}
                       />
                     </div>
 
