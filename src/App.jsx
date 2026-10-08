@@ -615,7 +615,7 @@ const MainLayout = () => {
       {/* 4. Rodapé Moderno & Completo */}
       <footer className="bg-[#111117] border-t border-white/10 pt-12 pb-8 mt-16 text-xs text-gray-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             <div className="space-y-3">
               <img 
                 src={logoMelhorCupom} 
@@ -632,51 +632,9 @@ const MainLayout = () => {
               <ul className="space-y-2">
                 <li><button onClick={() => setActiveTab('explore')} className="hover:text-white">Cupons & Ofertas</button></li>
                 <li><button onClick={() => setActiveTab('stores')} className="hover:text-white">Lojas Parceiras</button></li>
+                <li><button onClick={() => setActiveTab('imperdiveis')} className="hover:text-orange-400">Ofertas Imperdíveis</button></li>
                 <li><button onClick={() => setActiveTab('how-it-works')} className="hover:text-white">Como Funciona</button></li>
                 <li><button onClick={() => setIsSubscriptionModalOpen(true)} className="hover:text-orange-400">Planos de Assinatura</button></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold uppercase tracking-wider mb-3">Para Lojistas</h4>
-              <ul className="space-y-2">
-                <li>
-                  <button 
-                    onClick={() => {
-                      switchRole('merchant_burger');
-                      if (setMerchantDashboardTab) setMerchantDashboardTab('new-coupon');
-                      setActiveTab('merchant-dashboard');
-                    }} 
-                    className="hover:text-orange-400"
-                  >
-                    Cadastrar Nova Oferta
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => {
-                      switchRole('merchant_burger');
-                      if (setMerchantDashboardTab) setMerchantDashboardTab('validator');
-                      setActiveTab('merchant-dashboard');
-                    }} 
-                    className="hover:text-orange-400"
-                  >
-                    Validador de Balcão (PDV)
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => {
-                      switchRole('merchant_burger');
-                      if (setMerchantDashboardTab) setMerchantDashboardTab('settings');
-                      setActiveTab('merchant-dashboard');
-                    }} 
-                    className="hover:text-orange-400"
-                  >
-                    Perfil da Loja & Configurações
-                  </button>
-                </li>
-                <li><a href="#parceria" className="hover:text-white">Seja um Estabelecimento Parceiro</a></li>
               </ul>
             </div>
 
@@ -688,7 +646,7 @@ const MainLayout = () => {
                   <span>Plataforma 100% Segura</span>
                 </div>
                 <p className="text-gray-500">
-                  Pagamentos criptografados via PIX e Cartão de Crédito. Garantia incondicional de satisfação de 7 dias.
+                  Pagamentos criptografados via PIX e Cartão de Crédito com ativação imediata.
                 </p>
                 <div className="pt-2 flex flex-col gap-1.5 border-t border-white/5">
                   <button 

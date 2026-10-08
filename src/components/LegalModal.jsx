@@ -186,7 +186,7 @@ export const LegalModal = ({ isOpen, onClose, initialTab = 'terms' }) => {
               <section className="space-y-2">
                 <h3 className="text-base font-black text-white flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-orange-500/20 text-orange-400 font-mono text-xs flex items-center justify-center">4</span>
-                  <span>Assinaturas do Clube VIP, Pagamentos e Garantia de 7 Dias</span>
+                  <span>Assinaturas do Clube VIP, Pagamentos e Cancelamento</span>
                 </h3>
                 <p>
                   4.1. O acesso a benefícios exclusivos do <strong>Clube VIP</strong> pode ser contratado através de planos mensais (R$ 19,90/mês) ou anuais com desconto.
@@ -195,10 +195,7 @@ export const LegalModal = ({ isOpen, onClose, initialTab = 'terms' }) => {
                   4.2. Os pagamentos são processados com segurança através da operadora oficial <strong>Mercado Pago</strong> via PIX Instantâneo ou Cartão de Crédito.
                 </p>
                 <p>
-                  4.3. <strong>Direito de Arrependimento (Artigo 49 do Código de Defesa do Consumidor):</strong> O assinante tem o direito de cancelar a contratação da assinatura VIP em até 7 (sete) dias corridos após a contratação, com reembolso integral de 100% dos valores pagos, sem qualquer multa ou burocracia.
-                </p>
-                <p>
-                  4.4. O cancelamento pode ser efetuado a qualquer momento diretamente pelo painel de configurações do usuário, sem cláusula de fidelidade nos planos mensais.
+                  4.3. <strong>Acesso Imediato e Cancelamento:</strong> O acesso aos descontos e cupons VIP é liberado imediatamente após a confirmação do pagamento. O assinante pode cancelar a renovação da sua assinatura a qualquer momento de forma simples no painel de sua conta, mantendo o acesso até o término do ciclo faturado, sem cobrança de taxas de rescisão.
                 </p>
               </section>
 

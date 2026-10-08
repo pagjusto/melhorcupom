@@ -650,10 +650,10 @@ export const SubscriptionModal = () => {
             </div>
           )}
 
-          {/* Garantia & Segurança */}
+          {/* Segurança & Cancelamento */}
           <div className="flex items-center justify-center gap-2 text-xs text-gray-400 text-center">
             <ShieldCheck size={16} className="text-emerald-400" />
-            <span>Garantia incondicional de 7 dias • Cancele quando quiser com 1 clique</span>
+            <span>Acesso imediato • Cancele a renovação quando quiser com 1 clique</span>
           </div>
 
         </div>
