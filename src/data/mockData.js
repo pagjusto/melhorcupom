@@ -2081,6 +2081,8 @@ export const API_CONNECTORS = [
       appId: '4514869808731364',
       apiKey: 'fed9c27495a56478bb6d0840d1f5ee2b',
       appSecret: 'fed9c27495a56478bb6d0840d1f5ee2b',
+      accessToken: 'IGABAKQAsoFORBZAFl0cGZAyaWVlV1A4NWZAZAa0VEakJMSks0bHlmNWRvN1pBX05jc1JHT2FXUFN3OWdqWm1CUDA3UVdqMXRqbjVRWnprT3dVOGFVZAmxVMkdGdzhtVjJpWlVIT2FtcWxOYUl1a3ljLTBuUXNxNkFyMVFJVFFfUTdVTQZDZD',
+      instagramAccountId: '28667775222832917',
       appToken: '4514869808731364|fed9c27495a56478bb6d0840d1f5ee2b',
       webhookEndpoint: 'https://www.omelhorcupom.com.br/api/meta-webhook'
     },

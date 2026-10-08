@@ -1,9 +1,11 @@
 {
   "connected": true,
   "username": "@omelhorcupom.com.br",
-  "accountType": "browser_session",
-  "connectedAt": "2026-10-07T22:56:40.399Z",
-  "cookiesCount": 2,
-  "hasSessionId": true,
-  "userId": "76452558269"
+  "name": "Melhor Cupom",
+  "accountType": "meta_graph_api",
+  "metaAccountId": "28667775222832917",
+  "metaAccessToken": "IGABAKQAsoFORBZAFl0cGZAyaWVlV1A4NWZAZAa0VEakJMSks0bHlmNWRvN1pBX05jc1JHT2FXUFN3OWdqWm1CUDA3UVdqMXRqbjVRWnprT3dVOGFVZAmxVMkdGdzhtVjJpWlVIT2FtcWxOYUl1a3ljLTBuUXNxNkFyMVFJVFFfUTdVTQZDZD",
+  "connectedAt": "2026-10-08T22:23:41.561Z",
+  "cookiesCount": 1,
+  "hasSessionId": true
 }
