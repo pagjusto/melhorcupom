@@ -15,6 +15,7 @@ import confetti from 'canvas-confetti';
 import { autoPublishStoreToInstagram, getPartnerInstagramHandle } from '../utils/instagramAutoPublisher';
 import { INITIAL_HOT_DEALS } from '../data/hotDealsData';
 import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
+import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
 
 const AppContext = createContext();
 
@@ -22,7 +23,7 @@ export const AppProvider = ({ children }) => {
   // Aba Ativa Global da Aplicação ('explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons' | 'user-profile' | 'imperdiveis')
   const [activeTab, setActiveTab] = useState('explore');
 
-  // Filtro de Loja das Ofertas Imperdíveis ('all' | 'shopee' | 'magalu')
+  // Filtro de Loja das Ofertas Imperdíveis ('all' | 'shopee' | 'magalu' | 'shein')
   const [imperdiveisStoreFilter, setImperdiveisStoreFilter] = useState('all');
 
   const navigateToImperdiveis = (storeFilter = 'all') => {
@@ -249,13 +250,13 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee e Magalu (Robô de Ofertas - 67+ ofertas)
-  const ALL_BASE_HOT_DEALS = [...MAGALU_RADAR_TOP10, ...INITIAL_HOT_DEALS];
+  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee, Magalu e SHEIN (Robô de Ofertas - 85+ ofertas)
+  const ALL_BASE_HOT_DEALS = [...MAGALU_RADAR_TOP10, ...SHEIN_VIRAL_TOP18, ...INITIAL_HOT_DEALS];
 
   const [hotDeals, setHotDeals] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_hot_deals_v7');
+    const saved = localStorage.getItem('melhor_cupom_hot_deals_v8');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(ALL_BASE_HOT_DEALS));
+      localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(ALL_BASE_HOT_DEALS));
       return ALL_BASE_HOT_DEALS;
     }
     try {
@@ -265,7 +266,7 @@ export const AppProvider = ({ children }) => {
           const fresh = ALL_BASE_HOT_DEALS.find(d => d.id === item.id);
           return fresh && fresh.image ? { ...item, image: fresh.image } : item;
         });
-        localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
+        localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
         return updated;
       }
       return ALL_BASE_HOT_DEALS;
@@ -281,6 +282,13 @@ export const AppProvider = ({ children }) => {
     if (storeType === 'magalu' || rawUrl.includes('magazinevoce.com.br') || rawUrl.includes('magazineluiza.com.br') || rawUrl.includes('maga.lu')) {
       // Já é o link direto de vitrine ou produto do parceiro Magalu
       return rawUrl;
+    }
+
+    // Se for link SHEIN
+    if (storeType === 'shein' || rawUrl.includes('shein.com')) {
+      if (rawUrl.includes('aff_id=')) return rawUrl;
+      const separator = rawUrl.includes('?') ? '&' : '?';
+      return `${rawUrl}${separator}aff_id=melhorcupom&utm_source=affiliate&utm_medium=partner&ref=www&rep=dir&ret=br`;
     }
 
     // Se for Shopee
@@ -315,7 +323,7 @@ export const AppProvider = ({ children }) => {
     };
     setHotDeals(prev => {
       const updated = [newDeal, ...prev];
-      localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
       return updated;
     });
 
@@ -332,7 +340,7 @@ export const AppProvider = ({ children }) => {
   const deleteHotDeal = (id) => {
     setHotDeals(prev => {
       const updated = prev.filter(d => d.id !== id);
-      localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
       return updated;
     });
   };
@@ -343,7 +351,7 @@ export const AppProvider = ({ children }) => {
       lastSync: 'Sincronizado Agora'
     }));
     setHotDeals(synced);
-    localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(synced));
+    localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(synced));
     return { count: synced.length };
   };
 
@@ -359,7 +367,7 @@ export const AppProvider = ({ children }) => {
       setHotDeals(prev => {
         const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
         const updated = [...allMagaluDeals, ...currentWithoutMagalu];
-        localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
+        localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
         return updated;
       });
 
@@ -376,7 +384,7 @@ export const AppProvider = ({ children }) => {
       setHotDeals(prev => {
         const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
         const updated = [...MAGALU_RADAR_TOP10, ...currentWithoutMagalu];
-        localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
+        localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
         return updated;
       });
 

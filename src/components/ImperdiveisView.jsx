@@ -58,6 +58,14 @@ export const ImperdiveisView = () => {
     }).length;
   }, [hotDeals]);
 
+  const sheinCount = useMemo(() => {
+    return hotDeals.filter(d => {
+      const s = (d.store || '').toLowerCase();
+      const u = (d.affiliateUrl || '').toLowerCase();
+      return s.includes('shein') || u.includes('shein');
+    }).length;
+  }, [hotDeals]);
+
   // Liberado para todo público cadastrado (user, user_free, vip, lojistas, admin). Bloqueado apenas para visitantes.
   const isRegisteredUser = currentRole !== 'visitor' && Boolean(
     userProfile?.email || 
@@ -76,13 +84,13 @@ export const ImperdiveisView = () => {
     { id: 'tech', label: '📱 Tecnologia & Gadgets', icon: 'Zap' },
     { id: 'casa', label: '🏠 Casa & Cozinha', icon: 'Home' },
     { id: 'beleza', label: '💄 Beleza & Skincare', icon: 'Sparkles' },
-    { id: 'moda', label: '✈️ Moda & Viagem', icon: 'ShoppingBag' }
+    { id: 'moda', label: '👗 Moda & Tendências', icon: 'ShoppingBag' }
   ];
 
   const filteredDeals = useMemo(() => {
     return hotDeals
       .filter(deal => {
-        // 1. Filtro por Loja (Todas | Shopee Oficial | Magazine Luiza)
+        // 1. Filtro por Loja (Todas | Shopee Oficial | Magazine Luiza | SHEIN Oficial)
         if (imperdiveisStoreFilter === 'shopee') {
           const isShopee = (deal.store || '').toLowerCase().includes('shopee') || (deal.affiliateUrl || '').toLowerCase().includes('shopee');
           if (!isShopee) return false;
@@ -92,6 +100,9 @@ export const ImperdiveisView = () => {
                            (deal.affiliateUrl || '').toLowerCase().includes('magazinevoce') ||
                            (deal.affiliateUrl || '').toLowerCase().includes('magazineluiza');
           if (!isMagalu) return false;
+        } else if (imperdiveisStoreFilter === 'shein') {
+          const isShein = (deal.store || '').toLowerCase().includes('shein') || (deal.affiliateUrl || '').toLowerCase().includes('shein');
+          if (!isShein) return false;
         }
 
         // 2. Filtro por Categoria
@@ -144,7 +155,9 @@ export const ImperdiveisView = () => {
               </span>
               <span className="text-xs bg-white/10 text-orange-200 border border-white/15 px-3 py-1 rounded-full font-bold flex items-center gap-1.5">
                 <img src={BRAND_LOGOS.shopee} alt="Shopee" className="h-3.5 w-auto object-contain" />
-                <span>Achadinhos Shopee & Vitrine Magalu</span>
+                <img src={BRAND_LOGOS.magalu} alt="Magalu" className="h-3.5 w-auto object-contain" />
+                <img src={BRAND_LOGOS.shein} alt="SHEIN" className="h-3.5 w-auto object-contain" />
+                <span>Shopee • Magalu • SHEIN Brasil</span>
               </span>
               <span className="text-[11px] text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
                 <Clock size={11} />
@@ -157,14 +170,14 @@ export const ImperdiveisView = () => {
             </h1>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Produtos virais, utilidades inteligentes, tecnologia e cosméticos selecionados a dedo pelo nosso robô de ofertas com os maiores descontos da Shopee Brasil e vitrine Magazine Luiza com frete grátis garantido.
+              Produtos virais, utilidades inteligentes, tendências de moda feminina e cosméticos selecionados a dedo pelo nosso robô de ofertas com os maiores descontos da Shopee, vitrine Magazine Luiza e achadinhos da SHEIN Brasil com frete grátis garantido.
             </p>
           </div>
 
           {/* Destaque / Estatística do Robô */}
           <div className="bg-black/50 border border-orange-500/40 rounded-2xl p-5 text-center sm:text-left flex flex-row lg:flex-col items-center lg:items-start justify-between gap-4 backdrop-blur-md">
             <div>
-              <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider block">Robô de Ofertas Shopee & Magalu</span>
+              <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider block">Robô Shopee, Magalu & SHEIN</span>
               <div className="text-2xl sm:text-3xl font-black text-white font-display flex items-baseline gap-1 mt-0.5">
                 <span>{hotDeals.length}</span>
                 <span className="text-xs font-bold text-orange-400">Produtos no Ar</span>
@@ -292,6 +305,23 @@ export const ImperdiveisView = () => {
               imperdiveisStoreFilter === 'magalu' ? 'bg-black/30 text-white' : 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
             }`}>
               {magaluCount} Radar Top 10
+            </span>
+          </button>
+
+          <button
+            onClick={() => setImperdiveisStoreFilter && setImperdiveisStoreFilter('shein')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer flex-shrink-0 ${
+              imperdiveisStoreFilter === 'shein'
+                ? 'bg-gradient-to-r from-neutral-900 via-neutral-800 to-black text-white shadow-lg shadow-black/80 border border-white/20 scale-[1.02]'
+                : 'bg-[#161622] text-gray-300 hover:text-white border border-white/10 hover:border-white/30'
+            }`}
+          >
+            <span className="text-base">🖤</span>
+            <span>SHEIN Oficial</span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+              imperdiveisStoreFilter === 'shein' ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-300 border border-white/15'
+            }`}>
+              {sheinCount} Achadinhos TikTok
             </span>
           </button>
         </div>

@@ -15,9 +15,10 @@ import { getBrandLogo } from '../assets/brands';
 
 const STORE_GROUPS = [
   { id: 'all', label: 'Todas as Lojas & Cupons', icon: '✨' },
-  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '67+ Virais', isDirectPage: true, targetStore: 'all' },
+  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '85+ Virais', isDirectPage: true, targetStore: 'all' },
   { id: 'shopee', label: 'Shopee Oficial', icon: '🧡', badge: 'Achadinhos', isDirectPage: true, targetStore: 'shopee' },
   { id: 'magalu', label: 'Magazine Luiza', icon: '🛍️', badge: 'Radar Top 10', isDirectPage: true, targetStore: 'magalu' },
+  { id: 'shein', label: 'SHEIN Oficial', icon: '🖤', badge: 'Achadinhos TikTok', isDirectPage: true, targetStore: 'shein' },
   { id: 'amazon', label: 'Amazon Brasil', icon: '📦' },
   { id: 'tech', label: 'Smartphones & Tech', icon: '⚡' },
   { id: 'moda', label: 'Tênis & Moda', icon: '👟' },
@@ -28,9 +29,9 @@ const QUICK_SEARCH_CHIPS = [
   { label: '🔥 Ofertas Imperdíveis', query: 'imperdivel', icon: '🔥' },
   { label: 'Shopee', query: 'Shopee', icon: '🧡' },
   { label: 'Magazine Luiza', query: 'Magazine Luiza', icon: '🛍️' },
+  { label: 'SHEIN', query: 'SHEIN', icon: '🖤' },
   { label: 'Amazon', query: 'Amazon', icon: '📦' },
   { label: 'Nike', query: 'Nike', icon: '✔️' },
-  { label: 'SHEIN', query: 'SHEIN', icon: '🖤' },
   { label: 'AliExpress', query: 'AliExpress', icon: '🔴' },
   { label: 'Mercado Livre', query: 'Mercado Livre', icon: '🤝' },
   { label: 'Samsung', query: 'Samsung', icon: '📱' },
@@ -44,7 +45,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState('all');
 
-  // Filtrar exclusivamente cupons das grandes lojas / APIs oficiais + Ofertas Imperdíveis (Shopee & Magalu)
+  // Filtrar exclusivamente cupons das grandes lojas / APIs oficiais + Ofertas Imperdíveis (Shopee, Magalu & SHEIN)
   const allBigStoreCoupons = useMemo(() => {
     // 1. Cupons padrão de grandes lojas
     const baseBigCoupons = coupons.filter(c => {
@@ -52,14 +53,32 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
       return c.isApiIntegrated || c.apiSource || store?.isApiIntegrated;
     });
 
-    // 2. Converter hotDeals (Ofertas Imperdíveis Shopee & Magalu) em formato de cupom compatível
+    // 2. Converter hotDeals (Ofertas Imperdíveis Shopee, Magalu & SHEIN) em formato de cupom compatível
     const convertedHotDeals = (hotDeals || []).map(deal => {
       const isMagalu = (deal.store && deal.store.toLowerCase().includes('magalu')) || 
                        (deal.affiliateUrl && (deal.affiliateUrl.includes('magazinevoce') || deal.affiliateUrl.includes('magazineluiza') || deal.affiliateUrl.includes('maga.lu')));
-      const storeId = isMagalu ? 'store_magalu' : 'store_shopee';
-      const storeName = isMagalu ? 'Magazine Luiza' : 'Shopee Oficial';
-      const codePrefix = isMagalu ? 'MAGALU' : 'SHOPEE';
-      const apiSource = isMagalu ? 'Magazine Você (1P Oficial)' : 'Shopee Oficial';
+      const isShein = (deal.store && deal.store.toLowerCase().includes('shein')) ||
+                      (deal.affiliateUrl && deal.affiliateUrl.includes('shein.com'));
+
+      let storeId = 'store_shopee';
+      let storeName = 'Shopee Oficial';
+      let codePrefix = 'SHOPEE';
+      let apiSource = 'Shopee Oficial';
+      let brandKey = 'shopee';
+
+      if (isMagalu) {
+        storeId = 'store_magalu';
+        storeName = 'Magazine Luiza';
+        codePrefix = 'MAGALU';
+        apiSource = 'Magazine Você (1P Oficial)';
+        brandKey = 'magalu';
+      } else if (isShein) {
+        storeId = 'store_shein';
+        storeName = 'SHEIN Oficial';
+        codePrefix = 'SHEIN';
+        apiSource = 'SHEIN Brasil (Viral TikTok)';
+        brandKey = 'shein';
+      }
 
       return {
         id: deal.id,
@@ -67,7 +86,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         isImperdivel: true,
         storeId,
         storeName,
-        storeLogo: getBrandLogo(isMagalu ? 'magalu' : 'shopee'),
+        storeLogo: getBrandLogo(brandKey),
         title: deal.title,
         description: deal.description || `${deal.title} com ${deal.discountBadge || 'super desconto'} por apenas R$ ${Number(deal.promoPrice || 0).toFixed(2).replace('.', ',')}`,
         codePrefix,
@@ -82,12 +101,12 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         savings: deal.savings || (deal.originalPrice && deal.promoPrice ? deal.originalPrice - deal.promoPrice : 0),
         image: deal.image,
         banner: deal.image,
-        category: deal.category || 'tech',
-        categoryLabel: deal.categoryLabel || (isMagalu ? 'Radar Magalu 1P' : 'Achadinhos Shopee'),
+        category: deal.category || 'moda',
+        categoryLabel: deal.categoryLabel || (isMagalu ? 'Radar Magalu 1P' : isShein ? 'Achadinhos SHEIN' : 'Achadinhos Shopee'),
         type: 'online',
         rating: deal.rating || 4.9,
         salesCount: deal.salesCount || 'Mais Vendido',
-        tag: deal.tag || (isMagalu ? '💙 Radar Magalu 1P' : '🔥 Oferta Imperdível')
+        tag: deal.tag || (isMagalu ? '💙 Radar Magalu 1P' : isShein ? '🖤 Achadinho SHEIN' : '🔥 Oferta Imperdível')
       };
     });
 
@@ -124,6 +143,9 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         }
         if (activeGroup === 'magalu') {
           return item.storeId === 'store_magalu' || (item.storeName || '').toLowerCase().includes('magazine') || (item.storeName || '').toLowerCase().includes('magalu');
+        }
+        if (activeGroup === 'shein') {
+          return item.storeId === 'store_shein' || (item.storeName || '').toLowerCase().includes('shein');
         }
         if (activeGroup === 'amazon') {
           return item.storeId === 'store_amazon' || (item.storeName || '').toLowerCase().includes('amazon');
@@ -469,6 +491,8 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
                     navigateToImperdiveis('shopee');
                   } else if (chip.query === 'Magazine Luiza' && navigateToImperdiveis) {
                     navigateToImperdiveis('magalu');
+                  } else if (chip.query === 'SHEIN' && navigateToImperdiveis) {
+                    navigateToImperdiveis('shein');
                   } else {
                     setSearchQuery(isActive ? '' : chip.query);
                   }
