@@ -32,12 +32,31 @@ export const ImperdiveisView = () => {
     userProfile,
     openAuthModal,
     isVipUser, 
-    setIsSubscriptionModalOpen 
+    setIsSubscriptionModalOpen,
+    imperdiveisStoreFilter = 'all',
+    setImperdiveisStoreFilter
   } = useApp();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('discount'); // 'discount' | 'price_asc' | 'popular'
   const [copiedId, setCopiedId] = useState(null);
+
+  // Contadores por loja
+  const shopeeCount = useMemo(() => {
+    return hotDeals.filter(d => {
+      const s = (d.store || '').toLowerCase();
+      const u = (d.affiliateUrl || '').toLowerCase();
+      return s.includes('shopee') || u.includes('shopee');
+    }).length;
+  }, [hotDeals]);
+
+  const magaluCount = useMemo(() => {
+    return hotDeals.filter(d => {
+      const s = (d.store || '').toLowerCase();
+      const u = (d.affiliateUrl || '').toLowerCase();
+      return s.includes('magalu') || s.includes('magazine') || u.includes('magazinevoce') || u.includes('magazineluiza');
+    }).length;
+  }, [hotDeals]);
 
   // Liberado para todo público cadastrado (user, user_free, vip, lojistas, admin). Bloqueado apenas para visitantes.
   const isRegisteredUser = currentRole !== 'visitor' && Boolean(
@@ -53,7 +72,7 @@ export const ImperdiveisView = () => {
   );
 
   const categories = [
-    { id: 'all', label: '🔥 Todas as Ofertas', icon: 'Flame' },
+    { id: 'all', label: '🔥 Todas as Categorias', icon: 'Flame' },
     { id: 'tech', label: '📱 Tecnologia & Gadgets', icon: 'Zap' },
     { id: 'casa', label: '🏠 Casa & Cozinha', icon: 'Home' },
     { id: 'beleza', label: '💄 Beleza & Skincare', icon: 'Sparkles' },
@@ -63,12 +82,28 @@ export const ImperdiveisView = () => {
   const filteredDeals = useMemo(() => {
     return hotDeals
       .filter(deal => {
+        // 1. Filtro por Loja (Todas | Shopee Oficial | Magazine Luiza)
+        if (imperdiveisStoreFilter === 'shopee') {
+          const isShopee = (deal.store || '').toLowerCase().includes('shopee') || (deal.affiliateUrl || '').toLowerCase().includes('shopee');
+          if (!isShopee) return false;
+        } else if (imperdiveisStoreFilter === 'magalu') {
+          const isMagalu = (deal.store || '').toLowerCase().includes('magalu') || 
+                           (deal.store || '').toLowerCase().includes('magazine') || 
+                           (deal.affiliateUrl || '').toLowerCase().includes('magazinevoce') ||
+                           (deal.affiliateUrl || '').toLowerCase().includes('magazineluiza');
+          if (!isMagalu) return false;
+        }
+
+        // 2. Filtro por Categoria
         const matchesCategory = selectedCategory === 'all' || deal.category === selectedCategory;
+
+        // 3. Filtro por Busca
         const q = searchQuery.toLowerCase().trim();
         const matchesQuery = !q || 
           deal.title.toLowerCase().includes(q) || 
           (deal.categoryLabel && deal.categoryLabel.toLowerCase().includes(q)) ||
           (deal.description && deal.description.toLowerCase().includes(q));
+
         return matchesCategory && matchesQuery;
       })
       .sort((a, b) => {
@@ -77,7 +112,7 @@ export const ImperdiveisView = () => {
         if (sortBy === 'popular') return (parseFloat(b.salesCount) || 0) - (parseFloat(a.salesCount) || 0);
         return 0;
       });
-  }, [hotDeals, selectedCategory, searchQuery, sortBy]);
+  }, [hotDeals, imperdiveisStoreFilter, selectedCategory, searchQuery, sortBy]);
 
   const handleShareWhatsApp = (deal) => {
     const storeLabel = deal.store || 'Shopee';
@@ -205,8 +240,62 @@ export const ImperdiveisView = () => {
         </div>
       )}
 
-      {/* 2. BARRA DE BUSCA, CATEGORIAS & ORDENAÇÃO */}
+      {/* 2. BARRA DE SELEÇÃO DE LOJA (TODAS | SHOPEE OFICIAL | MAGAZINE LUIZA) & BUSCA */}
       <div className="space-y-4">
+        {/* Seletor de Loja Oficial */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            onClick={() => setImperdiveisStoreFilter && setImperdiveisStoreFilter('all')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer flex-shrink-0 ${
+              imperdiveisStoreFilter === 'all'
+                ? 'bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white shadow-lg shadow-orange-600/30 scale-[1.02]'
+                : 'bg-[#161622] text-gray-300 hover:text-white border border-white/10 hover:border-white/20'
+            }`}
+          >
+            <span>🔥</span>
+            <span>Todas as Ofertas</span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+              imperdiveisStoreFilter === 'all' ? 'bg-black/30 text-white' : 'bg-white/10 text-gray-300'
+            }`}>
+              {hotDeals.length} no Ar
+            </span>
+          </button>
+
+          <button
+            onClick={() => setImperdiveisStoreFilter && setImperdiveisStoreFilter('shopee')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer flex-shrink-0 ${
+              imperdiveisStoreFilter === 'shopee'
+                ? 'bg-gradient-to-r from-[#FF5F00] to-orange-600 text-white shadow-lg shadow-orange-600/40 scale-[1.02]'
+                : 'bg-[#161622] text-gray-300 hover:text-white border border-white/10 hover:border-orange-500/50'
+            }`}
+          >
+            <span className="text-base">🧡</span>
+            <span>Shopee Oficial</span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+              imperdiveisStoreFilter === 'shopee' ? 'bg-black/30 text-white' : 'bg-orange-500/15 text-orange-300 border border-orange-500/30'
+            }`}>
+              {shopeeCount} Achadinhos
+            </span>
+          </button>
+
+          <button
+            onClick={() => setImperdiveisStoreFilter && setImperdiveisStoreFilter('magalu')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer flex-shrink-0 ${
+              imperdiveisStoreFilter === 'magalu'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-600/40 scale-[1.02]'
+                : 'bg-[#161622] text-gray-300 hover:text-white border border-white/10 hover:border-blue-500/50'
+            }`}
+          >
+            <span className="text-base">🛍️</span>
+            <span>Magazine Luiza</span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+              imperdiveisStoreFilter === 'magalu' ? 'bg-black/30 text-white' : 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
+            }`}>
+              {magaluCount} Radar Top 10
+            </span>
+          </button>
+        </div>
+
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Campo de Busca de Produtos */}
           <div className="relative flex-1">

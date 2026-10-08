@@ -19,8 +19,19 @@ import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Aba Ativa Global da Aplicação ('explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons' | 'user-profile')
+  // Aba Ativa Global da Aplicação ('explore' | 'stores' | 'how-it-works' | 'merchant-dashboard' | 'my-coupons' | 'user-profile' | 'imperdiveis')
   const [activeTab, setActiveTab] = useState('explore');
+
+  // Filtro de Loja das Ofertas Imperdíveis ('all' | 'shopee' | 'magalu')
+  const [imperdiveisStoreFilter, setImperdiveisStoreFilter] = useState('all');
+
+  const navigateToImperdiveis = (storeFilter = 'all') => {
+    setImperdiveisStoreFilter(storeFilter);
+    setActiveTab('imperdiveis');
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {}
+  };
 
   // Aba Interna do Painel do Lojista ('coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals')
   const [merchantDashboardTab, setMerchantDashboardTab] = useState('coupons');
@@ -1583,9 +1594,12 @@ export const AppProvider = ({ children }) => {
       deleteHotDeal,
       syncShopeeHotDeals,
       syncMagaluHotDeals,
-      // Navegação Global
+      // Navegação Global & Ofertas Imperdíveis
       activeTab,
       setActiveTab,
+      imperdiveisStoreFilter,
+      setImperdiveisStoreFilter,
+      navigateToImperdiveis,
       merchantDashboardTab,
       setMerchantDashboardTab
     }}>

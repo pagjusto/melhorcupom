@@ -15,9 +15,9 @@ import { getBrandLogo } from '../assets/brands';
 
 const STORE_GROUPS = [
   { id: 'all', label: 'Todas as Lojas & Cupons', icon: '✨' },
-  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '67+ Virais' },
-  { id: 'shopee', label: 'Shopee Oficial', icon: '🧡', badge: 'Achadinhos' },
-  { id: 'magalu', label: 'Magazine Luiza', icon: '🛍️', badge: 'Radar Top 10' },
+  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '67+ Virais', isDirectPage: true, targetStore: 'all' },
+  { id: 'shopee', label: 'Shopee Oficial', icon: '🧡', badge: 'Achadinhos', isDirectPage: true, targetStore: 'shopee' },
+  { id: 'magalu', label: 'Magazine Luiza', icon: '🛍️', badge: 'Radar Top 10', isDirectPage: true, targetStore: 'magalu' },
   { id: 'amazon', label: 'Amazon Brasil', icon: '📦' },
   { id: 'tech', label: 'Smartphones & Tech', icon: '⚡' },
   { id: 'moda', label: 'Tênis & Moda', icon: '👟' },
@@ -40,7 +40,7 @@ const QUICK_SEARCH_CHIPS = [
 ];
 
 export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
-  const { stores, coupons, hotDeals } = useApp();
+  const { stores, coupons, hotDeals, navigateToImperdiveis } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState('all');
 
@@ -384,12 +384,17 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
             <button
               key={group.id}
               onClick={() => {
-                setActiveGroup(group.id);
+                if (group.isDirectPage && navigateToImperdiveis) {
+                  navigateToImperdiveis(group.targetStore || 'all');
+                } else {
+                  setActiveGroup(group.id);
+                }
               }}
+              title={group.isDirectPage ? 'Ver todas as ofertas ampliadas em tela cheia' : undefined}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer flex-shrink-0 ${
                 isActive
                   ? 'bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white shadow-lg shadow-orange-600/30 scale-105'
-                  : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 hover:border-white/20'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 hover:border-white/20 hover:border-orange-500/40'
               }`}
             >
               <span>{group.icon}</span>
@@ -457,7 +462,17 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
             return (
               <button
                 key={idx}
-                onClick={() => setSearchQuery(isActive ? '' : chip.query)}
+                onClick={() => {
+                  if (chip.query === 'imperdivel' && navigateToImperdiveis) {
+                    navigateToImperdiveis('all');
+                  } else if (chip.query === 'Shopee' && navigateToImperdiveis) {
+                    navigateToImperdiveis('shopee');
+                  } else if (chip.query === 'Magazine Luiza' && navigateToImperdiveis) {
+                    navigateToImperdiveis('magalu');
+                  } else {
+                    setSearchQuery(isActive ? '' : chip.query);
+                  }
+                }}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
                   isActive
                     ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
