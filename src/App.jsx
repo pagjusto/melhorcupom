@@ -623,7 +623,7 @@ const MainLayout = () => {
                 className="h-12 w-auto object-contain"
               />
               <p className="text-gray-400 leading-relaxed text-xs">
-                O clube exclusivo onde os melhores lojistas disponibilizam descontos reais para membros pagantes. Economia garantida em cada uso.
+                O clube exclusivo onde as melhores lojistas disponibilizam descontos nacionais e locais . Economia garantida em cada uso.
               </p>
             </div>
 
@@ -698,8 +698,6 @@ const MainLayout = () => {
               >
                 Política de Privacidade
               </button>
-              <span>•</span>
-              <span className="text-[#FF5F00] font-semibold">Feito com base na logo oficial</span>
             </div>
           </div>
         </div>
