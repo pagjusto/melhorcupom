@@ -16,6 +16,7 @@
     "amazon:login": "node scripts/amazon-login.cjs",
     "instagram:login": "node scripts/instagram-login.cjs",
     "instagram:publish": "node scripts/publish-instagram.cjs",
+    "instagram:follow": "node scripts/instagram-auto-follow.cjs",
     "sync:all": "node scripts/sync-all.cjs"
   },
   "dependencies": {
