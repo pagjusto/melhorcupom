@@ -13,60 +13,168 @@ import {
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
 
+const STORE_GROUPS = [
+  { id: 'all', label: 'Todas as Lojas & Cupons', icon: '✨' },
+  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '67+ Virais' },
+  { id: 'shopee', label: 'Shopee Oficial', icon: '🧡', badge: 'Achadinhos' },
+  { id: 'magalu', label: 'Magazine Luiza', icon: '🛍️', badge: 'Radar Top 10' },
+  { id: 'amazon', label: 'Amazon Brasil', icon: '📦' },
+  { id: 'tech', label: 'Smartphones & Tech', icon: '⚡' },
+  { id: 'moda', label: 'Tênis & Moda', icon: '👟' },
+  { id: 'casa', label: 'Casa & Eletro', icon: '🏠' }
+];
+
 const QUICK_SEARCH_CHIPS = [
+  { label: '🔥 Ofertas Imperdíveis', query: 'imperdivel', icon: '🔥' },
+  { label: 'Shopee', query: 'Shopee', icon: '🧡' },
+  { label: 'Magazine Luiza', query: 'Magazine Luiza', icon: '🛍️' },
   { label: 'Amazon', query: 'Amazon', icon: '📦' },
   { label: 'Nike', query: 'Nike', icon: '✔️' },
-  { label: 'Shopee', query: 'Shopee', icon: '🧡' },
   { label: 'SHEIN', query: 'SHEIN', icon: '🖤' },
   { label: 'AliExpress', query: 'AliExpress', icon: '🔴' },
   { label: 'Mercado Livre', query: 'Mercado Livre', icon: '🤝' },
   { label: 'Samsung', query: 'Samsung', icon: '📱' },
-  { label: 'Magazine Luiza', query: 'Magazine Luiza', icon: '🛍️' },
   { label: 'Smartphones & Tech', query: 'Smartphone', icon: '⚡' },
   { label: 'Tênis & Corrida', query: 'Tênis', icon: '👟' },
   { label: 'Smart TVs & Eletro', query: 'TV', icon: '📺' }
 ];
 
 export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
-  const { stores, coupons } = useApp();
+  const { stores, coupons, hotDeals } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeGroup, setActiveGroup] = useState('all');
 
-  // Filtrar exclusivamente cupons das grandes lojas / APIs oficiais
-  const bigStoreCoupons = useMemo(() => {
-    return coupons.filter(c => {
+  // Filtrar exclusivamente cupons das grandes lojas / APIs oficiais + Ofertas Imperdíveis (Shopee & Magalu)
+  const allBigStoreCoupons = useMemo(() => {
+    // 1. Cupons padrão de grandes lojas
+    const baseBigCoupons = coupons.filter(c => {
       const store = stores.find(s => s.id === c.storeId);
       return c.isApiIntegrated || c.apiSource || store?.isApiIntegrated;
     });
-  }, [coupons, stores]);
 
-  // Filtrar cupons por mercadoria (produto, título, descrição, categoria) ou por loja
-  const filteredCoupons = useMemo(() => {
-    if (!searchQuery.trim()) return bigStoreCoupons;
-    const term = searchQuery.toLowerCase().trim();
+    // 2. Converter hotDeals (Ofertas Imperdíveis Shopee & Magalu) em formato de cupom compatível
+    const convertedHotDeals = (hotDeals || []).map(deal => {
+      const isMagalu = (deal.store && deal.store.toLowerCase().includes('magalu')) || 
+                       (deal.affiliateUrl && (deal.affiliateUrl.includes('magazinevoce') || deal.affiliateUrl.includes('magazineluiza') || deal.affiliateUrl.includes('maga.lu')));
+      const storeId = isMagalu ? 'store_magalu' : 'store_shopee';
+      const storeName = isMagalu ? 'Magazine Luiza' : 'Shopee Oficial';
+      const codePrefix = isMagalu ? 'MAGALU' : 'SHOPEE';
+      const apiSource = isMagalu ? 'Magazine Você (1P Oficial)' : 'Shopee Oficial';
 
-    return bigStoreCoupons.filter(coupon => {
-      const store = stores.find(s => s.id === coupon.storeId);
-      const storeName = (coupon.storeName || store?.name || '').toLowerCase();
-      const storeCategory = (store?.category || coupon.category || '').toLowerCase();
-      const apiSource = (coupon.apiSource || store?.apiSource || '').toLowerCase();
-      const title = (coupon.title || '').toLowerCase();
-      const desc = (coupon.description || '').toLowerCase();
-      const badge = (coupon.discountBadge || '').toLowerCase();
-      const code = (coupon.codePrefix || '').toLowerCase();
-
-      return (
-        storeName.includes(term) ||
-        storeCategory.includes(term) ||
-        apiSource.includes(term) ||
-        title.includes(term) ||
-        desc.includes(term) ||
-        badge.includes(term) ||
-        code.includes(term)
-      );
+      return {
+        id: deal.id,
+        isHotDeal: true,
+        isImperdivel: true,
+        storeId,
+        storeName,
+        storeLogo: getBrandLogo(isMagalu ? 'magalu' : 'shopee'),
+        title: deal.title,
+        description: deal.description || `${deal.title} com ${deal.discountBadge || 'super desconto'} por apenas R$ ${Number(deal.promoPrice || 0).toFixed(2).replace('.', ',')}`,
+        codePrefix,
+        discountBadge: deal.discountBadge || '50% OFF',
+        discountPercent: deal.discountPercent || 50,
+        cashbackRate: deal.freeShipping ? 'Frete Grátis' : 'Até 8.5% de Volta',
+        apiSource,
+        affiliateUrl: deal.affiliateUrl,
+        isApiIntegrated: true,
+        originalPrice: deal.originalPrice,
+        promoPrice: deal.promoPrice,
+        savings: deal.savings || (deal.originalPrice && deal.promoPrice ? deal.originalPrice - deal.promoPrice : 0),
+        image: deal.image,
+        banner: deal.image,
+        category: deal.category || 'tech',
+        categoryLabel: deal.categoryLabel || (isMagalu ? 'Radar Magalu 1P' : 'Achadinhos Shopee'),
+        type: 'online',
+        rating: deal.rating || 4.9,
+        salesCount: deal.salesCount || 'Mais Vendido',
+        tag: deal.tag || (isMagalu ? '💙 Radar Magalu 1P' : '🔥 Oferta Imperdível')
+      };
     });
-  }, [bigStoreCoupons, stores, searchQuery]);
+
+    // Intercalar as ofertas imperdíveis e cupons das grandes redes para enriquecer todas as faixas do carrossel
+    const seen = new Set();
+    const result = [];
+    const maxLen = Math.max(convertedHotDeals.length, baseBigCoupons.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (i < convertedHotDeals.length && !seen.has(convertedHotDeals[i].id)) {
+        seen.add(convertedHotDeals[i].id);
+        result.push(convertedHotDeals[i]);
+      }
+      if (i < baseBigCoupons.length && !seen.has(baseBigCoupons[i].id)) {
+        seen.add(baseBigCoupons[i].id);
+        result.push(baseBigCoupons[i]);
+      }
+    }
+
+    return result;
+  }, [coupons, stores, hotDeals]);
+
+  // Filtrar cupons por grupo selecionado e por mercadoria/termo pesquisado
+  const filteredCoupons = useMemo(() => {
+    let list = allBigStoreCoupons;
+
+    // 1. Filtro por Grupo Selecionado
+    if (activeGroup !== 'all') {
+      list = list.filter(item => {
+        if (activeGroup === 'imperdiveis') {
+          return item.isImperdivel || item.isHotDeal;
+        }
+        if (activeGroup === 'shopee') {
+          return item.storeId === 'store_shopee' || (item.storeName || '').toLowerCase().includes('shopee');
+        }
+        if (activeGroup === 'magalu') {
+          return item.storeId === 'store_magalu' || (item.storeName || '').toLowerCase().includes('magazine') || (item.storeName || '').toLowerCase().includes('magalu');
+        }
+        if (activeGroup === 'amazon') {
+          return item.storeId === 'store_amazon' || (item.storeName || '').toLowerCase().includes('amazon');
+        }
+        if (activeGroup === 'tech') {
+          return item.category === 'tech' || item.category === 'servicos' || /smart|tv|fone|led|watch|celular|alexa|notebook|pc|fio|bluetooth/i.test(item.title);
+        }
+        if (activeGroup === 'moda') {
+          return item.category === 'moda' || /tênis|tenis|camisa|vestido|calça|jaqueta|nike|adidas|centauro|shein/i.test(item.title);
+        }
+        if (activeGroup === 'casa') {
+          return item.category === 'casa' || /air fryer|fritadeira|aspirador|panela|cozinha|casa|travesseiro|eletro/i.test(item.title);
+        }
+        return true;
+      });
+    }
+
+    // 2. Filtro por Busca digitada ou Chip
+    if (searchQuery.trim()) {
+      const term = searchQuery.toLowerCase().trim();
+      list = list.filter(coupon => {
+        const store = stores.find(s => s.id === coupon.storeId);
+        const storeName = (coupon.storeName || store?.name || '').toLowerCase();
+        const storeCategory = (store?.category || coupon.category || '').toLowerCase();
+        const apiSource = (coupon.apiSource || store?.apiSource || '').toLowerCase();
+        const title = (coupon.title || '').toLowerCase();
+        const desc = (coupon.description || '').toLowerCase();
+        const badge = (coupon.discountBadge || '').toLowerCase();
+        const code = (coupon.codePrefix || '').toLowerCase();
+        const tag = (coupon.tag || '').toLowerCase();
+
+        return (
+          storeName.includes(term) ||
+          storeCategory.includes(term) ||
+          apiSource.includes(term) ||
+          title.includes(term) ||
+          desc.includes(term) ||
+          badge.includes(term) ||
+          code.includes(term) ||
+          tag.includes(term) ||
+          (term === 'imperdivel' && (coupon.isImperdivel || coupon.isHotDeal)) ||
+          (term === 'ofertas imperdiveis' && (coupon.isImperdivel || coupon.isHotDeal))
+        );
+      });
+    }
+
+    return list;
+  }, [allBigStoreCoupons, activeGroup, searchQuery, stores]);
 
   const isSearching = searchQuery.trim().length > 0;
+  const isGridView = isSearching || activeGroup !== 'all';
 
   // Distribuir os cupons em 5 linhas distintas para o carrossel contínuo
   const { row1, row2, row3, row4, row5 } = useMemo(() => {
@@ -76,7 +184,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     const r4 = [];
     const r5 = [];
 
-    bigStoreCoupons.forEach((coupon, index) => {
+    allBigStoreCoupons.forEach((coupon, index) => {
       const remainder = index % 5;
       if (remainder === 0) r1.push(coupon);
       else if (remainder === 1) r2.push(coupon);
@@ -99,9 +207,9 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
       row4: duplicateForLoop(r4),
       row5: duplicateForLoop(r5)
     };
-  }, [bigStoreCoupons]);
+  }, [allBigStoreCoupons]);
 
-  if (bigStoreCoupons.length === 0) return null;
+  if (allBigStoreCoupons.length === 0) return null;
 
   // Renderizador de Card de Oferta Estilo Card Completo e Ampliado
   const renderCard = (coupon, key, isGrid = false) => {
@@ -125,16 +233,36 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         {/* Efeito Glow sutil no canto do card ao passar o mouse */}
         <div className="absolute top-0 right-0 w-28 h-28 bg-[#FF5F00]/10 rounded-full blur-2xl group-hover:bg-[#FF5F00]/25 transition-all pointer-events-none" />
 
-        {/* 1. Header do Card: Logo da Loja, Nome, Origem API e Badge de Desconto */}
+        {/* 1. Header do Card: Thumbnail / Logo, Nome, Origem API e Badge de Desconto */}
         <div className="flex items-start justify-between gap-2 relative z-10">
           <div className="flex items-center gap-2.5 min-w-0">
-            {/* Logo da Marca / Loja */}
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-inner relative">
-              {storeLogo ? (
+            {/* Foto do Produto (para Ofertas Imperdíveis) ou Logo da Marca */}
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-inner relative">
+              {coupon.image ? (
+                <img 
+                  src={coupon.image} 
+                  alt={coupon.title} 
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                  className="w-full h-full object-cover rounded-lg"
+                  onError={(e) => {
+                    if (storeLogo && e.currentTarget.src !== storeLogo) {
+                      e.currentTarget.src = storeLogo;
+                      e.currentTarget.className = "w-full h-full object-contain p-0.5 rounded-lg";
+                    } else {
+                      e.currentTarget.style.display = 'none';
+                      const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
+                      if (fb) fb.style.display = 'flex';
+                    }
+                  }}
+                />
+              ) : storeLogo ? (
                 <>
                   <img 
                     src={storeLogo} 
                     alt={storeName} 
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
                     className="w-full h-full object-contain p-0.5 rounded-lg"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
@@ -143,23 +271,33 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
                     }}
                   />
                   <span className="store-fallback-icon hidden w-full h-full items-center justify-center text-base">
-                    {store?.logo || '🛍️'}
+                    {store?.logo || (coupon.storeId === 'store_magalu' ? '🛍️' : '🧡')}
                   </span>
                 </>
               ) : (
-                <span className="text-base">{store?.logo || '🛍️'}</span>
+                <span className="text-base">{store?.logo || (coupon.storeId === 'store_magalu' ? '🛍️' : '🧡')}</span>
               )}
+              <span className="store-fallback-icon hidden w-full h-full items-center justify-center text-base">
+                {store?.logo || (coupon.storeId === 'store_magalu' ? '🛍️' : '🧡')}
+              </span>
             </div>
 
             {/* Nome da Loja & Tag da Rede de Afiliados */}
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-orange-400 transition-colors truncate">
-                {storeName}
-              </h4>
+              <div className="flex items-center gap-1">
+                <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-orange-400 transition-colors truncate">
+                  {storeName}
+                </h4>
+                {coupon.isHotDeal && (
+                  <span className="text-[9px] bg-red-500/20 text-red-300 border border-red-500/30 font-black px-1 rounded flex-shrink-0">
+                    🔥 HOT
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold tracking-tight">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{apiSource}</span>
+                  <span className="truncate max-w-[130px]">{apiSource}</span>
                 </span>
               </div>
             </div>
@@ -179,24 +317,30 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           </p>
         </div>
 
-        {/* 3. Rodapé do Card: Código com Borda Tracejada, Cashback & Botão Pegar */}
+        {/* 3. Rodapé do Card: Preço Promocional ou Código com Borda Tracejada, Cashback & Botão Pegar */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5 relative z-10">
           <div className="flex items-center gap-2 min-w-0">
-            {/* Caixa de Cupom com Borda Tracejada */}
-            <div className="font-mono text-[11px] font-bold text-orange-300 bg-orange-500/10 border border-dashed border-orange-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0">
-              <span>{couponCode}</span>
-            </div>
+            {/* Preço Promocional se for Hot Deal OU Caixa de Cupom com Borda Tracejada */}
+            {coupon.promoPrice ? (
+              <div className="font-mono text-[11px] font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0">
+                <span>R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span>
+              </div>
+            ) : (
+              <div className="font-mono text-[11px] font-bold text-orange-300 bg-orange-500/10 border border-dashed border-orange-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 flex-shrink-0">
+                <span>{couponCode}</span>
+              </div>
+            )}
 
-            {/* Cashback Ativado */}
+            {/* Cashback Ativado ou Frete Grátis */}
             <span className="text-emerald-400 font-bold text-[11px] flex items-center gap-0.5 truncate">
-              <Coins size={11} className="text-amber-400 flex-shrink-0" />
+              {coupon.isHotDeal ? <Sparkles size={11} className="text-amber-400 flex-shrink-0" /> : <Coins size={11} className="text-amber-400 flex-shrink-0" />}
               <span className="truncate">{cashbackRate}</span>
             </span>
           </div>
 
-          {/* Botão de Ação / Pegar Cupom */}
+          {/* Botão de Ação / Pegar Cupom ou Ver Oferta */}
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FF5F00]/15 group-hover:bg-[#FF5F00] text-orange-400 group-hover:text-white border border-[#FF5F00]/30 group-hover:border-[#FF5F00] text-xs font-bold transition-all flex-shrink-0 shadow-sm">
-            <span>Pegar</span>
+            <span>{coupon.isHotDeal ? 'Ver Oferta' : 'Pegar'}</span>
             <ExternalLink size={12} className="group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
@@ -212,16 +356,54 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[#FF5F00]/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header da Vitrine */}
-      <div className="relative z-10 mb-4">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-display flex flex-wrap items-center gap-2.5">
-          <span>Cupons das Grandes Lojas & E-commerces</span>
-          <span className="text-xs bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
-            Ao Vivo
+      <div className="relative z-10 mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white font-display flex flex-wrap items-center gap-2.5">
+              <span>Cupons das Grandes Lojas & E-commerces</span>
+              <span className="text-xs bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
+                Ao Vivo
+              </span>
+            </h2>
+            <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+              Super vitrine integrada com cupons oficiais, Ofertas Imperdíveis Shopee e Radar Magalu Top 10 diário em tempo real.
+            </p>
+          </div>
+          <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{allBigStoreCoupons.length} ofertas e cupons ativos</span>
           </span>
-        </h2>
-        <p className="text-gray-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-          Super cards de ofertas passando em 5 faixas simultâneas com cupons oficiais e cashback ativado em tempo real.
-        </p>
+        </div>
+      </div>
+
+      {/* SELETOR DE GRUPOS DE GRANDES LOJAS & OFERTAS IMPERDÍVEIS */}
+      <div className="relative z-10 mb-3 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {STORE_GROUPS.map((group) => {
+          const isActive = activeGroup === group.id;
+          return (
+            <button
+              key={group.id}
+              onClick={() => {
+                setActiveGroup(group.id);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer flex-shrink-0 ${
+                isActive
+                  ? 'bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white shadow-lg shadow-orange-600/30 scale-105'
+                  : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 hover:border-white/20'
+              }`}
+            >
+              <span>{group.icon}</span>
+              <span>{group.label}</span>
+              {group.badge && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                  isActive ? 'bg-black/30 text-white' : 'bg-red-500/20 text-red-300'
+                }`}>
+                  {group.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* CAMPO DE PESQUISA POR MERCADORIA OU POR LOJA */}
@@ -290,22 +472,32 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         </div>
       </div>
 
-      {/* RESULTADOS DA BUSCA OU CARROSSEL DE 5 LINHAS */}
-      {isSearching ? (
-        /* MODO DE BUSCA ATIVA: Exibe as ofertas filtradas em grid de até 5 colunas */
+      {/* RESULTADOS DA BUSCA OU GRUPO FILTRADO OU CARROSSEL DE 5 LINHAS */}
+      {isGridView ? (
+        /* MODO GRID: Exibe as ofertas filtradas por Grupo ou Busca em grid */
         <div className="relative z-10 py-1 space-y-3">
-          <div className="flex items-center justify-between text-xs text-gray-300 px-1">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between text-xs text-gray-300 px-1 gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-emerald-400 font-bold">
                 ✓ {filteredCoupons.length} {filteredCoupons.length === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
               </span>
-              <span>para "<strong>{searchQuery}</strong>"</span>
+              {activeGroup !== 'all' && (
+                <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-md font-bold text-[11px]">
+                  Grupo: {STORE_GROUPS.find(g => g.id === activeGroup)?.label}
+                </span>
+              )}
+              {searchQuery && (
+                <span>para "<strong>{searchQuery}</strong>"</span>
+              )}
             </div>
             <button
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setActiveGroup('all');
+              }}
               className="text-orange-400 hover:text-orange-300 text-xs font-semibold underline cursor-pointer"
             >
-              Ver todas as {bigStoreCoupons.length} ofertas
+              Ver todas as {allBigStoreCoupons.length} ofertas (Carrossel Contínuo)
             </button>
           </div>
 
@@ -320,13 +512,16 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
           ) : (
             <div className="bg-black/40 border border-white/10 rounded-2xl p-6 text-center space-y-2">
               <p className="text-sm text-gray-300 font-semibold">
-                Nenhuma mercadoria ou loja encontrada para "{searchQuery}".
+                Nenhuma oferta encontrada para os filtros selecionados.
               </p>
               <p className="text-xs text-gray-400 max-w-md mx-auto">
-                Tente buscar por marcas como <strong>Nike</strong>, <strong>Amazon</strong>, <strong>Samsung</strong>, ou mercadorias como <strong>Tênis</strong>, <strong>TV</strong>, <strong>Smartphone</strong>.
+                Tente buscar por marcas como <strong>Shopee</strong>, <strong>Magazine Luiza</strong>, <strong>Amazon</strong>, ou trocar de grupo.
               </p>
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveGroup('all');
+                }}
                 className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5F00] hover:bg-[#E04F00] text-white text-xs font-bold transition-colors cursor-pointer"
               >
                 Ver Todas as Ofertas

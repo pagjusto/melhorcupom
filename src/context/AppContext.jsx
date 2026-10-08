@@ -238,24 +238,27 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee (Robô de Ofertas - 50+ achadinhos)
+  // Estado de Ofertas Imperdíveis & Produtos Virais da Shopee e Magalu (Robô de Ofertas - 67+ ofertas)
+  const ALL_BASE_HOT_DEALS = [...MAGALU_RADAR_TOP10, ...INITIAL_HOT_DEALS];
+
   const [hotDeals, setHotDeals] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_hot_deals_v3');
+    const saved = localStorage.getItem('melhor_cupom_hot_deals_v4') || localStorage.getItem('melhor_cupom_hot_deals_v3');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(INITIAL_HOT_DEALS));
-      return INITIAL_HOT_DEALS;
+      localStorage.setItem('melhor_cupom_hot_deals_v4', JSON.stringify(ALL_BASE_HOT_DEALS));
+      return ALL_BASE_HOT_DEALS;
     }
     try {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length >= INITIAL_HOT_DEALS.length) return parsed;
-      // Se houver menos ofertas que o catálogo padrão (ex: versão antiga com apenas 12), mesclar / atualizar
-      const existingIds = new Set(parsed.map(p => p.id));
-      const missing = INITIAL_HOT_DEALS.filter(d => !existingIds.has(d.id));
-      const updated = [...parsed, ...missing];
-      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
-      return updated;
+      if (Array.isArray(parsed)) {
+        const existingIds = new Set(parsed.map(p => p.id));
+        const missing = ALL_BASE_HOT_DEALS.filter(d => !existingIds.has(d.id));
+        const updated = [...missing, ...parsed];
+        localStorage.setItem('melhor_cupom_hot_deals_v4', JSON.stringify(updated));
+        return updated;
+      }
+      return ALL_BASE_HOT_DEALS;
     } catch {
-      return INITIAL_HOT_DEALS;
+      return ALL_BASE_HOT_DEALS;
     }
   });
 
