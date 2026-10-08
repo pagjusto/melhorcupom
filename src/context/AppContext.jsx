@@ -242,18 +242,19 @@ export const AppProvider = ({ children }) => {
   const ALL_BASE_HOT_DEALS = [...MAGALU_RADAR_TOP10, ...INITIAL_HOT_DEALS];
 
   const [hotDeals, setHotDeals] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_hot_deals_v4') || localStorage.getItem('melhor_cupom_hot_deals_v3');
+    const saved = localStorage.getItem('melhor_cupom_hot_deals_v7');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_hot_deals_v4', JSON.stringify(ALL_BASE_HOT_DEALS));
+      localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(ALL_BASE_HOT_DEALS));
       return ALL_BASE_HOT_DEALS;
     }
     try {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        const existingIds = new Set(parsed.map(p => p.id));
-        const missing = ALL_BASE_HOT_DEALS.filter(d => !existingIds.has(d.id));
-        const updated = [...missing, ...parsed];
-        localStorage.setItem('melhor_cupom_hot_deals_v4', JSON.stringify(updated));
+        const updated = parsed.map(item => {
+          const fresh = ALL_BASE_HOT_DEALS.find(d => d.id === item.id);
+          return fresh && fresh.image ? { ...item, image: fresh.image } : item;
+        });
+        localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
         return updated;
       }
       return ALL_BASE_HOT_DEALS;
@@ -303,7 +304,7 @@ export const AppProvider = ({ children }) => {
     };
     setHotDeals(prev => {
       const updated = [newDeal, ...prev];
-      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
       return updated;
     });
 
@@ -320,7 +321,7 @@ export const AppProvider = ({ children }) => {
   const deleteHotDeal = (id) => {
     setHotDeals(prev => {
       const updated = prev.filter(d => d.id !== id);
-      localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
       return updated;
     });
   };
@@ -331,7 +332,7 @@ export const AppProvider = ({ children }) => {
       lastSync: 'Sincronizado Agora'
     }));
     setHotDeals(synced);
-    localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(synced));
+    localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(synced));
     return { count: synced.length };
   };
 
@@ -347,7 +348,7 @@ export const AppProvider = ({ children }) => {
       setHotDeals(prev => {
         const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
         const updated = [...allMagaluDeals, ...currentWithoutMagalu];
-        localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+        localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
         return updated;
       });
 
@@ -364,7 +365,7 @@ export const AppProvider = ({ children }) => {
       setHotDeals(prev => {
         const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
         const updated = [...MAGALU_RADAR_TOP10, ...currentWithoutMagalu];
-        localStorage.setItem('melhor_cupom_hot_deals_v3', JSON.stringify(updated));
+        localStorage.setItem('melhor_cupom_hot_deals_v7', JSON.stringify(updated));
         return updated;
       });
 
