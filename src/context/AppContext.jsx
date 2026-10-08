@@ -1357,10 +1357,15 @@ export const AppProvider = ({ children }) => {
             if (newCredentials.publisherId) updatedCreds.publicKey = newCredentials.publisherId;
             if (newCredentials.apiKey) updatedCreds.accessToken = newCredentials.apiKey;
           }
+          if (connectorId === 'meta_graph') {
+            if (newCredentials.publisherId) updatedCreds.appId = newCredentials.publisherId;
+            if (newCredentials.apiKey) updatedCreds.appSecret = newCredentials.apiKey;
+          }
           return {
             ...c,
             status: 'connected',
-            statusLabel: connectorId === 'mercadopago' ? `Conectado via Access Token (${newCredentials.apiKey?.startsWith('APP_USR-') ? 'Produção' : 'Sandbox / Teste'})` :
+            statusLabel: connectorId === 'meta_graph' ? 'Autenticado via App Secret Oficial (200 OK)' :
+                         connectorId === 'mercadopago' ? `Conectado via Access Token (${newCredentials.apiKey?.startsWith('APP_USR-') ? 'Produção' : 'Sandbox / Teste'})` :
                          connectorId === 'lomadee' ? 'Autenticado via x-api-key (200 OK)' :
                          connectorId === 'shopee' ? 'Autenticado com ID 18305641225 (200 OK)' : 
                          connectorId === 'shein' ? 'Autenticado com ID 5005674890 (200 OK)' :

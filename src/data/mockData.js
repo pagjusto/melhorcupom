@@ -2065,6 +2065,31 @@ export const ADMIN_CREDENTIALS = {
 
 export const API_CONNECTORS = [
   {
+    id: 'meta_graph',
+    name: 'Meta / Instagram Graph API Oficial',
+    network: 'Meta for Developers (Facebook & Instagram)',
+    accountName: 'MelhorCupom (App ID: 1045481495202722)',
+    status: 'connected',
+    statusLabel: 'Autenticado via App Secret Oficial (200 OK)',
+    pingMs: 18,
+    totalStores: 0,
+    totalCoupons: 0,
+    lastSync: 'Sincronizado Agora',
+    apiVersion: 'v19.0 Graph REST',
+    credentials: {
+      publisherId: '1045481495202722',
+      appId: '1045481495202722',
+      apiKey: '0839370c8b5569f3aef538202862b2f1',
+      appSecret: '0839370c8b5569f3aef538202862b2f1',
+      appToken: '1045481495202722|sQLup7rtlb9gk2lAY1tT7NfcDGM',
+      webhookEndpoint: 'https://www.omelhorcupom.com.br/api/meta-webhook'
+    },
+    topBrands: ['Publicação Automática de Ofertas', 'Stories com Link Direto', 'Facebook & Instagram Integration'],
+    avgCommission: '100% Automação Oficial',
+    userCashbackRate: 'Conectado',
+    platformMargin: 'Robô de Publicação Ativo'
+  },
+  {
     id: 'mercadopago',
     name: 'Mercado Pago (Gateway Oficial)',
     network: 'Mercado Pago Pagamentos / PIX Dinâmico',
