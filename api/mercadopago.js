@@ -2,8 +2,10 @@
 // Vercel Serverless Function para integração com Mercado Pago (PIX com QR Code dinâmico Copia e Cola e Checkout Pro)
 import { MercadoPagoConfig, Payment, Preference } from 'mercadopago';
 
-// Token padrão de produção ou via variável de ambiente (Mercado Pago Oficial)
+// Credenciais oficiais de produção do Mercado Pago
 const DEFAULT_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || 'APP_USR-2945252384184793-100917-5b668ed5078efa4f7d3225c19178bb63-62315625';
+const DEFAULT_CLIENT_ID = process.env.MERCADOPAGO_CLIENT_ID || '2945252384184793';
+const DEFAULT_CLIENT_SECRET = process.env.MERCADOPAGO_CLIENT_SECRET || '1JhHNSqZse1GYViB0HFCvSgSr8WtQgEw';
 
 export const config = {
   api: {

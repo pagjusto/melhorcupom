@@ -2106,6 +2106,8 @@ export const API_CONNECTORS = [
     credentials: {
       publicKey: 'APP_USR-c16c54af-6cf3-4b52-b9da-6e96cdf50753',
       accessToken: 'APP_USR-2945252384184793-100917-5b668ed5078efa4f7d3225c19178bb63-62315625',
+      clientId: '2945252384184793',
+      clientSecret: '1JhHNSqZse1GYViB0HFCvSgSr8WtQgEw',
       webhookEndpoint: 'https://www.omelhorcupom.com.br/api/mercadopago',
       subIdParam: 'payment_method=pix,card'
     },
