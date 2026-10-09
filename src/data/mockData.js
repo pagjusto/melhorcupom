@@ -2095,24 +2095,24 @@ export const API_CONNECTORS = [
     id: 'mercadopago',
     name: 'Mercado Pago (Gateway Oficial)',
     network: 'Mercado Pago Pagamentos / PIX Dinâmico',
-    accountName: 'O Melhor Cupom Serviços',
+    accountName: 'Renan Zanferrari (Conta ID: 62315625)',
     status: 'connected',
-    statusLabel: 'Pronto para Recebimentos (PIX / Cartão)',
+    statusLabel: 'Autenticado em Produção (PIX / Cartão / QR Code 200 OK)',
     pingMs: 24,
     totalStores: 0,
     totalCoupons: 0,
     lastSync: 'Sincronizado Agora',
-    apiVersion: 'v1 REST / SDK v2',
+    apiVersion: 'v1 REST / SDK v2 (Produção Oficial)',
     credentials: {
-      publicKey: 'APP_USR-789a42b1-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-      accessToken: 'APP_USR-6523910293847561-032912-abcdef1234567890abcdef1234567890-764525582',
+      publicKey: 'APP_USR-c16c54af-6cf3-4b52-b9da-6e96cdf50753',
+      accessToken: 'APP_USR-2945252384184793-100917-5b668ed5078efa4f7d3225c19178bb63-62315625',
       webhookEndpoint: 'https://www.omelhorcupom.com.br/api/mercadopago',
       subIdParam: 'payment_method=pix,card'
     },
     topBrands: ['PIX com QR Code Dinâmico', 'Cartão de Crédito', 'Checkout Pro'],
     avgCommission: 'Taxa PIX: 0.99%',
     userCashbackRate: 'Ativação Instantânea',
-    platformMargin: '100% recebimento direto na sua conta'
+    platformMargin: '100% recebimento direto na sua conta Mercado Pago'
   },
   {
     id: 'awin',
