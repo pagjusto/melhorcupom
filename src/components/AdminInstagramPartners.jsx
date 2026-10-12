@@ -20,13 +20,125 @@ import {
   Download,
   Award,
   Wallet,
-  Lock
+  Lock,
+  Search,
+  MapPin,
+  Globe
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const MIN_WITHDRAWAL_AMOUNT = 250;
 
+// Catálogo de Páginas "Mil Grau" e Guias de Cidades do Brasil com alto engajamento local
+const BRAZIL_MILGRAU_PAGES = [
+  // Santa Catarina (SC)
+  { handle: '@videiramilgrau_sc', name: 'Videira Mil Grau', city: 'Videira - SC', state: 'SC', followers: '28k+', code: 'VIDEIRAMG5' },
+  { handle: '@videiramilgrau', name: 'Videira Mil Grau Oficial', city: 'Videira - SC', state: 'SC', followers: '25k+', code: 'VIDEIRA5' },
+  { handle: '@chapecomilgrauoficial', name: 'Chapecó Mil Grau', city: 'Chapecó - SC', state: 'SC', followers: '115k+', code: 'CHAPECOMG5' },
+  { handle: '@floripamilgrauoficial', name: 'Floripa Mil Grau', city: 'Florianópolis - SC', state: 'SC', followers: '320k+', code: 'FLORIPAMG5' },
+  { handle: '@joinville.milgrau', name: 'Joinville Mil Grau', city: 'Joinville - SC', state: 'SC', followers: '140k+', code: 'JOINVILLEMG5' },
+  { handle: '@blumilgrau', name: 'Blumenau Mil Grau', city: 'Blumenau - SC', state: 'SC', followers: '165k+', code: 'BLUMILGRAU5' },
+  { handle: '@lages_milgrau', name: 'Lages Mil Grau', city: 'Lages - SC', state: 'SC', followers: '64k+', code: 'LAGESMG5' },
+  { handle: '@balneariomilgrau_', name: 'Balneário Camboriú Mil Grau', city: 'Balneário Camboriú - SC', state: 'SC', followers: '190k+', code: 'BCMILGRAU5' },
+  { handle: '@itajaimilgr4u', name: 'Itajaí Mil Grau', city: 'Itajaí - SC', state: 'SC', followers: '82k+', code: 'ITAJAIMG5' },
+  { handle: '@criciumamilgrau_', name: 'Criciúma Mil Grau', city: 'Criciúma - SC', state: 'SC', followers: '95k+', code: 'CRICIUMAMG5' },
+  { handle: '@jaraguamilgrau', name: 'Jaraguá do Sul Mil Grau', city: 'Jaraguá do Sul - SC', state: 'SC', followers: '58k+', code: 'JARAGUAMG5' },
+  { handle: '@tubaraomilgrau', name: 'Tubarão Mil Grau', city: 'Tubarão - SC', state: 'SC', followers: '46k+', code: 'TUBARAOMG5' },
+  { handle: '@concordiamilgrau', name: 'Concórdia Mil Grau', city: 'Concórdia - SC', state: 'SC', followers: '35k+', code: 'CONCORDIAMG5' },
+  { handle: '@joacabamilgrau', name: 'Joaçaba & Meio-Oeste Mil Grau', city: 'Joaçaba - SC', state: 'SC', followers: '31k+', code: 'JOACABAMG5' },
+  { handle: '@cacadormilgrau', name: 'Caçador Mil Grau', city: 'Caçador - SC', state: 'SC', followers: '34k+', code: 'CACADORMG5' },
+
+  // Paraná & Rio Grande do Sul (Sul)
+  { handle: '@curitibamilgrau', name: 'Curitiba Mil Grau', city: 'Curitiba - PR', state: 'PR', followers: '410k+', code: 'CURITIBAMG5' },
+  { handle: '@campinamilgrau', name: 'Campina Mil Grau', city: 'Campina Grande do Sul - PR', state: 'PR', followers: '45k+', code: 'CAMPINAPR5' },
+  { handle: '@londrinamilgrau', name: 'Londrina Mil Grau', city: 'Londrina - PR', state: 'PR', followers: '130k+', code: 'LONDRINAMG5' },
+  { handle: '@milgraumfc', name: 'Maringá Mil Grau', city: 'Maringá - PR', state: 'PR', followers: '92k+', code: 'MARINGAMG5' },
+  { handle: '@cascavelmilgrau', name: 'Cascavel Mil Grau', city: 'Cascavel - PR', state: 'PR', followers: '88k+', code: 'CASCAVELMG5' },
+  { handle: '@pontagrossamilgrau', name: 'Ponta Grossa Mil Grau', city: 'Ponta Grossa - PR', state: 'PR', followers: '76k+', code: 'PGMILGRAU5' },
+  { handle: '@poamilgrau', name: 'Porto Alegre Mil Grau', city: 'Porto Alegre - RS', state: 'RS', followers: '280k+', code: 'POAMILGRAU5' },
+  { handle: '@caxiasmilgrau', name: 'Caxias do Sul Mil Grau', city: 'Caxias do Sul - RS', state: 'RS', followers: '110k+', code: 'CAXIAXMG5' },
+  { handle: '@passofundomilgrau', name: 'Passo Fundo Mil Grau', city: 'Passo Fundo - RS', state: 'RS', followers: '67k+', code: 'PASSOFUNDOMG5' },
+
+  // São Paulo (SP)
+  { handle: '@sorocabamilgrau', name: 'Sorocaba Mil Grau', city: 'Sorocaba - SP', state: 'SP', followers: '175k+', code: 'SOROCABAMG5' },
+  { handle: '@spmilgrau', name: 'São Paulo Mil Grau', city: 'São Paulo - SP', state: 'SP', followers: '520k+', code: 'SPMILGRAU5' },
+  { handle: '@campinasmilgrau', name: 'Campinas Mil Grau', city: 'Campinas - SP', state: 'SP', followers: '210k+', code: 'CAMPINASMG5' },
+  { handle: '@santosmilgrau', name: 'Santos & Baixada Mil Grau', city: 'Santos - SP', state: 'SP', followers: '160k+', code: 'SANTOSMG5' },
+  { handle: '@ribeiraomilgrau', name: 'Ribeirão Preto Mil Grau', city: 'Ribeirão Preto - SP', state: 'SP', followers: '145k+', code: 'RIBEIRAOMG5' },
+  { handle: '@sjcmilgrau', name: 'São José dos Campos Mil Grau', city: 'São José dos Campos - SP', state: 'SP', followers: '125k+', code: 'SJCMILGRAU5' },
+  { handle: '@baurumilgrau', name: 'Bauru Mil Grau', city: 'Bauru - SP', state: 'SP', followers: '85k+', code: 'BAURUMG5' },
+  { handle: '@jundiaimilgrau', name: 'Jundiaí Mil Grau', city: 'Jundiaí - SP', state: 'SP', followers: '94k+', code: 'JUNDIAIMG5' },
+
+  // MG, RJ, Centro-Oeste e Nordeste
+  { handle: '@goianiamilgraus', name: 'Goiânia Mil Graus', city: 'Goiânia - GO', state: 'GO', followers: '290k+', code: 'GOIANIAMG5' },
+  { handle: '@bhmilgrau', name: 'BH Mil Grau', city: 'Belo Horizonte - MG', state: 'MG', followers: '380k+', code: 'BHMILGRAU5' },
+  { handle: '@uberlandiamilgrau', name: 'Uberlândia Mil Grau', city: 'Uberlândia - MG', state: 'MG', followers: '135k+', code: 'UBERLANDIAMG5' },
+  { handle: '@rjmilgrau', name: 'Rio de Janeiro Mil Grau', city: 'Rio de Janeiro - RJ', state: 'RJ', followers: '440k+', code: 'RJMILGRAU5' },
+  { handle: '@niteroimilgrau', name: 'Niterói Mil Grau', city: 'Niterói - RJ', state: 'RJ', followers: '118k+', code: 'NITEROIMG5' },
+  { handle: '@brasiliamilgrau', name: 'Brasília Mil Grau', city: 'Brasília - DF', state: 'DF', followers: '260k+', code: 'BRASILIAMG5' },
+  { handle: '@campina1000graus', name: 'Campina Grande 1000 Graus', city: 'Campina Grande - PB', state: 'PB', followers: '185k+', code: 'CAMPINA1000G5' },
+  { handle: '@salvadormilgrau', name: 'Salvador Mil Grau', city: 'Salvador - BA', state: 'BA', followers: '310k+', code: 'SALVADORMG5' },
+  { handle: '@fortalezamilgrau', name: 'Fortaleza Mil Grau', city: 'Fortaleza - CE', state: 'CE', followers: '340k+', code: 'FORTALEZAMG5' },
+  { handle: '@recifemilgrau', name: 'Recife Mil Grau', city: 'Recife - PE', state: 'PE', followers: '295k+', code: 'RECIFEMG5' }
+];
+
 const INITIAL_INSTAGRAM_PARTNERS = [
+  {
+    id: 'ig_partner_videira',
+    handle: '@videiramilgrau_sc',
+    name: 'Videira Mil Grau (Videira - SC)',
+    followers: '28k+',
+    code: 'VIDEIRAMG5',
+    pixKey: 'A definir no saque',
+    whatsapp: '',
+    usersReferred: 0,
+    storesReferred: 0,
+    paidAmount: 0,
+    withdrawalRequested: false,
+    createdAt: 'Ativo'
+  },
+  {
+    id: 'ig_partner_chapeco',
+    handle: '@chapecomilgrauoficial',
+    name: 'Chapecó Mil Grau (Chapecó - SC)',
+    followers: '115k+',
+    code: 'CHAPECOMG5',
+    pixKey: 'A definir no saque',
+    whatsapp: '',
+    usersReferred: 0,
+    storesReferred: 0,
+    paidAmount: 0,
+    withdrawalRequested: false,
+    createdAt: 'Ativo'
+  },
+  {
+    id: 'ig_partner_floripa',
+    handle: '@floripamilgrauoficial',
+    name: 'Floripa Mil Grau (Florianópolis - SC)',
+    followers: '320k+',
+    code: 'FLORIPAMG5',
+    pixKey: 'A definir no saque',
+    whatsapp: '',
+    usersReferred: 0,
+    storesReferred: 0,
+    paidAmount: 0,
+    withdrawalRequested: false,
+    createdAt: 'Ativo'
+  },
+  {
+    id: 'ig_partner_curitiba',
+    handle: '@curitibamilgrau',
+    name: 'Curitiba Mil Grau (Curitiba - PR)',
+    followers: '410k+',
+    code: 'CURITIBAMG5',
+    pixKey: 'A definir no saque',
+    whatsapp: '',
+    usersReferred: 0,
+    storesReferred: 0,
+    paidAmount: 0,
+    withdrawalRequested: false,
+    createdAt: 'Ativo'
+  },
   {
     id: 'ig_partner_1',
     handle: '@achadinhos.brasil',
@@ -40,24 +152,36 @@ const INITIAL_INSTAGRAM_PARTNERS = [
     paidAmount: 0,
     withdrawalRequested: false,
     createdAt: 'Ativo'
-  },
-  {
-    id: 'ig_partner_2',
-    handle: '@dicassp.oficial',
-    name: 'Dicas & Gastronomia SP',
-    followers: '88k',
-    code: 'DICASSP5',
-    pixKey: 'financeiro@dicassp.com.br',
-    whatsapp: '(11) 97766-5544',
-    usersReferred: 0,
-    storesReferred: 0,
-    paidAmount: 0,
-    withdrawalRequested: false,
-    createdAt: 'Ativo'
   }
 ];
 
 const PITCH_TEMPLATES = [
+  {
+    id: 'pitch_milgrau',
+    title: '🔥 Especial Páginas "Mil Grau" da Cidade (R$ 5/Comércio + R$ 3/Seguidor)',
+    badge: 'Páginas Mil Grau',
+    getText: (partner) => `Fala, galera do *${partner.handle}*! Tudo certo por aí? 🔥🚀
+
+Acompanhamos o trabalho gigante de vocês movimentando a cidade e sabemos a força que a página tem tanto com a galera quanto com os comércios locais!
+
+Aqui é da direção do *Melhor Cupom (@omelhorcupom.com.br)*! Nós somos a plataforma nacional e local onde os comércios da cidade divulgam cupons exclusivos (e já ganham acesso VIP por apenas R$ 19,90/mês) e os seguidores economizam até 50% todos os dias em lanches, restaurantes, serviços e nas grandes lojas (Shopee, Magalu, SHEIN, Amazon).
+
+Liberamos um *Link Oficial de Parceria* exclusivo para o *${partner.handle}* faturar alto divulgando para os seguidores e comércios da cidade:
+
+💰 *QUANTO A PÁGINA GANHA NO CAIXA:*
+🏪 *+R$ 5,00 de saldo* por cada *Comércio / Empresa da cidade* que se cadastrar e assinar VIP pelo link de vocês!
+🙋‍♂️ *+R$ 3,00 de saldo* por cada *Seguidor / Usuário* que ativar o Clube VIP pelo link de vocês!
+🏦 *Saque Direto no PIX:* Todo valor entra na hora no *Saldo do Caixa* da página. Bateu *R$ 250,00 de saldo*, o saque via PIX já fica liberado direto pra conta de vocês!
+
+🔗 *Link Oficial Exclusivo do ${partner.handle}:*
+👉 https://omelhorcupom.com.br/convite/${partner.code}
+*(Código Oficial: ${partner.code})*
+
+💡 *Simulação rápida pra cidade:*
+Com apenas 20 comércios da cidade divulgando cupom (R$ 100) + 50 seguidores no clube VIP (R$ 150), vocês já batem *R$ 250,00* e sacam no PIX!
+
+Bora ativar essa parceria na cidade hoje? Já deixamos as artes de Stories prontas pra vocês! 🤝🔥`
+  },
   {
     id: 'pitch_completo',
     title: '🔥 Proposta Completa (Saldo no Caixa + Saque PIX acima de R$ 250)',
@@ -102,26 +226,6 @@ Já até reservamos o link personalizado da página de vocês:
 👉 https://omelhorcupom.com.br/convite/${partner.code}
 
 Posso te mandar aqui o Kit de Stories pronto e ativar o painel de saldo de vocês? 💰🔥`
-  },
-  {
-    id: 'pitch_foco_comercios',
-    title: '🏪 Foco em Páginas da Cidade / Guia Local (Empresas R$ 5 + Usuários R$ 3)',
-    badge: 'Páginas de Cidade',
-    getText: (partner) => `Olá, pessoal do *${partner.handle}*! Tudo bem? 🌟
-
-Vimos que a página de vocês tem uma força gigante com o público e com os comércios da região!
-
-No *Melhor Cupom (@omelhorcupom.com.br)*, os comércios locais divulgam cupons (e já ganham acesso VIP no site a partir de R$ 19,90/mês), e os seguidores economizam até 50% todos os dias.
-
-Criamos um link exclusivo para o *${partner.handle}* acumular saldo divulgando para os seguidores e lojistas da cidade:
-✅ *R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
-✅ *R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo link de vocês!
-🏦 *Saque via PIX:* O valor fica salvo no Caixa da sua conta e, a partir de *R$ 250,00 acumulados*, você solicita a transferência direto no seu PIX!
-
-🔗 *Link Oficial da sua Página:*
-https://omelhorcupom.com.br/convite/${partner.code}
-
-Vamos fechar essa parceria? 🤝🚀`
   }
 ];
 
@@ -129,14 +233,28 @@ export const AdminInstagramPartners = ({ showToast }) => {
   const [partners, setPartners] = useState(() => {
     try {
       const saved = localStorage.getItem('melhor_cupom_ig_partners_v1');
-      if (saved) return JSON.parse(saved);
+      const syncDone = localStorage.getItem('melhor_cupom_ig_milgrau_sync_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && !syncDone) {
+          const existingHandles = new Set(parsed.map(p => (p.handle || '').toLowerCase()));
+          const toAdd = INITIAL_INSTAGRAM_PARTNERS.filter(p => !existingHandles.has(p.handle.toLowerCase()));
+          const merged = [...toAdd, ...parsed];
+          localStorage.setItem('melhor_cupom_ig_partners_v1', JSON.stringify(merged));
+          localStorage.setItem('melhor_cupom_ig_milgrau_sync_v1', 'done');
+          return merged;
+        }
+        return parsed;
+      }
     } catch {}
     return INITIAL_INSTAGRAM_PARTNERS;
   });
 
   const [selectedPartnerId, setSelectedPartnerId] = useState(partners[0]?.id || '');
-  const [selectedTemplateId, setSelectedTemplateId] = useState('pitch_completo');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('pitch_milgrau');
   const [copiedId, setCopiedId] = useState(null);
+  const [citySearchQuery, setCitySearchQuery] = useState('');
+  const [selectedRegionFilter, setSelectedRegionFilter] = useState('ALL');
 
   // Formulário para adicionar nova página parceira
   const [newPartner, setNewPartner] = useState({
@@ -313,6 +431,120 @@ export const AdminInstagramPartners = ({ showToast }) => {
     const clean = (handle || '').replace('@', '').trim();
     window.open(`https://www.instagram.com/${clean}/`, '_blank');
   };
+
+  // Selecionar ou importar rapidamente uma página do Radar Mil Grau e já abrir a proposta pronta
+  const handleSelectOrImportMilGrauPage = (item) => {
+    const existing = partners.find(
+      p => (p.handle || '').toLowerCase() === (item.handle || '').toLowerCase()
+    );
+    if (existing) {
+      setSelectedPartnerId(existing.id);
+      setSelectedTemplateId('pitch_milgrau');
+      if (showToast) {
+        showToast(`🔥 ${existing.handle} selecionada! Proposta e link omelhorcupom.com.br/convite/${existing.code} prontos abaixo.`);
+      }
+      return;
+    }
+
+    const cleanCode = (item.code || item.handle.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8) + '5').toUpperCase();
+    const created = {
+      id: `ig_partner_${Date.now()}`,
+      handle: item.handle.startsWith('@') ? item.handle : `@${item.handle}`,
+      name: `${item.name} (${item.city}/${item.state})`,
+      followers: item.followers || '50k+',
+      code: cleanCode,
+      pixKey: 'A definir no saque',
+      whatsapp: '',
+      usersReferred: 0,
+      storesReferred: 0,
+      paidAmount: 0,
+      withdrawalRequested: false,
+      createdAt: new Date().toLocaleDateString('pt-BR')
+    };
+
+    const updated = [created, ...partners];
+    savePartners(updated);
+    setSelectedPartnerId(created.id);
+    setSelectedTemplateId('pitch_milgrau');
+
+    confetti({
+      particleCount: 55,
+      spread: 65,
+      origin: { y: 0.6 }
+    });
+
+    if (showToast) {
+      showToast(`🚀 Página ${created.handle} importada! Link omelhorcupom.com.br/convite/${created.code} ativado.`);
+    }
+  };
+
+  // Filtro inteligente do catálogo de páginas Mil Grau do Brasil
+  const filteredMilGrauCatalog = useMemo(() => {
+    const q = citySearchQuery.trim().toLowerCase();
+    return BRAZIL_MILGRAU_PAGES.filter(item => {
+      if (selectedRegionFilter !== 'ALL') {
+        if (selectedRegionFilter === 'SC' && item.state !== 'SC') return false;
+        if (selectedRegionFilter === 'SUL' && !['SC', 'PR', 'RS'].includes(item.state)) return false;
+        if (selectedRegionFilter === 'SP' && item.state !== 'SP') return false;
+        if (selectedRegionFilter === 'OUTROS' && ['SC', 'PR', 'RS', 'SP'].includes(item.state)) return false;
+      }
+      if (!q) return true;
+      return (
+        item.city.toLowerCase().includes(q) ||
+        item.handle.toLowerCase().includes(q) ||
+        item.name.toLowerCase().includes(q) ||
+        item.state.toLowerCase().includes(q)
+      );
+    });
+  }, [citySearchQuery, selectedRegionFilter]);
+
+  // Gerador dinâmico de @ para qualquer cidade do Brasil digitada no buscador
+  const smartCitySuggestions = useMemo(() => {
+    const raw = citySearchQuery.trim();
+    if (raw.length < 3) return [];
+    const slug = raw
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase()
+      .replace(/milgrau.*$/, '');
+    if (!slug) return [];
+    const baseCode = `${slug.substring(0, 7).toUpperCase()}MG5`;
+    return [
+      {
+        handle: `@${slug}milgrau`,
+        name: `${raw} Mil Grau`,
+        city: raw,
+        state: 'BR',
+        followers: 'Verificar no IG',
+        code: baseCode
+      },
+      {
+        handle: `@${slug}milgrau_sc`,
+        name: `${raw} Mil Grau SC`,
+        city: raw,
+        state: 'SC',
+        followers: 'Verificar no IG',
+        code: `${slug.substring(0, 6).toUpperCase()}SC5`
+      },
+      {
+        handle: `@${slug}_milgrau`,
+        name: `${raw} Mil Grau Oficial`,
+        city: raw,
+        state: 'BR',
+        followers: 'Verificar no IG',
+        code: `${slug.substring(0, 6).toUpperCase()}OF5`
+      },
+      {
+        handle: `@${slug}milgrauoficial`,
+        name: `${raw} Mil Grau Oficial`,
+        city: raw,
+        state: 'BR',
+        followers: 'Verificar no IG',
+        code: `${slug.substring(0, 6).toUpperCase()}MG5`
+      }
+    ];
+  }, [citySearchQuery]);
 
   // Gerar Criativo Visual de Proposta Oficial (1080x1350) para enviar no Direct/WhatsApp da página
   const handleDownloadPartnerCard = async () => {
@@ -528,6 +760,196 @@ export const AdminInstagramPartners = ({ showToast }) => {
           <span className="text-[11px] text-gray-400 font-semibold block mt-1">
             Em acúmulo (&lt; R$ 250): R$ {(totals.totalAccumulatedBalance - totals.totalUnlockedForPix).toFixed(2).replace('.', ',')}
           </span>
+        </div>
+      </div>
+
+      {/* 2.5 RADAR & BUSCADOR DE PÁGINAS "MIL GRAU" DAS CIDADES DO BRASIL */}
+      <div className="bg-gradient-to-br from-[#1A1325] via-[#151522] to-[#12121D] border-2 border-amber-500/35 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-black uppercase tracking-wider">
+              <Flame size={14} className="text-orange-400" />
+              <span>Radar Nacional • Páginas "Mil Grau" & Humor Regional</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+              <span>🔎 Buscador de Instagrams "Mil Grau" das Cidades do Brasil</span>
+            </h3>
+            <p className="text-xs text-gray-300 max-w-3xl">
+              Páginas estilo <strong>@videiramilgrau_sc</strong>, <strong>@chapecomilgrauoficial</strong>, <strong>@floripamilgrauoficial</strong> e <strong>@curitibamilgrau</strong> têm alto engajamento local e milhares de seguidores. Clique em <strong>"⚡ Gerar Proposta & Link"</strong> para criar o link exclusivo da página e já copiar o convite pronto para enviar no Direct!
+            </p>
+          </div>
+
+          {/* Filtros rápidos de Região */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'ALL', label: `🇧🇷 Todas (${BRAZIL_MILGRAU_PAGES.length})` },
+              { id: 'SC', label: '📍 Santa Catarina (SC)' },
+              { id: 'SUL', label: '🧉 Sul (SC / PR / RS)' },
+              { id: 'SP', label: '🏙️ São Paulo (SP)' },
+              { id: 'OUTROS', label: '🔥 MG / RJ / GO / NE' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSelectedRegionFilter(tab.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+                  selectedRegionFilter === tab.id
+                    ? 'bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white border-amber-400 shadow-lg shadow-orange-950/50'
+                    : 'bg-[#1D1D2E] text-gray-300 border-white/10 hover:border-amber-500/40'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Barra de Busca por Cidade ou @ + Botão Buscar no Instagram/Google */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-400" />
+            <input
+              type="text"
+              value={citySearchQuery}
+              onChange={(e) => setCitySearchQuery(e.target.value)}
+              placeholder="Digite o nome de qualquer cidade do Brasil (ex: Videira, Caçador, Joaçaba, Chapecó, Curitiba, Campinas...)"
+              className="w-full bg-[#0F0F18] border border-white/15 focus:border-amber-400 rounded-2xl pl-11 pr-4 py-3 text-xs sm:text-sm text-white placeholder-gray-500 outline-none"
+            />
+          </div>
+          {citySearchQuery.trim() && (
+            <button
+              type="button"
+              onClick={() => {
+                const q = encodeURIComponent(`site:instagram.com "${citySearchQuery.trim()}" "mil grau" OR "milgrau"`);
+                window.open(`https://www.google.com/search?q=${q}`, '_blank');
+              }}
+              className="bg-fuchsia-600/20 hover:bg-fuchsia-600/30 border border-fuchsia-500/40 text-fuchsia-300 font-black px-4 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+            >
+              <Globe size={15} />
+              <span>Buscar "{citySearchQuery.trim()} Mil Grau" no Google/IG</span>
+              <ExternalLink size={13} />
+            </button>
+          )}
+        </div>
+
+        {/* Gerador Instantâneo caso o admin digite uma cidade que ainda não está na lista */}
+        {smartCitySuggestions.length > 0 && filteredMilGrauCatalog.length === 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-xs font-black text-amber-300 flex items-center gap-1.5">
+                <Sparkles size={15} />
+                <span>Sugestões automáticas de @ para a cidade de "{citySearchQuery.trim()}":</span>
+              </span>
+              <span className="text-[11px] text-gray-400">
+                Clique em <strong>Abrir IG</strong> para conferir qual @ a cidade usa ou em <strong>Gerar Proposta</strong> para ativar o link!
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {smartCitySuggestions.map((sug) => (
+                <div
+                  key={sug.handle}
+                  className="bg-[#141422] border border-white/10 rounded-xl p-3 flex flex-col justify-between gap-2.5"
+                >
+                  <div>
+                    <div className="text-xs font-black text-white truncate">{sug.handle}</div>
+                    <div className="text-[11px] text-gray-400">{sug.name}</div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectOrImportMilGrauPage(sug)}
+                      className="flex-1 bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-400 text-white font-black py-1.5 px-2.5 rounded-lg text-[11px] flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={12} />
+                      <span>Gerar Proposta</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenInstagramDM(sug.handle)}
+                      className="bg-white/10 hover:bg-white/20 text-white font-bold py-1.5 px-2.5 rounded-lg text-[11px] flex items-center gap-1 cursor-pointer"
+                      title="Verificar perfil no Instagram"
+                    >
+                      <Instagram size={12} />
+                      <span>Abrir IG</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Grid de Páginas Mil Grau Mapeadas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+          {filteredMilGrauCatalog.map((item) => {
+            const isAlreadyAdded = partners.some(
+              p => (p.handle || '').toLowerCase() === item.handle.toLowerCase()
+            );
+            const isSelected = (activePartner.handle || '').toLowerCase() === item.handle.toLowerCase();
+
+            return (
+              <div
+                key={item.handle}
+                className={`rounded-2xl p-3.5 border transition-all flex flex-col justify-between gap-3 ${
+                  isSelected
+                    ? 'bg-gradient-to-br from-amber-500/20 to-fuchsia-600/15 border-amber-400 shadow-lg'
+                    : 'bg-[#11111C] border-white/10 hover:border-amber-500/40'
+                }`}
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-white/10 text-amber-300">
+                      <MapPin size={10} />
+                      <span>{item.city} - {item.state}</span>
+                    </span>
+                    <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                      👥 {item.followers}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <div>
+                      <div className="text-xs sm:text-sm font-black text-white truncate">
+                        {item.handle}
+                      </div>
+                      <div className="text-[11px] text-gray-400 truncate">
+                        {item.name}
+                      </div>
+                    </div>
+                    {isAlreadyAdded && (
+                      <span className="text-[10px] font-black text-fuchsia-300 bg-fuchsia-500/20 px-2 py-0.5 rounded-md shrink-0">
+                        Na Lista
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-1 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectOrImportMilGrauPage(item)}
+                    className={`flex-1 py-2 px-2.5 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gradient-to-r from-[#FF5F00] to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white'
+                    }`}
+                  >
+                    <Sparkles size={12} />
+                    <span>{isSelected ? 'Proposta Ativa Abaixo' : '⚡ Gerar Proposta & Link'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenInstagramDM(item.handle)}
+                    className="bg-[#1E1E30] hover:bg-fuchsia-600/30 border border-white/10 hover:border-fuchsia-400 text-fuchsia-300 p-2 rounded-xl transition-all cursor-pointer"
+                    title={`Abrir perfil ${item.handle} no Instagram para mandar Direct`}
+                  >
+                    <Instagram size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
