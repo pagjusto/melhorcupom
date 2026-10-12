@@ -35,7 +35,7 @@ export const CityEmptyState = ({
 
   // O link de afiliado só é disponibilizado se o usuário estiver devidamente cadastrado e logado
   const activeReferralCode = isRegistered && referralCode ? referralCode : null;
-  const referralUrl = activeReferralCode ? `https://melhorcupom.com.br/convite/${activeReferralCode}` : '';
+  const referralUrl = activeReferralCode ? `https://www.omelhorcupom.com.br/convite/${activeReferralCode}` : '';
 
   const handleCopyLink = () => {
     if (!activeReferralCode) return;
@@ -207,7 +207,7 @@ export const CityEmptyState = ({
 
                 <div className="flex items-center gap-2.5 bg-black/50 border border-white/10 rounded-xl px-3.5 py-3 text-xs font-mono text-gray-400 select-none">
                   <Lock size={14} className="text-amber-400 flex-shrink-0" />
-                  <span className="truncate">melhorcupom.com.br/convite/SEU-CODIGO-CADASTRADO</span>
+                  <span className="truncate">www.omelhorcupom.com.br/convite/SEU-CODIGO-CADASTRADO</span>
                 </div>
 
                 <p className="text-xs text-gray-300 leading-relaxed">

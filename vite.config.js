@@ -160,33 +160,11 @@ export default defineConfig({
             req.on('end', async () => {
               try {
                 const parsed = JSON.parse(body || '{}');
-                const sessionFile = path.resolve(__dirname, 'scripts/instagram-session.json');
-                if (!fs.existsSync(sessionFile)) {
-                  res.setHeader('Content-Type', 'application/json');
-                  return res.end(JSON.stringify({
-                    success: false,
-                    needCookies: true,
-                    message: 'Sessão do Instagram não encontrada.'
-                  }));
-                }
-
-                const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
-                const cookies = sessionData.cookies || [];
-                const sessionCookie = cookies.find(c => c.name === 'sessionid');
-
-                if (!sessionCookie) {
-                  res.setHeader('Content-Type', 'application/json');
-                  return res.end(JSON.stringify({
-                    success: false,
-                    needCookies: true,
-                    message: 'Os cookies do robô ainda não foram sincronizados. Abra o arquivo "Conectar Instagram.bat" na sua Área de Trabalho para conectar o robô, ou copie o cookie sessionid.'
-                  }));
-                }
 
                 // Salvar imagem temporária
                 const tempDir = path.resolve(__dirname, 'temp');
                 if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-                const tempImagePath = path.join(tempDir, `post-${Date.now()}.png`);
+                const tempImagePath = path.join(tempDir, `post-${Date.now()}.jpg`);
                 
                 const feedBase64 = (parsed.feedImageBase64 || parsed.imageBase64 || '').replace(/^data:image\/\w+;base64,/, '');
                 if (feedBase64) {
@@ -198,34 +176,20 @@ export default defineConfig({
                 let tempStoryImagePath = null;
                 const storyBase64 = (parsed.storyImageBase64 || '').replace(/^data:image\/\w+;base64,/, '');
                 if (storyBase64) {
-                  tempStoryImagePath = path.join(tempDir, `story-${Date.now()}.png`);
+                  tempStoryImagePath = path.join(tempDir, `story-${Date.now()}.jpg`);
                   fs.writeFileSync(tempStoryImagePath, Buffer.from(storyBase64, 'base64'));
                 }
 
-                let result = null;
-                try {
-                  const directModPath = path.resolve(__dirname, 'scripts/direct-publish.cjs');
-                  delete nodeRequire.cache[directModPath];
-                  const { publishDirectToInstagram } = nodeRequire(directModPath);
-                  result = await publishDirectToInstagram({
-                    imagePath: tempImagePath,
-                    storyImagePath: tempStoryImagePath,
-                    publishStory: parsed.publishStory !== false,
-                    storyLinkUrl: parsed.storyLinkUrl || 'https://www.omelhorcupom.com.br',
-                    caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br',
-                    sessionId: parsed.sessionId || sessionCookie.value,
-                    dsUserId: sessionData.userId
-                  });
-                } catch (httpErr) {
-                  console.warn('Tentativa via HTTP direto falhou, acionando Puppeteer:', httpErr.message);
-                  const publishScriptPath = path.resolve(__dirname, 'scripts/publish-post.cjs');
-                  delete nodeRequire.cache[publishScriptPath];
-                  const { publishPost } = nodeRequire(publishScriptPath);
-                  result = await publishPost({
-                    imagePath: tempImagePath,
-                    caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br'
-                  });
-                }
+                const directModPath = path.resolve(__dirname, 'scripts/direct-publish.cjs');
+                delete nodeRequire.cache[directModPath];
+                const { publishDirectToInstagram } = nodeRequire(directModPath);
+                const result = await publishDirectToInstagram({
+                  imagePath: tempImagePath,
+                  storyImagePath: tempStoryImagePath,
+                  publishStory: parsed.publishStory !== false,
+                  storyLinkUrl: parsed.storyLinkUrl || 'https://www.omelhorcupom.com.br',
+                  caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br'
+                });
 
                 try { fs.unlinkSync(tempImagePath); } catch (e) {}
                 if (tempStoryImagePath) {
@@ -235,13 +199,14 @@ export default defineConfig({
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({
                   success: true,
+                  engine: 'meta_graph_api_v20',
                   postUrl: result.postUrl,
                   storyPublished: result.storyPublished,
                   storyUrl: result.storyUrl,
-                  message: result.message || 'Publicado com sucesso no feed e stories!'
+                  message: result.message || 'Publicado com sucesso no feed e stories via Meta Graph API!'
                 }));
               } catch (e) {
-                console.error('Erro na publicação automática:', e);
+                console.error('Erro na publicação automática via Meta Graph API:', e);
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ success: false, error: e.message }));
               }

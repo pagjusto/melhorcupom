@@ -596,7 +596,7 @@ export const UserProfileSettings = () => {
               <div className="bg-[#101017] border border-white/15 rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-amber-300 font-mono">
                 <span className="text-gray-500 select-none">https://</span>
                 <span className="text-white font-bold truncate">
-                  melhorcupom.com.br/convite/{userProfile.referralCode || 'CUPOM5'}
+                  www.omelhorcupom.com.br/convite/{userProfile.referralCode || 'CUPOM5'}
                 </span>
               </div>
 
@@ -604,7 +604,7 @@ export const UserProfileSettings = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://melhorcupom.com.br/convite/${userProfile.referralCode || 'CUPOM5'}`);
+                    navigator.clipboard.writeText(`https://www.omelhorcupom.com.br/convite/${userProfile.referralCode || 'CUPOM5'}`);
                     setCopiedLink(true);
                     setTimeout(() => setCopiedLink(false), 2500);
                   }}
@@ -621,7 +621,7 @@ export const UserProfileSettings = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const text = `Vem pro Melhor Cupom economizar até 50% em restaurantes, barbearias e lazer! Cadastre-se pelo meu convite: https://melhorcupom.com.br/convite/${userProfile.referralCode || 'CUPOM5'}`;
+                    const text = `Vem pro Melhor Cupom economizar até 50% em restaurantes, barbearias e lazer! Cadastre-se pelo meu convite: https://www.omelhorcupom.com.br/convite/${userProfile.referralCode || 'CUPOM5'}`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
                   }}
                   className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all"

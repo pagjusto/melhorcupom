@@ -43,7 +43,7 @@ export const ReferralBanner = () => {
     ? (currentStore.referralBalance || 0) 
     : (userProfile.referralBalance || 0);
 
-  const referralUrl = `https://melhorcupom.com.br/convite/${referralCode}`;
+  const referralUrl = `https://www.omelhorcupom.com.br/convite/${referralCode}`;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (e) => {
@@ -119,7 +119,7 @@ export const ReferralBanner = () => {
           <div className="pt-1 flex flex-wrap items-center gap-3">
             <div className="bg-black/50 border border-white/10 px-3.5 py-2 rounded-xl text-xs font-mono text-amber-300 flex items-center gap-2">
               <span className="text-gray-500 text-[11px]">Seu link:</span>
-              <span className="font-bold">melhorcupom.com.br/convite/{referralCode}</span>
+              <span className="font-bold">www.omelhorcupom.com.br/convite/{referralCode}</span>
             </div>
 
             <button

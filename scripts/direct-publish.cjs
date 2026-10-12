@@ -1,21 +1,80 @@
 // scripts/direct-publish.cjs
-// Motor direto de publicação no Instagram via HTTP Web API (Feed + Stories com Link)
+// Motor Oficial de Publicação no Instagram via Meta Instagram Graph API v20.0 (Feed + Stories)
+// Sem dependência de cookies de navegador ou sessionid
 const fs = require('fs');
 const path = require('path');
 
-function getStoredSession() {
-  const paths = [
-    path.join(__dirname, 'instagram-session.json'),
-    path.join(__dirname, '..', 'public', 'instagram-session.json')
-  ];
-  for (const p of paths) {
-    if (fs.existsSync(p)) {
-      try {
-        return JSON.parse(fs.readFileSync(p, 'utf8'));
-      } catch (e) {}
+const META_IG_ACCOUNT_ID = process.env.META_INSTAGRAM_ACCOUNT_ID || "28667775222832917";
+const META_ACCESS_TOKEN = process.env.META_INSTAGRAM_ACCESS_TOKEN || "IGABAKQAsoFORBZAFl0cGZAyaWVlV1A4NWZAZAa0VEakJMSks0bHlmNWRvN1pBX05jc1JHT2FXUFN3OWdqWm1CUDA3UVdqMXRqbjVRWnprT3dVOGFVZAmxVMkdGdzhtVjJpWlVIT2FtcWxOYUl1a3ljLTBuUXNxNkFyMVFJVFFfUTdVTQZDZD";
+
+async function uploadBufferToPublicUrl(buffer, filename = 'post.jpg') {
+  try {
+    const form = new FormData();
+    form.append('reqtype', 'fileupload');
+    form.append('fileToUpload', new Blob([buffer], { type: 'image/jpeg' }), filename);
+    const res = await fetch('https://catbox.moe/user/api.php', {
+      method: 'POST',
+      body: form
+    });
+    if (res.ok) {
+      const url = (await res.text()).trim();
+      if (url.startsWith('https://')) return url;
     }
+  } catch (e) {
+    console.warn('[Meta Graph API] Fallback Catbox:', e.message);
   }
-  return null;
+
+  try {
+    const form = new FormData();
+    form.append('file', new Blob([buffer], { type: 'image/jpeg' }), filename);
+    const res = await fetch('https://tmpfiles.org/api/v1/upload', {
+      method: 'POST',
+      body: form
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const rawUrl = json?.data?.url || '';
+      if (rawUrl) {
+        return rawUrl.replace('http://', 'https://').replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+      }
+    }
+  } catch (e) {
+    console.warn('[Meta Graph API] Fallback Tmpfiles:', e.message);
+  }
+
+  throw new Error('Não foi possível gerar URL pública da imagem para envio à Meta Graph API.');
+}
+
+async function publishGraphContainer(igAccountId, creationId, accessToken) {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      const statusRes = await fetch(
+        `https://graph.instagram.com/v20.0/${creationId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`
+      );
+      const statusJson = await statusRes.json();
+      if (statusJson.status_code === 'FINISHED') break;
+      if (statusJson.status_code === 'ERROR') {
+        throw new Error(`Meta Graph API rejeitou a mídia (${JSON.stringify(statusJson)})`);
+      }
+    } catch (e) {}
+    await new Promise(r => setTimeout(r, 1500));
+  }
+
+  const pubRes = await fetch(`https://graph.instagram.com/v20.0/${igAccountId}/media_publish`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      creation_id: creationId,
+      access_token: accessToken
+    })
+  });
+
+  const pubJson = await pubRes.json();
+  if (!pubRes.ok || !pubJson.id) {
+    throw new Error(pubJson?.error?.message || `Erro ao confirmar publicação na Meta Graph API: ${JSON.stringify(pubJson)}`);
+  }
+
+  return pubJson.id;
 }
 
 async function publishDirectToInstagram({
@@ -27,12 +86,10 @@ async function publishDirectToInstagram({
   storyImagePath,
   storyImageBase64,
   publishStory = true,
-  storyLinkUrl = 'https://www.omelhorcupom.com.br',
   caption = '',
-  sessionId = null,
-  dsUserId = null
+  accessToken = META_ACCESS_TOKEN,
+  instagramAccountId = META_IG_ACCOUNT_ID
 }) {
-  // 1. Obter imagem do Feed em Buffer
   let feedBuffer = null;
   const rawFeedBase64 = feedImageBase64 || imageBase64;
   if (Buffer.isBuffer(imageBuffer)) {
@@ -47,7 +104,6 @@ async function publishDirectToInstagram({
     if (fs.existsSync(defaultLogo)) feedBuffer = fs.readFileSync(defaultLogo);
   }
 
-  // Obter imagem do Story em Buffer
   let storyBuffer = null;
   if (Buffer.isBuffer(storyImageBuffer)) {
     storyBuffer = storyImageBuffer;
@@ -64,204 +120,68 @@ async function publishDirectToInstagram({
     throw new Error('Nenhuma imagem válida fornecida para publicação.');
   }
 
-  // 2. Resolver sessão
-  const stored = getStoredSession() || {};
-  let finalSessionId = sessionId;
-  let finalUserId = dsUserId;
-  let csrfToken = 'VZIHRZEAMZn5f7uBmvOqmt1wg6ikfwey';
+  console.log(`🚀 [Meta Graph API v20.0] Publicando no Feed oficial de @omelhorcupom.com.br (Account ID: ${instagramAccountId})...`);
 
-  if (!finalSessionId && stored.cookies) {
-    const sCookie = stored.cookies.find(c => c.name === 'sessionid');
-    if (sCookie) finalSessionId = sCookie.value;
-    const uCookie = stored.cookies.find(c => c.name === 'ds_user_id');
-    if (uCookie) finalUserId = uCookie.value;
-    const cCookie = stored.cookies.find(c => c.name === 'csrftoken');
-    if (cCookie) csrfToken = cCookie.value;
-  }
+  const feedPublicUrl = await uploadBufferToPublicUrl(feedBuffer, `feed-${Date.now()}.jpg`);
 
-  if (!finalSessionId && process.env.INSTAGRAM_SESSION_ID) {
-    finalSessionId = process.env.INSTAGRAM_SESSION_ID;
-  }
-
-  if (!finalSessionId) {
-    throw new Error('Sessão do Instagram não configurada. Conecte sua conta no painel com o sessionid.');
-  }
-
-  finalSessionId = finalSessionId.trim().replace(/^['"]|['"]$/g, '');
-
-  if (!finalUserId) {
-    const match = finalSessionId.match(/^([0-9]+)(?:%3A|:)/);
-    if (match) finalUserId = match[1];
-    else if (stored.userId) finalUserId = stored.userId;
-    else finalUserId = '76452558269';
-  }
-
-  const cookieHeader = `sessionid=${finalSessionId}; ds_user_id=${finalUserId}; csrftoken=${csrfToken}`;
-  const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
-
-  console.log(`🚀 [Publicador Instagram] Publicando no feed de @omelhorcupom.com.br (User ID: ${finalUserId})...`);
-
-  // 3. Upload da Imagem do Feed para rupload_igphoto
-  const uploadIdFeed = String(Date.now());
-  const ruploadParamsFeed = JSON.stringify({
-    media_type: 1,
-    upload_id: uploadIdFeed,
-    upload_media_height: 1080,
-    upload_media_width: 1080
-  });
-
-  const uploadRes = await fetch(`https://i.instagram.com/rupload_igphoto/fb_uploader_${uploadIdFeed}`, {
+  const createFeedRes = await fetch(`https://graph.instagram.com/v20.0/${instagramAccountId}/media`, {
     method: 'POST',
-    headers: {
-      'x-instagram-rupload-params': ruploadParamsFeed,
-      'offset': '0',
-      'x-entity-length': String(feedBuffer.length),
-      'x-ig-app-id': '936619743392459',
-      'content-type': 'image/jpeg',
-      'user-agent': userAgent,
-      'cookie': cookieHeader
-    },
-    body: feedBuffer
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image_url: feedPublicUrl,
+      caption: caption || '🎉 Novidades e cupons exclusivos no @omelhorcupom.com.br! Acesse www.omelhorcupom.com.br',
+      access_token: accessToken
+    })
   });
 
-  const uploadJson = await uploadRes.json();
-  if (uploadJson.status !== 'ok') {
-    throw new Error(`Falha no upload da foto para o feed do Instagram: ${uploadJson.message || JSON.stringify(uploadJson)}`);
+  const createFeedJson = await createFeedRes.json();
+  if (!createFeedRes.ok || !createFeedJson.id) {
+    throw new Error(`Falha ao criar container do Feed na Meta Graph API: ${createFeedJson?.error?.message || JSON.stringify(createFeedJson)}`);
   }
 
-  // 4. Configurar Mídia no Feed (/api/v1/media/configure/)
-  const bodyParamsFeed = new URLSearchParams({
-    upload_id: uploadIdFeed,
-    caption: caption || '🎉 Novidades e cupons exclusivos no @omelhorcupom.com.br! Acesse www.omelhorcupom.com.br',
-    source_type: 'library',
-    disable_comments: '0',
-    like_and_view_counts_disabled: '0'
-  });
+  const publishedFeedId = await publishGraphContainer(instagramAccountId, createFeedJson.id, accessToken);
 
-  const configRes = await fetch('https://www.instagram.com/api/v1/media/configure/', {
-    method: 'POST',
-    headers: {
-      'x-csrftoken': csrfToken,
-      'x-ig-app-id': '936619743392459',
-      'content-type': 'application/x-www-form-urlencoded',
-      'user-agent': userAgent,
-      'cookie': cookieHeader,
-      'origin': 'https://www.instagram.com',
-      'referer': 'https://www.instagram.com/'
-    },
-    body: bodyParamsFeed.toString()
-  });
+  let postUrl = 'https://www.instagram.com/omelhorcupom.com.br/';
+  let code = '';
+  try {
+    const mediaInfoRes = await fetch(
+      `https://graph.instagram.com/v20.0/${publishedFeedId}?fields=permalink,shortcode&access_token=${encodeURIComponent(accessToken)}`
+    );
+    const mediaInfoJson = await mediaInfoRes.json();
+    if (mediaInfoJson.permalink) postUrl = mediaInfoJson.permalink;
+    if (mediaInfoJson.shortcode) code = mediaInfoJson.shortcode;
+  } catch (e) {}
 
-  const configJson = await configRes.json();
-  if (configJson.status !== 'ok') {
-    throw new Error(`Instagram rejeitou a configuração do post no feed: ${configJson.message || JSON.stringify(configJson)}`);
-  }
+  console.log('✅ [Meta Graph API v20.0] Post no Feed publicado com sucesso!', postUrl);
 
-  const media = configJson.media || {};
-  const code = media.code || '';
-  const postUrl = code ? `https://www.instagram.com/p/${code}/` : `https://www.instagram.com/omelhorcupom.com.br/`;
-
-  console.log('✅ [Publicador Instagram] Post no Feed publicado com sucesso!', postUrl);
-
-  // 5. Publicação no Story com Link Sticker
   let storyResult = null;
   if (publishStory && storyBuffer && storyBuffer.length > 0) {
     try {
-      console.log('📲 [Publicador Instagram] Publicando no Story com link para:', storyLinkUrl);
-      const uploadIdStory = String(Date.now() + 150);
-      const ruploadParamsStory = JSON.stringify({
-        media_type: 1,
-        upload_id: uploadIdStory,
-        upload_media_height: 1920,
-        upload_media_width: 1080
-      });
+      console.log('📲 [Meta Graph API v20.0] Publicando no Story oficial...');
+      const storyPublicUrl = await uploadBufferToPublicUrl(storyBuffer, `story-${Date.now()}.jpg`);
 
-      const uploadStoryRes = await fetch(`https://i.instagram.com/rupload_igphoto/fb_uploader_${uploadIdStory}`, {
+      const createStoryRes = await fetch(`https://graph.instagram.com/v20.0/${instagramAccountId}/media`, {
         method: 'POST',
-        headers: {
-          'x-instagram-rupload-params': ruploadParamsStory,
-          'offset': '0',
-          'x-entity-length': String(storyBuffer.length),
-          'x-ig-app-id': '936619743392459',
-          'content-type': 'image/jpeg',
-          'user-agent': userAgent,
-          'cookie': cookieHeader
-        },
-        body: storyBuffer
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: storyPublicUrl,
+          media_type: 'STORIES',
+          access_token: accessToken
+        })
       });
 
-      const uploadStoryJson = await uploadStoryRes.json();
-      if (uploadStoryJson.status === 'ok') {
-        const linkTitle = 'RESGATAR CUPOM';
-        const linkStickers = [
-          {
-            x: 0.5,
-            y: 0.715, // Exatamente no botão de resgate da arte oficial (1374px / 1920px)
-            z: 0,
-            width: 0.69,
-            height: 0.08,
-            rotation: 0.0,
-            is_pinned: 0,
-            is_hidden: 0,
-            is_sticker: 1,
-            is_fb_sticker: 0,
-            story_link: {
-              link_type: 'web',
-              url: storyLinkUrl,
-              link_title: linkTitle,
-              display_url: 'omelhorcupom.com.br'
-            },
-            story_link_sticker: {
-              url: storyLinkUrl,
-              link_title: linkTitle,
-              display_url: 'omelhorcupom.com.br'
-            },
-            url: storyLinkUrl,
-            web_uri: storyLinkUrl,
-            link_type: 'web'
-          }
-        ];
-
-        const bodyParamsStory = new URLSearchParams({
-          upload_id: uploadIdStory,
-          source_type: 'library',
-          configure_mode: '1',
-          story_sticker_ids: 'link_sticker_default',
-          story_link_stickers: JSON.stringify(linkStickers),
-          tap_models: JSON.stringify(linkStickers),
-          story_cta: JSON.stringify([{ links: [{ webUri: storyLinkUrl }] }]),
-          client_shared_at: String(Math.floor(Date.now() / 1000))
-        });
-
-        const configStoryRes = await fetch('https://www.instagram.com/api/v1/media/configure_to_story/', {
-          method: 'POST',
-          headers: {
-            'x-csrftoken': csrfToken,
-            'x-ig-app-id': '936619743392459',
-            'content-type': 'application/x-www-form-urlencoded',
-            'user-agent': userAgent,
-            'cookie': cookieHeader,
-            'origin': 'https://www.instagram.com',
-            'referer': 'https://www.instagram.com/'
-          },
-          body: bodyParamsStory.toString()
-        });
-
-        const configStoryJson = await configStoryRes.json();
-        if (configStoryJson.status === 'ok') {
-          const sMedia = configStoryJson.media || {};
-          storyResult = {
-            success: true,
-            code: sMedia.code || '',
-            storyUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/'
-          };
-          console.log('✅ [Publicador Instagram] Story publicado com sucesso com link!');
-        } else {
-          console.warn('⚠️ Erro ao configurar Story:', configStoryJson);
-        }
+      const createStoryJson = await createStoryRes.json();
+      if (createStoryRes.ok && createStoryJson.id) {
+        const publishedStoryId = await publishGraphContainer(instagramAccountId, createStoryJson.id, accessToken);
+        storyResult = {
+          success: true,
+          mediaId: publishedStoryId,
+          storyUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/'
+        };
+        console.log('✅ [Meta Graph API v20.0] Story publicado com sucesso!');
       }
     } catch (storyErr) {
-      console.warn('⚠️ Falha na publicação de Story:', storyErr.message);
+      console.warn('⚠️ [Meta Graph API v20.0] Aviso na publicação do Story:', storyErr.message);
     }
   }
 
@@ -269,14 +189,12 @@ async function publishDirectToInstagram({
     success: true,
     code,
     postUrl,
-    mediaId: media.id || media.pk,
+    mediaId: publishedFeedId,
     storyPublished: !!storyResult?.success,
-    storyCode: storyResult?.code || '',
     storyUrl: storyResult?.storyUrl || 'https://www.instagram.com/stories/omelhorcupom.com.br/',
     message: storyResult?.success
-      ? `Publicado com sucesso no feed e nos stories com link oficial de @omelhorcupom.com.br!`
-      : `Publicação compartilhada com sucesso no feed oficial do Instagram (@omelhorcupom.com.br)!`,
-    publishedAt: new Date().toISOString()
+      ? 'Publicado com sucesso no Feed e nos Stories de @omelhorcupom.com.br via Meta Graph API Oficial!'
+      : 'Post publicado com sucesso no Feed oficial de @omelhorcupom.com.br via Meta Graph API Oficial!'
   };
 }
 

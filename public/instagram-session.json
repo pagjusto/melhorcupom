@@ -1,11 +1,11 @@
 {
   "connected": true,
   "username": "@omelhorcupom.com.br",
-  "name": "Melhor Cupom",
   "accountType": "meta_graph_api",
-  "metaAccountId": "28667775222832917",
-  "metaAccessToken": "IGABAKQAsoFORBZAFl0cGZAyaWVlV1A4NWZAZAa0VEakJMSks0bHlmNWRvN1pBX05jc1JHT2FXUFN3OWdqWm1CUDA3UVdqMXRqbjVRWnprT3dVOGFVZAmxVMkdGdzhtVjJpWlVIT2FtcWxOYUl1a3ljLTBuUXNxNkFyMVFJVFFfUTdVTQZDZD",
-  "connectedAt": "2026-10-08T22:23:41.561Z",
+  "appId": "4514869808731364",
+  "instagramAccountId": "28667775222832917",
+  "connectedAt": "2026-10-12T14:20:00.000Z",
   "cookiesCount": 1,
-  "hasSessionId": true
+  "hasSessionId": true,
+  "userId": "28667775222832917"
 }
