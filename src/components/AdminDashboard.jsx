@@ -50,13 +50,15 @@ import {
   Key,
   X,
   MessageCircle,
-  Flame
+  Flame,
+  Instagram
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
 import { RoleSwitcher } from './RoleSwitcher';
 import { AdminWhatsAppManager } from './AdminWhatsAppManager';
 import { AdminImperdiveisManager } from './AdminImperdiveisManager';
+import { AdminInstagramPartners } from './AdminInstagramPartners';
 
 export const AdminDashboard = () => {
   const { 
@@ -474,6 +476,18 @@ export const AdminDashboard = () => {
           >
             <Share2 size={15} />
             <span>Divulgação</span>
+          </button>
+
+          <button
+            onClick={() => setActiveAdminTab('paginas-parceiras')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'paginas-parceiras'
+                ? 'bg-gradient-to-r from-fuchsia-600 via-pink-600 to-amber-500 text-white shadow-md shadow-fuchsia-600/40 ring-1 ring-fuchsia-400/50'
+                : 'bg-white/5 hover:bg-white/10 text-fuchsia-300 hover:text-white border border-fuchsia-500/30'
+            }`}
+          >
+            <Instagram size={15} className="text-amber-300" />
+            <span>📸 Páginas Parceiras (R$ 5 / R$ 3)</span>
           </button>
 
           <button
@@ -2238,6 +2252,11 @@ export const AdminDashboard = () => {
       {/* ABA 10: ROBÔ DE OFERTAS IMPERDÍVEIS & ACHADINHOS SHOPEE */}
       {activeAdminTab === 'imperdiveis' && (
         <AdminImperdiveisManager showToast={showToast} />
+      )}
+
+      {/* ABA 11: PARCERIAS COM PÁGINAS DE INSTAGRAM (R$ 5 POR EMPRESA / R$ 3 POR USUÁRIO) */}
+      {activeAdminTab === 'paginas-parceiras' && (
+        <AdminInstagramPartners showToast={showToast} />
       )}
 
     </div>

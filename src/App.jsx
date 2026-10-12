@@ -62,12 +62,22 @@ const MainLayout = () => {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [prefilledValidatorCode, setPrefilledValidatorCode] = useState('');
 
-  // Deep-linking automático: quando o visitante clica no Story do Instagram (?loja=... ou ?cupom=...)
+  // Deep-linking automático: quando o visitante clica no Story do Instagram (?loja=..., ?cupom=... ou ?convite=...)
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const lojaQuery = params.get('loja') || params.get('store');
       const cupomQuery = params.get('cupom') || params.get('coupon');
+      let conviteQuery = params.get('convite') || params.get('ref') || params.get('parceiro');
+
+      if (!conviteQuery && window.location.pathname.includes('/convite/')) {
+        const parts = window.location.pathname.split('/convite/');
+        if (parts[1]) conviteQuery = parts[1].split('/')[0];
+      }
+
+      if (conviteQuery) {
+        localStorage.setItem('melhor_cupom_active_referral_code', conviteQuery.trim().toUpperCase());
+      }
 
       if (lojaQuery && stores.length > 0) {
         const cleanQuery = lojaQuery.toLowerCase().replace(/[^a-z0-9]/g, '');

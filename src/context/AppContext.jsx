@@ -1119,6 +1119,25 @@ export const AppProvider = ({ children }) => {
       colors: ['#FF5F00', '#10B981', '#FFC800', '#FFFFFF']
     });
 
+    // Se veio pelo link de uma página de Instagram parceira (?convite=CODIGO), contabilizar +1 usuário (+R$ 3,00)
+    try {
+      const activeRef = localStorage.getItem('melhor_cupom_active_referral_code');
+      if (activeRef) {
+        const rawPartners = localStorage.getItem('melhor_cupom_ig_partners_v1');
+        if (rawPartners) {
+          const parsedPartners = JSON.parse(rawPartners);
+          if (Array.isArray(parsedPartners)) {
+            const updatedPartners = parsedPartners.map(p => 
+              p.code && p.code.toUpperCase() === activeRef.toUpperCase()
+                ? { ...p, usersReferred: (p.usersReferred || 0) + 1 }
+                : p
+            );
+            localStorage.setItem('melhor_cupom_ig_partners_v1', JSON.stringify(updatedPartners));
+          }
+        }
+      }
+    } catch {}
+
     setIsAuthModalOpen(false);
     return { success: true, name: cleanName, referralCode: generatedReferralCode };
   };
@@ -1167,6 +1186,25 @@ export const AppProvider = ({ children }) => {
     setStores(prev => [newStore, ...prev]);
     setCurrentRole(merchantId);
     setActiveTab('merchant-dashboard');
+
+    // Se a empresa se cadastrou pelo link de uma página parceira (?convite=CODIGO), contabilizar +1 empresa (+R$ 5,00)
+    try {
+      const activeRef = localStorage.getItem('melhor_cupom_active_referral_code');
+      if (activeRef) {
+        const rawPartners = localStorage.getItem('melhor_cupom_ig_partners_v1');
+        if (rawPartners) {
+          const parsedPartners = JSON.parse(rawPartners);
+          if (Array.isArray(parsedPartners)) {
+            const updatedPartners = parsedPartners.map(p => 
+              p.code && p.code.toUpperCase() === activeRef.toUpperCase()
+                ? { ...p, storesReferred: (p.storesReferred || 0) + 1 }
+                : p
+            );
+            localStorage.setItem('melhor_cupom_ig_partners_v1', JSON.stringify(updatedPartners));
+          }
+        }
+      }
+    } catch {}
 
     confetti({
       particleCount: 150,
