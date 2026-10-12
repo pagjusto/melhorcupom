@@ -129,7 +129,8 @@ export const AdminDashboard = () => {
     const goldMRR = goldCount * 199.90;
     const silverMRR = silverCount * 79.90;
     const bronzeMRR = bronzeCount * 39.90;
-    const merchantMRR = goldMRR + silverMRR + bronzeMRR;
+    const starterMRR = freeCount * 19.90;
+    const merchantMRR = goldMRR + silverMRR + bronzeMRR + starterMRR;
 
     return {
       total: stores.length,
@@ -140,6 +141,7 @@ export const AdminDashboard = () => {
       goldMRR,
       silverMRR,
       bronzeMRR,
+      starterMRR,
       merchantMRR
     };
   }, [stores]);
@@ -639,7 +641,7 @@ export const AdminDashboard = () => {
                 <span className="text-gray-500">•</span>
                 <span className="text-[#CD7F32] font-bold">🥉 {storeStats.bronzeCount} Bronze</span>
                 <span className="text-gray-500">•</span>
-                <span className="text-gray-400 font-bold">{storeStats.freeCount} Grátis</span>
+                <span className="text-orange-400 font-bold">✨ {storeStats.freeCount} Inicial+VIP</span>
               </div>
             </div>
 
@@ -1291,9 +1293,9 @@ export const AdminDashboard = () => {
                   <strong className="text-white text-sm font-bold">R$ {storeStats.bronzeMRR.toFixed(2).replace('.', ',')}</strong>
                 </div>
 
-                <div className="flex items-center justify-between text-gray-500">
-                  <span>Plano Grátis ({storeStats.freeCount} lojas):</span>
-                  <span>R$ 0,00</span>
+                <div className="flex items-center justify-between text-orange-300 font-bold">
+                  <span>✨ Plano Inicial + VIP ({storeStats.freeCount} lojas × R$ 19,90):</span>
+                  <strong className="text-white text-sm font-bold">R$ {(storeStats.starterMRR || 0).toFixed(2).replace('.', ',')}</strong>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
@@ -1385,14 +1387,14 @@ export const AdminDashboard = () => {
                     <td className="py-3.5 px-4 text-center text-[#CD7F32] font-bold">Média Prioridade (Peso 2)</td>
                   </tr>
                   <tr>
-                    <td className="py-3.5 px-4 font-semibold text-gray-400 flex items-center gap-1.5">
-                      <Store size={14} /> Plano Grátis
+                    <td className="py-3.5 px-4 font-semibold text-orange-400 flex items-center gap-1.5">
+                      <Store size={14} /> Plano Inicial + Acesso VIP
                     </td>
-                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B)</td>
-                    <td className="py-3.5 px-4 font-bold text-white">R$ 0,00 /mês</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-gray-400">{storeStats.freeCount} lojas</td>
-                    <td className="py-3.5 px-4 text-right font-bold text-gray-400">R$ 0,00</td>
-                    <td className="py-3.5 px-4 text-center text-gray-500">Padrão (Peso 1)</td>
+                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B + VIP)</td>
+                    <td className="py-3.5 px-4 font-bold text-white">R$ 19,90 /mês</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-orange-400">{storeStats.freeCount} lojas</td>
+                    <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {(storeStats.starterMRR || 0).toFixed(2).replace('.', ',')}</td>
+                    <td className="py-3.5 px-4 text-center text-orange-300 font-bold">1 Cupom + VIP Incluso (Peso 1)</td>
                   </tr>
                 </tbody>
               </table>
@@ -1444,7 +1446,7 @@ export const AdminDashboard = () => {
                 <option value="gold">👑 Apenas Ouro VIP (R$ 199,90)</option>
                 <option value="silver">🥈 Apenas Prata Pro (R$ 79,90)</option>
                 <option value="bronze">🥉 Apenas Bronze Star (R$ 39,90)</option>
-                <option value="free">Lojas Gratuitas</option>
+                <option value="free">✨ Apenas Inicial + VIP (R$ 19,90)</option>
               </select>
 
               <span className="text-xs text-gray-400 ml-2">
@@ -1511,12 +1513,12 @@ export const AdminDashboard = () => {
                             tier === 'gold' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' :
                             tier === 'silver' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
                             tier === 'bronze' ? 'bg-amber-800/30 text-[#CD7F32] border border-amber-700/40' :
-                            'bg-white/5 text-gray-400 border border-white/10'
+                            'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                           }`}>
                             {tier === 'gold' && <Crown size={12} />}
                             {tier === 'silver' && <Award size={12} />}
                             {tier === 'bronze' && <Medal size={12} />}
-                            <span className="capitalize">{tier}</span>
+                            <span className="capitalize">{tier === 'free' ? 'Inicial + VIP' : tier}</span>
                           </span>
                         </td>
 
@@ -1530,13 +1532,13 @@ export const AdminDashboard = () => {
                             <option value="gold">👑 Ouro (R$ 199,90)</option>
                             <option value="silver">🥈 Prata (R$ 79,90)</option>
                             <option value="bronze">🥉 Bronze (R$ 39,90)</option>
-                            <option value="free">Grátis (R$ 0)</option>
+                            <option value="free">✨ Inicial + VIP (R$ 19,90)</option>
                           </select>
                         </td>
 
                         {/* Faturamento Mensal */}
                         <td className="py-3.5 px-4 text-right font-extrabold text-sm text-emerald-400">
-                          {tier === 'gold' ? 'R$ 199,90' : tier === 'silver' ? 'R$ 79,90' : tier === 'bronze' ? 'R$ 39,90' : 'R$ 0,00'}
+                          {tier === 'gold' ? 'R$ 199,90' : tier === 'silver' ? 'R$ 79,90' : tier === 'bronze' ? 'R$ 39,90' : 'R$ 19,90'}
                         </td>
                       </tr>
                     );

@@ -53,30 +53,30 @@ export const CATEGORIES = [
 export const MERCHANT_PLANS = [
   {
     id: 'free',
-    name: 'Plano Grátis',
-    shortName: 'Grátis',
-    badge: null,
-    price: 0,
-    priceLabel: 'R$ 0',
+    name: 'Plano Inicial + Acesso VIP',
+    shortName: 'Inicial VIP',
+    badge: '✨ Parceiro + VIP',
+    price: 19.90,
+    priceLabel: 'R$ 19,90',
     period: '/mês',
-    tagline: 'Ideal para experimentar a plataforma',
+    tagline: 'Cadastre 1 cupom da sua loja + ganhe Acesso VIP liberado para usar todos os cupons do site!',
     maxCoupons: 1,
     weight: 1,
-    color: 'from-gray-600 to-gray-700',
-    borderColor: 'border-white/10',
+    color: 'from-emerald-600 to-teal-700',
+    borderColor: 'border-emerald-500/40',
     popular: false,
     perks: [
-      '1 oferta VIP ativa',
-      'Listagem padrão no catálogo',
-      'Validador de balcão (PDV)',
-      'Suporte via e-mail'
+      '1 oferta/cupom ativo na plataforma',
+      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
+      'Divulgação automática no Instagram @omelhorcupom.com.br',
+      'Validador de balcão (PDV) e QR Code',
+      'Suporte comercial dedicado'
     ],
     missingPerks: [
       'Prioridade no topo das buscas',
-      'Badge visual de destaque',
+      'Medalha Bronze, Prata ou Ouro',
       'Borda iluminada nos cupons',
-      'Vitrine de Super Destaques da Home',
-      'Múltiplas ofertas simultâneas'
+      'Múltiplas ofertas simultâneas (3, 5 ou ilimitadas)'
     ]
   },
   {

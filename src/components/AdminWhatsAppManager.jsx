@@ -249,39 +249,39 @@ const DEFAULT_COMMERCE_DIRECTORY = [
 const PREDEFINED_TEMPLATES = [
   {
     id: 'convite_gratis',
-    name: '1. Cadastro Gratuito & Link (Oficial)',
+    name: '1. Combo Parceiro R$ 19,90 (1 Cupom + VIP Incluso)',
     badge: 'Alta Conversão',
-    text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan e sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para cadastrar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento, sem nenhuma taxa de adesão !\n\nSe você nao esta no melhor cupom , voce esta perdendo !\ncadastre gratuitamente uma oferta de cupom para milhares de possiveis clientes novos !\nwww.omelhorcupom.com.br`
+    text: `Olá, equipe da {loja}! Tudo bem?\n\nMe chamo Renan e sou administrador da plataforma *Melhor Cupom* aqui em {cidade}.\n\nEstamos selecionando comércios de destaque em {cidade} para divulgar ofertas exclusivas e atrair centenas de novos clientes para o seu estabelecimento!\n\n🔥 *OFERTA ESPECIAL COMÉRCIO + VIP:*\nPor apenas *R$ 19,90/mês* (sem taxa sobre suas vendas!), você libera:\n✅ *1 Cupom Ativo* da {loja} no nosso site para atrair clientes novos;\n✅ *Acesso VIP Liberado* para você também aproveitar todos os cupons de desconto do site!\n\nSe você não está no Melhor Cupom, você está perdendo vendas todos os dias!\nCadastre sua loja agora em:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'proposta_irrecusavel_balcao',
-    name: '2. Lotar Balcão & Risco Zero',
+    name: '2. Lotar Balcão + Benefício VIP (R$ 19,90)',
     badge: 'Proposta Irrecusável',
-    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan, do *Melhor Cupom* em {cidade}.\n\nTenho uma proposta irrecusável: queremos colocar novos clientes pagantes dentro da {loja} já nesta semana, sem você gastar nem 1 centavo com anúncio ou mensalidade!\n\nNossos membros VIP são pessoas da sua região que pagam para ter acesso a descontos exclusivos e estão buscando lugares como a {loja} em {cidade}. Você só oferece a vantagem quando o cliente for consumir no seu estabelecimento!\n\nÉ risco ZERO e faturamento direto no seu caixa.\n\nSe você não está no Melhor Cupom, você está perdendo vendas todos os dias!\n\nCadastre gratuitamente a sua oferta agora:\nwww.omelhorcupom.com.br`
+    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan, do *Melhor Cupom* em {cidade}.\n\nTenho uma proposta irrecusável: queremos colocar novos clientes pagantes dentro da {loja} já nesta semana!\n\nCom o nosso *Plano Inicial de apenas R$ 19,90/mês*:\n🏪 Você cadastra *1 oferta/cupom ativo* da {loja} (100% do valor da venda fica no seu caixa, zero comissão!);\n👑 E de bônus você já ganha *Acesso VIP completo* para usar todos os cupons de desconto das outras lojas e grandes redes do nosso site!\n\nUm único cliente novo ou um único cupom que você usar no site já paga o mês inteiro com sobra!\n\nCadastre a {loja} agora:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'destaque_ouro_gratis',
-    name: '3. Topo Ouro Grátis (30 Dias)',
+    name: '3. Planos de Destaque & Topo',
     badge: 'Vaga VIP Topo',
-    text: `Olá, equipe da {loja}! Tudo bem?\n\nAqui é o Renan, diretor da plataforma *Melhor Cupom* em {cidade}.\n\nEstamos liberando uma condição exclusiva e irrecusável de lançamento: selecionamos a {loja} para ganhar **30 dias de Destaque Ouro no Topo do App 100% Grátis** na categoria de {categoria}!\n\nSua marca vai aparecer em primeiro lugar para milhares de pessoas que buscam onde comer, comprar e contratar serviços em {cidade}.\n\nNão perca essa vaga para o seu concorrente. Garanta seu topo gratuito agora:\nwww.omelhorcupom.com.br\n(Vagas limitadas para comércios em {cidade})`
+    text: `Olá, equipe da {loja}! Tudo bem?\n\nAqui é o Renan, diretor da plataforma *Melhor Cupom* em {cidade}.\n\nEstamos selecionando comércios em {cidade} na categoria de {categoria} para aparecer em destaque para milhares de clientes da região!\n\nVocê pode começar hoje mesmo no *Plano Inicial por apenas R$ 19,90/mês* (direito a 1 cupom ativo da sua loja + Acesso VIP liberado para você usar todos os cupons do site) ou escolher nossos planos Bronze, Prata e Ouro para ficar no topo absoluto!\n\nGaranta a vaga da {loja} agora:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'zero_taxa_lucro_total',
-    name: '4. Zero Taxa & 100% no seu Bolso',
+    name: '4. Zero Comissão sobre Vendas (100% no seu Bolso)',
     badge: 'Sem Comissão',
-    text: `Olá equipe da {loja}, tudo bem?\n\nMe chamo Renan, do *Melhor Cupom* em {cidade}.\n\nVocê sabia que a maioria dos apps convencionais chegam a tirar até 27% do seu faturamento em taxas e comissões?\n\nNo *Melhor Cupom* a nossa proposta é simples e irrecusável:\n✅ Taxa de adesão: ZERO\n✅ Taxa de comissão: ZERO\n✅ 100% do valor da conta do cliente fica no seu caixa!\n\nNós trazemos clientes qualificados até a {loja} e você não divide 1 centavo do seu lucro com ninguém.\n\nCadastre sua oferta gratuita em menos de 2 minutos:\nwww.omelhorcupom.com.br`
+    text: `Olá equipe da {loja}, tudo bem?\n\nMe chamo Renan, do *Melhor Cupom* em {cidade}.\n\nVocê sabia que a maioria dos apps convencionais chegam a tirar até 27% do seu faturamento em taxas e comissões?\n\nNo *Melhor Cupom* a nossa proposta é simples e justa:\n✅ Taxa de comissão sobre vendas: *ZERO*\n✅ 100% do valor da conta do cliente fica no seu caixa!\n✅ *Plano Inicial de apenas R$ 19,90/mês*: divulgue 1 cupom ativo da sua loja e ainda ganhe *Acesso VIP Liberado* para economizar em todos os cupons do site!\n\nCadastre sua loja em menos de 2 minutos:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'conversa_rapida',
     name: '5. Áudio Rápido (Conversa 2 Min)',
     badge: 'Aproximação Direta',
-    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan do *Melhor Cupom* em {cidade}.\n\nEstamos direcionando centenas de membros VIP para comércios parceiros na nossa cidade, sem cobrar nenhuma taxa de entrada.\n\nSe você não está no Melhor Cupom, seu comércio está deixando dinheiro na mesa todos os dias!\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona na prática? Dá uma olhada no site oficial:\nwww.omelhorcupom.com.br\n\nPosso te mandar um áudio de 1 minuto explicando como ativar hoje?`
+    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan do *Melhor Cupom* em {cidade}.\n\nEstamos direcionando centenas de clientes para comércios parceiros na nossa cidade! Por apenas *R$ 19,90/mês* você ativa 1 cupom da {loja} no site (sem nenhuma comissão sobre vendas) e já ganha o *Acesso VIP* para usar todos os cupons da plataforma.\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona na prática? Dá uma olhada no site oficial:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'custom',
     name: '6. Mensagem Personalizada',
     badge: 'Customizada',
-    text: `Olá {loja}, aqui é o Renan do Melhor Cupom em {cidade}! Tenho uma proposta irrecusável para trazer novos clientes para a {loja} com custo ZERO e sem comissões. Cadastre grátis em www.omelhorcupom.com.br ou responda aqui para falarmos 2 minutos!`
+    text: `Olá {loja}, aqui é o Renan do Melhor Cupom em {cidade}! Por apenas R$ 19,90/mês você cadastra 1 cupom ativo para atrair clientes para a {loja} (zero comissão!) e ainda ganha Acesso VIP para usar todos os cupons do site. Acesse www.omelhorcupom.com.br!`
   }
 ];
 

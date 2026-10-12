@@ -1185,6 +1185,16 @@ export const AppProvider = ({ children }) => {
 
     setStores(prev => [newStore, ...prev]);
     setCurrentRole(merchantId);
+    setUserProfile(prev => ({
+      ...prev,
+      name: cleanName,
+      email: email || prev.email,
+      phone: phone || prev.phone,
+      isRegistered: true,
+      isLoggedIn: true,
+      isVip: true,
+      vipPlan: 'merchant_vip'
+    }));
     setActiveTab('merchant-dashboard');
 
     // Se a empresa se cadastrou pelo link de uma página parceira (?convite=CODIGO), contabilizar +1 empresa (+R$ 5,00)
@@ -1614,7 +1624,11 @@ export const AppProvider = ({ children }) => {
     return { success: true, count: 347, timestamp: timeStr };
   };
 
-  const isVipUser = currentRole === 'vip' || (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && Boolean(userProfile.isVip));
+  const isVipUser = 
+    currentRole === 'vip' || 
+    currentRole === 'admin' || 
+    (typeof currentRole === 'string' && currentRole.startsWith('merchant_')) || 
+    (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && Boolean(userProfile.isVip));
 
   return (
     <AppContext.Provider value={{

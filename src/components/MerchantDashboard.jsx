@@ -104,8 +104,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   // Plano de assinatura atual do lojista
   const currentPlan = merchantPlans?.find(p => p.id === (currentStore.tier || 'free')) || {
     id: 'free',
-    name: 'Plano Grátis',
-    priceLabel: 'R$ 0',
+    name: 'Plano Inicial + Acesso VIP',
+    priceLabel: 'R$ 19,90',
     period: '/mês',
     maxCoupons: 1
   };
@@ -452,10 +452,15 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <span>Plano Bronze Star (3 Ofertas)</span>
                   </span>
                 ) : (
-                  <span className="text-xs uppercase font-bold tracking-wider text-gray-300 bg-gray-700/40 px-3 py-0.5 rounded-full border border-gray-600">
-                    Plano Grátis (1 Oferta)
+                  <span className="text-xs uppercase font-bold tracking-wider text-orange-300 bg-orange-500/20 px-3 py-0.5 rounded-full border border-orange-500/40">
+                    ✨ Plano Inicial + VIP (1 Oferta • R$ 19,90)
                   </span>
                 )}
+
+                <span className="text-xs font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <Crown size={11} className="text-amber-400" fill="currentColor" />
+                  <span>Seu Acesso VIP no Site: LIBERADO</span>
+                </span>
 
                 {currentStore.tier !== 'gold' && (
                   <button
@@ -2320,7 +2325,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             </span>
                           </>
                         ) : (
-                          <span>Mudar para Plano Grátis</span>
+                          <span>Mudar para Plano Inicial + VIP (R$ 19,90)</span>
                         )}
                       </button>
                     )}
@@ -2343,11 +2348,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
-              {/* Preview Grátis */}
-              <div className="bg-[#13131A] rounded-2xl p-4 border border-white/5 space-y-3 opacity-75">
+              {/* Preview Inicial + VIP */}
+              <div className="bg-[#13131A] rounded-2xl p-4 border border-orange-500/30 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-gray-400">Card no Plano Grátis:</span>
-                  <span className="text-[10px] text-gray-500">Normal</span>
+                  <span className="text-[11px] font-bold text-orange-400">Card Inicial + VIP (R$ 19,90):</span>
+                  <span className="text-[10px] text-orange-300 font-bold bg-orange-500/20 px-2 py-0.5 rounded">1 Cupom + VIP</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
@@ -2357,7 +2362,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </div>
                 </div>
                 <div className="text-xs font-bold text-white">{currentStore.name}</div>
-                <p className="text-[11px] text-gray-400">Listagem comum sem medalha, abaixo das lojas pagantes.</p>
+                <p className="text-[11px] text-gray-400">1 cupom ativo na loja + Acesso VIP liberado para você usar todos os cupons do site.</p>
               </div>
 
               {/* Preview Bronze */}
