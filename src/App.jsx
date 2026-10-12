@@ -683,16 +683,6 @@ const MainLayout = () => {
               © 2026 Melhor Cupom Serviços e Tecnologia Ltda. Todos os direitos reservados.
             </div>
             <div className="flex items-center gap-4">
-              <button 
-                onClick={() => {
-                  switchRole('admin');
-                  setActiveTab('admin-dashboard');
-                }}
-                className="hover:text-blue-400 text-gray-500 transition-colors flex items-center gap-1 font-medium"
-              >
-                <span>🛡️ Painel ADM</span>
-              </button>
-              <span>•</span>
               <button
                 type="button"
                 onClick={() => openLegalModal('terms')}
