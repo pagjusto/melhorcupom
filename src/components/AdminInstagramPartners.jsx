@@ -23,7 +23,8 @@ import {
   Lock,
   Search,
   MapPin,
-  Globe
+  Globe,
+  Flame
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -900,7 +901,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   <div className="flex items-center justify-between gap-1.5">
                     <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-white/10 text-amber-300">
                       <MapPin size={10} />
-                      <span>{item.city} - {item.state}</span>
+                      <span>{item.city.includes(' - ') ? item.city : `${item.city} - ${item.state}`}</span>
                     </span>
                     <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                       👥 {item.followers}
