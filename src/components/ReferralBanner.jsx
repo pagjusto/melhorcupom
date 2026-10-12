@@ -27,6 +27,9 @@ export const ReferralBanner = () => {
   const isMerchantRole = currentRole.startsWith('merchant_');
   const isUserLoggedIn = currentRole !== 'visitor' && (isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user');
 
+  // Banners de divulgação temporariamente removidos para todos os usuários
+  return null;
+
   // O card Destaque Divulgue & Ganhe só deve aparecer após o login e NÃO para visitantes
   if (!isUserLoggedIn && !isMerchantRole) {
     return null;

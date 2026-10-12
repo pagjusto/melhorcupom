@@ -136,7 +136,8 @@ export const CityEmptyState = ({
             )}
           </div>
 
-          {/* OPÇÃO 2: SEÇÃO DE AFILIADO - INDICAR COMÉRCIO DA MINHA CIDADE */}
+          {/* OPÇÃO 2: SEÇÃO DE AFILIADO - INDICAR COMÉRCIO DA MINHA CIDADE (Temporariamente oculto para todos) */}
+          {false && (
           <div className="relative text-left bg-gradient-to-br from-[#24130A] via-[#1B121A] to-[#141420] border-2 border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-xl overflow-hidden">
             
             <div className="flex items-start justify-between gap-4 flex-wrap mb-3.5">
@@ -303,6 +304,7 @@ export const CityEmptyState = ({
             )}
 
           </div>
+          )}
 
         </div>
       </div>
