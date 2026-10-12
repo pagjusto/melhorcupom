@@ -66,16 +66,12 @@ export const ImperdiveisView = () => {
     }).length;
   }, [hotDeals]);
 
-  // Liberado para todo público cadastrado (user, user_free, vip, lojistas, admin). Bloqueado apenas para visitantes.
-  const isRegisteredUser = currentRole !== 'visitor' && Boolean(
-    userProfile?.email || 
-    userProfile?.name || 
-    userProfile?.isRegistered || 
-    userProfile?.isLoggedIn || 
-    currentRole === 'admin' || 
-    currentRole === 'vip' || 
-    currentRole === 'user' || 
-    currentRole === 'user_free' || 
+  // Exclusivo para Assinantes VIP (vip, lojistas com plano Bronze/Prata/Ouro + VIP incluso, e admin)
+  const hasVipAccess = Boolean(
+    isVipUser ||
+    userProfile?.isVip ||
+    currentRole === 'vip' ||
+    currentRole === 'admin' ||
     (typeof currentRole === 'string' && currentRole.startsWith('merchant_'))
   );
 
@@ -149,9 +145,9 @@ export const ImperdiveisView = () => {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF5F00] text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-orange-600/40 animate-pulse">
-                <Flame size={14} />
-                <span>OFERTAS IMPERDÍVEIS</span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black text-xs font-black uppercase tracking-wider shadow-lg shadow-orange-600/40 animate-pulse">
+                <Crown size={14} />
+                <span>👑 OFERTAS IMPERDÍVEIS VIP</span>
               </span>
               <span className="text-xs bg-white/10 text-orange-200 border border-white/15 px-3 py-1 rounded-full font-bold flex items-center gap-1.5">
                 <img src={BRAND_LOGOS.shopee} alt="Shopee" className="h-3.5 w-auto object-contain" />
@@ -161,7 +157,7 @@ export const ImperdiveisView = () => {
               </span>
               <span className="text-[11px] text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
                 <Clock size={11} />
-                <span>Atualizado Hoje</span>
+                <span>Exclusivo Assinantes VIP</span>
               </span>
             </div>
 
@@ -170,7 +166,7 @@ export const ImperdiveisView = () => {
             </h1>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Produtos virais, utilidades inteligentes, tendências de moda feminina e cosméticos selecionados a dedo pelo nosso robô de ofertas com os maiores descontos da Shopee, vitrine Magazine Luiza e achadinhos da SHEIN Brasil com frete grátis garantido.
+              Produtos virais, utilidades inteligentes, tendências de moda feminina e cosméticos selecionados a dedo pelo nosso robô de ofertas com os maiores descontos da Shopee, vitrine Magazine Luiza e achadinhos da SHEIN Brasil — exclusivos para membros assinantes do Clube VIP.
             </p>
           </div>
 
@@ -183,32 +179,32 @@ export const ImperdiveisView = () => {
                 <span className="text-xs font-bold text-orange-400">Produtos no Ar</span>
               </div>
             </div>
-            <div className="text-[11px] text-emerald-400 font-bold flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-xl">
-              <CheckCircle2 size={13} />
-              <span>Links Verificados com Frete Grátis</span>
+            <div className="text-[11px] text-amber-300 font-bold flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-xl">
+              <Crown size={13} className="text-amber-400" />
+              <span>Acesso Exclusivo Assinantes VIP</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. AVISO PARA VISITANTES (CADASTRE-SE GRÁTIS PARA DESBLOQUEAR) OU CONFIRMAÇÃO PARA CADASTRADOS */}
-      {!isRegisteredUser ? (
-        <div className="bg-gradient-to-r from-amber-500/20 via-orange-600/25 to-[#1c110b] border-2 border-[#FF5F00] rounded-3xl p-6 sm:p-8 shadow-2xl shadow-orange-950/60 relative overflow-hidden animate-fade-in">
+      {/* 2. AVISO PARA NÃO-ASSINANTES VIP (EXIGE ASSINATURA VIP) OU CONFIRMAÇÃO PARA VIP */}
+      {!hasVipAccess ? (
+        <div className="bg-gradient-to-r from-amber-500/20 via-orange-600/25 to-[#1c110b] border-2 border-amber-400 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-orange-950/60 relative overflow-hidden animate-fade-in">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-[#FF5F00] text-black font-black flex items-center justify-center text-2xl shadow-lg shadow-orange-600/40 flex-shrink-0">
-                <Lock size={28} className="text-white" />
+                <Crown size={28} className="text-black" />
               </div>
               <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 bg-[#FF5F00] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                  <Lock size={11} />
-                  <span>Exclusivo para Usuários Cadastrados</span>
+                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                  <Crown size={11} />
+                  <span>👑 Exclusivo para Assinantes VIP</span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white">
-                  Cadastre-se Grátis para Liberar Todos os Links e Ofertas
+                  Assine o Clube VIP para Liberar Todas as Ofertas Imperdíveis
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-xl">
-                  As Ofertas Imperdíveis são 100% gratuitas para todo o público cadastrado no Melhor Cupom! Crie sua conta em segundos ou faça login para acessar os links diretos da Shopee e Magazine Luiza.
+                  O acesso aos links diretos com até <strong>70% OFF + Frete Grátis</strong> da Shopee, Magazine Luiza e SHEIN na aba <strong>Ofertas Imperdíveis</strong> é exclusivo para assinantes VIP (apenas <strong>R$ 19,90/mês</strong>)!
                 </p>
               </div>
             </div>
@@ -216,38 +212,40 @@ export const ImperdiveisView = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-shrink-0">
               <button
                 type="button"
-                onClick={() => openAuthModal('user_register')}
-                className="bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white font-extrabold px-6 py-3.5 rounded-2xl text-xs sm:text-sm shadow-xl shadow-orange-600/40 transition-all transform hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+                onClick={() => setIsSubscriptionModalOpen(true)}
+                className="bg-gradient-to-r from-amber-400 via-[#FF7824] to-[#FF5F00] hover:from-amber-300 hover:to-[#E04F00] text-black font-black px-6 py-3.5 rounded-2xl text-xs sm:text-sm shadow-xl shadow-orange-600/40 transition-all transform hover:scale-105 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
               >
-                <UserPlus size={18} className="text-amber-200" />
-                <span>Criar Conta Grátis para Liberar</span>
+                <Crown size={18} className="text-black" />
+                <span>👑 Assinar Clube VIP (R$ 19,90/mês)</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => openAuthModal('login')}
-                className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-5 py-3.5 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <LogIn size={16} className="text-gray-300" />
-                <span>Já tenho conta</span>
-              </button>
+              {(!userProfile?.isLoggedIn || currentRole === 'visitor') && (
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-5 py-3.5 rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <LogIn size={16} className="text-amber-300" />
+                  <span>Já sou VIP • Entrar</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs animate-fade-in">
-          <div className="flex items-center gap-2.5 text-emerald-300 font-bold">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <Unlock size={16} className="text-emerald-400" />
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs animate-fade-in">
+          <div className="flex items-center gap-2.5 text-amber-300 font-bold">
+            <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center">
+              <Crown size={16} className="text-amber-400" />
             </div>
             <span>
-              Bem-vindo(a), <strong>{userProfile?.name ? userProfile.name.split(' ')[0] : 'Membro'}</strong>! Todos os achadinhos e links de compra com frete grátis estão 100% liberados para você.
+              Bem-vindo(a), <strong>{userProfile?.name ? userProfile.name.split(' ')[0] : 'Assinante VIP'}</strong>! Como membro VIP, todas as Ofertas Imperdíveis e links diretos com frete grátis estão 100% liberados para você.
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] bg-emerald-500/20 text-emerald-300 font-black px-2.5 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1">
-              <CheckCircle2 size={12} />
-              <span>Acesso Liberado</span>
+            <span className="text-[11px] bg-amber-500/20 text-amber-300 font-black px-2.5 py-1 rounded-full border border-amber-500/30 flex items-center gap-1">
+              <Crown size={12} />
+              <span>👑 Acesso VIP Liberado</span>
             </span>
           </div>
         </div>
@@ -498,7 +496,7 @@ export const ImperdiveisView = () => {
 
                 {/* Botões de Ação */}
                 <div className="pt-2 flex items-center gap-2">
-                  {isRegisteredUser ? (
+                  {hasVipAccess ? (
                     <>
                       <a
                         href={deal.affiliateUrl}
@@ -506,7 +504,7 @@ export const ImperdiveisView = () => {
                         rel="noopener noreferrer"
                         className="flex-1 bg-gradient-to-r from-[#FF5F00] via-[#FF7700] to-[#FF8C00] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-orange-600/30 transition-all transform hover:scale-[1.02] cursor-pointer"
                       >
-                        <span>Pegar Oferta</span>
+                        <span>Pegar Oferta VIP</span>
                         <ExternalLink size={13} />
                       </a>
 
@@ -533,11 +531,11 @@ export const ImperdiveisView = () => {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => openAuthModal('user_register')}
-                      className="w-full bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 hover:from-[#FF5F00] hover:to-amber-500 text-amber-300 hover:text-white border border-amber-500/40 hover:border-[#FF5F00] font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-orange-600/30"
+                      onClick={() => setIsSubscriptionModalOpen(true)}
+                      className="w-full bg-gradient-to-r from-amber-500/20 via-orange-500/25 to-amber-500/20 hover:from-amber-400 hover:to-[#FF5F00] text-amber-300 hover:text-black border border-amber-500/50 hover:border-amber-400 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm hover:shadow-orange-600/30"
                     >
-                      <Lock size={14} className="text-amber-400" />
-                      <span>Cadastre-se Grátis para Liberar</span>
+                      <Crown size={14} className="text-amber-400" />
+                      <span>👑 Exclusivo VIP • Assinar p/ Liberar</span>
                     </button>
                   )}
                 </div>
@@ -550,12 +548,12 @@ export const ImperdiveisView = () => {
 
       {/* 4. BANNER INFORMATIVO DE TRANSPARÊNCIA */}
       <div className="bg-[#14141E] border border-white/10 rounded-3xl p-6 text-center space-y-2">
-        <div className="flex items-center justify-center gap-2 text-xs font-bold text-orange-400">
-          <Sparkles size={16} />
-          <span>Como funciona a curadoria de Ofertas Imperdíveis?</span>
+        <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-400">
+          <Crown size={16} />
+          <span>Como funciona a curadoria VIP de Ofertas Imperdíveis?</span>
         </div>
         <p className="text-xs text-gray-400 max-w-2xl mx-auto leading-relaxed">
-          O robô do <strong>Melhor Cupom</strong> monitora diariamente os produtos virais mais desejados com maiores avaliações positivas na <strong>Shopee Brasil</strong> e na vitrine oficial da <strong>Magazine Luiza</strong>. Ao clicar no produto, membros cadastrados são redirecionados com segurança para o vendedor oficial e aproveitam cupons com frete grátis aplicáveis.
+          O robô do <strong>Melhor Cupom</strong> monitora diariamente os produtos virais mais desejados com maiores avaliações positivas na <strong>Shopee Brasil</strong>, vitrine oficial da <strong>Magazine Luiza</strong> e <strong>SHEIN Brasil</strong>. Ao clicar no produto, <strong>assinantes VIP</strong> são redirecionados com segurança para o vendedor oficial com super descontos e frete grátis.
         </p>
       </div>
 

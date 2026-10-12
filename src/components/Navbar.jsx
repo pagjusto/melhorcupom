@@ -103,10 +103,10 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                     : 'text-orange-400 hover:text-white hover:bg-orange-500/15'
                 }`}
               >
-                <Flame size={14} className="text-amber-300 animate-pulse" />
+                <Crown size={14} className="text-amber-300 animate-pulse" />
                 <span>Ofertas Imperdíveis</span>
                 <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-0.5">
-                  <span>MEMBROS</span>
+                  <span>👑 VIP</span>
                 </span>
               </button>
 
@@ -530,7 +530,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 <span className="text-sm animate-pulse">🏪</span>
                 <span>Seja um Parceiro (Cadastre sua Loja)</span>
               </div>
-              <span className="text-[10px] bg-[#FF5F00] text-white px-2 py-0.5 rounded-full font-black uppercase">Grátis</span>
+              <span className="text-[10px] bg-[#FF5F00] text-white px-2 py-0.5 rounded-full font-black uppercase">R$ 19,90 + VIP</span>
             </button>
           )}
           <button
@@ -542,11 +542,11 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             }`}
           >
             <div className="flex items-center gap-2">
-              <Flame size={16} className="text-amber-300" />
-              <span>🔥 Ofertas Imperdíveis</span>
+              <Crown size={16} className="text-amber-300" />
+              <span>👑 Ofertas Imperdíveis</span>
             </div>
             <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-              MEMBROS
+              👑 VIP
             </span>
           </button>
           <button

@@ -15,7 +15,7 @@ import { getBrandLogo } from '../assets/brands';
 
 const STORE_GROUPS = [
   { id: 'all', label: 'Todas as Lojas & Cupons', icon: '✨' },
-  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '85+ Virais', isDirectPage: true, targetStore: 'all' },
+  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '👑', badge: '👑 VIP', isDirectPage: true, targetStore: 'all' },
   { id: 'shopee', label: 'Shopee Oficial', icon: '🧡', badge: 'Achadinhos', isDirectPage: true, targetStore: 'shopee' },
   { id: 'magalu', label: 'Magazine Luiza', icon: '🛍️', badge: 'Radar Top 10', isDirectPage: true, targetStore: 'magalu' },
   { id: 'shein', label: 'SHEIN Oficial', icon: '🖤', badge: 'Achadinhos TikTok', isDirectPage: true, targetStore: 'shein' },
@@ -26,7 +26,7 @@ const STORE_GROUPS = [
 ];
 
 const QUICK_SEARCH_CHIPS = [
-  { label: '🔥 Ofertas Imperdíveis', query: 'imperdivel', icon: '🔥' },
+  { label: '👑 Ofertas Imperdíveis VIP', query: 'imperdivel', icon: '👑' },
   { label: 'Shopee', query: 'Shopee', icon: '🧡' },
   { label: 'Magazine Luiza', query: 'Magazine Luiza', icon: '🛍️' },
   { label: 'SHEIN', query: 'SHEIN', icon: '🖤' },
