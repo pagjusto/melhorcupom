@@ -21,7 +21,8 @@ import {
   LogOut,
   Settings,
   Gift,
-  Flame
+  Flame,
+  Crown
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
