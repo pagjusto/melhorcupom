@@ -2544,7 +2544,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               <div className="bg-[#101017] border border-white/15 rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-amber-300 font-mono">
                 <span className="text-gray-500 select-none">https://</span>
                 <span className="text-white font-bold truncate">
-                  www.omelhorcupom.com.br/convite/{currentStore.referralCode || 'SMASH5'}
+                  omelhorcupom.com.br/convite/{currentStore.referralCode || 'SMASH5'}
                 </span>
               </div>
 
@@ -2552,7 +2552,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://www.omelhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`);
+                    navigator.clipboard.writeText(`https://omelhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`);
                     setCopiedStoreLink(true);
                     setTimeout(() => setCopiedStoreLink(false), 2500);
                   }}
@@ -2569,7 +2569,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    const text = `Conheça o Clube VIP Melhor Cupom com descontos de 30% a 50% no ${currentStore.name} e dezenas de lojas! Cadastre-se pelo nosso convite: https://www.omelhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`;
+                    const text = `Conheça o Clube VIP Melhor Cupom com descontos de 30% a 50% no ${currentStore.name} e dezenas de lojas! Cadastre-se pelo nosso convite: https://omelhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
                   }}
                   className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all"
@@ -2601,7 +2601,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
               <div className="p-3 bg-white rounded-2xl shadow-xl my-4">
                 <QRCodeSVG 
-                  value={`https://www.omelhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`}
+                  value={`https://omelhorcupom.com.br/convite/${currentStore.referralCode || 'SMASH5'}`}
                   size={140}
                 />
               </div>

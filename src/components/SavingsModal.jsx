@@ -132,8 +132,8 @@ export const SavingsModal = ({ onSelectCoupon }) => {
   const handleShareSavings = () => {
     const isRegistered = Boolean(userProfile?.isRegistered && userProfile?.isLoggedIn);
     const linkPart = (isRegistered && userProfile?.referralCode)
-      ? ` Cadastre-se pelo meu link: www.omelhorcupom.com.br/convite/${userProfile.referralCode}`
-      : ' Conheça o Clube VIP em: www.omelhorcupom.com.br';
+      ? ` Cadastre-se pelo meu link: https://omelhorcupom.com.br/convite/${userProfile.referralCode}`
+      : ' Conheça o Clube VIP em: https://omelhorcupom.com.br';
     const text = `Olha só: já economizei R$ ${totalSavings.toFixed(2).replace('.', ',')} no Clube VIP Melhor Cupom! O investimento na assinatura é de apenas R$ 19,90 e o retorno é real no bolso.${linkPart}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };

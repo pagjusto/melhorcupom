@@ -47,12 +47,12 @@ export const ReferralModal = () => {
   const isStoreView = activeView === 'store' && isMerchantRole;
 
   // Dados do Referrer selecionado
-  const referralCode = isStoreView ? (currentStore.referralCode || 'VIP5') : (userProfile.referralCode || 'CUPOM5');
+  const referralCode = isStoreView ? (currentStore.referralCode || 'VIP5') : (userProfile.referralCode || 'RENAN5');
   const referralBalance = isStoreView ? (currentStore.referralBalance || 0) : (userProfile.referralBalance || 0);
   const referralsList = isStoreView ? (currentStore.referrals || []) : (userProfile.referrals || []);
   const ownerName = isStoreView ? currentStore.name : userProfile.name;
 
-  const referralUrl = `https://www.omelhorcupom.com.br/convite/${referralCode}`;
+  const referralUrl = `https://omelhorcupom.com.br/convite/${referralCode}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(referralUrl);
@@ -184,7 +184,7 @@ export const ReferralModal = () => {
 
               <div className="bg-black/50 border border-white/10 rounded-2xl p-3.5 text-xs font-mono text-gray-400 flex items-center justify-center gap-2 select-none">
                 <Lock size={14} className="text-amber-400" />
-                <span>www.omelhorcupom.com.br/convite/SEU-CODIGO-CADASTRADO</span>
+                <span>omelhorcupom.com.br/convite/SEU-CODIGO-CADASTRADO</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-left pt-1">
@@ -316,7 +316,7 @@ export const ReferralModal = () => {
             <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
               <div className="flex-grow bg-[#101017] border border-white/15 rounded-2xl px-4 py-3 flex items-center gap-2 text-xs text-amber-300 font-mono select-all">
                 <span className="text-gray-500 select-none">https://</span>
-                <span className="text-white font-bold truncate">www.omelhorcupom.com.br/convite/{referralCode}</span>
+                <span className="text-white font-bold truncate">omelhorcupom.com.br/convite/{referralCode}</span>
               </div>
 
               <button

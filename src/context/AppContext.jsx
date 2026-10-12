@@ -254,9 +254,13 @@ export const AppProvider = ({ children }) => {
         localStorage.setItem('melhor_cupom_user_v3', JSON.stringify(adminDefaultUser));
         return adminDefaultUser;
       }
+      const resolvedRefCode = (parsed.referralCode && parsed.referralCode !== 'CUPOM5' && parsed.referralCode !== 'LUCAS5')
+        ? parsed.referralCode
+        : (((parsed.name || 'RENAN').trim().split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6) || 'RENAN') + '5');
       return {
         ...adminDefaultUser,
-        ...parsed
+        ...parsed,
+        referralCode: resolvedRefCode
       };
     } catch {
       return adminDefaultUser;
@@ -563,6 +567,7 @@ export const AppProvider = ({ children }) => {
       isRegistered: true,
       isAdmin: true,
       isVip: true,
+      referralCode: 'RENAN5',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'
     }));
     setActiveTab('admin-dashboard');
@@ -571,6 +576,11 @@ export const AppProvider = ({ children }) => {
   // Sincronizar o estado de VIP quando o perfil rápido é alterado
   const switchRole = (newRole) => {
     setCurrentRole(newRole);
+    const getValidRefCode = (p) => {
+      if (p?.referralCode && p.referralCode !== 'CUPOM5' && p.referralCode !== 'LUCAS5') return p.referralCode;
+      const base = (p?.name || 'RENAN').trim().split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6);
+      return (base || 'RENAN') + '5';
+    };
     if (newRole === 'admin') {
       setIsSimulatingRole(false);
       setUserProfile(prev => ({
@@ -581,6 +591,7 @@ export const AppProvider = ({ children }) => {
         isRegistered: true,
         isAdmin: true,
         isVip: true,
+        referralCode: 'RENAN5',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'
       }));
       setActiveTab('admin-dashboard');
@@ -592,7 +603,8 @@ export const AppProvider = ({ children }) => {
         isVip: true,
         vipPlan: 'vip',
         vipSince: '2026-01-10',
-        monthlySavings: 342.50
+        monthlySavings: 342.50,
+        referralCode: getValidRefCode(prev)
       }));
     } else if (newRole === 'user_free' || newRole === 'user') {
       setUserProfile(prev => ({
@@ -603,6 +615,7 @@ export const AppProvider = ({ children }) => {
         vipPlan: null,
         vipSince: null,
         monthlySavings: 0,
+        referralCode: getValidRefCode(prev),
         referralBalance: prev.referralBalance || 0.00
       }));
     } else if (newRole === 'visitor') {

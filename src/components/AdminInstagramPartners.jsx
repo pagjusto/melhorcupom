@@ -76,7 +76,7 @@ Queremos liberar uma *Parceria Oficial de Afiliado* exclusiva para a página *${
 🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir a partir de *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
 
 🔗 *Já geramos o Link Exclusivo de Rastreamento da página de vocês:*
-👉 https://www.omelhorcupom.com.br/?convite=${partner.code}
+👉 https://omelhorcupom.com.br/convite/${partner.code}
 *(Código Oficial: ${partner.code})*
 
 📈 *Simulação rápida para a página de vocês:*
@@ -99,7 +99,7 @@ Vocês acumulam saldo em dinheiro no Caixa da plataforma a cada indicação:
 💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado*, é só solicitar o saque direto para a chave PIX da página!
 
 Já até reservamos o link personalizado da página de vocês:
-👉 https://www.omelhorcupom.com.br/?convite=${partner.code}
+👉 https://omelhorcupom.com.br/convite/${partner.code}
 
 Posso te mandar aqui o Kit de Stories pronto e ativar o painel de saldo de vocês? 💰🔥`
   },
@@ -119,7 +119,7 @@ Criamos um link exclusivo para o *${partner.handle}* acumular saldo divulgando p
 🏦 *Saque via PIX:* O valor fica salvo no Caixa da sua conta e, a partir de *R$ 250,00 acumulados*, você solicita a transferência direto no seu PIX!
 
 🔗 *Link Oficial da sua Página:*
-https://www.omelhorcupom.com.br/?convite=${partner.code}
+https://omelhorcupom.com.br/convite/${partner.code}
 
 Vamos fechar essa parceria? 🤝🚀`
   }
@@ -166,7 +166,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
 
   const activeTemplate = PITCH_TEMPLATES.find(t => t.id === selectedTemplateId) || PITCH_TEMPLATES[0];
   const generatedMessage = activeTemplate.getText(activePartner);
-  const partnerLink = `https://www.omelhorcupom.com.br/?convite=${activePartner.code}`;
+  const partnerLink = `https://omelhorcupom.com.br/convite/${activePartner.code}`;
 
   // Totais financeiros de todas as páginas
   const totals = useMemo(() => {
@@ -236,7 +236,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     });
 
     if (showToast) {
-      showToast(`Página ${cleanHandle} cadastrada! Link ?convite=${autoCode} ativado.`);
+      showToast(`Página ${cleanHandle} cadastrada! Link omelhorcupom.com.br/convite/${autoCode} ativado.`);
     }
   };
 
@@ -417,7 +417,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
 
     ctx.fillStyle = '#34D399';
     ctx.font = '900 33px monospace';
-    ctx.fillText(`omelhorcupom.com.br/?convite=${activePartner.code}`, 540, 1102);
+    ctx.fillText(`omelhorcupom.com.br/convite/${activePartner.code}`, 540, 1102);
 
     // Rodapé
     ctx.fillStyle = '#FFFFFF';
