@@ -159,33 +159,34 @@ const INITIAL_INSTAGRAM_PARTNERS = [
 const PITCH_TEMPLATES = [
   {
     id: 'pitch_milgrau',
-    title: '🔥 Especial Páginas "Mil Grau" da Cidade (R$ 5/Comércio + R$ 3/Seguidor)',
+    title: '🔥 Especial Páginas "Mil Grau" da Cidade (Cadastrar e Pegar Link)',
     badge: 'Páginas Mil Grau',
     getText: (partner) => `Fala, galera do *${partner.handle}*! Tudo certo por aí? 🔥🚀
 
 Acompanhamos o trabalho gigante de vocês movimentando a cidade e sabemos a força que a página tem tanto com a galera quanto com os comércios locais!
 
-Aqui é da direção do *Melhor Cupom (@omelhorcupom.com.br)*! Nós somos a plataforma nacional e local onde os comércios da cidade divulgam cupons exclusivos (e já ganham acesso VIP por apenas R$ 19,90/mês) e os seguidores economizam até 50% todos os dias em lanches, restaurantes, serviços e nas grandes lojas (Shopee, Magalu, SHEIN, Amazon).
+Aqui é da direção do *Melhor Cupom (@omelhorcupom.com.br)*! Nós somos a plataforma onde os comércios da cidade divulgam cupons exclusivos e os seguidores economizam até 50% todos os dias em lanches, restaurantes, serviços e nas grandes lojas (Shopee, Magalu, SHEIN, Amazon).
 
-Liberamos um *Link Oficial de Parceria* exclusivo para o *${partner.handle}* faturar alto divulgando para os seguidores e comércios da cidade:
+Queremos convidar o *${partner.handle}* para se tornar *Divulgador Oficial Parceiro* na cidade e faturar alto com a audiência de vocês:
 
 💰 *QUANTO A PÁGINA GANHA NO CAIXA:*
-🏪 *+R$ 5,00 de saldo* por cada *Comércio / Empresa da cidade* que se cadastrar e assinar VIP pelo link de vocês!
-🙋‍♂️ *+R$ 3,00 de saldo* por cada *Seguidor / Usuário* que ativar o Clube VIP pelo link de vocês!
-🏦 *Saque Direto no PIX:* Todo valor entra na hora no *Saldo do Caixa* da página. Bateu *R$ 250,00 de saldo*, o saque via PIX já fica liberado direto pra conta de vocês!
+🏪 *+R$ 5,00 de saldo* por cada *Comércio / Empresa da cidade* que se cadastrar e assinar VIP pelo link de divulgador de vocês!
+🙋‍♂️ *+R$ 3,00 de saldo* por cada *Seguidor / Usuário* que ativar o Clube VIP pelo link de divulgador de vocês!
+🏦 *Saque Direto no PIX:* Todo valor entra na hora no *Saldo do Caixa* do painel de vocês. Bateu *R$ 250,00 de saldo*, o saque via PIX já fica liberado direto pra conta da página!
 
-🔗 *Link Oficial Exclusivo do ${partner.handle}:*
-👉 https://omelhorcupom.com.br/convite/${partner.code}
-*(Código Oficial: ${partner.code})*
+📲 *COMO SE CADASTRAR E PEGAR SEU LINK DE DIVULGADOR (leva 1 minuto):*
+1️⃣ Acesse o nosso site oficial: 👉 https://omelhorcupom.com.br
+2️⃣ Crie a conta gratuita da página *${partner.handle}*
+3️⃣ Acesse o menu *"Meu Perfil / Indique & Ganhe"* para pegar o seu *Link Exclusivo de Divulgador* e acompanhar o saldo em tempo real!
 
 💡 *Simulação rápida pra cidade:*
 Com apenas 20 comércios da cidade divulgando cupom (R$ 100) + 50 seguidores no clube VIP (R$ 150), vocês já batem *R$ 250,00* e sacam no PIX!
 
-Bora ativar essa parceria na cidade hoje? Já deixamos as artes de Stories prontas pra vocês! 🤝🔥`
+Bora cadastrar a página hoje e pegar o link de divulgador de vocês? Qualquer dúvida estamos à disposição! 🤝🔥`
   },
   {
     id: 'pitch_completo',
-    title: '🔥 Proposta Completa (Saldo no Caixa + Saque PIX acima de R$ 250)',
+    title: '🔥 Proposta Completa (Cadastrar no Site + Pegar Link de Divulgador)',
     badge: 'Mais Converte',
     getText: (partner) => `Olá, equipe do *${partner.handle}*! Tudo bem? 👋✨
 
@@ -193,40 +194,40 @@ Acompanho o perfil de vocês e vimos que o público de vocês adora boas oportun
 
 Somos do *Melhor Cupom (@omelhorcupom.com.br)*, o clube oficial de descontos locais e nacionais (com cupons de até 50% OFF em restaurantes, comércios e achadinhos virais da Shopee, Magalu e SHEIN).
 
-Queremos liberar uma *Parceria Oficial de Afiliado* exclusiva para a página *${partner.handle}* monetizar com a audiência de vocês:
+Queremos convidar a página *${partner.handle}* para se cadastrar como *Divulgador Parceiro Oficial* e monetizar com a audiência de vocês:
 
-💰 *COMO FUNCIONA O SEU SALDO DE AFILIADO:*
-✅ *R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
-✅ *R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo link de vocês!
+💰 *COMO FUNCIONA O SEU SALDO DE DIVULGADOR:*
+✅ *+R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo seu link de divulgador!
+✅ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo seu link de divulgador!
 🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir a partir de *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
 
-🔗 *Já geramos o Link Exclusivo de Rastreamento da página de vocês:*
-👉 https://omelhorcupom.com.br/convite/${partner.code}
-*(Código Oficial: ${partner.code})*
+📲 *COMO PEGAR O LINK DE DIVULGADOR DA PÁGINA:*
+1️⃣ Acesse: 👉 https://omelhorcupom.com.br
+2️⃣ Faça o cadastro rápido do perfil da página
+3️⃣ Dentro do seu painel (*Meu Perfil → Indique & Ganhe*), copie o seu *Link Exclusivo de Divulgador* para colocar nos Stories e na Bio!
 
 📈 *Simulação rápida para a página de vocês:*
 • Com apenas 50 seguidores no clube (R$ 150) + 20 comércios que se cadastrarem e assinarem VIP (R$ 100), vocês já batem *R$ 250,00 de saldo* e liberam o saque no PIX!
-• Nós enviamos as artes prontas de Stories e Feed para vocês só postarem com o link!
 
-Topam ativar essa parceria hoje? Basta criar o acesso da página no site para acompanhar o saldo em tempo real! 🤝🚀`
+Vamos ativar essa parceria hoje? Faça o cadastro lá no site e nos avise aqui para enviarmos o Kit de Artes dos Stories! 🤝🚀`
   },
   {
     id: 'pitch_curto_dm',
-    title: '⚡ Abordagem Rápida para Direct (DM do Instagram)',
+    title: '⚡ Abordagem Rápida para Direct (Convidar p/ Cadastro de Divulgador)',
     badge: 'Ideal p/ 1º Contato',
     getText: (partner) => `Opa, galera do *${partner.handle}*! Tudo ótimo por aí? 🚀
 
-Aqui é da direção do *@omelhorcupom.com.br*! Estamos selecionando grandes páginas do Instagram para o nosso *Programa de Páginas Parceiras*.
+Aqui é da direção do *@omelhorcupom.com.br*! Estamos selecionando grandes páginas das cidades para o nosso *Programa Oficial de Divulgadores Parceiros*.
 
-Vocês acumulam saldo em dinheiro no Caixa da plataforma a cada indicação:
+Funciona assim: vocês se cadastram no site, pegam o *Link de Divulgador* exclusivo da página e acumulam saldo em dinheiro a cada indicação:
 🏪 *+R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
 🙋‍♂️ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que ativar o Clube VIP pelo link de vocês!
-💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado*, é só solicitar o saque direto para a chave PIX da página!
+💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado* no painel, é só solicitar o saque direto para a chave PIX da página!
 
-Já até reservamos o link personalizado da página de vocês:
-👉 https://omelhorcupom.com.br/convite/${partner.code}
+📲 *Para pegar o Link de Divulgador da página agora mesmo:*
+Basta acessar 👉 https://omelhorcupom.com.br , criar sua conta gratuita e copiar seu link na aba *"Meu Perfil / Indique & Ganhe"*!
 
-Posso te mandar aqui o Kit de Stories pronto e ativar o painel de saldo de vocês? 💰🔥`
+Bora ativar? Assim que cadastrarem me avisa aqui pra eu liberar o Kit de Stories pra vocês! 💰🔥`
   }
 ];
 
@@ -355,7 +356,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     });
 
     if (showToast) {
-      showToast(`Página ${cleanHandle} cadastrada! Link omelhorcupom.com.br/convite/${autoCode} ativado.`);
+      showToast(`Página ${cleanHandle} adicionada! Proposta de parceria pronta para enviar.`);
     }
   };
 
@@ -442,7 +443,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
       setSelectedPartnerId(existing.id);
       setSelectedTemplateId('pitch_milgrau');
       if (showToast) {
-        showToast(`🔥 ${existing.handle} selecionada! Proposta e link omelhorcupom.com.br/convite/${existing.code} prontos abaixo.`);
+        showToast(`🔥 ${existing.handle} selecionada! Proposta pronta para copiar abaixo.`);
       }
       return;
     }
@@ -451,7 +452,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     const created = {
       id: `ig_partner_${Date.now()}`,
       handle: item.handle.startsWith('@') ? item.handle : `@${item.handle}`,
-      name: `${item.name} (${item.city}/${item.state})`,
+      name: item.city.includes(' - ') ? `${item.name} (${item.city})` : `${item.name} (${item.city}/${item.state})`,
       followers: item.followers || '50k+',
       code: cleanCode,
       pixKey: 'A definir no saque',
@@ -475,7 +476,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     });
 
     if (showToast) {
-      showToast(`🚀 Página ${created.handle} importada! Link omelhorcupom.com.br/convite/${created.code} ativado.`);
+      showToast(`🚀 Proposta de divulgador para ${created.handle} gerada abaixo!`);
     }
   };
 
@@ -635,7 +636,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     ctx.font = '900 30px Inter, sans-serif';
     ctx.fillText('🏦 SAQUE DIRETO NO PIX LIBERADO ACIMA DE R$ 250,00 DE SALDO!', 540, 908);
 
-    // Caixa do Link Exclusivo
+    // Caixa de Cadastro de Divulgador
     ctx.fillStyle = '#161625';
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 2;
@@ -646,16 +647,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
 
     ctx.fillStyle = '#9CA3AF';
     ctx.font = '700 23px Inter, sans-serif';
-    ctx.fillText('SEU LINK EXCLUSIVO DE RASTREAMENTO JÁ ESTÁ PRONTO:', 540, 1038);
+    ctx.fillText('CADASTRE A PÁGINA E PEGUE SEU LINK DE DIVULGADOR EM:', 540, 1038);
 
     ctx.fillStyle = '#34D399';
-    ctx.font = '900 33px monospace';
-    ctx.fillText(`omelhorcupom.com.br/convite/${activePartner.code}`, 540, 1102);
+    ctx.font = '900 42px monospace';
+    ctx.fillText('omelhorcupom.com.br', 540, 1104);
 
     // Rodapé
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '700 25px Inter, sans-serif';
-    ctx.fillText('📲 Painel de Saldo em Tempo Real • Saque via PIX • @omelhorcupom.com.br', 540, 1235);
+    ctx.fillText('📲 Crie sua conta • Pegue seu Link no Perfil • Saque via PIX', 540, 1235);
 
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
@@ -680,7 +681,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-600 to-[#FF5F00] text-white text-xs font-black uppercase tracking-wider">
                 <Instagram size={14} />
-                <span>Programa de Afiliados para Páginas de Instagram</span>
+                <span>Programa de Divulgadores para Páginas de Instagram</span>
               </span>
               <span className="text-xs text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30 font-black">
                 🏪 +R$ 5,00 / Empresa (Cadastro + VIP) • 🙋‍♂️ +R$ 3,00 / Usuário • 🏦 Saque PIX ≥ R$ 250,00
@@ -688,11 +689,11 @@ export const AdminInstagramPartners = ({ showToast }) => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
-              Oferta Comercial & Saldo de Afiliados para Páginas
+              Oferta Comercial & Saldo de Divulgadores para Páginas
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Cada indicação fica acumulada no <strong>Saldo do Caixa</strong> da página parceira (<code className="text-amber-300 font-mono">+R$ 5,00 por empresa/comércio que se cadastrar e assinar VIP</code> e <code className="text-emerald-300 font-mono">+R$ 3,00 por usuário que assinar VIP</code>). Quando o saldo acumulado atinge <strong>R$ 250,00 ou mais</strong>, a página libera a solicitação de saque via PIX!
+              Convide páginas das cidades para se cadastrarem no site e pegarem o <strong>Link de Divulgador</strong> no próprio perfil! Cada indicação fica acumulada no <strong>Saldo do Caixa</strong> da página parceira (<code className="text-amber-300 font-mono">+R$ 5,00 por empresa/comércio que se cadastrar e assinar VIP</code> e <code className="text-emerald-300 font-mono">+R$ 3,00 por usuário que assinar VIP</code>), com saque PIX liberado a partir de <strong>R$ 250,00</strong>.
             </p>
           </div>
 
@@ -776,7 +777,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
               <span>🔎 Buscador de Instagrams "Mil Grau" das Cidades do Brasil</span>
             </h3>
             <p className="text-xs text-gray-300 max-w-3xl">
-              Páginas estilo <strong>@videiramilgrau_sc</strong>, <strong>@chapecomilgrauoficial</strong>, <strong>@floripamilgrauoficial</strong> e <strong>@curitibamilgrau</strong> têm alto engajamento local e milhares de seguidores. Clique em <strong>"⚡ Gerar Proposta & Link"</strong> para criar o link exclusivo da página e já copiar o convite pronto para enviar no Direct!
+              Páginas estilo <strong>@videiramilgrau_sc</strong>, <strong>@chapecomilgrauoficial</strong>, <strong>@floripamilgrauoficial</strong> e <strong>@curitibamilgrau</strong> têm alto engajamento local e milhares de seguidores. Clique em <strong>"⚡ Gerar Proposta de Parceria"</strong> para montar o convite convidando a página a se cadastrar no site e pegar seu próprio <strong>Link de Divulgador</strong>!
             </p>
           </div>
 
@@ -842,7 +843,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 <span>Sugestões automáticas de @ para a cidade de "{citySearchQuery.trim()}":</span>
               </span>
               <span className="text-[11px] text-gray-400">
-                Clique em <strong>Abrir IG</strong> para conferir qual @ a cidade usa ou em <strong>Gerar Proposta</strong> para ativar o link!
+                Clique em <strong>Abrir IG</strong> para conferir qual @ a cidade usa ou em <strong>Gerar Proposta</strong> para montar o convite!
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -936,7 +937,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                     }`}
                   >
                     <Sparkles size={12} />
-                    <span>{isSelected ? 'Proposta Ativa Abaixo' : '⚡ Gerar Proposta & Link'}</span>
+                    <span>{isSelected ? 'Proposta Ativa Abaixo' : '⚡ Gerar Proposta de Parceria'}</span>
                   </button>
 
                   <button
@@ -965,10 +966,10 @@ export const AdminInstagramPartners = ({ showToast }) => {
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-black text-white">
-                  1. Cadastrar Página de Instagram
+                  1. Adicionar Página p/ Prospecção
                 </h3>
                 <p className="text-[11px] text-gray-400">
-                  Cria o código e o link exclusivo para a página acumular saldo
+                  Adicione o @ da página para personalizar a proposta e acompanhar o saldo
                 </p>
               </div>
             </div>
@@ -987,7 +988,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-300 mb-1">Código do Link (Opcional)</label>
+                  <label className="block text-[11px] font-bold text-gray-300 mb-1">Código Interno (Opcional)</label>
                   <input
                     type="text"
                     value={newPartner.code}
@@ -1026,7 +1027,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 className="w-full bg-gradient-to-r from-fuchsia-600 to-[#FF5F00] hover:from-fuchsia-500 hover:to-[#E04F00] text-white font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
               >
                 <Plus size={15} />
-                <span>Gerar Link & Proposta para esta Página</span>
+                <span>Adicionar Página & Gerar Proposta</span>
               </button>
             </form>
           </div>
@@ -1056,9 +1057,6 @@ export const AdminInstagramPartners = ({ showToast }) => {
                     <div>
                       <div className="font-black text-xs sm:text-sm text-white flex items-center gap-1.5">
                         <span>{p.handle}</span>
-                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-mono">
-                          {p.code}
-                        </span>
                       </div>
                       <div className="text-[11px] text-gray-400 mt-0.5">
                         🏪 {p.storesReferred || 0} lojas • 🙋‍♂️ {p.usersReferred || 0} usuários
@@ -1079,13 +1077,13 @@ export const AdminInstagramPartners = ({ showToast }) => {
           </div>
         </div>
 
-        {/* Coluna Direita: Texto Pronto da Oferta + Link de Afiliado da Página */}
+        {/* Coluna Direita: Texto Pronto da Oferta + Instrução de Cadastro no Site */}
         <div className="lg:col-span-7 bg-[#151522] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col justify-between space-y-5">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-fuchsia-400 block">
-                  2. Proposta Pronta para Enviar (Regra de Saldo + Saque PIX ≥ R$ 250)
+                  2. Proposta Pronta para Enviar (Convite p/ Cadastrar e Pegar Link de Divulgador)
                 </span>
                 <h3 className="text-lg font-black text-white">
                   Convite Oficial para <span className="text-amber-400">{activePartner.handle}</span>
@@ -1104,30 +1102,20 @@ export const AdminInstagramPartners = ({ showToast }) => {
               </div>
             </div>
 
-            {/* Link Exclusivo da Página */}
+            {/* Fluxo de Cadastro da Página no Site */}
             <div className="bg-black/50 border border-amber-500/30 rounded-2xl p-4 space-y-2">
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                 <span className="font-bold text-amber-300 flex items-center gap-1.5">
                   <LinkIcon size={14} />
-                  <span>Link Exclusivo de Afiliado da Página ({activePartner.handle}):</span>
+                  <span>Como a página {activePartner.handle} pega o Link de Divulgador:</span>
                 </span>
                 <span className="text-[11px] text-emerald-400 font-bold">
-                  Acumula Saldo Automaticamente
+                  100% Automático no Painel do Usuário
                 </span>
               </div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <div className="flex-1 bg-[#12121C] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white select-all truncate">
-                  {partnerLink}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleCopyText(partnerLink, 'partner_link')}
-                  className="bg-amber-500 hover:bg-amber-400 text-black font-black px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                >
-                  {copiedId === 'partner_link' ? <Check size={14} /> : <Copy size={14} />}
-                  <span>{copiedId === 'partner_link' ? 'Link Copiado!' : 'Copiar Link'}</span>
-                </button>
-              </div>
+              <p className="text-[11px] text-gray-300 leading-relaxed">
+                A proposta convida o administrador da página a acessar <strong>https://omelhorcupom.com.br</strong>, criar o perfil gratuito da página e copiar o seu próprio <strong>Link Exclusivo de Divulgador</strong> na aba <em>"Meu Perfil → Indique & Ganhe"</em>.
+              </p>
             </div>
 
             {/* Seletor de Modelo de Abordagem */}
