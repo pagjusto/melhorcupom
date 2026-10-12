@@ -104,10 +104,10 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                     : 'text-orange-400 hover:text-white hover:bg-orange-500/15'
                 }`}
               >
-                <Crown size={14} className="text-amber-300 animate-pulse" />
+                <Flame size={14} className="text-orange-400 animate-pulse" />
                 <span>Ofertas Imperdíveis</span>
-                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-0.5">
-                  <span>👑 VIP</span>
+                <span className="text-amber-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-0.5">
+                  👑 VIP
                 </span>
               </button>
 
@@ -543,10 +543,10 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             }`}
           >
             <div className="flex items-center gap-2">
-              <Crown size={16} className="text-amber-300" />
-              <span>👑 Ofertas Imperdíveis</span>
+              <Flame size={16} className="text-orange-400" />
+              <span>🔥 Ofertas Imperdíveis</span>
             </div>
-            <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+            <span className="text-amber-400 text-[10px] font-black uppercase">
               👑 VIP
             </span>
           </button>

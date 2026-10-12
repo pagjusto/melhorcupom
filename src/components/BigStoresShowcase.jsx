@@ -15,7 +15,7 @@ import { getBrandLogo } from '../assets/brands';
 
 const STORE_GROUPS = [
   { id: 'all', label: 'Todas as Lojas & Cupons', icon: '✨' },
-  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '👑', badge: '👑 VIP', isDirectPage: true, targetStore: 'all' },
+  { id: 'imperdiveis', label: 'Ofertas Imperdíveis', icon: '🔥', badge: '👑 VIP', isDirectPage: true, targetStore: 'all' },
   { id: 'shopee', label: 'Shopee Oficial', icon: '🧡', badge: 'Achadinhos', isDirectPage: true, targetStore: 'shopee' },
   { id: 'magalu', label: 'Magazine Luiza', icon: '🛍️', badge: 'Radar Top 10', isDirectPage: true, targetStore: 'magalu' },
   { id: 'shein', label: 'SHEIN Oficial', icon: '🖤', badge: 'Achadinhos TikTok', isDirectPage: true, targetStore: 'shein' },
@@ -26,7 +26,7 @@ const STORE_GROUPS = [
 ];
 
 const QUICK_SEARCH_CHIPS = [
-  { label: '👑 Ofertas Imperdíveis VIP', query: 'imperdivel', icon: '👑' },
+  { label: 'Ofertas Imperdíveis 👑 VIP', query: 'imperdivel', icon: '🔥' },
   { label: 'Shopee', query: 'Shopee', icon: '🧡' },
   { label: 'Magazine Luiza', query: 'Magazine Luiza', icon: '🛍️' },
   { label: 'SHEIN', query: 'SHEIN', icon: '🖤' },
@@ -422,8 +422,12 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
               <span>{group.icon}</span>
               <span>{group.label}</span>
               {group.badge && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                  isActive ? 'bg-black/30 text-white' : 'bg-red-500/20 text-red-300'
+                <span className={`text-[10px] font-black ${
+                  group.id === 'imperdiveis'
+                    ? 'text-amber-400'
+                    : isActive
+                      ? 'px-1.5 py-0.2 rounded-full bg-black/30 text-white'
+                      : 'px-1.5 py-0.2 rounded-full bg-red-500/20 text-red-300'
                 }`}>
                   {group.badge}
                 </span>
