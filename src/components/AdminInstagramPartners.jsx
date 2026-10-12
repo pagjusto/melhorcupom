@@ -159,15 +159,15 @@ const INITIAL_INSTAGRAM_PARTNERS = [
 const PITCH_TEMPLATES = [
   {
     id: 'pitch_milgrau',
-    title: '🔥 Especial Páginas "Mil Grau" da Cidade (Cadastrar e Pegar Link)',
-    badge: 'Páginas Mil Grau',
-    getText: (partner) => `Fala, galera do *${partner.handle}*! Tudo certo por aí? 🔥🚀
+    title: '🔥 Mensagem Universal • Páginas "Mil Grau" & Cidades (Sem nome p/ enviar p/ todas)',
+    badge: 'Universal • Páginas da Cidade',
+    getText: () => `Fala, galera! Tudo certo por aí? 🔥🚀
 
 Acompanhamos o trabalho gigante de vocês movimentando a cidade e sabemos a força que a página tem tanto com a galera quanto com os comércios locais!
 
 Aqui é da direção do *Melhor Cupom (@omelhorcupom.com.br)*! Nós somos a plataforma onde os comércios da cidade divulgam cupons exclusivos e os seguidores economizam até 50% todos os dias em lanches, restaurantes, serviços e nas grandes lojas (Shopee, Magalu, SHEIN, Amazon).
 
-Queremos convidar o *${partner.handle}* para se tornar *Divulgador Oficial Parceiro* na cidade e faturar alto com a audiência de vocês:
+Queremos convidar a página de vocês para se tornar *Divulgador Oficial Parceiro* na cidade e faturar alto com a sua audiência:
 
 💰 *QUANTO A PÁGINA GANHA NO CAIXA:*
 🏪 *+R$ 5,00 de saldo* por cada *Comércio / Empresa da cidade* que se cadastrar e assinar VIP pelo link de divulgador de vocês!
@@ -176,7 +176,7 @@ Queremos convidar o *${partner.handle}* para se tornar *Divulgador Oficial Parce
 
 📲 *COMO SE CADASTRAR E PEGAR SEU LINK DE DIVULGADOR (leva 1 minuto):*
 1️⃣ Acesse o nosso site oficial: 👉 https://omelhorcupom.com.br
-2️⃣ Crie a conta gratuita da página *${partner.handle}*
+2️⃣ Crie a conta gratuita da página de vocês
 3️⃣ Acesse o menu *"Meu Perfil / Indique & Ganhe"* para pegar o seu *Link Exclusivo de Divulgador* e acompanhar o saldo em tempo real!
 
 💡 *Simulação rápida pra cidade:*
@@ -186,24 +186,24 @@ Bora cadastrar a página hoje e pegar o link de divulgador de vocês? Qualquer d
   },
   {
     id: 'pitch_completo',
-    title: '🔥 Proposta Completa (Cadastrar no Site + Pegar Link de Divulgador)',
-    badge: 'Mais Converte',
-    getText: (partner) => `Olá, equipe do *${partner.handle}*! Tudo bem? 👋✨
+    title: '🔥 Proposta Universal Completa (Páginas de Ofertas, Humor e Notícias)',
+    badge: 'Universal • Completo',
+    getText: () => `Olá, equipe! Tudo bem por aí? 👋✨
 
-Acompanho o perfil de vocês e vimos que o público de vocês adora boas oportunidades e economia!
+Acompanhamos o perfil de vocês e vimos que o público da página adora boas oportunidades e economia!
 
 Somos do *Melhor Cupom (@omelhorcupom.com.br)*, o clube oficial de descontos locais e nacionais (com cupons de até 50% OFF em restaurantes, comércios e achadinhos virais da Shopee, Magalu e SHEIN).
 
-Queremos convidar a página *${partner.handle}* para se cadastrar como *Divulgador Parceiro Oficial* e monetizar com a audiência de vocês:
+Queremos convidar a página de vocês para se cadastrar como *Divulgador Parceiro Oficial* e monetizar com a sua audiência:
 
 💰 *COMO FUNCIONA O SEU SALDO DE DIVULGADOR:*
 ✅ *+R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo seu link de divulgador!
 ✅ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo seu link de divulgador!
 🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir a partir de *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
 
-📲 *COMO PEGAR O LINK DE DIVULGADOR DA PÁGINA:*
-1️⃣ Acesse: 👉 https://omelhorcupom.com.br
-2️⃣ Faça o cadastro rápido do perfil da página
+📲 *COMO SE CADASTRAR E PEGAR SEU LINK DE DIVULGADOR:*
+1️⃣ Acesse o nosso site oficial: 👉 https://omelhorcupom.com.br
+2️⃣ Faça o cadastro gratuito do perfil da página
 3️⃣ Dentro do seu painel (*Meu Perfil → Indique & Ganhe*), copie o seu *Link Exclusivo de Divulgador* para colocar nos Stories e na Bio!
 
 📈 *Simulação rápida para a página de vocês:*
@@ -213,9 +213,9 @@ Vamos ativar essa parceria hoje? Faça o cadastro lá no site e nos avise aqui p
   },
   {
     id: 'pitch_curto_dm',
-    title: '⚡ Abordagem Rápida para Direct (Convidar p/ Cadastro de Divulgador)',
-    badge: 'Ideal p/ 1º Contato',
-    getText: (partner) => `Opa, galera do *${partner.handle}*! Tudo ótimo por aí? 🚀
+    title: '⚡ Abordagem Universal Curta p/ Direct (Sem nome • Copiar e Colar)',
+    badge: 'Universal • Rápido',
+    getText: () => `Opa, galera! Tudo ótimo por aí? 🚀
 
 Aqui é da direção do *@omelhorcupom.com.br*! Estamos selecionando grandes páginas das cidades para o nosso *Programa Oficial de Divulgadores Parceiros*.
 
@@ -434,49 +434,42 @@ export const AdminInstagramPartners = ({ showToast }) => {
     window.open(`https://www.instagram.com/${clean}/`, '_blank');
   };
 
-  // Selecionar ou importar rapidamente uma página do Radar Mil Grau e já abrir a proposta pronta
+  // Copiar a proposta universal e já abrir o Instagram da página para colar no Direct
   const handleSelectOrImportMilGrauPage = (item) => {
+    navigator.clipboard.writeText(generatedMessage);
+    setCopiedId('pitch_msg');
+    setTimeout(() => setCopiedId(null), 2500);
+
     const existing = partners.find(
       p => (p.handle || '').toLowerCase() === (item.handle || '').toLowerCase()
     );
     if (existing) {
       setSelectedPartnerId(existing.id);
-      setSelectedTemplateId('pitch_milgrau');
-      if (showToast) {
-        showToast(`🔥 ${existing.handle} selecionada! Proposta pronta para copiar abaixo.`);
-      }
-      return;
+    } else {
+      const cleanCode = (item.code || item.handle.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8) + '5').toUpperCase();
+      const created = {
+        id: `ig_partner_${Date.now()}`,
+        handle: item.handle.startsWith('@') ? item.handle : `@${item.handle}`,
+        name: item.city.includes(' - ') ? `${item.name} (${item.city})` : `${item.name} (${item.city}/${item.state})`,
+        followers: item.followers || '50k+',
+        code: cleanCode,
+        pixKey: 'A definir no saque',
+        whatsapp: '',
+        usersReferred: 0,
+        storesReferred: 0,
+        paidAmount: 0,
+        withdrawalRequested: false,
+        createdAt: new Date().toLocaleDateString('pt-BR')
+      };
+      const updated = [created, ...partners];
+      savePartners(updated);
+      setSelectedPartnerId(created.id);
     }
 
-    const cleanCode = (item.code || item.handle.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8) + '5').toUpperCase();
-    const created = {
-      id: `ig_partner_${Date.now()}`,
-      handle: item.handle.startsWith('@') ? item.handle : `@${item.handle}`,
-      name: item.city.includes(' - ') ? `${item.name} (${item.city})` : `${item.name} (${item.city}/${item.state})`,
-      followers: item.followers || '50k+',
-      code: cleanCode,
-      pixKey: 'A definir no saque',
-      whatsapp: '',
-      usersReferred: 0,
-      storesReferred: 0,
-      paidAmount: 0,
-      withdrawalRequested: false,
-      createdAt: new Date().toLocaleDateString('pt-BR')
-    };
-
-    const updated = [created, ...partners];
-    savePartners(updated);
-    setSelectedPartnerId(created.id);
-    setSelectedTemplateId('pitch_milgrau');
-
-    confetti({
-      particleCount: 55,
-      spread: 65,
-      origin: { y: 0.6 }
-    });
+    handleOpenInstagramDM(item.handle);
 
     if (showToast) {
-      showToast(`🚀 Proposta de divulgador para ${created.handle} gerada abaixo!`);
+      showToast(`📋 Proposta universal copiada! Abrindo ${item.handle} p/ você só colar no Direct!`);
     }
   };
 
@@ -548,7 +541,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     ];
   }, [citySearchQuery]);
 
-  // Gerar Criativo Visual de Proposta Oficial (1080x1350) para enviar no Direct/WhatsApp da página
+  // Gerar Criativo Visual Universal de Proposta Oficial (1080x1350) para enviar no Direct/WhatsApp de qualquer página
   const handleDownloadPartnerCard = async () => {
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
@@ -579,10 +572,10 @@ export const AdminInstagramPartners = ({ showToast }) => {
     ctx.textAlign = 'center';
     ctx.fillText('🤝 CONVITE OFICIAL DE PARCERIA AFILIADA', 540, 113);
 
-    // Nome da Página Convidada
+    // Título Universal para Páginas
     ctx.fillStyle = '#FBBF24';
-    ctx.font = '900 52px Inter, sans-serif';
-    ctx.fillText(activePartner.handle, 540, 205);
+    ctx.font = '900 48px Inter, sans-serif';
+    ctx.fillText('PÁGINAS & GUIAS DA CIDADE', 540, 205);
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 40px Inter, sans-serif';
@@ -661,11 +654,11 @@ export const AdminInstagramPartners = ({ showToast }) => {
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
-    a.download = `proposta-parceria-${activePartner.handle.replace('@', '')}.png`;
+    a.download = 'proposta-universal-paginas-parceiras.png';
     a.click();
 
     if (showToast) {
-      showToast(`Arte da proposta para ${activePartner.handle} baixada com sucesso!`);
+      showToast('Arte universal da proposta baixada! Pode enviar para todas as páginas.');
     }
   };
 
@@ -689,22 +682,31 @@ export const AdminInstagramPartners = ({ showToast }) => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
-              Oferta Comercial & Saldo de Divulgadores para Páginas
+              Oferta Comercial Universal & Saldo de Divulgadores
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Convide páginas das cidades para se cadastrarem no site e pegarem o <strong>Link de Divulgador</strong> no próprio perfil! Cada indicação fica acumulada no <strong>Saldo do Caixa</strong> da página parceira (<code className="text-amber-300 font-mono">+R$ 5,00 por empresa/comércio que se cadastrar e assinar VIP</code> e <code className="text-emerald-300 font-mono">+R$ 3,00 por usuário que assinar VIP</code>), com saque PIX liberado a partir de <strong>R$ 250,00</strong>.
+              Mensagem <strong>100% universal (sem nome de página específica)</strong>: copie uma única vez e envie para quantas páginas quiser! Elas entram em <strong>omelhorcupom.com.br</strong>, criam a conta e pegam o próprio <strong>Link de Divulgador</strong> no perfil.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
+              onClick={() => handleCopyText(generatedMessage, 'pitch_header')}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl transition-all hover:scale-105 cursor-pointer"
+            >
+              {copiedId === 'pitch_header' ? <Check size={17} /> : <Copy size={17} />}
+              <span>{copiedId === 'pitch_header' ? '✅ Proposta Universal Copiada!' : '📋 Copiar Proposta Universal (Enviar p/ Todas)'}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handleDownloadPartnerCard}
               className="bg-gradient-to-r from-[#FF5F00] via-rose-600 to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white font-black px-5 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-fuchsia-900/40 transition-all hover:scale-105 cursor-pointer"
             >
               <Download size={17} />
-              <span>🎨 Baixar Card da Oferta p/ Enviar ({activePartner.handle})</span>
+              <span>🎨 Baixar Card Universal da Oferta</span>
             </button>
           </div>
         </div>
@@ -777,7 +779,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
               <span>🔎 Buscador de Instagrams "Mil Grau" das Cidades do Brasil</span>
             </h3>
             <p className="text-xs text-gray-300 max-w-3xl">
-              Páginas estilo <strong>@videiramilgrau_sc</strong>, <strong>@chapecomilgrauoficial</strong>, <strong>@floripamilgrauoficial</strong> e <strong>@curitibamilgrau</strong> têm alto engajamento local e milhares de seguidores. Clique em <strong>"⚡ Gerar Proposta de Parceria"</strong> para montar o convite convidando a página a se cadastrar no site e pegar seu próprio <strong>Link de Divulgador</strong>!
+              Clique em <strong>"📋 Copiar Proposta & Abrir IG"</strong> em qualquer página abaixo: o sistema copia o convite universal (sem nomes específicos) e já abre o Instagram da página para você só dar <strong>Colar (Ctrl+V)</strong> no Direct!
             </p>
           </div>
 
@@ -843,7 +845,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 <span>Sugestões automáticas de @ para a cidade de "{citySearchQuery.trim()}":</span>
               </span>
               <span className="text-[11px] text-gray-400">
-                Clique em <strong>Abrir IG</strong> para conferir qual @ a cidade usa ou em <strong>Gerar Proposta</strong> para montar o convite!
+                Clique em <strong>Copiar & Abrir IG</strong> para já abrir o perfil com a proposta copiada!
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -862,17 +864,8 @@ export const AdminInstagramPartners = ({ showToast }) => {
                       onClick={() => handleSelectOrImportMilGrauPage(sug)}
                       className="flex-1 bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-400 text-white font-black py-1.5 px-2.5 rounded-lg text-[11px] flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <Sparkles size={12} />
-                      <span>Gerar Proposta</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenInstagramDM(sug.handle)}
-                      className="bg-white/10 hover:bg-white/20 text-white font-bold py-1.5 px-2.5 rounded-lg text-[11px] flex items-center gap-1 cursor-pointer"
-                      title="Verificar perfil no Instagram"
-                    >
-                      <Instagram size={12} />
-                      <span>Abrir IG</span>
+                      <Copy size={12} />
+                      <span>Copiar & Abrir IG</span>
                     </button>
                   </div>
                 </div>
@@ -930,21 +923,17 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   <button
                     type="button"
                     onClick={() => handleSelectOrImportMilGrauPage(item)}
-                    className={`flex-1 py-2 px-2.5 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-gradient-to-r from-[#FF5F00] to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white'
-                    }`}
+                    className="flex-1 py-2 px-2.5 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-gradient-to-r from-[#FF5F00] to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white"
                   >
-                    <Sparkles size={12} />
-                    <span>{isSelected ? 'Proposta Ativa Abaixo' : '⚡ Gerar Proposta de Parceria'}</span>
+                    <Copy size={12} />
+                    <span>📋 Copiar Proposta & Abrir IG</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleOpenInstagramDM(item.handle)}
                     className="bg-[#1E1E30] hover:bg-fuchsia-600/30 border border-white/10 hover:border-fuchsia-400 text-fuchsia-300 p-2 rounded-xl transition-all cursor-pointer"
-                    title={`Abrir perfil ${item.handle} no Instagram para mandar Direct`}
+                    title={`Abrir perfil ${item.handle} no Instagram`}
                   >
                     <Instagram size={14} />
                   </button>
@@ -966,10 +955,10 @@ export const AdminInstagramPartners = ({ showToast }) => {
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-black text-white">
-                  1. Adicionar Página p/ Prospecção
+                  1. Adicionar Página p/ Controle de Saldo
                 </h3>
                 <p className="text-[11px] text-gray-400">
-                  Adicione o @ da página para personalizar a proposta e acompanhar o saldo
+                  Opcional: registre páginas parceiras para acompanhar indicações e saques PIX
                 </p>
               </div>
             </div>
@@ -1027,7 +1016,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 className="w-full bg-gradient-to-r from-fuchsia-600 to-[#FF5F00] hover:from-fuchsia-500 hover:to-[#E04F00] text-white font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
               >
                 <Plus size={15} />
-                <span>Adicionar Página & Gerar Proposta</span>
+                <span>Adicionar Página na Lista</span>
               </button>
             </form>
           </div>
@@ -1035,7 +1024,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
           {/* Lista Rápida de Seleção */}
           <div className="bg-[#151522] border border-white/10 rounded-3xl p-5 shadow-xl space-y-3">
             <span className="text-xs font-black text-gray-300 uppercase tracking-wider block">
-              Selecione a Página para Gerar a Oferta:
+              Páginas na Lista (Clique p/ abrir no IG):
             </span>
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {partners.map((p) => {
@@ -1077,16 +1066,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
           </div>
         </div>
 
-        {/* Coluna Direita: Texto Pronto da Oferta + Instrução de Cadastro no Site */}
+        {/* Coluna Direita: Texto Pronto Universal da Oferta */}
         <div className="lg:col-span-7 bg-[#151522] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col justify-between space-y-5">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-fuchsia-400 block">
-                  2. Proposta Pronta para Enviar (Convite p/ Cadastrar e Pegar Link de Divulgador)
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
+                  2. Proposta Universal Pronta (Sem nome específico • Envie para todas as páginas)
                 </span>
                 <h3 className="text-lg font-black text-white">
-                  Convite Oficial para <span className="text-amber-400">{activePartner.handle}</span>
+                  Convite Oficial p/ <span className="text-amber-400">Todas as Páginas Parceiras</span>
                 </h3>
               </div>
 
@@ -1097,24 +1086,24 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white text-xs font-black px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-md hover:opacity-95 cursor-pointer"
                 >
                   <Instagram size={14} />
-                  <span>Abrir Perfil no Instagram</span>
+                  <span>Abrir {activePartner.handle} no IG</span>
                 </button>
               </div>
             </div>
 
-            {/* Fluxo de Cadastro da Página no Site */}
-            <div className="bg-black/50 border border-amber-500/30 rounded-2xl p-4 space-y-2">
+            {/* Fluxo Universal de Cadastro da Página no Site */}
+            <div className="bg-black/50 border border-emerald-500/30 rounded-2xl p-4 space-y-2">
               <div className="flex items-center justify-between text-xs flex-wrap gap-1">
-                <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                <span className="font-bold text-emerald-300 flex items-center gap-1.5">
                   <LinkIcon size={14} />
-                  <span>Como a página {activePartner.handle} pega o Link de Divulgador:</span>
+                  <span>Mensagem Única Universal (Copie 1 vez e cole em todas as páginas):</span>
                 </span>
-                <span className="text-[11px] text-emerald-400 font-bold">
-                  100% Automático no Painel do Usuário
+                <span className="text-[11px] text-amber-300 font-bold">
+                  Link no texto: https://omelhorcupom.com.br
                 </span>
               </div>
               <p className="text-[11px] text-gray-300 leading-relaxed">
-                A proposta convida o administrador da página a acessar <strong>https://omelhorcupom.com.br</strong>, criar o perfil gratuito da página e copiar o seu próprio <strong>Link Exclusivo de Divulgador</strong> na aba <em>"Meu Perfil → Indique & Ganhe"</em>.
+                O texto abaixo <strong>não cita o nome de nenhuma página específica</strong>. Você pode copiar uma única vez e sair colando no Direct/WhatsApp de dezenas de páginas seguidas! Cada página acessa <strong>https://omelhorcupom.com.br</strong>, se cadastra e pega o próprio <strong>Link de Divulgador</strong> no perfil.
               </p>
             </div>
 
