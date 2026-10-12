@@ -163,8 +163,6 @@ const PITCH_TEMPLATES = [
     badge: 'Universal • Páginas da Cidade',
     getText: () => `Fala, galera! Tudo certo por aí? 🔥🚀
 
-Acompanhamos o trabalho gigante de vocês movimentando a cidade e sabemos a força que a página tem tanto com a galera quanto com os comércios locais!
-
 Aqui é da direção do *Melhor Cupom (@omelhorcupom.com.br)*! Nós somos a plataforma onde os comércios da cidade divulgam cupons exclusivos e os seguidores economizam até 50% todos os dias em lanches, restaurantes, serviços e nas grandes lojas (Shopee, Magalu, SHEIN, Amazon).
 
 Queremos convidar a página de vocês para se tornar *Divulgador Oficial Parceiro* na cidade e faturar alto com a sua audiência:
@@ -178,9 +176,6 @@ Queremos convidar a página de vocês para se tornar *Divulgador Oficial Parceir
 1️⃣ Acesse o nosso site oficial: 👉 https://omelhorcupom.com.br
 2️⃣ Crie a conta gratuita da página de vocês
 3️⃣ Acesse o menu *"Meu Perfil / Indique & Ganhe"* para pegar o seu *Link Exclusivo de Divulgador* e acompanhar o saldo em tempo real!
-
-💡 *Simulação rápida pra cidade:*
-Com apenas 20 comércios da cidade divulgando cupom (R$ 100) + 50 seguidores no clube VIP (R$ 150), vocês já batem *R$ 250,00* e sacam no PIX!
 
 Bora cadastrar a página hoje e pegar o link de divulgador de vocês? Qualquer dúvida estamos à disposição! 🤝🔥`
   },
