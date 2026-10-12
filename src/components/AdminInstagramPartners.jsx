@@ -159,9 +159,9 @@ const INITIAL_INSTAGRAM_PARTNERS = [
 const PITCH_TEMPLATES = [
   {
     id: 'pitch_milgrau',
-    title: '🔥 Mensagem Universal • Páginas "Mil Grau" & Cidades (Sem nome p/ enviar p/ todas)',
-    badge: 'Universal • Páginas da Cidade',
-    getText: () => `Fala, galera! Tudo certo por aí? 🔥🚀
+    title: '🔥 Mensagem Universal em 2 Partes • Páginas "Mil Grau" & Cidades',
+    badge: 'Universal • 2 Partes p/ Direct',
+    getPart1: () => `Fala, galera! Tudo certo por aí? 🔥🚀
 
 Aqui é da direção do *Melhor Cupom (@omelhorcupom.com.br)*! Nós somos a plataforma onde os comércios da cidade divulgam cupons exclusivos e os seguidores economizam até 50% todos os dias em lanches, restaurantes, serviços e nas grandes lojas (Shopee, Magalu, SHEIN, Amazon).
 
@@ -169,8 +169,8 @@ Queremos convidar a página de vocês para se tornar *Divulgador Oficial Parceir
 
 💰 *QUANTO A PÁGINA GANHA NO CAIXA:*
 🏪 *+R$ 5,00 de saldo* por cada *Comércio / Empresa da cidade* que se cadastrar e assinar VIP pelo link de divulgador de vocês!
-🙋‍♂️ *+R$ 3,00 de saldo* por cada *Seguidor / Usuário* que ativar o Clube VIP pelo link de divulgador de vocês!
-🏦 *Saque Direto no PIX:* Todo valor entra na hora no *Saldo do Caixa* do painel de vocês. Bateu *R$ 250,00 de saldo*, o saque via PIX já fica liberado direto pra conta da página!
+🙋‍♂️ *+R$ 3,00 de saldo* por cada *Seguidor / Usuário* que ativar o Clube VIP pelo link de divulgador de vocês!`,
+    getPart2: () => `🏦 *Saque Direto no PIX:* Todo valor entra na hora no *Saldo do Caixa* do painel de vocês. Bateu *R$ 250,00 de saldo*, o saque via PIX já fica liberado direto pra conta da página!
 
 📲 *COMO SE CADASTRAR E PEGAR SEU LINK DE DIVULGADOR (leva 1 minuto):*
 1️⃣ Acesse o nosso site oficial: 👉 https://omelhorcupom.com.br
@@ -181,11 +181,9 @@ Bora cadastrar a página hoje e pegar o link de divulgador de vocês? Qualquer d
   },
   {
     id: 'pitch_completo',
-    title: '🔥 Proposta Universal Completa (Páginas de Ofertas, Humor e Notícias)',
-    badge: 'Universal • Completo',
-    getText: () => `Olá, equipe! Tudo bem por aí? 👋✨
-
-Acompanhamos o perfil de vocês e vimos que o público da página adora boas oportunidades e economia!
+    title: '🔥 Proposta Universal em 2 Partes (Páginas de Ofertas, Humor e Notícias)',
+    badge: 'Universal • Completo (2x)',
+    getPart1: () => `Olá, equipe! Tudo bem por aí? 👋✨
 
 Somos do *Melhor Cupom (@omelhorcupom.com.br)*, o clube oficial de descontos locais e nacionais (com cupons de até 50% OFF em restaurantes, comércios e achadinhos virais da Shopee, Magalu e SHEIN).
 
@@ -193,36 +191,35 @@ Queremos convidar a página de vocês para se cadastrar como *Divulgador Parceir
 
 💰 *COMO FUNCIONA O SEU SALDO DE DIVULGADOR:*
 ✅ *+R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo seu link de divulgador!
-✅ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo seu link de divulgador!
-🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir a partir de *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
+✅ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo seu link de divulgador!`,
+    getPart2: () => `🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
 
 📲 *COMO SE CADASTRAR E PEGAR SEU LINK DE DIVULGADOR:*
 1️⃣ Acesse o nosso site oficial: 👉 https://omelhorcupom.com.br
 2️⃣ Faça o cadastro gratuito do perfil da página
 3️⃣ Dentro do seu painel (*Meu Perfil → Indique & Ganhe*), copie o seu *Link Exclusivo de Divulgador* para colocar nos Stories e na Bio!
 
-📈 *Simulação rápida para a página de vocês:*
-• Com apenas 50 seguidores no clube (R$ 150) + 20 comércios que se cadastrarem e assinarem VIP (R$ 100), vocês já batem *R$ 250,00 de saldo* e liberam o saque no PIX!
-
-Vamos ativar essa parceria hoje? Faça o cadastro lá no site e nos avise aqui para enviarmos o Kit de Artes dos Stories! 🤝🚀`
+Vamos ativar essa parceria hoje? Qualquer dúvida estamos à disposição! 🤝🚀`
   },
   {
     id: 'pitch_curto_dm',
-    title: '⚡ Abordagem Universal Curta p/ Direct (Sem nome • Copiar e Colar)',
-    badge: 'Universal • Rápido',
-    getText: () => `Opa, galera! Tudo ótimo por aí? 🚀
+    title: '⚡ Abordagem Universal Curta em 2 Partes p/ Direct',
+    badge: 'Universal • Rápido (2x)',
+    getPart1: () => `Opa, galera! Tudo ótimo por aí? 🚀
 
 Aqui é da direção do *@omelhorcupom.com.br*! Estamos selecionando grandes páginas das cidades para o nosso *Programa Oficial de Divulgadores Parceiros*.
 
-Funciona assim: vocês se cadastram no site, pegam o *Link de Divulgador* exclusivo da página e acumulam saldo em dinheiro a cada indicação:
+Vocês acumulam saldo em dinheiro a cada indicação:
 🏪 *+R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
-🙋‍♂️ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que ativar o Clube VIP pelo link de vocês!
-💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado* no painel, é só solicitar o saque direto para a chave PIX da página!
+🙋‍♂️ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que ativar o Clube VIP pelo link de vocês!`,
+    getPart2: () => `💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado* no painel, é só solicitar o saque direto para a chave PIX da página!
 
 📲 *Para pegar o Link de Divulgador da página agora mesmo:*
-Basta acessar 👉 https://omelhorcupom.com.br , criar sua conta gratuita e copiar seu link na aba *"Meu Perfil / Indique & Ganhe"*!
+1️⃣ Acesse 👉 https://omelhorcupom.com.br
+2️⃣ Crie sua conta gratuita da página
+3️⃣ Copie seu link exclusivo na aba *"Meu Perfil / Indique & Ganhe"*!
 
-Bora ativar? Assim que cadastrarem me avisa aqui pra eu liberar o Kit de Stories pra vocês! 💰🔥`
+Bora ativar? Assim que cadastrarem me avisa aqui! 💰🔥`
   }
 ];
 
@@ -280,7 +277,9 @@ export const AdminInstagramPartners = ({ showToast }) => {
   }, [partners, selectedPartnerId]);
 
   const activeTemplate = PITCH_TEMPLATES.find(t => t.id === selectedTemplateId) || PITCH_TEMPLATES[0];
-  const generatedMessage = activeTemplate.getText(activePartner);
+  const generatedPart1 = activeTemplate.getPart1(activePartner);
+  const generatedPart2 = activeTemplate.getPart2(activePartner);
+  const generatedMessage = `${generatedPart1}\n\n${generatedPart2}`;
   const partnerLink = `https://omelhorcupom.com.br/convite/${activePartner.code}`;
 
   // Totais financeiros de todas as páginas
@@ -429,10 +428,11 @@ export const AdminInstagramPartners = ({ showToast }) => {
     window.open(`https://www.instagram.com/${clean}/`, '_blank');
   };
 
-  // Copiar a proposta universal e já abrir o Instagram da página para colar no Direct
-  const handleSelectOrImportMilGrauPage = (item) => {
-    navigator.clipboard.writeText(generatedMessage);
-    setCopiedId('pitch_msg');
+  // Copiar a Parte 1 ou Parte 2 da proposta universal e (na Parte 1) já abrir o Instagram da página
+  const handleSelectOrImportMilGrauPage = (item, part = 1) => {
+    const textToCopy = part === 2 ? generatedPart2 : generatedPart1;
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedId(`milgrau_${item.handle}_p${part}`);
     setTimeout(() => setCopiedId(null), 2500);
 
     const existing = partners.find(
@@ -461,10 +461,15 @@ export const AdminInstagramPartners = ({ showToast }) => {
       setSelectedPartnerId(created.id);
     }
 
-    handleOpenInstagramDM(item.handle);
-
-    if (showToast) {
-      showToast(`📋 Proposta universal copiada! Abrindo ${item.handle} p/ você só colar no Direct!`);
+    if (part === 1) {
+      handleOpenInstagramDM(item.handle);
+      if (showToast) {
+        showToast(`📋 Parte 1 copiada! Abrindo ${item.handle} p/ colar no Direct (depois copie a Parte 2)!`);
+      }
+    } else {
+      if (showToast) {
+        showToast(`📋 Parte 2 (Link + Saque PIX) copiada! Agora é só colar no Direct de ${item.handle}!`);
+      }
     }
   };
 
@@ -677,31 +682,40 @@ export const AdminInstagramPartners = ({ showToast }) => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
-              Oferta Comercial Universal & Saldo de Divulgadores
+              Oferta Comercial Universal em 2 Partes (Direct do Instagram)
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Mensagem <strong>100% universal (sem nome de página específica)</strong>: copie uma única vez e envie para quantas páginas quiser! Elas entram em <strong>omelhorcupom.com.br</strong>, criam a conta e pegam o próprio <strong>Link de Divulgador</strong> no perfil.
+              Dividida em <strong>Parte 1</strong> e <strong>Parte 2</strong> para caber perfeitamente no limite de caracteres do Direct do Instagram sem cortar nada!
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
-              onClick={() => handleCopyText(generatedMessage, 'pitch_header')}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl transition-all hover:scale-105 cursor-pointer"
+              onClick={() => handleCopyText(generatedPart1, 'pitch_header_p1')}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-3 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl transition-all hover:scale-105 cursor-pointer"
             >
-              {copiedId === 'pitch_header' ? <Check size={17} /> : <Copy size={17} />}
-              <span>{copiedId === 'pitch_header' ? '✅ Proposta Universal Copiada!' : '📋 Copiar Proposta Universal (Enviar p/ Todas)'}</span>
+              {copiedId === 'pitch_header_p1' ? <Check size={16} /> : <Copy size={16} />}
+              <span>{copiedId === 'pitch_header_p1' ? '✅ Parte 1 Copiada!' : '📋 1º Copiar Parte 1'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleCopyText(generatedPart2, 'pitch_header_p2')}
+              className="bg-amber-500 hover:bg-amber-400 text-black font-black px-4 py-3 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl transition-all hover:scale-105 cursor-pointer"
+            >
+              {copiedId === 'pitch_header_p2' ? <Check size={16} /> : <Copy size={16} />}
+              <span>{copiedId === 'pitch_header_p2' ? '✅ Parte 2 Copiada!' : '📋 2º Copiar Parte 2'}</span>
             </button>
 
             <button
               type="button"
               onClick={handleDownloadPartnerCard}
-              className="bg-gradient-to-r from-[#FF5F00] via-rose-600 to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white font-black px-5 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-fuchsia-900/40 transition-all hover:scale-105 cursor-pointer"
+              className="bg-gradient-to-r from-[#FF5F00] via-rose-600 to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white font-black px-4 py-3 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-fuchsia-900/40 transition-all hover:scale-105 cursor-pointer"
             >
-              <Download size={17} />
-              <span>🎨 Baixar Card Universal da Oferta</span>
+              <Download size={16} />
+              <span>🎨 Card Universal</span>
             </button>
           </div>
         </div>
@@ -774,7 +788,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
               <span>🔎 Buscador de Instagrams "Mil Grau" das Cidades do Brasil</span>
             </h3>
             <p className="text-xs text-gray-300 max-w-3xl">
-              Clique em <strong>"📋 Copiar Proposta & Abrir IG"</strong> em qualquer página abaixo: o sistema copia o convite universal (sem nomes específicos) e já abre o Instagram da página para você só dar <strong>Colar (Ctrl+V)</strong> no Direct!
+              Como o Direct do Instagram tem limite de caracteres por mensagem, clique primeiro em <strong>"📋 1º Parte 1 + IG"</strong> (ele copia a Parte 1 e abre o perfil) e depois clique em <strong>"📋 2º Parte 2"</strong> para colar o restante com o link!
             </p>
           </div>
 
@@ -840,7 +854,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 <span>Sugestões automáticas de @ para a cidade de "{citySearchQuery.trim()}":</span>
               </span>
               <span className="text-[11px] text-gray-400">
-                Clique em <strong>Copiar & Abrir IG</strong> para já abrir o perfil com a proposta copiada!
+                Envie em 2 partes no Direct para não cortar o texto!
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -856,11 +870,19 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
-                      onClick={() => handleSelectOrImportMilGrauPage(sug)}
-                      className="flex-1 bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-400 text-white font-black py-1.5 px-2.5 rounded-lg text-[11px] flex items-center justify-center gap-1 cursor-pointer"
+                      onClick={() => handleSelectOrImportMilGrauPage(sug, 1)}
+                      className="flex-1 bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-400 text-white font-black py-1.5 px-2 rounded-lg text-[11px] flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <Copy size={12} />
-                      <span>Copiar & Abrir IG</span>
+                      <Copy size={11} />
+                      <span>1º Parte 1 + IG</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectOrImportMilGrauPage(sug, 2)}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-1.5 px-2.5 rounded-lg text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Copy size={11} />
+                      <span>2º Parte 2</span>
                     </button>
                   </div>
                 </div>
@@ -917,11 +939,22 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 <div className="flex items-center gap-1.5 pt-1 border-t border-white/5">
                   <button
                     type="button"
-                    onClick={() => handleSelectOrImportMilGrauPage(item)}
-                    className="flex-1 py-2 px-2.5 rounded-xl text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-gradient-to-r from-[#FF5F00] to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white"
+                    onClick={() => handleSelectOrImportMilGrauPage(item, 1)}
+                    className="flex-1 py-2 px-2 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer bg-gradient-to-r from-[#FF5F00] to-fuchsia-600 hover:from-[#E04F00] hover:to-fuchsia-500 text-white"
+                    title="Copia a Parte 1 e abre o Instagram da página"
                   >
-                    <Copy size={12} />
-                    <span>📋 Copiar Proposta & Abrir IG</span>
+                    {copiedId === `milgrau_${item.handle}_p1` ? <Check size={12} /> : <Copy size={12} />}
+                    <span>1º Parte 1 + IG</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectOrImportMilGrauPage(item, 2)}
+                    className="py-2 px-2.5 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white"
+                    title="Copia a Parte 2 (Saque PIX + Link)"
+                  >
+                    {copiedId === `milgrau_${item.handle}_p2` ? <Check size={12} /> : <Copy size={12} />}
+                    <span>2º Parte 2</span>
                   </button>
 
                   <button
@@ -1061,16 +1094,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
           </div>
         </div>
 
-        {/* Coluna Direita: Texto Pronto Universal da Oferta */}
+        {/* Coluna Direita: Texto Pronto Universal da Oferta em 2 Partes */}
         <div className="lg:col-span-7 bg-[#151522] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col justify-between space-y-5">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
-                  2. Proposta Universal Pronta (Sem nome específico • Envie para todas as páginas)
+                  2. Proposta Universal em 2 Partes (Cabe sem cortar no Direct do Instagram)
                 </span>
                 <h3 className="text-lg font-black text-white">
-                  Convite Oficial p/ <span className="text-amber-400">Todas as Páginas Parceiras</span>
+                  Convite Oficial em <span className="text-amber-400">2 Mensagens Curta p/ Direct</span>
                 </h3>
               </div>
 
@@ -1084,22 +1117,6 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   <span>Abrir {activePartner.handle} no IG</span>
                 </button>
               </div>
-            </div>
-
-            {/* Fluxo Universal de Cadastro da Página no Site */}
-            <div className="bg-black/50 border border-emerald-500/30 rounded-2xl p-4 space-y-2">
-              <div className="flex items-center justify-between text-xs flex-wrap gap-1">
-                <span className="font-bold text-emerald-300 flex items-center gap-1.5">
-                  <LinkIcon size={14} />
-                  <span>Mensagem Única Universal (Copie 1 vez e cole em todas as páginas):</span>
-                </span>
-                <span className="text-[11px] text-amber-300 font-bold">
-                  Link no texto: https://omelhorcupom.com.br
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-300 leading-relaxed">
-                O texto abaixo <strong>não cita o nome de nenhuma página específica</strong>. Você pode copiar uma única vez e sair colando no Direct/WhatsApp de dezenas de páginas seguidas! Cada página acessa <strong>https://omelhorcupom.com.br</strong>, se cadastra e pega o próprio <strong>Link de Divulgador</strong> no perfil.
-              </p>
             </div>
 
             {/* Seletor de Modelo de Abordagem */}
@@ -1130,44 +1147,84 @@ export const AdminInstagramPartners = ({ showToast }) => {
               </div>
             </div>
 
-            {/* Caixa de Texto Pronta para Copiar */}
-            <div>
-              <textarea
-                rows={11}
-                readOnly
-                value={generatedMessage}
-                className="w-full bg-[#0E0E17] border border-white/15 rounded-2xl p-4 text-xs text-gray-200 font-sans leading-relaxed focus:outline-none"
-              />
+            {/* Duas Caixas Lado a Lado: PARTE 1 e PARTE 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* PARTE 1 */}
+              <div className="bg-[#0E0E17] border border-orange-500/30 rounded-2xl p-4 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-amber-400 uppercase">
+                      📩 Parte 1 (Apresentação + Ganhos)
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {generatedPart1.length} caract.
+                    </span>
+                  </div>
+                  <textarea
+                    rows={9}
+                    readOnly
+                    value={generatedPart1}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-gray-200 font-sans leading-relaxed focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText(generatedPart1, 'pitch_p1')}
+                  className="w-full bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-400 text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+                >
+                  {copiedId === 'pitch_p1' ? <Check size={15} /> : <Copy size={15} />}
+                  <span>{copiedId === 'pitch_p1' ? '✅ Parte 1 Copiada!' : '📋 1º Copiar Parte 1 p/ Direct'}</span>
+                </button>
+              </div>
+
+              {/* PARTE 2 */}
+              <div className="bg-[#0E0E17] border border-emerald-500/30 rounded-2xl p-4 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-emerald-400 uppercase">
+                      📩 Parte 2 (Saque PIX + Link do Site)
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {generatedPart2.length} caract.
+                    </span>
+                  </div>
+                  <textarea
+                    rows={9}
+                    readOnly
+                    value={generatedPart2}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-gray-200 font-sans leading-relaxed focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText(generatedPart2, 'pitch_p2')}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+                >
+                  {copiedId === 'pitch_p2' ? <Check size={15} /> : <Copy size={15} />}
+                  <span>{copiedId === 'pitch_p2' ? '✅ Parte 2 Copiada!' : '📋 2º Copiar Parte 2 p/ Direct'}</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Botões de Disparo Rápido */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => handleCopyText(generatedMessage, 'pitch_msg')}
-              className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              {copiedId === 'pitch_msg' ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
-              <span>{copiedId === 'pitch_msg' ? 'Proposta Copiada!' : '1. Copiar Proposta p/ Direct'}</span>
-            </button>
-
+          {/* Botões Extras (WhatsApp Completo + Baixar Card) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               type="button"
               onClick={() => handleSendWhatsApp(activePartner, generatedMessage)}
               className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
             >
               <MessageCircle size={16} />
-              <span>2. Enviar pelo WhatsApp</span>
+              <span>Enviar Completo pelo WhatsApp</span>
             </button>
 
             <button
               type="button"
               onClick={handleDownloadPartnerCard}
-              className="bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-400 text-white font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+              className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
             >
               <Download size={16} />
-              <span>3. Baixar Imagem da Proposta</span>
+              <span>🎨 Baixar Imagem Universal da Proposta</span>
             </button>
           </div>
         </div>
