@@ -259,7 +259,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
         <div className="flex items-start justify-between gap-2 relative z-10">
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Foto do Produto (para Ofertas Imperdíveis) ou Logo da Marca */}
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-inner relative">
+            <div className="w-10 h-10 rounded-xl bg-white border border-white/20 p-0.5 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#FF5F00]/50 transition-colors shadow-sm relative">
               {coupon.image ? (
                 <img 
                   src={coupon.image} 

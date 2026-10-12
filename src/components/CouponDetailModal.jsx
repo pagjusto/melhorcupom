@@ -186,13 +186,13 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
             {/* Logo da Loja Pulsando */}
             <div className="relative w-20 h-20 mx-auto">
               <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping pointer-events-none" />
-              <div className="relative w-full h-full rounded-2xl bg-[#1C1C2A] border-2 border-emerald-400 p-2 flex items-center justify-center shadow-xl overflow-hidden">
+              <div className="relative w-full h-full rounded-2xl bg-white border-2 border-emerald-400 p-2 flex items-center justify-center shadow-xl overflow-hidden">
                 {store?.logoImage ? (
                   <>
                     <img 
                       src={store.logoImage} 
                       alt={store.name} 
-                      className="w-full h-full object-cover rounded-xl" 
+                      className="w-full h-full object-contain rounded-xl" 
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         const fallback = e.currentTarget.parentElement?.querySelector('.overlay-logo-fallback');
@@ -311,7 +311,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               </button>
 
               <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
-                <div className="w-14 h-14 rounded-2xl bg-[#181822] border border-white/10 flex items-center justify-center overflow-hidden shadow-xl p-1">
+                <div className="w-14 h-14 rounded-2xl bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-xl p-1.5">
                   {storeLogo ? (
                     <>
                       <img 

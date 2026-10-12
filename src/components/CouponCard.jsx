@@ -157,7 +157,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         </div>
 
         {/* 2. LOGO DA EMPRESA COM BORDA RESPECTIVA DA ASSINATURA */}
-        <div className={`absolute bottom-1.5 left-2 w-7 h-7 rounded-md bg-[#181822] shadow-lg flex items-center justify-center overflow-hidden z-20 transition-all duration-300 ${tierConfig.logoBorder}`}>
+        <div className={`absolute bottom-1.5 left-2 w-8 h-8 rounded-lg bg-white shadow-lg flex items-center justify-center overflow-hidden z-20 transition-all duration-300 ${tierConfig.logoBorder}`}>
           {storeLogo ? (
             <>
               <img 
@@ -170,7 +170,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <span className="card-logo-fallback hidden w-full h-full items-center justify-center text-sm bg-[#1D1D2B]">
+              <span className="card-logo-fallback hidden w-full h-full items-center justify-center text-sm bg-white text-black">
                 {store?.logo || '🏪'}
               </span>
             </>
