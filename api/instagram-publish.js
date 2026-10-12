@@ -16,45 +16,115 @@ export const config = {
   maxDuration: 60
 };
 
-// Faz upload temporário do Buffer da arte gerada no Canvas para uma URL pública acessível pelos servidores da Meta
-async function uploadBufferToPublicUrl(buffer, filename = 'post.jpg') {
-  // Tentativa 1: Catbox
-  try {
-    const form = new FormData();
-    form.append('reqtype', 'fileupload');
-    form.append('fileToUpload', new Blob([buffer], { type: 'image/jpeg' }), filename);
-    const res = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form
-    });
-    if (res.ok) {
-      const url = (await res.text()).trim();
-      if (url.startsWith('https://')) return url;
-    }
-  } catch (e) {
-    console.warn('[Meta Graph API] Fallback upload Catbox:', e.message);
-  }
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
-  // Tentativa 2: Tmpfiles.org
-  try {
-    const form = new FormData();
-    form.append('file', new Blob([buffer], { type: 'image/jpeg' }), filename);
-    const res = await fetch('https://tmpfiles.org/api/v1/upload', {
-      method: 'POST',
-      body: form
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const rawUrl = json?.data?.url || '';
-      if (rawUrl) {
-        return rawUrl.replace('http://', 'https://').replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+// Provedor 1: Freeimage.host (CDN Global iili.io - 100% compatível com Meta Graph API e AWS/Vercel)
+async function uploadToFreeimage(buffer) {
+  const form = new FormData();
+  form.append('key', '6d207e02198a847aa98d0a2a901485a5');
+  form.append('action', 'upload');
+  form.append('source', buffer.toString('base64'));
+  form.append('format', 'json');
+
+  const res = await fetch('https://freeimage.host/api/1/upload', {
+    method: 'POST',
+    headers: { 'User-Agent': BROWSER_UA },
+    body: form
+  });
+  if (!res.ok) throw new Error(`Freeimage HTTP ${res.status}`);
+  const json = await res.json();
+  const url = json?.image?.url || json?.image?.display_url || '';
+  if (url.startsWith('https://')) return url;
+  throw new Error('Freeimage não retornou URL HTTPS válida');
+}
+
+// Provedor 2: Uguu.se (Link direto image/jpeg)
+async function uploadToUguu(buffer, filename = 'post.jpg') {
+  const form = new FormData();
+  form.append('files[]', new Blob([buffer], { type: 'image/jpeg' }), filename);
+  const res = await fetch('https://uguu.se/upload', {
+    method: 'POST',
+    headers: { 'User-Agent': BROWSER_UA },
+    body: form
+  });
+  if (!res.ok) throw new Error(`Uguu HTTP ${res.status}`);
+  const json = await res.json();
+  const url = json?.files?.[0]?.url || '';
+  if (url.startsWith('https://')) return url;
+  throw new Error('Uguu não retornou URL HTTPS válida');
+}
+
+// Provedor 3: Litterbox Catbox (Link direto image/jpeg)
+async function uploadToLitterbox(buffer, filename = 'post.jpg') {
+  const form = new FormData();
+  form.append('reqtype', 'fileupload');
+  form.append('time', '12h');
+  form.append('fileToUpload', new Blob([buffer], { type: 'image/jpeg' }), filename);
+  const res = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+    method: 'POST',
+    headers: { 'User-Agent': BROWSER_UA },
+    body: form
+  });
+  if (!res.ok) throw new Error(`Litterbox HTTP ${res.status}`);
+  const url = (await res.text()).trim();
+  if (url.startsWith('https://')) return url;
+  throw new Error('Litterbox não retornou URL HTTPS válida');
+}
+
+// Provedor 4: Catbox.moe (Link direto image/jpeg)
+async function uploadToCatbox(buffer, filename = 'post.jpg') {
+  const form = new FormData();
+  form.append('reqtype', 'fileupload');
+  form.append('fileToUpload', new Blob([buffer], { type: 'image/jpeg' }), filename);
+  const res = await fetch('https://catbox.moe/user/api.php', {
+    method: 'POST',
+    headers: { 'User-Agent': BROWSER_UA },
+    body: form
+  });
+  if (!res.ok) throw new Error(`Catbox HTTP ${res.status}`);
+  const url = (await res.text()).trim();
+  if (url.startsWith('https://')) return url;
+  throw new Error('Catbox não retornou URL HTTPS válida');
+}
+
+// Cria o container de mídia na Meta Graph API tentando múltiplos provedores de CDN JPEG se necessário
+async function createGraphMediaContainer(igAccountId, buffer, filename, extraPayload, accessToken) {
+  const providers = [
+    { name: 'Freeimage CDN', fn: () => uploadToFreeimage(buffer) },
+    { name: 'Uguu CDN', fn: () => uploadToUguu(buffer, filename) },
+    { name: 'Litterbox CDN', fn: () => uploadToLitterbox(buffer, filename) },
+    { name: 'Catbox CDN', fn: () => uploadToCatbox(buffer, filename) }
+  ];
+
+  let lastError = 'Não foi possível gerar URL pública compatível com a Meta Graph API.';
+
+  for (const provider of providers) {
+    try {
+      const publicUrl = await provider.fn();
+      const createRes = await fetch(`https://graph.instagram.com/v20.0/${igAccountId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: publicUrl,
+          ...extraPayload,
+          access_token: accessToken
+        })
+      });
+
+      const createJson = await createRes.json();
+      if (createRes.ok && createJson.id) {
+        return { id: createJson.id, publicUrl, provider: provider.name };
       }
+
+      lastError = createJson?.error?.message || JSON.stringify(createJson);
+      console.warn(`[Meta Graph API] Provedor ${provider.name} (${publicUrl}) rejeitado pela Meta:`, lastError);
+    } catch (err) {
+      lastError = err.message;
+      console.warn(`[Meta Graph API] Falha no provedor ${provider.name}:`, err.message);
     }
-  } catch (e) {
-    console.warn('[Meta Graph API] Fallback upload Tmpfiles:', e.message);
   }
 
-  throw new Error('Não foi possível gerar URL pública da imagem para envio à Meta Graph API.');
+  throw new Error(lastError);
 }
 
 // Aguarda o processamento do container na Meta e publica
@@ -122,13 +192,13 @@ export default async function handler(req, res) {
 
     let feedBuffer = null;
     if (feedImageBase64) {
-      const clean = feedImageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const clean = feedImageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
       feedBuffer = Buffer.from(clean, 'base64');
     }
 
     let storyBuffer = null;
     if (storyImageBase64) {
-      const cleanStory = storyImageBase64.replace(/^data:image\/\w+;base64,/, '');
+      const cleanStory = storyImageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
       storyBuffer = Buffer.from(cleanStory, 'base64');
     } else {
       storyBuffer = feedBuffer;
@@ -149,27 +219,23 @@ export default async function handler(req, res) {
     // ==========================================
     // ETAPA 1: PUBLICAÇÃO OFICIAL NO FEED VIA META GRAPH API (1080x1080)
     // ==========================================
-    const feedPublicUrl = await uploadBufferToPublicUrl(feedBuffer, `feed-${Date.now()}.jpg`);
-
-    const createFeedRes = await fetch(`https://graph.instagram.com/v20.0/${igAccountId}/media`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image_url: feedPublicUrl,
-        caption: caption,
-        access_token: accessToken
-      })
-    });
-
-    const createFeedJson = await createFeedRes.json();
-    if (!createFeedRes.ok || !createFeedJson.id) {
+    let feedContainer;
+    try {
+      feedContainer = await createGraphMediaContainer(
+        igAccountId,
+        feedBuffer,
+        `feed-${Date.now()}.jpg`,
+        { caption },
+        accessToken
+      );
+    } catch (feedErr) {
       return res.status(500).json({
         success: false,
-        error: `Falha ao criar container do Feed na Meta Graph API: ${createFeedJson?.error?.message || JSON.stringify(createFeedJson)}`
+        error: `Falha ao criar container do Feed na Meta Graph API: ${feedErr.message}`
       });
     }
 
-    const publishedFeedId = await publishGraphContainer(igAccountId, createFeedJson.id, accessToken);
+    const publishedFeedId = await publishGraphContainer(igAccountId, feedContainer.id, accessToken);
 
     // Buscar permalink oficial do post publicado
     let postUrl = 'https://www.instagram.com/omelhorcupom.com.br/';
@@ -189,29 +255,20 @@ export default async function handler(req, res) {
     let storyResult = null;
     if (publishStory && storyBuffer && storyBuffer.length > 0) {
       try {
-        const storyPublicUrl = await uploadBufferToPublicUrl(storyBuffer, `story-${Date.now()}.jpg`);
+        const storyContainer = await createGraphMediaContainer(
+          igAccountId,
+          storyBuffer,
+          `story-${Date.now()}.jpg`,
+          { media_type: 'STORIES' },
+          accessToken
+        );
 
-        const createStoryRes = await fetch(`https://graph.instagram.com/v20.0/${igAccountId}/media`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image_url: storyPublicUrl,
-            media_type: 'STORIES',
-            access_token: accessToken
-          })
-        });
-
-        const createStoryJson = await createStoryRes.json();
-        if (createStoryRes.ok && createStoryJson.id) {
-          const publishedStoryId = await publishGraphContainer(igAccountId, createStoryJson.id, accessToken);
-          storyResult = {
-            success: true,
-            mediaId: publishedStoryId,
-            storyUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/'
-          };
-        } else {
-          console.warn('[Meta Graph API] Aviso ao criar container de Story:', createStoryJson);
-        }
+        const publishedStoryId = await publishGraphContainer(igAccountId, storyContainer.id, accessToken);
+        storyResult = {
+          success: true,
+          mediaId: publishedStoryId,
+          storyUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/'
+        };
       } catch (storyErr) {
         console.warn('[Meta Graph API] Falha ao publicar Story:', storyErr.message);
       }
