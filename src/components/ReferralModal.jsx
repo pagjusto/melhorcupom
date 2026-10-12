@@ -228,8 +228,8 @@ export const ReferralModal = () => {
         ) : (
           <div className="p-6 sm:p-7 space-y-6 overflow-y-auto flex-grow">
           
-          {/* 1. CARD DE SALDO NO CAIXA */}
-          <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-5 sm:p-6 border-2 border-amber-500/40 shadow-xl relative overflow-hidden">
+          {/* 1. CARD DE SALDO NO CAIXA + SAQUE PIX ACIMA DE R$ 250,00 */}
+          <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-5 sm:p-6 border-2 border-amber-500/40 shadow-xl relative overflow-hidden space-y-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
@@ -241,28 +241,69 @@ export const ReferralModal = () => {
                     R$ {referralBalance.toFixed(2).replace('.', ',')}
                   </span>
                   <span className="text-xs text-emerald-400 font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    Disponível no Caixa
+                    Saldo Acumulado
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  {isStoreView 
-                    ? 'Use seu saldo para abater nas mensalidades dos planos Bronze, Prata ou Ouro.'
-                    : 'Use seu saldo para pagar ou abater na Assinatura VIP de R$ 19,90.'}
+                  Ganhe <strong>R$ 5,00</strong> por empresa cadastrada e <strong>R$ 3,00</strong> por usuário assinante pelo seu link. Use o saldo na plataforma ou solicite <strong>Saque via PIX acima de R$ 250,00</strong>!
                 </p>
               </div>
 
-              <div className="w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
                     setIsReferralModalOpen(false);
                     setIsSubscriptionModalOpen(true);
                   }}
-                  className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Sparkles size={15} />
                   <span>Usar Saldo em Assinatura</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (referralBalance < 250) {
+                      alert(`O saque via PIX é liberado a partir de R$ 250,00 de saldo acumulado.\n\nSeu saldo atual: R$ ${referralBalance.toFixed(2).replace('.', ',')}\nFaltam: R$ ${(250 - referralBalance).toFixed(2).replace('.', ',')} para liberar o saque!`);
+                    } else {
+                      alert(`🎉 Parabéns! Sua solicitação de saque PIX de R$ ${referralBalance.toFixed(2).replace('.', ',')} foi enviada para nossa central financeira!`);
+                    }
+                  }}
+                  className={`w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    referralBalance >= 250
+                      ? 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-600/30'
+                      : 'bg-white/5 hover:bg-white/10 text-gray-400 border border-white/10'
+                  }`}
+                >
+                  {referralBalance < 250 && <Lock size={13} className="text-amber-400" />}
+                  <span>{referralBalance >= 250 ? '💸 Solicitar Saque PIX' : 'Saque PIX (Mín. R$ 250)'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Barra de Progresso para Saque PIX (Meta R$ 250,00) */}
+            <div className="bg-black/40 border border-white/10 rounded-2xl p-3.5 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-gray-300 font-bold">
+                  🏦 Progresso para Saque no PIX (Mínimo R$ 250,00):
+                </span>
+                <span className={referralBalance >= 250 ? 'text-emerald-400 font-black' : 'text-amber-300 font-bold'}>
+                  {referralBalance >= 250
+                    ? '✅ Saque PIX Liberado!'
+                    : `Faltam R$ ${Math.max(0, 250 - referralBalance).toFixed(2).replace('.', ',')}`}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    referralBalance >= 250
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                      : 'bg-gradient-to-r from-[#FF5F00] to-amber-400'
+                  }`}
+                  style={{ width: `${Math.min(100, Math.round((referralBalance / 250) * 100))}%` }}
+                />
               </div>
             </div>
           </div>

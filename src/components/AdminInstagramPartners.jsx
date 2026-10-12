@@ -19,10 +19,12 @@ import {
   Link as LinkIcon,
   Download,
   Award,
-  Wallet
+  Wallet,
+  Lock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+
+const MIN_WITHDRAWAL_AMOUNT = 250;
 
 const INITIAL_INSTAGRAM_PARTNERS = [
   {
@@ -36,6 +38,7 @@ const INITIAL_INSTAGRAM_PARTNERS = [
     usersReferred: 0,
     storesReferred: 0,
     paidAmount: 0,
+    withdrawalRequested: false,
     createdAt: 'Ativo'
   },
   {
@@ -49,6 +52,7 @@ const INITIAL_INSTAGRAM_PARTNERS = [
     usersReferred: 0,
     storesReferred: 0,
     paidAmount: 0,
+    withdrawalRequested: false,
     createdAt: 'Ativo'
   }
 ];
@@ -56,7 +60,7 @@ const INITIAL_INSTAGRAM_PARTNERS = [
 const PITCH_TEMPLATES = [
   {
     id: 'pitch_completo',
-    title: '🔥 Proposta Completa (R$ 5,00 por Loja + R$ 3,00 por Usuário)',
+    title: '🔥 Proposta Completa (Saldo no Caixa + Saque PIX acima de R$ 250)',
     badge: 'Mais Converte',
     getText: (partner) => `Olá, equipe do *${partner.handle}*! Tudo bem? 👋✨
 
@@ -66,19 +70,20 @@ Somos do *Melhor Cupom (@omelhorcupom.com.br)*, o clube oficial de descontos loc
 
 Queremos liberar uma *Parceria Oficial de Afiliado* exclusiva para a página *${partner.handle}* monetizar com a audiência de vocês:
 
-💰 *COMO VOCÊS RECEBEM (PAGAMENTO VIA PIX):*
-✅ *R$ 5,00* por cada *Empresa / Comércio* que se cadastrar pelo link de vocês!
-✅ *R$ 3,00* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo link de vocês!
+💰 *COMO FUNCIONA O SEU SALDO DE AFILIADO:*
+✅ *R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar pelo link de vocês!
+✅ *R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo link de vocês!
+🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir a partir de *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
 
 🔗 *Já geramos o Link Exclusivo de Rastreamento da página de vocês:*
 👉 https://www.omelhorcupom.com.br/?convite=${partner.code}
 *(Código Oficial: ${partner.code})*
 
-📈 *Por que divulgar nos Stories e na Bio?*
-• Se apenas 100 seguidores entrarem no clube e 20 comércios locais se cadastrarem, são *R$ 400,00 limpos no PIX* de vocês!
+📈 *Simulação rápida para a página de vocês:*
+• Com apenas 50 seguidores no clube (R$ 150) + 20 comércios cadastrados (R$ 100), vocês já batem *R$ 250,00 de saldo* e liberam o saque no PIX!
 • Nós enviamos as artes prontas de Stories e Feed para vocês só postarem com o link!
 
-Topam ativar essa parceria hoje? Me passem a chave PIX de vocês para deixarmos vinculada ao painel de repasses! 🤝🚀`
+Topam ativar essa parceria hoje? Basta criar o acesso da página no site para acompanhar o saldo em tempo real! 🤝🚀`
   },
   {
     id: 'pitch_curto_dm',
@@ -88,18 +93,19 @@ Topam ativar essa parceria hoje? Me passem a chave PIX de vocês para deixarmos 
 
 Aqui é da direção do *@omelhorcupom.com.br*! Estamos selecionando grandes páginas do Instagram para o nosso *Programa de Páginas Parceiras*.
 
-Pagamos direto no PIX da página:
-🏪 *R$ 5,00* por cada empresa/comércio cadastrado pelo link de vocês
-🙋‍♂️ *R$ 3,00* por cada seguidor que ativar o Clube VIP pelo link de vocês
+Vocês acumulam saldo em dinheiro no Caixa da plataforma a cada indicação:
+🏪 *+R$ 5,00 de saldo* por cada empresa/comércio cadastrado pelo link de vocês
+🙋‍♂️ *+R$ 3,00 de saldo* por cada seguidor que ativar o Clube VIP pelo link de vocês
+💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado*, é só solicitar o saque direto para a chave PIX da página!
 
 Já até reservamos o link personalizado da página de vocês:
 👉 https://www.omelhorcupom.com.br/?convite=${partner.code}
 
-Posso te mandar aqui o Kit de Stories pronto e explicar como funciona o painel de pagamentos? 💰🔥`
+Posso te mandar aqui o Kit de Stories pronto e ativar o painel de saldo de vocês? 💰🔥`
   },
   {
     id: 'pitch_foco_comercios',
-    title: '🏪 Foco em Páginas da Cidade / Guia Local (Foco em Empresas R$ 5,00)',
+    title: '🏪 Foco em Páginas da Cidade / Guia Local (Empresas R$ 5 + Usuários R$ 3)',
     badge: 'Páginas de Cidade',
     getText: (partner) => `Olá, pessoal do *${partner.handle}*! Tudo bem? 🌟
 
@@ -107,14 +113,15 @@ Vimos que a página de vocês tem uma força gigante com o público e com os com
 
 No *Melhor Cupom (@omelhorcupom.com.br)*, os comércios locais podem divulgar cupons para atrair clientes, e os seguidores economizam até 50% todos os dias.
 
-Criamos um link exclusivo para o *${partner.handle}* lucrar divulgando para os seguidores e lojistas da cidade:
-💵 *R$ 5,00 no PIX* por cada empresa/lojista que se cadastrar pelo seu link!
-💵 *R$ 3,00 no PIX* por cada seguidor que assinar o Clube VIP pelo seu link!
+Criamos um link exclusivo para o *${partner.handle}* acumular saldo divulgando para os seguidores e lojistas da cidade:
+💵 *+R$ 5,00 no Caixa* por cada empresa/lojista que se cadastrar pelo seu link!
+💵 *+R$ 3,00 no Caixa* por cada seguidor que assinar o Clube VIP pelo seu link!
+🏦 *Saque via PIX:* O valor fica salvo no Caixa da sua conta e, a partir de *R$ 250,00 acumulados*, você solicita a transferência direto no seu PIX!
 
 🔗 *Link Oficial da sua Página:*
 https://www.omelhorcupom.com.br/?convite=${partner.code}
 
-Basta colocar nos Stories ou na Bio! A cada cadastro contabilizado no código *${partner.code}*, o valor acumula no seu caixa e transferimos via PIX. Vamos fechar essa parceria? 🤝🚀`
+Vamos fechar essa parceria? 🤝🚀`
   }
 ];
 
@@ -141,8 +148,6 @@ export const AdminInstagramPartners = ({ showToast }) => {
     whatsapp: ''
   });
 
-  const canvasRef = useRef(null);
-
   const savePartners = (updated) => {
     setPartners(updated);
     localStorage.setItem('melhor_cupom_ig_partners_v1', JSON.stringify(updated));
@@ -167,25 +172,30 @@ export const AdminInstagramPartners = ({ showToast }) => {
   const totals = useMemo(() => {
     let totalUsers = 0;
     let totalStores = 0;
-    let totalCommission = 0;
+    let totalAccumulatedBalance = 0;
+    let totalUnlockedForPix = 0;
     let totalPaid = 0;
 
     partners.forEach(p => {
       const u = p.usersReferred || 0;
       const s = p.storesReferred || 0;
       const earned = (u * 3) + (s * 5);
+      const currentBalance = Math.max(0, earned - (p.paidAmount || 0));
       totalUsers += u;
       totalStores += s;
-      totalCommission += earned;
+      totalAccumulatedBalance += currentBalance;
+      if (currentBalance >= MIN_WITHDRAWAL_AMOUNT) {
+        totalUnlockedForPix += currentBalance;
+      }
       totalPaid += (p.paidAmount || 0);
     });
 
     return {
       totalUsers,
       totalStores,
-      totalCommission,
-      totalPaid,
-      pendingPayout: Math.max(0, totalCommission - totalPaid)
+      totalAccumulatedBalance,
+      totalUnlockedForPix,
+      totalPaid
     };
   }, [partners]);
 
@@ -205,11 +215,12 @@ export const AdminInstagramPartners = ({ showToast }) => {
       name: newPartner.name.trim() || cleanHandle,
       followers: newPartner.followers.trim() || '50k+',
       code: autoCode,
-      pixKey: newPartner.pixKey.trim() || 'A definir',
+      pixKey: newPartner.pixKey.trim() || 'A definir no saque',
       whatsapp: newPartner.whatsapp.trim() || '',
       usersReferred: 0,
       storesReferred: 0,
       paidAmount: 0,
+      withdrawalRequested: false,
       createdAt: new Date().toLocaleDateString('pt-BR')
     };
 
@@ -239,23 +250,26 @@ export const AdminInstagramPartners = ({ showToast }) => {
     if (delta > 0 && showToast) {
       showToast(
         field === 'storesReferred'
-          ? '🏪 +1 Empresa contabilizada (+R$ 5,00 para a página)!'
-          : '🙋‍♂️ +1 Usuário contabilizado (+R$ 3,00 para a página)!'
+          ? '🏪 +1 Empresa cadastrada (+R$ 5,00 creditados no Saldo da página)!'
+          : '🙋‍♂️ +1 Usuário cadastrado (+R$ 3,00 creditados no Saldo da página)!'
       );
     }
   };
 
   const handleSettlePayout = (partner) => {
     const earned = ((partner.usersReferred || 0) * 3) + ((partner.storesReferred || 0) * 5);
-    const pending = Math.max(0, earned - (partner.paidAmount || 0));
-    if (pending <= 0) {
-      if (showToast) showToast('Esta página não possui saldo pendente para pagamento.', 'info');
+    const currentBalance = Math.max(0, earned - (partner.paidAmount || 0));
+
+    if (currentBalance < MIN_WITHDRAWAL_AMOUNT) {
+      if (showToast) {
+        showToast(`Saque PIX liberado apenas acima de R$ ${MIN_WITHDRAWAL_AMOUNT},00. Saldo atual: R$ ${currentBalance.toFixed(2).replace('.', ',')}`, 'info');
+      }
       return;
     }
 
     const updated = partners.map(p => {
       if (p.id !== partner.id) return p;
-      return { ...p, paidAmount: earned };
+      return { ...p, paidAmount: earned, withdrawalRequested: false };
     });
     savePartners(updated);
 
@@ -267,7 +281,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
     });
 
     if (showToast) {
-      showToast(`✅ Repasse PIX de R$ ${pending.toFixed(2).replace('.', ',')} registrado como PAGO para ${partner.handle}!`);
+      showToast(`✅ Saque PIX de R$ ${currentBalance.toFixed(2).replace('.', ',')} aprovado e pago para ${partner.handle}!`);
     }
   };
 
@@ -323,79 +337,92 @@ export const AdminInstagramPartners = ({ showToast }) => {
     // Topo Badge
     ctx.fillStyle = '#FF5F00';
     ctx.beginPath();
-    ctx.roundRect(240, 85, 600, 58, 29);
+    ctx.roundRect(220, 75, 640, 58, 29);
     ctx.fill();
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 24px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('🤝 CONVITE OFICIAL DE PARCERIA AFILIADA', 540, 123);
+    ctx.fillText('🤝 CONVITE OFICIAL DE PARCERIA AFILIADA', 540, 113);
 
     // Nome da Página Convidada
     ctx.fillStyle = '#FBBF24';
-    ctx.font = '900 54px Inter, sans-serif';
-    ctx.fillText(activePartner.handle, 540, 225);
+    ctx.font = '900 52px Inter, sans-serif';
+    ctx.fillText(activePartner.handle, 540, 205);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 44px Inter, sans-serif';
-    ctx.fillText('MONETIZE SUA AUDIÊNCIA COM', 540, 305);
+    ctx.font = '900 40px Inter, sans-serif';
+    ctx.fillText('ACUMULE SALDO DIVULGANDO', 540, 280);
     ctx.fillStyle = '#FF5F00';
-    ctx.font = '900 52px Inter, sans-serif';
-    ctx.fillText('O MELHOR CUPOM BRASIL', 540, 370);
+    ctx.font = '900 48px Inter, sans-serif';
+    ctx.fillText('O MELHOR CUPOM BRASIL', 540, 340);
 
     // Card 1: R$ 5,00 por Empresa
     ctx.fillStyle = 'rgba(255, 95, 0, 0.14)';
     ctx.strokeStyle = '#FF5F00';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.roundRect(90, 430, 900, 210, 30);
+    ctx.roundRect(90, 390, 900, 195, 28);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#FBBF24';
-    ctx.font = '900 72px Inter, sans-serif';
-    ctx.fillText('R$ 5,00 NO PIX', 540, 525);
+    ctx.font = '900 66px Inter, sans-serif';
+    ctx.fillText('+ R$ 5,00 DE SALDO', 540, 480);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 30px Inter, sans-serif';
-    ctx.fillText('POR CADA EMPRESA / COMÉRCIO CADASTRADO PELO SEU LINK', 540, 585);
+    ctx.font = '700 28px Inter, sans-serif';
+    ctx.fillText('POR CADA EMPRESA / COMÉRCIO CADASTRADO PELO SEU LINK', 540, 540);
 
     // Card 2: R$ 3,00 por Usuário
     ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
     ctx.strokeStyle = '#10B981';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.roundRect(90, 680, 900, 210, 30);
+    ctx.roundRect(90, 615, 900, 195, 28);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#34D399';
-    ctx.font = '900 72px Inter, sans-serif';
-    ctx.fillText('R$ 3,00 NO PIX', 540, 775);
+    ctx.font = '900 66px Inter, sans-serif';
+    ctx.fillText('+ R$ 3,00 DE SALDO', 540, 705);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 30px Inter, sans-serif';
-    ctx.fillText('POR CADA USUÁRIO / SEGUIDOR QUE ASSINAR PELO SEU LINK', 540, 835);
+    ctx.font = '700 28px Inter, sans-serif';
+    ctx.fillText('POR CADA USUÁRIO / SEGUIDOR QUE ASSINAR PELO SEU LINK', 540, 765);
 
-    // Caixa do Link Exclusivo
-    ctx.fillStyle = '#161625';
+    // Card 3: Regra de Saque PIX acima de R$ 250,00
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
     ctx.strokeStyle = '#FBBF24';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(90, 945, 900, 175, 26);
+    ctx.roundRect(90, 840, 900, 115, 22);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#FBBF24';
+    ctx.font = '900 30px Inter, sans-serif';
+    ctx.fillText('🏦 SAQUE DIRETO NO PIX LIBERADO ACIMA DE R$ 250,00 DE SALDO!', 540, 908);
+
+    // Caixa do Link Exclusivo
+    ctx.fillStyle = '#161625';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(90, 985, 900, 165, 26);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#9CA3AF';
-    ctx.font = '700 24px Inter, sans-serif';
-    ctx.fillText('SEU LINK EXCLUSIVO DE RASTREAMENTO JÁ ESTÁ PRONTO:', 540, 1000);
+    ctx.font = '700 23px Inter, sans-serif';
+    ctx.fillText('SEU LINK EXCLUSIVO DE RASTREAMENTO JÁ ESTÁ PRONTO:', 540, 1038);
 
-    ctx.fillStyle = '#FBBF24';
-    ctx.font = '900 34px monospace';
-    ctx.fillText(`omelhorcupom.com.br/?convite=${activePartner.code}`, 540, 1065);
+    ctx.fillStyle = '#34D399';
+    ctx.font = '900 33px monospace';
+    ctx.fillText(`omelhorcupom.com.br/?convite=${activePartner.code}`, 540, 1102);
 
     // Rodapé
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 26px Inter, sans-serif';
-    ctx.fillText('📲 Pagamentos via PIX • Sem limite de ganhos • @omelhorcupom.com.br', 540, 1225);
+    ctx.font = '700 25px Inter, sans-serif';
+    ctx.fillText('📲 Painel de Saldo em Tempo Real • Saque via PIX • @omelhorcupom.com.br', 540, 1235);
 
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
@@ -423,16 +450,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 <span>Programa de Afiliados para Páginas de Instagram</span>
               </span>
               <span className="text-xs text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30 font-black">
-                🏪 R$ 5,00 / Empresa • 🙋‍♂️ R$ 3,00 / Usuário
+                🏪 +R$ 5,00 / Empresa • 🙋‍♂️ +R$ 3,00 / Usuário • 🏦 Saque PIX a partir de R$ 250,00
               </span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
-              Oferta Comercial & Links para Páginas Divulgadoras
+              Oferta Comercial & Saldo de Afiliados para Páginas
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Gere links exclusivos de rastreamento (<code className="text-amber-300 font-mono">?convite=CODIGO</code>), copie a proposta comercial pronta com um clique, baixe o card de convite para enviar no Direct/WhatsApp das páginas e controle o saldo de comissões via PIX.
+              Cada indicação fica acumulada no <strong>Saldo do Caixa</strong> da página parceira (<code className="text-amber-300 font-mono">+R$ 5,00 por loja</code> e <code className="text-emerald-300 font-mono">+R$ 3,00 por usuário</code>). Quando o saldo acumulado atinge <strong>R$ 250,00 ou mais</strong>, a página libera a solicitação de saque via PIX!
             </p>
           </div>
 
@@ -449,7 +476,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
         </div>
       </div>
 
-      {/* 2. KPIS DE COMISSÕES DAS PÁGINAS PARCEIRAS */}
+      {/* 2. KPIS DE SALDO E SAQUES DAS PÁGINAS PARCEIRAS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-[#151522] border border-white/10 rounded-2xl p-5 shadow-lg">
           <div className="flex items-center justify-between text-xs text-gray-400 font-bold uppercase">
@@ -460,46 +487,46 @@ export const AdminInstagramPartners = ({ showToast }) => {
             {partners.length}
           </div>
           <span className="text-[11px] text-fuchsia-300 font-semibold block mt-1">
-            Links de afiliado ativos
+            Acumulando saldo via link
           </span>
         </div>
 
         <div className="bg-[#151522] border border-white/10 rounded-2xl p-5 shadow-lg">
           <div className="flex items-center justify-between text-xs text-gray-400 font-bold uppercase">
-            <span>Empresas Indicadas (R$ 5)</span>
+            <span>Empresas Indicadas (+R$ 5)</span>
             <Store size={16} className="text-amber-400" />
           </div>
           <div className="text-3xl font-black text-amber-400 font-display mt-1">
             {totals.totalStores} <span className="text-sm text-gray-400 font-normal">lojas</span>
           </div>
           <span className="text-[11px] text-amber-300 font-semibold block mt-1">
-            Subtotal: R$ {(totals.totalStores * 5).toFixed(2).replace('.', ',')}
+            Gerado em saldo: R$ {(totals.totalStores * 5).toFixed(2).replace('.', ',')}
           </span>
         </div>
 
         <div className="bg-[#151522] border border-white/10 rounded-2xl p-5 shadow-lg">
           <div className="flex items-center justify-between text-xs text-gray-400 font-bold uppercase">
-            <span>Usuários Indicados (R$ 3)</span>
+            <span>Usuários Indicados (+R$ 3)</span>
             <Users size={16} className="text-emerald-400" />
           </div>
           <div className="text-3xl font-black text-emerald-400 font-display mt-1">
             {totals.totalUsers} <span className="text-sm text-gray-400 font-normal">usuários</span>
           </div>
           <span className="text-[11px] text-emerald-300 font-semibold block mt-1">
-            Subtotal: R$ {(totals.totalUsers * 3).toFixed(2).replace('.', ',')}
+            Gerado em saldo: R$ {(totals.totalUsers * 3).toFixed(2).replace('.', ',')}
           </span>
         </div>
 
         <div className="bg-[#151522] border-2 border-emerald-500/30 rounded-2xl p-5 shadow-lg">
           <div className="flex items-center justify-between text-xs text-emerald-300 font-bold uppercase">
-            <span>Saldo PIX a Pagar</span>
+            <span>Liberado p/ Saque (≥ R$ 250)</span>
             <Wallet size={16} className="text-emerald-400" />
           </div>
           <div className="text-3xl font-black text-white font-display mt-1">
-            R$ {totals.pendingPayout.toFixed(2).replace('.', ',')}
+            R$ {totals.totalUnlockedForPix.toFixed(2).replace('.', ',')}
           </div>
           <span className="text-[11px] text-gray-400 font-semibold block mt-1">
-            Já pago: R$ {totals.totalPaid.toFixed(2).replace('.', ',')}
+            Em acúmulo (&lt; R$ 250): R$ {(totals.totalAccumulatedBalance - totals.totalUnlockedForPix).toFixed(2).replace('.', ',')}
           </span>
         </div>
       </div>
@@ -518,7 +545,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   1. Cadastrar Página de Instagram
                 </h3>
                 <p className="text-[11px] text-gray-400">
-                  Cria o código e o link exclusivo da página automaticamente
+                  Cria o código e o link exclusivo para a página acumular saldo
                 </p>
               </div>
             </div>
@@ -560,7 +587,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-300 mb-1">Chave PIX da Página</label>
+                  <label className="block text-[11px] font-bold text-gray-300 mb-1">Chave PIX (p/ Saque ≥ R$ 250)</label>
                   <input
                     type="text"
                     value={newPartner.pixKey}
@@ -590,6 +617,9 @@ export const AdminInstagramPartners = ({ showToast }) => {
               {partners.map((p) => {
                 const isSelected = p.id === activePartner.id;
                 const earned = ((p.usersReferred || 0) * 3) + ((p.storesReferred || 0) * 5);
+                const currentBalance = Math.max(0, earned - (p.paidAmount || 0));
+                const canWithdraw = currentBalance >= MIN_WITHDRAWAL_AMOUNT;
+
                 return (
                   <div
                     key={p.id}
@@ -608,14 +638,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
                         </span>
                       </div>
                       <div className="text-[11px] text-gray-400 mt-0.5">
-                        🏪 {p.storesReferred || 0} lojas (R$ {((p.storesReferred || 0) * 5).toFixed(2)}) • 🙋‍♂️ {p.usersReferred || 0} usuários (R$ {((p.usersReferred || 0) * 3).toFixed(2)})
+                        🏪 {p.storesReferred || 0} lojas • 🙋‍♂️ {p.usersReferred || 0} usuários
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-black text-emerald-400 block">
-                        R$ {earned.toFixed(2).replace('.', ',')}
+                      <span className={`text-xs font-black block ${canWithdraw ? 'text-emerald-400' : 'text-amber-300'}`}>
+                        Saldo: R$ {currentBalance.toFixed(2).replace('.', ',')}
                       </span>
-                      <span className="text-[10px] text-gray-500">Total gerado</span>
+                      <span className="text-[10px] text-gray-400">
+                        {canWithdraw ? '🔓 Saque PIX Liberado' : `🔒 Meta R$ ${MIN_WITHDRAWAL_AMOUNT},00`}
+                      </span>
                     </div>
                   </div>
                 );
@@ -630,7 +662,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-fuchsia-400 block">
-                  2. Proposta Pronta para Enviar
+                  2. Proposta Pronta para Enviar (Regra de Saldo + Saque PIX ≥ R$ 250)
                 </span>
                 <h3 className="text-lg font-black text-white">
                   Convite Oficial para <span className="text-amber-400">{activePartner.handle}</span>
@@ -657,7 +689,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                   <span>Link Exclusivo de Afiliado da Página ({activePartner.handle}):</span>
                 </span>
                 <span className="text-[11px] text-emerald-400 font-bold">
-                  Rastreamento Automático Ativo
+                  Acumula Saldo Automaticamente
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -703,7 +735,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
               </div>
             </div>
 
-            {/* Caixa de Texto Editável / Pronta para Copiar */}
+            {/* Caixa de Texto Pronta para Copiar */}
             <div>
               <textarea
                 rows={11}
@@ -746,16 +778,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
         </div>
       </div>
 
-      {/* 4. TABELA DE CONTROLE DE INDICAÇÕES E REPASSES PIX POR PÁGINA */}
+      {/* 4. TABELA DE CONTROLE DE SALDO ACUMULADO & LIBERAÇÃO DE SAQUE PIX (MÍNIMO R$ 250,00) */}
       <div className="bg-[#151522] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <DollarSign size={20} className="text-emerald-400" />
-              <span>Controle de Comissões & Repasses PIX das Páginas Divulgadoras</span>
+              <Wallet size={20} className="text-emerald-400" />
+              <span>Carteira de Saldo das Páginas & Liberação de Saque PIX (Acima de R$ 250,00)</span>
             </h3>
             <p className="text-xs text-gray-400">
-              Acompanhe quantos comércios (R$ 5,00) e usuários (R$ 3,00) vieram por cada página de Instagram e registre os pagamentos PIX.
+              Os valores ficam retidos como <strong>Saldo no Caixa</strong> de cada página. O botão de <strong>Aprovar Saque PIX</strong> só é liberado quando a página atinge <strong>R$ 250,00 ou mais</strong> de saldo.
             </p>
           </div>
         </div>
@@ -766,33 +798,32 @@ export const AdminInstagramPartners = ({ showToast }) => {
               <tr className="border-b border-white/10 text-gray-400 uppercase text-[10px]">
                 <th className="py-3 px-3">Página / Instagram</th>
                 <th className="py-3 px-3">Código & Link</th>
-                <th className="py-3 px-3">Chave PIX</th>
-                <th className="py-3 px-3 text-center">Empresas (R$ 5,00)</th>
-                <th className="py-3 px-3 text-center">Usuários (R$ 3,00)</th>
-                <th className="py-3 px-3 text-right">Saldo a Pagar</th>
-                <th className="py-3 px-3 text-center">Ações</th>
+                <th className="py-3 px-3 text-center">Empresas (+R$ 5)</th>
+                <th className="py-3 px-3 text-center">Usuários (+R$ 3)</th>
+                <th className="py-3 px-3">Progresso p/ Saque (Meta R$ 250)</th>
+                <th className="py-3 px-3 text-right">Saldo em Caixa</th>
+                <th className="py-3 px-3 text-center">Saque PIX</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {partners.map((p) => {
                 const earned = ((p.storesReferred || 0) * 5) + ((p.usersReferred || 0) * 3);
-                const pending = Math.max(0, earned - (p.paidAmount || 0));
+                const currentBalance = Math.max(0, earned - (p.paidAmount || 0));
+                const canWithdraw = currentBalance >= MIN_WITHDRAWAL_AMOUNT;
+                const progressPct = Math.min(100, Math.round((currentBalance / MIN_WITHDRAWAL_AMOUNT) * 100));
+                const missingForWithdrawal = Math.max(0, MIN_WITHDRAWAL_AMOUNT - currentBalance);
 
                 return (
                   <tr key={p.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-3.5 px-3">
                       <div className="font-black text-white text-sm">{p.handle}</div>
-                      <div className="text-[11px] text-gray-400">{p.name} • {p.followers} seg.</div>
+                      <div className="text-[11px] text-gray-400">{p.name} • PIX: {p.pixKey || 'A definir'}</div>
                     </td>
 
                     <td className="py-3.5 px-3">
                       <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono font-bold text-xs">
                         {p.code}
                       </span>
-                    </td>
-
-                    <td className="py-3.5 px-3 font-mono text-gray-300">
-                      {p.pixKey || 'A definir'}
                     </td>
 
                     <td className="py-3.5 px-3 text-center">
@@ -811,7 +842,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                           type="button"
                           onClick={() => handleAdjustCount(p.id, 'storesReferred', 1)}
                           className="w-5 h-5 rounded bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 font-black cursor-pointer"
-                          title="Adicionar +1 Empresa cadastrada (+R$ 5,00)"
+                          title="Simular +1 Empresa cadastrada (+R$ 5,00 no Saldo)"
                         >
                           +
                         </button>
@@ -834,19 +865,38 @@ export const AdminInstagramPartners = ({ showToast }) => {
                           type="button"
                           onClick={() => handleAdjustCount(p.id, 'usersReferred', 1)}
                           className="w-5 h-5 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 font-black cursor-pointer"
-                          title="Adicionar +1 Usuário cadastrado (+R$ 3,00)"
+                          title="Simular +1 Usuário cadastrado (+R$ 3,00 no Saldo)"
                         >
                           +
                         </button>
                       </div>
                     </td>
 
+                    <td className="py-3.5 px-3 min-w-[180px]">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className={canWithdraw ? 'text-emerald-400 font-black' : 'text-gray-400 font-semibold'}>
+                            {canWithdraw ? '✅ Meta de R$ 250 atingida!' : `Faltam R$ ${missingForWithdrawal.toFixed(2).replace('.', ',')}`}
+                          </span>
+                          <span className="font-bold text-white">{progressPct}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                          <div
+                            className={`h-full transition-all duration-300 ${
+                              canWithdraw ? 'bg-gradient-to-r from-emerald-500 to-teal-400' : 'bg-gradient-to-r from-[#FF5F00] to-amber-400'
+                            }`}
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+
                     <td className="py-3.5 px-3 text-right">
-                      <div className="font-black text-sm text-emerald-400">
-                        R$ {pending.toFixed(2).replace('.', ',')}
+                      <div className={`font-black text-sm ${canWithdraw ? 'text-emerald-400' : 'text-amber-300'}`}>
+                        R$ {currentBalance.toFixed(2).replace('.', ',')}
                       </div>
                       <div className="text-[10px] text-gray-500">
-                        Acumulado: R$ {earned.toFixed(2).replace('.', ',')}
+                        Já sacado: R$ {(p.paidAmount || 0).toFixed(2).replace('.', ',')}
                       </div>
                     </td>
 
@@ -855,10 +905,16 @@ export const AdminInstagramPartners = ({ showToast }) => {
                         <button
                           type="button"
                           onClick={() => handleSettlePayout(p)}
-                          disabled={pending <= 0}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 disabled:opacity-30 text-emerald-300 border border-emerald-500/30 font-black text-[11px] cursor-pointer transition-all"
+                          disabled={!canWithdraw}
+                          title={canWithdraw ? 'Realizar pagamento PIX e zerar saldo atual' : 'Saque liberado apenas a partir de R$ 250,00'}
+                          className={`px-3 py-1.5 rounded-xl font-black text-[11px] flex items-center gap-1 transition-all ${
+                            canWithdraw
+                              ? 'bg-emerald-500 hover:bg-emerald-400 text-black cursor-pointer shadow-lg shadow-emerald-600/30'
+                              : 'bg-white/5 text-gray-500 border border-white/10 cursor-not-allowed'
+                          }`}
                         >
-                          Dar Baixa PIX
+                          {!canWithdraw && <Lock size={11} />}
+                          <span>{canWithdraw ? 'Liberar PIX' : 'Mín. R$ 250'}</span>
                         </button>
                         <button
                           type="button"

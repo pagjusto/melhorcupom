@@ -521,7 +521,7 @@ export const UserProfileSettings = () => {
             )}
 
             {/* Card Saldo no Caixa */}
-            <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-6 sm:p-8 border-2 border-amber-500/50 shadow-xl relative overflow-hidden">
+            <div className="bg-gradient-to-r from-[#201A15] via-[#1A1820] to-[#161622] rounded-3xl p-6 sm:p-8 border-2 border-amber-500/50 shadow-xl relative overflow-hidden space-y-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                 <div>
                   <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
@@ -533,15 +533,15 @@ export const UserProfileSettings = () => {
                       R$ {(userProfile.referralBalance || 0).toFixed(2).replace('.', ',')}
                     </span>
                     <span className="text-xs text-emerald-400 font-bold bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                      Disponível no Caixa
+                      Saldo Acumulado
                     </span>
                   </div>
                   <p className="text-xs text-gray-300 mt-2 max-w-lg">
-                    Cada amigo cadastrado rende <strong>R$ 5,00</strong>. Use esse dinheiro para pagar ou abater na sua Assinatura VIP de R$ 19,90!
+                    Cada empresa cadastrada rende <strong>R$ 5,00</strong> e cada amigo assinante rende <strong>R$ 3,00</strong> no seu saldo. Use para abater na Assinatura VIP ou solicite <strong>Saque no PIX acima de R$ 250,00</strong>!
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <div className="flex flex-wrap gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => {
@@ -549,19 +549,38 @@ export const UserProfileSettings = () => {
                       setUserJustEarned(res);
                       setTimeout(() => setUserJustEarned(null), 4000);
                     }}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-4 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all cursor-pointer"
                   >
                     <Zap size={16} />
-                    <span>Simular Indicação (+R$ 5,00)</span>
+                    <span>Simular Indicação</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setIsSubscriptionModalOpen(true)}
-                    className="bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all"
+                    className="bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-black px-4 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all cursor-pointer"
                   >
                     <Sparkles size={16} />
-                    <span>Usar Saldo no Clube VIP</span>
+                    <span>Usar no Clube VIP</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const bal = userProfile.referralBalance || 0;
+                      if (bal < 250) {
+                        alert(`O saque via PIX é liberado a partir de R$ 250,00 de saldo acumulado.\n\nSeu saldo atual: R$ ${bal.toFixed(2).replace('.', ',')}\nFaltam: R$ ${(250 - bal).toFixed(2).replace('.', ',')} para liberar o saque!`);
+                      } else {
+                        alert(`🎉 Solicitação de saque PIX de R$ ${bal.toFixed(2).replace('.', ',')} enviada com sucesso!`);
+                      }
+                    }}
+                    className={`px-4 py-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      (userProfile.referralBalance || 0) >= 250
+                        ? 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg'
+                        : 'bg-white/10 hover:bg-white/15 text-gray-300 border border-white/15'
+                    }`}
+                  >
+                    <span>{(userProfile.referralBalance || 0) >= 250 ? '💸 Sacar no PIX' : '🔒 Saque PIX (Mín. R$ 250)'}</span>
                   </button>
                 </div>
               </div>
