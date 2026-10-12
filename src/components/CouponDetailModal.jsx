@@ -46,8 +46,17 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     coupon?.isApiIntegrated || 
     coupon?.apiSource || 
     store?.isApiIntegrated || 
+    store?.apiSource ||
     coupon?.type === 'online' ||
     store?.type === 'online'
+  );
+
+  // Identificar se pertence a uma empresa de API / rede nacional (sem plano de lojista credenciado)
+  // Validador de Balcão (QR Code + Senha de 6 dígitos) é EXCLUSIVO para lojistas cadastrados com plano ativo
+  const isApiCompanyCoupon = Boolean(
+    isBigStoreCoupon ||
+    store?.tier === 'api' ||
+    (!store?.isNewPartner && !store?.adminPaidPlan && (!store?.tier || store?.tier === 'api' || store?.tier === 'free'))
   );
 
   // Histórico de resgates deste cupom pelo usuário logado
@@ -78,13 +87,13 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
       return;
     }
 
-    // Cupons de grandes lojas e-commerce online não dependem de validação PDV
-    if (isBigStoreCoupon) {
+    // Cupons de empresas de API e grandes lojas não dependem de validação PDV (Caixa / Senha 6 dígitos)
+    if (isApiCompanyCoupon) {
       setIsLimitReached(false);
       return;
     }
 
-    // 1. Verificar se já existe resgate válido para este cupom
+    // 1. Verificar se já existe resgate válido para este cupom (apenas para Lojistas Credenciados)
     const existing = redemptions.find(r => 
       r.couponId === coupon.id && 
       (r.userName === userProfile.name || (userProfile.cpf && r.userCpf === userProfile.cpf)) && 
@@ -127,15 +136,15 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   }, []);
 
   if (!coupon) return null;
-  if (!isLimitReached && !activeRedemption && !isBigStoreCoupon) return null;
+  if (!isLimitReached && !activeRedemption && !isApiCompanyCoupon) return null;
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-  const isOnlineCoupon = coupon.type === 'online' || coupon.isApiIntegrated;
+  const isOnlineCoupon = isApiCompanyCoupon;
   const couponCode = coupon.codePrefix || activeRedemption?.code || 'MELHORVIP';
-  const affiliateDestinationUrl = coupon.affiliateUrl || store?.affiliateUrl || 'https://www.google.com';
+  const affiliateDestinationUrl = coupon.affiliateUrl || store?.affiliateUrl || store?.website || `https://www.google.com/search?q=${encodeURIComponent((store?.name || '') + ' ' + (coupon.title || ''))}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(couponCode);

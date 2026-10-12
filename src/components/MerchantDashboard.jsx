@@ -74,27 +74,42 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     setMerchantDashboardTab
   } = useApp();
 
-  // Identificar loja correspondente ao role
-  const merchantId = currentRole.startsWith('merchant_') ? currentRole : 'merchant_burger';
-  const currentStore = stores.find(s => s.merchantId === merchantId) || stores[0];
+  // Identificar se o estabelecimento é parceiro via API (sem plano de lojista) ou Lojista Credenciado
+  const isApiStore = (st) => Boolean(
+    st?.isApiIntegrated || st?.apiSource || st?.tier === 'api' || (!st?.isNewPartner && !st?.adminPaidPlan && (!st?.tier || st?.tier === 'api' || st?.tier === 'free'))
+  );
+  const lojistaStores = stores.filter(s => !isApiStore(s));
 
-  // Cupons desta loja
+  // Identificar loja correspondente ao role (priorizando lojistas reais cadastrados)
+  const merchantId = currentRole.startsWith('merchant_') ? currentRole : (lojistaStores[0]?.merchantId || 'merchant_burger');
+  const currentStore = stores.find(s => s.merchantId === merchantId || s.id === merchantId) || lojistaStores[0] || stores[0];
+  const isCurrentStoreApi = isApiStore(currentStore);
+
+  // Cupons desta loja e resgates presenciais (excluindo estritamente cupons de empresas de API)
   const storeCoupons = coupons.filter(c => c.merchantId === currentStore.merchantId);
-  const storeRedemptions = redemptions.filter(r => r.merchantId === currentStore.merchantId);
+  const storeRedemptions = isCurrentStoreApi ? [] : redemptions.filter(r => {
+    if (r.merchantId !== currentStore.merchantId) return false;
+    if (r.isApiRedemption) return false;
+    const cp = coupons.find(c => c.id === r.couponId);
+    if (cp?.isApiIntegrated || cp?.apiSource || cp?.type === 'online') return false;
+    return true;
+  });
 
-  // Tabs internas do Painel
-  const activeTab = merchantDashboardTab || (prefilledCode ? 'validator' : 'coupons'); // 'coupons' | 'validator' | 'new-coupon' | 'settings' | 'plans' | 'referrals'
+  // Tabs internas do Painel (Validador PDV disponível apenas para lojistas, não empresas de API)
+  const rawActiveTab = merchantDashboardTab || (prefilledCode && !isCurrentStoreApi ? 'validator' : 'coupons');
+  const activeTab = (isCurrentStoreApi && rawActiveTab === 'validator') ? 'coupons' : rawActiveTab;
   const setActiveTab = (tab) => {
+    if (isCurrentStoreApi && tab === 'validator') return;
     if (setMerchantDashboardTab) {
       setMerchantDashboardTab(tab);
     }
   };
 
   useEffect(() => {
-    if (prefilledCode && setMerchantDashboardTab) {
+    if (prefilledCode && !isCurrentStoreApi && setMerchantDashboardTab) {
       setMerchantDashboardTab('validator');
     }
-  }, [prefilledCode, setMerchantDashboardTab]);
+  }, [prefilledCode, isCurrentStoreApi, setMerchantDashboardTab]);
 
   const [copiedStoreLink, setCopiedStoreLink] = useState(false);
   const [useStoreBalanceForUpgrade, setUseStoreBalanceForUpgrade] = useState(true);
@@ -493,24 +508,26 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           </div>
 
-          {/* Troca Rápida de Estabelecimento Parceiro */}
-          <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
-            <span className="text-xs text-gray-400 px-2 font-medium">Trocar Estabelecimento:</span>
-            {stores.filter(s => s.type === 'physical' || s.merchantId).slice(0, 4).map(st => (
-              <button
-                key={st.id}
-                onClick={() => switchRole(st.merchantId || st.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  (currentStore.merchantId === st.merchantId || currentStore.id === st.id)
-                    ? 'bg-[#FF5F00] text-white shadow-md'
-                    : 'text-gray-300 hover:text-white bg-white/5 hover:bg-white/10'
-                }`}
-              >
-                <span>{st.logo || '🏪'}</span>
-                <span>{st.name}</span>
-              </button>
-            ))}
-          </div>
+          {/* Troca Rápida de Estabelecimento Parceiro (Apenas Lojistas Cadastrados com Plano, não empresas de API) */}
+          {lojistaStores.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
+              <span className="text-xs text-gray-400 px-2 font-medium">Trocar Estabelecimento:</span>
+              {lojistaStores.slice(0, 4).map(st => (
+                <button
+                  key={st.id}
+                  onClick={() => switchRole(st.merchantId || st.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    (currentStore.merchantId === st.merchantId || currentStore.id === st.id)
+                      ? 'bg-[#FF5F00] text-white shadow-md'
+                      : 'text-gray-300 hover:text-white bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <span>{st.logo || '🏪'}</span>
+                  <span>{st.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Cards de Métricas do Parceiro */}
@@ -578,20 +595,23 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           </span>
         </button>
 
-        <button
-          onClick={() => setActiveTab('validator')}
-          title="Validador de Balcão (Caixa / PDV)"
-          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
-            activeTab === 'validator'
-              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
-              : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
-          }`}
-        >
-          <QrCode size={14} className="flex-shrink-0" />
-          <span className="truncate">
-            Validador <span className="hidden 2xl:inline">de Balcão </span>(PDV)
-          </span>
-        </button>
+        {/* Validador de Balcão (Caixa / PDV) é exclusivo para lojistas cadastrados e não empresas de API */}
+        {!isCurrentStoreApi && (
+          <button
+            onClick={() => setActiveTab('validator')}
+            title="Validador de Balcão (Caixa / PDV) — Exclusivo Lojistas"
+            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
+              activeTab === 'validator'
+                ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+                : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
+            }`}
+          >
+            <QrCode size={14} className="flex-shrink-0" />
+            <span className="truncate">
+              Validador <span className="hidden 2xl:inline">de Balcão </span>(PDV)
+            </span>
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('new-coupon')}
@@ -669,8 +689,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         </button>
       </div>
 
-      {/* ABA 1: VALIDADOR DE BALCÃO COM QR CODE + SENHA */}
-      {activeTab === 'validator' && (
+      {/* ABA 1: VALIDADOR DE BALCÃO COM QR CODE + SENHA (Exclusivo Lojistas, não disponível para empresas de API) */}
+      {activeTab === 'validator' && !isCurrentStoreApi && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <div className="lg:col-span-7 bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8">
@@ -680,9 +700,14 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <QrCode size={24} />
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-white">Validador de Balcão (Caixa / PDV)</h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-black text-white">Validador de Balcão (Caixa / PDV)</h2>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                      🏪 Exclusivo Lojistas Locais
+                    </span>
+                  </div>
                   <p className="text-xs text-gray-400">
-                    Bipe o QR Code com a câmera ou digite a Senha de 6 dígitos informada pelo cliente.
+                    Bipe o QR Code com a câmera ou digite a Senha de 6 dígitos informada pelo cliente. (Não aplicável a cupons de empresas de API).
                   </p>
                 </div>
               </div>

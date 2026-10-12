@@ -731,34 +731,48 @@ export const AppProvider = ({ children }) => {
     }
 
     const store = stores.find(s => s.id === coupon.storeId);
+    const isApiOrOnline = Boolean(
+      coupon.type === 'online' ||
+      coupon.isApiIntegrated ||
+      coupon.apiSource ||
+      store?.type === 'online' ||
+      store?.isApiIntegrated ||
+      store?.apiSource ||
+      store?.tier === 'api'
+    );
     
     // Gera código único ex: VIP-VIP50-8472
     const randomCode = Math.floor(1000 + Math.random() * 9000);
-    const generatedCode = `VIP-${coupon.codePrefix || 'CUPOM'}-${randomCode}`;
+    const generatedCode = isApiOrOnline
+      ? (coupon.codePrefix || `VIP-${randomCode}`)
+      : `VIP-${coupon.codePrefix || 'CUPOM'}-${randomCode}`;
 
-    // Gera senha numérica única de 6 dígitos para o QR Code (garante sem duplicidades)
-    let generatedPassCode = '';
-    let passCodeExists = true;
-    while (passCodeExists) {
-      generatedPassCode = String(Math.floor(100000 + Math.random() * 900000));
-      passCodeExists = redemptions.some(r => r.passCode === generatedPassCode);
+    // Gera senha numérica única de 6 dígitos para o QR Code APENAS para lojistas credenciados locais (não empresas de API)
+    let generatedPassCode = null;
+    if (!isApiOrOnline) {
+      let passCodeExists = true;
+      while (passCodeExists) {
+        generatedPassCode = String(Math.floor(100000 + Math.random() * 900000));
+        passCodeExists = redemptions.some(r => r.passCode === generatedPassCode);
+      }
     }
 
     const redemptionId = `red_${Date.now()}`;
-    const qrPayload = JSON.stringify({
-      code: generatedCode,
-      passCode: generatedPassCode,
-      id: redemptionId,
-      couponId: coupon.id,
-      merchantId: coupon.merchantId
-    });
+    const qrPayload = !isApiOrOnline
+      ? JSON.stringify({
+          code: generatedCode,
+          passCode: generatedPassCode,
+          id: redemptionId,
+          couponId: coupon.id,
+          merchantId: coupon.merchantId
+        })
+      : null;
 
     // Cálculo assertivo da economia real baseada em (originalPrice - promoPrice) ou estimatedSavings
     const effectiveSavings = (coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice))
       ? Number((Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2))
       : (Number(coupon.estimatedSavings) || 20.00);
 
-    const isOnline = coupon.type === 'online' || store?.type === 'online';
     const newRedemption = {
       id: redemptionId,
       code: generatedCode,
@@ -778,16 +792,17 @@ export const AppProvider = ({ children }) => {
       originalPrice: coupon.originalPrice,
       promoPrice: coupon.promoPrice,
       savings: effectiveSavings,
+      isApiRedemption: isApiOrOnline,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString(), // 20 minutos de tolerância para uso no caixa
-      status: isOnline ? 'used' : 'valid',
-      usedAt: isOnline ? new Date().toISOString() : null
+      status: isApiOrOnline ? 'used' : 'valid',
+      usedAt: isApiOrOnline ? new Date().toISOString() : null
     };
 
     setRedemptions(prev => [newRedemption, ...prev]);
 
-    // Se for cupom de loja online, o resgate do código equivale à utilização e credita economia
-    if (isOnline) {
+    // Se for cupom de loja online / API, o resgate do código equivale à utilização e credita economia
+    if (isApiOrOnline) {
       setUserProfile(prev => ({
         ...prev,
         monthlySavings: Number(((prev.monthlySavings || 0) + effectiveSavings).toFixed(2))
@@ -813,10 +828,18 @@ export const AppProvider = ({ children }) => {
     return newRedemption;
   };
 
-  // Validar Cupom e Dar Baixa Automática (Usado pelo Lojista no Balcão via QR Code ou Senha)
+  // Validar Cupom e Dar Baixa Automática (Exclusivo para Lojistas no Balcão via QR Code ou Senha - bloqueado para empresas de API)
   const validateRedemption = (inputQuery, merchantId) => {
     if (!inputQuery) {
       return { success: false, message: 'Por favor, escaneie o QR Code ou digite a senha de 6 dígitos.' };
+    }
+
+    const currentMerchantStore = stores.find(s => s.merchantId === merchantId || s.id === merchantId);
+    if (currentMerchantStore && (currentMerchantStore.tier === 'api' || currentMerchantStore.isApiIntegrated || currentMerchantStore.apiSource)) {
+      return {
+        success: false,
+        message: '⚠️ O Validador de Balcão (Caixa / PDV) é exclusivo para lojistas cadastrados e não está disponível para empresas de API.'
+      };
     }
 
     let searchCode = '';
@@ -851,6 +874,22 @@ export const AppProvider = ({ children }) => {
       return { 
         success: false, 
         message: 'Código ou Senha do QR Code não encontrado no sistema. Verifique a senha de 6 dígitos com o cliente.' 
+      };
+    }
+
+    const foundCoupon = coupons.find(c => c.id === found.couponId);
+    const foundStore = stores.find(s => s.id === foundCoupon?.storeId || s.merchantId === found.merchantId);
+    if (
+      found.isApiRedemption ||
+      foundCoupon?.isApiIntegrated ||
+      foundCoupon?.apiSource ||
+      foundStore?.tier === 'api' ||
+      foundStore?.isApiIntegrated ||
+      foundStore?.apiSource
+    ) {
+      return {
+        success: false,
+        message: '⚠️ Operação Bloqueada: O Validador de Balcão (PDV) é exclusivo para lojistas e não se aplica a cupons de empresas de API.'
       };
     }
 

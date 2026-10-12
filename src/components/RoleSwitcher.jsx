@@ -25,7 +25,7 @@ export const RoleSwitcher = () => {
   const [confirmReset, setConfirmReset] = useState(false);
 
   const realStores = (stores || []).filter(
-    s => s.type === 'physical' || s.merchantId
+    s => !s.isApiIntegrated && !s.apiSource && s.tier !== 'api' && (s.isNewPartner || s.adminPaidPlan || (s.tier && s.tier !== 'free'))
   );
 
   const roles = [
