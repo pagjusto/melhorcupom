@@ -686,6 +686,35 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   // Histórico de postagens reais (inicia limpo sem dados falsos)
   const [postHistory, setPostHistory] = useState(() => {
     try {
+      const requeueKey = 'melhor_cupom_requeue_sephora_petz_v1';
+      if (!localStorage.getItem(requeueKey)) {
+        const rawIds = localStorage.getItem('melhor_cupom_published_store_ids');
+        if (rawIds) {
+          const parsedIds = JSON.parse(rawIds);
+          if (Array.isArray(parsedIds)) {
+            const filteredIds = parsedIds.filter(item => {
+              const val = String(item).toLowerCase().trim();
+              return !val.includes('sephora') && !val.includes('petz');
+            });
+            localStorage.setItem('melhor_cupom_published_store_ids', JSON.stringify(filteredIds));
+          }
+        }
+
+        const rawHist = localStorage.getItem('melhor_cupom_instagram_history_v2');
+        if (rawHist) {
+          const parsedHist = JSON.parse(rawHist);
+          if (Array.isArray(parsedHist)) {
+            const filteredHist = parsedHist.filter(post => {
+              const sId = String(post.storeId || '').toLowerCase();
+              const sName = String(post.storeName || '').toLowerCase();
+              return !sId.includes('sephora') && !sId.includes('petz') && !sName.includes('sephora') && !sName.includes('petz');
+            });
+            localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(filteredHist));
+          }
+        }
+        localStorage.setItem(requeueKey, 'done');
+      }
+
       const saved = localStorage.getItem('melhor_cupom_instagram_history_v2');
       if (saved) return JSON.parse(saved);
     } catch {}
@@ -717,8 +746,47 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     );
   };
 
-  // Filtrar lojas pendentes (que ainda não foram publicadas)
-  const pendingStores = stores.filter(s => !isStoreAlreadyPublished(s, postHistory));
+  // Devolver loja do histórico para a fila de pendentes
+  const handleReturnStoreToQueue = (postOrStore) => {
+    const targetId = String(postOrStore?.storeId || postOrStore?.id || '').toLowerCase();
+    const targetName = String(postOrStore?.storeName || postOrStore?.name || '').toLowerCase().trim();
+
+    try {
+      const rawIds = localStorage.getItem('melhor_cupom_published_store_ids');
+      if (rawIds) {
+        const list = JSON.parse(rawIds);
+        if (Array.isArray(list)) {
+          const nextIds = list.filter(item => {
+            const v = String(item).toLowerCase().trim();
+            return v !== targetId && v !== targetName;
+          });
+          localStorage.setItem('melhor_cupom_published_store_ids', JSON.stringify(nextIds));
+        }
+      }
+    } catch {}
+
+    const nextHistory = postHistory.filter(p => {
+      const pId = String(p.storeId || '').toLowerCase();
+      const pName = String(p.storeName || '').toLowerCase().trim();
+      return pId !== targetId && pName !== targetName;
+    });
+    setPostHistory(nextHistory);
+    localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(nextHistory));
+
+    if (postOrStore?.storeId || postOrStore?.id) {
+      setSelectedStoreId(postOrStore.storeId || postOrStore.id);
+    }
+    showToast(`🔄 "${postOrStore?.storeName || postOrStore?.name}" voltou para a fila de divulgação!`, 'info');
+  };
+
+  // Filtrar lojas pendentes (que ainda não foram publicadas), priorizando Sephora e Petz no topo da fila
+  const pendingStores = stores
+    .filter(s => !isStoreAlreadyPublished(s, postHistory))
+    .sort((a, b) => {
+      const aPriority = (a.id === 'store_sephora' || a.id === 'store_petz') ? 0 : 1;
+      const bPriority = (b.id === 'store_sephora' || b.id === 'store_petz') ? 0 : 1;
+      return aPriority - bPriority;
+    });
   const selectableStores = showAllStores ? stores : (pendingStores.length > 0 ? pendingStores : []);
 
   const selectedStore = stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {};
@@ -1769,9 +1837,19 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 </div>
 
                 <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-gray-300">
-                  <span className="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-semibold">
-                    ✓ Divulgado
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-semibold">
+                      ✓ Divulgado
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleReturnStoreToQueue(post)}
+                      className="text-[10px] text-amber-300 hover:text-white bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold transition-colors cursor-pointer"
+                      title="Devolver esta loja para a fila de pendentes para repostar"
+                    >
+                      🔄 Voltar p/ Fila
+                    </button>
+                  </div>
 
                   <div className="flex items-center gap-2">
                     <a
