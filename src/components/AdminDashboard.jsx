@@ -119,29 +119,26 @@ export const AdminDashboard = () => {
     let freeCount = 0;
 
     stores.forEach(s => {
-      const tier = s.tier || 'free';
+      const tier = (!s.tier || s.tier === 'free') ? 'bronze' : s.tier;
       if (tier === 'gold') goldCount++;
       else if (tier === 'silver') silverCount++;
-      else if (tier === 'bronze') bronzeCount++;
-      else freeCount++;
+      else bronzeCount++;
     });
 
     const goldMRR = goldCount * 199.90;
     const silverMRR = silverCount * 79.90;
-    const bronzeMRR = bronzeCount * 39.90;
-    const starterMRR = freeCount * 19.90;
-    const merchantMRR = goldMRR + silverMRR + bronzeMRR + starterMRR;
+    const bronzeMRR = bronzeCount * 19.90;
+    const merchantMRR = goldMRR + silverMRR + bronzeMRR;
 
     return {
       total: stores.length,
       goldCount,
       silverCount,
       bronzeCount,
-      freeCount,
+      freeCount: 0,
       goldMRR,
       silverMRR,
       bronzeMRR,
-      starterMRR,
       merchantMRR
     };
   }, [stores]);
@@ -635,13 +632,11 @@ export const AdminDashboard = () => {
                 <span className="text-xs text-gray-400 font-normal"> estabelecimentos</span>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] mt-3 pt-3 border-t border-white/10 text-gray-300 flex-wrap">
-                <span className="text-amber-400 font-bold">👑 {storeStats.goldCount} Ouro</span>
+                <span className="text-amber-400 font-bold">👑 {storeStats.goldCount} Ouro (Ilimitado)</span>
                 <span className="text-gray-500">•</span>
-                <span className="text-slate-300 font-bold">🥈 {storeStats.silverCount} Prata</span>
+                <span className="text-slate-300 font-bold">🥈 {storeStats.silverCount} Prata (3)</span>
                 <span className="text-gray-500">•</span>
-                <span className="text-[#CD7F32] font-bold">🥉 {storeStats.bronzeCount} Bronze</span>
-                <span className="text-gray-500">•</span>
-                <span className="text-orange-400 font-bold">✨ {storeStats.freeCount} Inicial+VIP</span>
+                <span className="text-[#CD7F32] font-bold">🥉 {storeStats.bronzeCount} Bronze+VIP (1)</span>
               </div>
             </div>
 
@@ -1281,21 +1276,16 @@ export const AdminDashboard = () => {
 
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-slate-300 font-bold">
-                    🥈 Plano Prata Pro ({storeStats.silverCount} lojas × R$ 79,90):
+                    🥈 Plano Prata Pro ({storeStats.silverCount} lojas × R$ 79,90 • 3 ofertas):
                   </span>
                   <strong className="text-white text-sm font-bold">R$ {storeStats.silverMRR.toFixed(2).replace('.', ',')}</strong>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-[#CD7F32] font-bold">
-                    🥉 Plano Bronze Star ({storeStats.bronzeCount} lojas × R$ 39,90):
+                    🥉 Plano Bronze + VIP ({storeStats.bronzeCount} lojas × R$ 19,90 • 1 oferta):
                   </span>
                   <strong className="text-white text-sm font-bold">R$ {storeStats.bronzeMRR.toFixed(2).replace('.', ',')}</strong>
-                </div>
-
-                <div className="flex items-center justify-between text-orange-300 font-bold">
-                  <span>✨ Plano Inicial + VIP ({storeStats.freeCount} lojas × R$ 19,90):</span>
-                  <strong className="text-white text-sm font-bold">R$ {(storeStats.starterMRR || 0).toFixed(2).replace('.', ',')}</strong>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
@@ -1313,7 +1303,7 @@ export const AdminDashboard = () => {
               </div>
 
               <div className="text-xs text-gray-400 leading-relaxed">
-                💡 <strong className="text-gray-300">Modelo de Monetização:</strong> Quanto maior a assinatura do lojista, mais no topo suas ofertas aparecem na Home e na busca dos assinantes da cidade.
+                💡 <strong className="text-gray-300">Modelo de Monetização:</strong> Todo comerciante inicia automaticamente no Plano Bronze (R$ 19,90/mês com 1 oferta + Acesso VIP Liberado), podendo fazer upgrade para Prata (3 ofertas) ou Ouro (Ilimitado).
               </div>
             </div>
 
@@ -1342,7 +1332,7 @@ export const AdminDashboard = () => {
                     <th className="py-3 px-4">Preço Mensal</th>
                     <th className="py-3 px-4 text-center">Ativos na Base</th>
                     <th className="py-3 px-4 text-right">Faturamento Gerado</th>
-                    <th className="py-3 px-4 text-center">Prioridade no App</th>
+                    <th className="py-3 px-4 text-center">Limite & Prioridade</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-gray-300">
@@ -1360,41 +1350,31 @@ export const AdminDashboard = () => {
                     <td className="py-3.5 px-4 font-bold text-amber-300 flex items-center gap-1.5">
                       <Crown size={14} /> Plano Ouro VIP Top
                     </td>
-                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B)</td>
+                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B + VIP)</td>
                     <td className="py-3.5 px-4 font-bold text-white">R$ 199,90 /mês</td>
                     <td className="py-3.5 px-4 text-center font-bold text-amber-400">{storeStats.goldCount} lojas</td>
                     <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {storeStats.goldMRR.toFixed(2).replace('.', ',')}</td>
-                    <td className="py-3.5 px-4 text-center text-amber-300 font-bold">Topo Absoluto (Peso 4)</td>
+                    <td className="py-3.5 px-4 text-center text-amber-300 font-bold">Ofertas Ilimitadas • Topo Absoluto</td>
                   </tr>
                   <tr>
                     <td className="py-3.5 px-4 font-bold text-slate-300 flex items-center gap-1.5">
                       <Award size={14} /> Plano Prata Pro
                     </td>
-                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B)</td>
+                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B + VIP)</td>
                     <td className="py-3.5 px-4 font-bold text-white">R$ 79,90 /mês</td>
                     <td className="py-3.5 px-4 text-center font-bold text-slate-300">{storeStats.silverCount} lojas</td>
                     <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {storeStats.silverMRR.toFixed(2).replace('.', ',')}</td>
-                    <td className="py-3.5 px-4 text-center text-slate-300 font-bold">Alta Prioridade (Peso 3)</td>
+                    <td className="py-3.5 px-4 text-center text-slate-300 font-bold">Até 3 Ofertas • Alta Prioridade</td>
                   </tr>
                   <tr>
                     <td className="py-3.5 px-4 font-bold text-[#CD7F32] flex items-center gap-1.5">
-                      <Medal size={14} /> Plano Bronze Star
-                    </td>
-                    <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B)</td>
-                    <td className="py-3.5 px-4 font-bold text-white">R$ 39,90 /mês</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-[#CD7F32]">{storeStats.bronzeCount} lojas</td>
-                    <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {storeStats.bronzeMRR.toFixed(2).replace('.', ',')}</td>
-                    <td className="py-3.5 px-4 text-center text-[#CD7F32] font-bold">Média Prioridade (Peso 2)</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 px-4 font-semibold text-orange-400 flex items-center gap-1.5">
-                      <Store size={14} /> Plano Inicial + Acesso VIP
+                      <Medal size={14} /> Plano Bronze + Acesso VIP
                     </td>
                     <td className="py-3.5 px-4 text-gray-400">Comerciante / Loja (B2B + VIP)</td>
                     <td className="py-3.5 px-4 font-bold text-white">R$ 19,90 /mês</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-orange-400">{storeStats.freeCount} lojas</td>
-                    <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {(storeStats.starterMRR || 0).toFixed(2).replace('.', ',')}</td>
-                    <td className="py-3.5 px-4 text-center text-orange-300 font-bold">1 Cupom + VIP Incluso (Peso 1)</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-[#CD7F32]">{storeStats.bronzeCount} lojas</td>
+                    <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {storeStats.bronzeMRR.toFixed(2).replace('.', ',')}</td>
+                    <td className="py-3.5 px-4 text-center text-[#CD7F32] font-bold">1 Oferta + VIP Incluso • Destaque Bronze</td>
                   </tr>
                 </tbody>
               </table>
@@ -1443,10 +1423,9 @@ export const AdminDashboard = () => {
                 className="bg-[#1A1A28] border border-white/10 text-white text-xs rounded-xl px-3 py-2 font-medium focus:outline-none focus:border-[#FF5F00]"
               >
                 <option value="all">Todos os Planos</option>
-                <option value="gold">👑 Apenas Ouro VIP (R$ 199,90)</option>
-                <option value="silver">🥈 Apenas Prata Pro (R$ 79,90)</option>
-                <option value="bronze">🥉 Apenas Bronze Star (R$ 39,90)</option>
-                <option value="free">✨ Apenas Inicial + VIP (R$ 19,90)</option>
+                <option value="gold">👑 Apenas Ouro VIP (R$ 199,90 • Ilimitado)</option>
+                <option value="silver">🥈 Apenas Prata Pro (R$ 79,90 • 3 Ofertas)</option>
+                <option value="bronze">🥉 Apenas Bronze + VIP (R$ 19,90 • 1 Oferta)</option>
               </select>
 
               <span className="text-xs text-gray-400 ml-2">
@@ -1471,7 +1450,7 @@ export const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-gray-300">
                   {filteredStoresList.map(store => {
-                    const tier = store.tier || 'free';
+                    const tier = (!store.tier || store.tier === 'free') ? 'bronze' : store.tier;
                     const activeOffers = coupons.filter(c => c.storeId === store.id).length;
 
                     return (
@@ -1512,13 +1491,12 @@ export const AdminDashboard = () => {
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-[11px] ${
                             tier === 'gold' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' :
                             tier === 'silver' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
-                            tier === 'bronze' ? 'bg-amber-800/30 text-[#CD7F32] border border-amber-700/40' :
-                            'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                            'bg-amber-800/30 text-[#CD7F32] border border-amber-700/40'
                           }`}>
                             {tier === 'gold' && <Crown size={12} />}
                             {tier === 'silver' && <Award size={12} />}
                             {tier === 'bronze' && <Medal size={12} />}
-                            <span className="capitalize">{tier === 'free' ? 'Inicial + VIP' : tier}</span>
+                            <span className="capitalize">{tier === 'bronze' ? 'Bronze + VIP' : tier}</span>
                           </span>
                         </td>
 
@@ -1529,16 +1507,15 @@ export const AdminDashboard = () => {
                             onChange={(e) => handleUpdateStoreTier(store.id, store.name, e.target.value)}
                             className="bg-[#1C1C28] border border-white/20 text-white text-xs rounded-xl px-2.5 py-1.5 font-bold focus:outline-none focus:border-[#FF5F00] cursor-pointer"
                           >
-                            <option value="gold">👑 Ouro (R$ 199,90)</option>
-                            <option value="silver">🥈 Prata (R$ 79,90)</option>
-                            <option value="bronze">🥉 Bronze (R$ 39,90)</option>
-                            <option value="free">✨ Inicial + VIP (R$ 19,90)</option>
+                            <option value="gold">👑 Ouro (R$ 199,90 • Ilimitado)</option>
+                            <option value="silver">🥈 Prata (R$ 79,90 • 3 Ofertas)</option>
+                            <option value="bronze">🥉 Bronze + VIP (R$ 19,90 • 1 Oferta)</option>
                           </select>
                         </td>
 
                         {/* Faturamento Mensal */}
                         <td className="py-3.5 px-4 text-right font-extrabold text-sm text-emerald-400">
-                          {tier === 'gold' ? 'R$ 199,90' : tier === 'silver' ? 'R$ 79,90' : tier === 'bronze' ? 'R$ 39,90' : 'R$ 19,90'}
+                          {tier === 'gold' ? 'R$ 199,90' : tier === 'silver' ? 'R$ 79,90' : 'R$ 19,90'}
                         </td>
                       </tr>
                     );

@@ -542,12 +542,12 @@ export const AuthModal = () => {
           {authModalMode === 'merchant_register' && (
             <form onSubmit={handleSubmitMerchant} className="space-y-4">
               
-              {/* Oferta Especial Plano Inicial + Acesso VIP (R$ 19,90) */}
-              <div className="bg-gradient-to-r from-[#2D1405] via-[#1E140B] to-[#13221A] border-2 border-[#FF5F00]/60 rounded-2xl p-3.5 sm:p-4 space-y-2 shadow-lg">
+              {/* Oferta Especial Plano Bronze + Acesso VIP (R$ 19,90) */}
+              <div className="bg-gradient-to-r from-[#2D1405] via-[#1E140B] to-[#13221A] border-2 border-[#CD7F32]/80 rounded-2xl p-3.5 sm:p-4 space-y-2 shadow-lg">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#FF5F00] text-white">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] text-white">
                     <Sparkles size={11} />
-                    <span>Combo Parceiro + VIP Incluso</span>
+                    <span>🥉 Plano Bronze + VIP Selecionado Automaticamente</span>
                   </span>
                   <div className="text-right">
                     <span className="text-base sm:text-lg font-black text-emerald-400">R$ 19,90</span>
@@ -555,20 +555,20 @@ export const AuthModal = () => {
                   </div>
                 </div>
                 <div className="text-xs sm:text-sm font-black text-white">
-                  Plano Inicial Comercios: 1 Cupom Ativo + Seu Acesso VIP Liberado! 👑
+                  Plano Bronze: 1 Oferta de Cupom + Seu Acesso VIP Liberado! 👑
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-gray-200">
                   <div className="flex items-center gap-1.5 bg-black/30 px-2.5 py-1.5 rounded-lg border border-white/5">
-                    <CheckCircle2 size={13} className="text-[#FF5F00] flex-shrink-0" />
-                    <span><strong>1 Cupom Ativo</strong> divulgando sua loja</span>
+                    <CheckCircle2 size={13} className="text-[#CD7F32] flex-shrink-0" />
+                    <span><strong>1 Cupom Ativo</strong> (Prata: 3 • Ouro: Ilimitado)</span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg border border-emerald-500/20 text-emerald-300">
                     <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0" />
-                    <span><strong>Acesso VIP Grátis</strong> em todo o site!</span>
+                    <span><strong>Acesso VIP Incluso</strong> em todo o site!</span>
                   </div>
                 </div>
                 <p className="text-[10px] text-gray-400 leading-relaxed">
-                  Além de atrair clientes para o seu negócio e ter o Validador QR Code no balcão, você ganha <strong>Acesso VIP completo</strong> para economizar em todas as outras lojas parceiras e grandes redes!
+                  Você começa automaticamente no <strong>Plano Bronze (R$ 19,90/mês)</strong> com 1 oferta ativa + seu Acesso VIP liberado. Depois pode fazer upgrade no painel para <strong>Prata (3 ofertas)</strong> ou <strong>Ouro (Ilimitado)</strong>!
                 </p>
               </div>
 
@@ -856,7 +856,7 @@ export const AuthModal = () => {
                 className="w-full mt-2 bg-gradient-to-r from-amber-500 to-[#FF5F00] hover:from-amber-400 hover:to-[#E04F00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
               >
                 <Store size={18} />
-                <span>Cadastrar Loja no Plano Inicial + VIP (R$ 19,90/mês)</span>
+                <span>Cadastrar Loja no Plano Bronze + VIP (R$ 19,90/mês)</span>
                 <ArrowRight size={16} />
               </button>
 

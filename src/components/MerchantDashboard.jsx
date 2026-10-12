@@ -101,10 +101,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [merchantJustEarned, setMerchantJustEarned] = useState(null);
   const [previewingCoupon, setPreviewingCoupon] = useState(null);
   
-  // Plano de assinatura atual do lojista
-  const currentPlan = merchantPlans?.find(p => p.id === (currentStore.tier || 'free')) || {
-    id: 'free',
-    name: 'Plano Inicial + Acesso VIP',
+  // Plano de assinatura atual do lojista (padrão automático: Bronze com 1 oferta + VIP)
+  const effectiveTier = (!currentStore.tier || currentStore.tier === 'free') ? 'bronze' : currentStore.tier;
+  const currentPlan = merchantPlans?.find(p => p.id === effectiveTier) || {
+    id: 'bronze',
+    name: 'Plano Bronze + Acesso VIP',
     priceLabel: 'R$ 19,90',
     period: '/mês',
     maxCoupons: 1
@@ -436,24 +437,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                {currentStore.tier === 'gold' ? (
+                {effectiveTier === 'gold' ? (
                   <span className="text-xs uppercase font-black tracking-wider text-amber-300 bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1.5 shadow-md shadow-amber-950/40">
                     <Crown size={13} fill="currentColor" className="text-amber-400 animate-pulse" />
-                    <span>Plano Ouro VIP (Topo Absoluto)</span>
+                    <span>Plano Ouro VIP (Ofertas Ilimitadas)</span>
                   </span>
-                ) : currentStore.tier === 'silver' ? (
+                ) : effectiveTier === 'silver' ? (
                   <span className="text-xs uppercase font-bold tracking-wider text-slate-200 bg-slate-500/20 px-3 py-0.5 rounded-full border border-slate-400/40 flex items-center gap-1.5">
                     <Award size={13} className="text-slate-300" />
-                    <span>Plano Prata Pro (5 Ofertas)</span>
-                  </span>
-                ) : currentStore.tier === 'bronze' ? (
-                  <span className="text-xs uppercase font-bold tracking-wider text-[#E09858] bg-[#CD7F32]/20 px-3 py-0.5 rounded-full border border-[#CD7F32]/50 flex items-center gap-1.5 shadow-sm">
-                    <Medal size={13} className="text-[#CD7F32]" />
-                    <span>Plano Bronze Star (3 Ofertas)</span>
+                    <span>Plano Prata Pro (Até 3 Ofertas)</span>
                   </span>
                 ) : (
-                  <span className="text-xs uppercase font-bold tracking-wider text-orange-300 bg-orange-500/20 px-3 py-0.5 rounded-full border border-orange-500/40">
-                    ✨ Plano Inicial + VIP (1 Oferta • R$ 19,90)
+                  <span className="text-xs uppercase font-bold tracking-wider text-[#E09858] bg-[#CD7F32]/20 px-3 py-0.5 rounded-full border border-[#CD7F32]/50 flex items-center gap-1.5 shadow-sm">
+                    <Medal size={13} className="text-[#CD7F32]" />
+                    <span>Plano Bronze + VIP (1 Oferta • R$ 19,90)</span>
                   </span>
                 )}
 
@@ -2133,8 +2130,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           )}
 
-          {/* Grid dos 4 Planos (Free, Bronze, Prata, Ouro) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Grid dos 3 Planos (Bronze, Prata, Ouro) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(merchantPlans || []).map((plan) => {
               const isCurrent = currentPlan.id === plan.id;
               const isGold = plan.id === 'gold';
@@ -2154,30 +2151,28 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       ? 'bg-gradient-to-b from-[#2A1D0E] via-[#1B1612] to-[#14141B] border-2 border-amber-400/90 shadow-[0_0_35px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/50 transform lg:-translate-y-2'
                       : isSilver
                       ? 'bg-gradient-to-b from-[#1C1E26] to-[#14141B] border-2 border-slate-300/60 shadow-xl'
-                      : isBronze
-                      ? 'bg-gradient-to-b from-[#25150E] to-[#14141B] border-2 border-[#CD7F32]/70 shadow-[0_0_20px_rgba(205,127,50,0.2)]'
-                      : 'bg-[#181824] border border-white/10'
+                      : 'bg-gradient-to-b from-[#25150E] to-[#14141B] border-2 border-[#CD7F32]/70 shadow-[0_0_20px_rgba(205,127,50,0.2)]'
                   }`}
                 >
                   {/* Tag Superior */}
                   {isGold && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-black text-[11px] uppercase tracking-wider px-4 py-1 rounded-full shadow-lg flex items-center gap-1 whitespace-nowrap">
                       <Crown size={12} fill="currentColor" />
-                      <span>Máximo Destaque & Conversão</span>
+                      <span>Máximo Destaque & Ilimitado</span>
                     </div>
                   )}
 
                   {isSilver && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-900 font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap">
                       <Award size={12} />
-                      <span>Recomendado Médio</span>
+                      <span>Até 3 Ofertas Ativas</span>
                     </div>
                   )}
 
                   {isBronze && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] text-white font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-[#CD7F32]/60">
                       <Medal size={12} />
-                      <span>Custo-Benefício</span>
+                      <span>Plano de Entrada + VIP</span>
                     </div>
                   )}
 
@@ -2228,9 +2223,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
                     {/* Destaque do Limite de Ofertas */}
                     <div className="mb-5 p-3 rounded-2xl bg-black/30 border border-white/5">
-                      <div className="text-[11px] text-gray-400">Limite de Ofertas Ativas:</div>
+                      <div className="text-[11px] text-gray-400">Limite de Ofertas de Cupom Ativas:</div>
                       <div className={`text-base font-black ${
-                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : isBronze ? 'text-[#CD7F32]' : 'text-white'
+                        isGold ? 'text-amber-400' : isSilver ? 'text-slate-200' : 'text-[#CD7F32]'
                       }`}>
                         {plan.maxCoupons === 9999 ? '🔥 ILIMITADAS simultâneas' : `Até ${plan.maxCoupons} ${plan.maxCoupons === 1 ? 'oferta ativa' : 'ofertas ativas'}`}
                       </div>
@@ -2244,7 +2239,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       {plan.perks.map((perk, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-gray-200">
                           <CheckCircle2 size={15} className={`flex-shrink-0 mt-0.5 ${
-                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : isBronze ? 'text-[#CD7F32]' : 'text-emerald-400'
+                            isGold ? 'text-amber-400' : isSilver ? 'text-slate-300' : 'text-[#CD7F32]'
                           }`} />
                           <span>{perk}</span>
                         </div>
@@ -2292,9 +2287,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black shadow-amber-950/60 transform hover:scale-[1.02]'
                             : isSilver
                             ? 'bg-slate-200 hover:bg-white text-slate-900 shadow-md'
-                            : isBronze
-                            ? 'bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] hover:from-[#DF8F42] hover:to-[#9E5523] text-white shadow-[0_4px_14px_rgba(205,127,50,0.35)]'
-                            : 'bg-white/10 hover:bg-white/20 text-white'
+                            : 'bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] hover:from-[#DF8F42] hover:to-[#9E5523] text-white shadow-[0_4px_14px_rgba(205,127,50,0.35)]'
                         }`}
                       >
                         {isGold ? (
@@ -2303,7 +2296,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             <span>
                               {storeDiscount > 0 
                                 ? `Contratar por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
-                                : 'Contratar Plano Ouro (Topo)'}
+                                : 'Contratar Plano Ouro (Ilimitado)'}
                             </span>
                           </>
                         ) : isSilver ? (
@@ -2312,20 +2305,18 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             <span>
                               {storeDiscount > 0 
                                 ? `Upgrade por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
-                                : 'Fazer Upgrade para Prata'}
+                                : 'Fazer Upgrade para Prata (3 Ofertas)'}
                             </span>
                           </>
-                        ) : isBronze ? (
+                        ) : (
                           <>
                             <Medal size={15} />
                             <span>
                               {storeDiscount > 0 
-                                ? `Upgrade por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
-                                : 'Fazer Upgrade para Bronze'}
+                                ? `Selecionar por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
+                                : 'Selecionar Plano Bronze (1 Oferta)'}
                             </span>
                           </>
-                        ) : (
-                          <span>Mudar para Plano Inicial + VIP (R$ 19,90)</span>
                         )}
                       </button>
                     )}
@@ -2346,33 +2337,16 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               Compare visualmente como as ofertas da sua loja se destacam na tela dos milhares de assinantes VIP de acordo com o plano contratado:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
-              {/* Preview Inicial + VIP */}
-              <div className="bg-[#13131A] rounded-2xl p-4 border border-orange-500/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-orange-400">Card Inicial + VIP (R$ 19,90):</span>
-                  <span className="text-[10px] text-orange-300 font-bold bg-orange-500/20 px-2 py-0.5 rounded">1 Cupom + VIP</span>
-                </div>
-                <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
-                  <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
-                  <span className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-0.5 rounded-lg">30% OFF</span>
-                  <div className="absolute top-2 right-2 p-1 rounded-lg bg-black/60 text-white/70">
-                    <Heart size={12} />
-                  </div>
-                </div>
-                <div className="text-xs font-bold text-white">{currentStore.name}</div>
-                <p className="text-[11px] text-gray-400">1 cupom ativo na loja + Acesso VIP liberado para você usar todos os cupons do site.</p>
-              </div>
-
               {/* Preview Bronze */}
               <div className="bg-[#13131A] rounded-2xl p-4 border border-[#CD7F32]/60 shadow-md space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-[#CD7F32] flex items-center gap-1">
                     <Medal size={12} className="text-[#CD7F32]" />
-                    <span>Card no Plano Bronze:</span>
+                    <span>Card no Plano Bronze (R$ 19,90):</span>
                   </span>
-                  <span className="text-[10px] text-[#CD7F32] font-bold bg-[#CD7F32]/20 px-2 py-0.5 rounded border border-[#CD7F32]/40">3º Nível</span>
+                  <span className="text-[10px] text-[#CD7F32] font-bold bg-[#CD7F32]/20 px-2 py-0.5 rounded border border-[#CD7F32]/40">1 Oferta + VIP</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
@@ -2390,7 +2364,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <Medal size={11} className="text-[#CD7F32]" />
                   <span>{currentStore.name}</span>
                 </div>
-                <p className="text-[11px] text-gray-300">Borda bronze (#CD7F32), medalha exclusiva na cor bronze metálico e 3 cupons.</p>
+                <p className="text-[11px] text-gray-300">Borda bronze (#CD7F32), medalha bronze metálica, 1 cupom ativo na loja + Acesso VIP liberado no site.</p>
               </div>
 
               {/* Preview Prata */}
@@ -2398,9 +2372,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
                     <Award size={12} />
-                    <span>Card no Plano Prata:</span>
+                    <span>Card no Plano Prata (R$ 79,90):</span>
                   </span>
-                  <span className="text-[10px] text-slate-300 font-bold">2º Nível</span>
+                  <span className="text-[10px] text-slate-300 font-bold">Até 3 Ofertas</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
@@ -2415,7 +2389,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </div>
                 </div>
                 <div className="text-xs font-bold text-slate-200">{currentStore.name}</div>
-                <p className="text-[11px] text-gray-300">Borda prateada, medalha prata ao lado do coração e 5 ofertas.</p>
+                <p className="text-[11px] text-gray-300">Borda prateada, medalha prata em destaque, até 3 ofertas simultâneas + Acesso VIP incluso.</p>
               </div>
 
               {/* Preview Ouro */}
@@ -2423,9 +2397,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1">
                     <Crown size={12} fill="currentColor" />
-                    <span>Card no Plano Ouro:</span>
+                    <span>Card no Plano Ouro (R$ 199,90):</span>
                   </span>
-                  <span className="text-[10px] text-amber-400 font-black">⭐ Topo Absoluto</span>
+                  <span className="text-[10px] text-amber-400 font-black">⭐ Ilimitado + Topo</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
@@ -2443,7 +2417,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <Crown size={11} fill="currentColor" />
                   <span>{currentStore.name}</span>
                 </div>
-                <p className="text-[11px] text-amber-200/80 font-medium">Borda dourada, medalha de ouro com glow ao lado do coração e topo do feed.</p>
+                <p className="text-[11px] text-amber-200/80 font-medium">Borda dourada com glow, topo absoluto do feed, cupons ilimitados + Acesso VIP incluso.</p>
               </div>
 
             </div>

@@ -52,59 +52,31 @@ export const CATEGORIES = [
 
 export const MERCHANT_PLANS = [
   {
-    id: 'free',
-    name: 'Plano Inicial + Acesso VIP',
-    shortName: 'Inicial VIP',
-    badge: '✨ Parceiro + VIP',
+    id: 'bronze',
+    name: 'Plano Bronze + Acesso VIP',
+    shortName: 'Bronze',
+    badge: '🥉 Destaque Bronze',
     price: 19.90,
     priceLabel: 'R$ 19,90',
     period: '/mês',
-    tagline: 'Cadastre 1 cupom da sua loja + ganhe Acesso VIP liberado para usar todos os cupons do site!',
+    tagline: 'Plano inicial padrão: 1 oferta de cupom ativa na sua loja + Acesso VIP liberado em todo o site!',
     maxCoupons: 1,
-    weight: 1,
-    color: 'from-emerald-600 to-teal-700',
-    borderColor: 'border-emerald-500/40',
-    popular: false,
-    perks: [
-      '1 oferta/cupom ativo na plataforma',
-      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
-      'Divulgação automática no Instagram @omelhorcupom.com.br',
-      'Validador de balcão (PDV) e QR Code',
-      'Suporte comercial dedicado'
-    ],
-    missingPerks: [
-      'Prioridade no topo das buscas',
-      'Medalha Bronze, Prata ou Ouro',
-      'Borda iluminada nos cupons',
-      'Múltiplas ofertas simultâneas (3, 5 ou ilimitadas)'
-    ]
-  },
-  {
-    id: 'bronze',
-    name: 'Plano Bronze Star',
-    shortName: 'Bronze',
-    badge: '🥉 Destaque Bronze',
-    price: 39.90,
-    priceLabel: 'R$ 39,90',
-    period: '/mês',
-    tagline: 'Ideal para quem quer mais ofertas e visibilidade inicial',
-    maxCoupons: 3,
     weight: 2,
     color: 'from-amber-700 via-amber-800 to-amber-950',
     borderColor: 'border-amber-700/60',
     popular: false,
     perks: [
-      'Até 3 ofertas VIP ativas simultaneamente',
-      'Prioridade Bronze (acima das lojas gratuitas)',
-      'Badge de destaque "🥉 Destaque Bronze"',
-      'Borda acobreada no card da oferta',
-      'Validador de balcão (PDV)',
+      '1 oferta/cupom ativo na plataforma',
+      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
+      'Badge de destaque "🥉 Destaque Bronze" e borda acobreada',
+      'Divulgação automática no Instagram @omelhorcupom.com.br',
+      'Validador de balcão (PDV) e QR Code',
       'Suporte via WhatsApp'
     ],
     missingPerks: [
       'Prioridade Alta / Topo da Home',
       'Borda prateada ou dourada Glow',
-      'Mais de 3 ofertas ativas'
+      'Múltiplas ofertas simultâneas (3 na Prata ou Ilimitadas no Ouro)'
     ]
   },
   {
@@ -115,15 +87,16 @@ export const MERCHANT_PLANS = [
     price: 79.90,
     priceLabel: 'R$ 79,90',
     period: '/mês',
-    tagline: 'Mais visibilidade e múltiplos cupons',
-    maxCoupons: 5,
+    tagline: 'Mais visibilidade e até 3 ofertas de cupom ativas simultaneamente',
+    maxCoupons: 3,
     weight: 3,
     color: 'from-slate-400 to-slate-600',
     borderColor: 'border-slate-300/40',
     popular: false,
     perks: [
-      'Até 5 ofertas VIP ativas simultaneamente',
-      'Prioridade Alta (acima dos gratuitos e bronze)',
+      'Até 3 ofertas VIP ativas simultaneamente',
+      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
+      'Prioridade Alta (acima das lojas Bronze)',
       'Badge de destaque "🥈 Destaque Prata"',
       'Borda prateada no card da oferta',
       'Validador de balcão com múltiplos caixas',
@@ -133,7 +106,7 @@ export const MERCHANT_PLANS = [
     missingPerks: [
       'Prioridade máxima absoluta (topo da Home)',
       'Borda dourada com efeito Glow',
-      'Ofertas ilimitadas'
+      'Ofertas ilimitadas (exclusivo Plano Ouro)'
     ]
   },
   {
@@ -144,7 +117,7 @@ export const MERCHANT_PLANS = [
     price: 199.90,
     priceLabel: 'R$ 199,90',
     period: '/mês',
-    tagline: 'Máxima conversão e topo absoluto do app',
+    tagline: 'Máxima conversão, topo absoluto do app e cupons ilimitados',
     maxCoupons: 9999,
     weight: 4,
     color: 'from-amber-400 via-orange-500 to-amber-600',
@@ -152,6 +125,7 @@ export const MERCHANT_PLANS = [
     popular: true,
     perks: [
       'Ofertas VIP ILIMITADAS ativas',
+      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
       'PRIORIDADE MÁXIMA (Topo absoluto de todas as buscas)',
       'Badge dourada vibrante "👑 Top Destaque Ouro"',
       'Card com borda dourada e efeito Glow brilhante',
