@@ -116,13 +116,16 @@ export const AdminDashboard = () => {
     let goldCount = 0;
     let silverCount = 0;
     let bronzeCount = 0;
-    let freeCount = 0;
+    let apiCount = 0;
 
     stores.forEach(s => {
-      const tier = (!s.tier || s.tier === 'free') ? 'bronze' : s.tier;
+      const tier = (s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze')
+        ? s.tier
+        : (s.isNewPartner ? 'bronze' : 'api');
       if (tier === 'gold') goldCount++;
       else if (tier === 'silver') silverCount++;
-      else bronzeCount++;
+      else if (tier === 'bronze') bronzeCount++;
+      else apiCount++;
     });
 
     const goldMRR = goldCount * 199.90;
@@ -132,10 +135,12 @@ export const AdminDashboard = () => {
 
     return {
       total: stores.length,
+      payingTotal: goldCount + silverCount + bronzeCount,
       goldCount,
       silverCount,
       bronzeCount,
-      freeCount: 0,
+      apiCount,
+      freeCount: apiCount,
       goldMRR,
       silverMRR,
       bronzeMRR,
@@ -205,7 +210,9 @@ export const AdminDashboard = () => {
         };
       }
       cityMap[city].storesCount += 1;
-      const tier = store.tier || 'free';
+      const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
+        ? store.tier
+        : (store.isNewPartner ? 'bronze' : 'api');
       if (tier === 'gold') {
         cityMap[city].goldStores += 1;
         cityMap[city].merchantRevenue += 199.90;
@@ -214,7 +221,7 @@ export const AdminDashboard = () => {
         cityMap[city].merchantRevenue += 79.90;
       } else if (tier === 'bronze') {
         cityMap[city].bronzeStores += 1;
-        cityMap[city].merchantRevenue += 39.90;
+        cityMap[city].merchantRevenue += 19.90;
       } else {
         cityMap[city].freeStores += 1;
       }
@@ -278,7 +285,10 @@ export const AdminDashboard = () => {
                             (store.category && store.category.toLowerCase().includes(storeSearch.toLowerCase())) ||
                             (store.address && store.address.toLowerCase().includes(storeSearch.toLowerCase()));
       const matchesCity = selectedCityFilter === 'all' || store.city === selectedCityFilter;
-      const matchesTier = storeTierFilter === 'all' || (store.tier || 'free') === storeTierFilter;
+      const effectiveTier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
+        ? store.tier
+        : (store.isNewPartner ? 'bronze' : 'api');
+      const matchesTier = storeTierFilter === 'all' || effectiveTier === storeTierFilter;
       return matchesSearch && matchesCity && matchesTier;
     });
   }, [stores, storeSearch, selectedCityFilter, storeTierFilter]);
@@ -301,8 +311,8 @@ export const AdminDashboard = () => {
   // Manipuladores de Ação do Administrador
   const handleUpdateStoreTier = (storeId, storeName, newTier) => {
     adminUpdateStoreTier(storeId, newTier);
-    const tierName = newTier === 'gold' ? 'Ouro VIP Top' : newTier === 'silver' ? 'Prata Pro' : newTier === 'bronze' ? 'Bronze Star' : 'Grátis';
-    showToast(`Plano da loja "${storeName}" atualizado com sucesso para: ${tierName}!`);
+    const tierName = newTier === 'gold' ? 'Ouro VIP Top (R$ 199,90)' : newTier === 'silver' ? 'Prata Pro (R$ 79,90)' : newTier === 'bronze' ? 'Bronze + VIP (R$ 19,90)' : 'Parceiro API / Sem Mensalidade (R$ 0,00)';
+    showToast(`Configuração da loja "${storeName}" atualizada para: ${tierName}!`);
   };
 
   const handleToggleVip = (userId, userName, currentVip) => {
@@ -629,14 +639,16 @@ export const AdminDashboard = () => {
               </div>
               <div className="text-3xl font-black text-white font-display">
                 {storeStats.total}
-                <span className="text-xs text-gray-400 font-normal"> estabelecimentos</span>
+                <span className="text-xs text-gray-400 font-normal"> ({storeStats.payingTotal} c/ plano • {storeStats.apiCount} via API)</span>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] mt-3 pt-3 border-t border-white/10 text-gray-300 flex-wrap">
-                <span className="text-amber-400 font-bold">👑 {storeStats.goldCount} Ouro (Ilimitado)</span>
+                <span className="text-amber-400 font-bold">👑 {storeStats.goldCount} Ouro</span>
                 <span className="text-gray-500">•</span>
-                <span className="text-slate-300 font-bold">🥈 {storeStats.silverCount} Prata (3)</span>
+                <span className="text-slate-300 font-bold">🥈 {storeStats.silverCount} Prata</span>
                 <span className="text-gray-500">•</span>
-                <span className="text-[#CD7F32] font-bold">🥉 {storeStats.bronzeCount} Bronze+VIP (1)</span>
+                <span className="text-[#CD7F32] font-bold">🥉 {storeStats.bronzeCount} Bronze</span>
+                <span className="text-gray-500">•</span>
+                <span className="text-gray-400 font-medium">🔗 {storeStats.apiCount} API (R$ 0)</span>
               </div>
             </div>
 
@@ -822,7 +834,7 @@ export const AdminDashboard = () => {
                       <span className="text-xs text-gray-400 font-normal"> /mês</span>
                     </div>
                     <p className="text-[11px] text-gray-400 mt-1">
-                      {storeStats.goldCount} Ouro (R$ 199,90) + {storeStats.silverCount} Prata (R$ 79,90) + {storeStats.bronzeCount} Bronze (R$ 39,90)
+                      {storeStats.goldCount} Ouro (R$ 199,90) + {storeStats.silverCount} Prata (R$ 79,90) + {storeStats.bronzeCount} Bronze (R$ 19,90) • {storeStats.apiCount} Parceiros API (R$ 0,00)
                     </p>
                   </div>
                 </div>
@@ -1013,8 +1025,8 @@ export const AdminDashboard = () => {
                                 </span>
                               )}
                               {city.freeStores > 0 && (
-                                <span className="bg-gray-700/40 text-gray-400 px-2 py-0.5 rounded">
-                                  {city.freeStores} Free
+                                <span className="bg-gray-700/40 text-gray-300 border border-gray-600/40 px-2 py-0.5 rounded">
+                                  🔗 {city.freeStores} API (R$ 0)
                                 </span>
                               )}
                             </div>
@@ -1087,7 +1099,9 @@ export const AdminDashboard = () => {
                   </div>
                 ) : (
                   filteredStoresList.map(store => {
-                    const tier = store.tier || 'free';
+                    const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
+                      ? store.tier
+                      : (store.isNewPartner ? 'bronze' : 'api');
                     return (
                       <div key={store.id} className="bg-[#1A1A28] border border-white/5 rounded-xl p-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
@@ -1118,12 +1132,12 @@ export const AdminDashboard = () => {
                             tier === 'gold' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
                             tier === 'silver' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
                             tier === 'bronze' ? 'bg-amber-800/30 text-[#CD7F32] border border-amber-700/40' :
-                            'bg-gray-800 text-gray-400'
+                            'bg-gray-800/80 text-gray-400 border border-white/10'
                           }`}>
-                            Plano {tier}
+                            {tier === 'api' ? 'Parceiro API • Sem Plano' : tier === 'bronze' ? 'Plano Bronze + VIP' : `Plano ${tier}`}
                           </span>
-                          <div className="text-xs font-bold text-emerald-400 mt-1">
-                            {tier === 'gold' ? 'R$ 199,90/mês' : tier === 'silver' ? 'R$ 79,90/mês' : tier === 'bronze' ? 'R$ 39,90/mês' : 'R$ 0,00'}
+                          <div className={`text-xs font-bold mt-1 ${tier === 'api' ? 'text-gray-500' : 'text-emerald-400'}`}>
+                            {tier === 'gold' ? 'R$ 199,90/mês' : tier === 'silver' ? 'R$ 79,90/mês' : tier === 'bronze' ? 'R$ 19,90/mês' : 'R$ 0,00 (Sem mensalidade)'}
                           </div>
                         </div>
                       </div>
@@ -1258,7 +1272,7 @@ export const AdminDashboard = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-black text-white">Planos de Estabelecimentos</h3>
-                    <p className="text-xs text-gray-400">Mensalidades de lojistas por destaque</p>
+                    <p className="text-xs text-gray-400">Mensalidades de lojistas pagantes</p>
                   </div>
                 </div>
                 <span className="text-xs font-bold bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full border border-orange-500/30">
@@ -1288,6 +1302,13 @@ export const AdminDashboard = () => {
                   <strong className="text-white text-sm font-bold">R$ {storeStats.bronzeMRR.toFixed(2).replace('.', ',')}</strong>
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-gray-400 font-medium">
+                    🔗 Parceiros via API / Rede ({storeStats.apiCount} lojas • Sem mensalidade):
+                  </span>
+                  <strong className="text-gray-400 text-sm font-bold">R$ 0,00</strong>
+                </div>
+
                 <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
                   <span className="font-bold text-gray-200">Faturamento Mensal (MRR B2B):</span>
                   <strong className="text-xl font-black text-emerald-400">
@@ -1303,7 +1324,7 @@ export const AdminDashboard = () => {
               </div>
 
               <div className="text-xs text-gray-400 leading-relaxed">
-                💡 <strong className="text-gray-300">Modelo de Monetização:</strong> Todo comerciante inicia automaticamente no Plano Bronze (R$ 19,90/mês com 1 oferta + Acesso VIP Liberado), podendo fazer upgrade para Prata (3 ofertas) ou Ouro (Ilimitado).
+                💡 <strong className="text-gray-300">Modelo de Monetização:</strong> Novos comércios iniciam no Plano Bronze (R$ 19,90/mês com 1 oferta + Acesso VIP). Parceiros integrados via API/Catálogo aparecem na lista sem mensalidade (R$ 0,00).
               </div>
             </div>
 
@@ -1376,6 +1397,16 @@ export const AdminDashboard = () => {
                     <td className="py-3.5 px-4 text-right font-black text-emerald-400">R$ {storeStats.bronzeMRR.toFixed(2).replace('.', ',')}</td>
                     <td className="py-3.5 px-4 text-center text-[#CD7F32] font-bold">1 Oferta + VIP Incluso • Destaque Bronze</td>
                   </tr>
+                  <tr>
+                    <td className="py-3.5 px-4 font-bold text-gray-400 flex items-center gap-1.5">
+                      🔗 Parceiros via API / Rede
+                    </td>
+                    <td className="py-3.5 px-4 text-gray-500">Grandes Redes / Catálogo API</td>
+                    <td className="py-3.5 px-4 font-bold text-gray-400">Sem Mensalidade</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-gray-400">{storeStats.apiCount} lojas</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-gray-500">R$ 0,00</td>
+                    <td className="py-3.5 px-4 text-center text-gray-500">Sem Plano Mensal Fixo</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -1422,10 +1453,11 @@ export const AdminDashboard = () => {
                 onChange={(e) => setStoreTierFilter(e.target.value)}
                 className="bg-[#1A1A28] border border-white/10 text-white text-xs rounded-xl px-3 py-2 font-medium focus:outline-none focus:border-[#FF5F00]"
               >
-                <option value="all">Todos os Planos</option>
+                <option value="all">Todos ({storeStats.total} lojas)</option>
                 <option value="gold">👑 Apenas Ouro VIP (R$ 199,90 • Ilimitado)</option>
                 <option value="silver">🥈 Apenas Prata Pro (R$ 79,90 • 3 Ofertas)</option>
                 <option value="bronze">🥉 Apenas Bronze + VIP (R$ 19,90 • 1 Oferta)</option>
+                <option value="api">🔗 Parceiros via API / Rede (Sem Plano • R$ 0,00)</option>
               </select>
 
               <span className="text-xs text-gray-400 ml-2">
@@ -1450,7 +1482,9 @@ export const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-gray-300">
                   {filteredStoresList.map(store => {
-                    const tier = (!store.tier || store.tier === 'free') ? 'bronze' : store.tier;
+                    const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
+                      ? store.tier
+                      : (store.isNewPartner ? 'bronze' : 'api');
                     const activeOffers = coupons.filter(c => c.storeId === store.id).length;
 
                     return (
@@ -1491,12 +1525,15 @@ export const AdminDashboard = () => {
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-[11px] ${
                             tier === 'gold' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' :
                             tier === 'silver' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
-                            'bg-amber-800/30 text-[#CD7F32] border border-amber-700/40'
+                            tier === 'bronze' ? 'bg-amber-800/30 text-[#CD7F32] border border-amber-700/40' :
+                            'bg-gray-800/80 text-gray-400 border border-white/10'
                           }`}>
                             {tier === 'gold' && <Crown size={12} />}
                             {tier === 'silver' && <Award size={12} />}
                             {tier === 'bronze' && <Medal size={12} />}
-                            <span className="capitalize">{tier === 'bronze' ? 'Bronze + VIP' : tier}</span>
+                            <span>
+                              {tier === 'gold' ? 'Gold' : tier === 'silver' ? 'Silver' : tier === 'bronze' ? 'Bronze + VIP' : '🔗 Parceiro API (Sem Plano)'}
+                            </span>
                           </span>
                         </td>
 
@@ -1507,15 +1544,21 @@ export const AdminDashboard = () => {
                             onChange={(e) => handleUpdateStoreTier(store.id, store.name, e.target.value)}
                             className="bg-[#1C1C28] border border-white/20 text-white text-xs rounded-xl px-2.5 py-1.5 font-bold focus:outline-none focus:border-[#FF5F00] cursor-pointer"
                           >
-                            <option value="gold">👑 Ouro (R$ 199,90 • Ilimitado)</option>
-                            <option value="silver">🥈 Prata (R$ 79,90 • 3 Ofertas)</option>
+                            <option value="api">🔗 Parceiro API (Sem Plano • R$ 0,00)</option>
                             <option value="bronze">🥉 Bronze + VIP (R$ 19,90 • 1 Oferta)</option>
+                            <option value="silver">🥈 Prata (R$ 79,90 • 3 Ofertas)</option>
+                            <option value="gold">👑 Ouro (R$ 199,90 • Ilimitado)</option>
                           </select>
                         </td>
 
                         {/* Faturamento Mensal */}
-                        <td className="py-3.5 px-4 text-right font-extrabold text-sm text-emerald-400">
-                          {tier === 'gold' ? 'R$ 199,90' : tier === 'silver' ? 'R$ 79,90' : 'R$ 19,90'}
+                        <td className={`py-3.5 px-4 text-right font-extrabold text-sm ${tier === 'api' ? 'text-gray-500' : 'text-emerald-400'}`}>
+                          {tier === 'gold' ? 'R$ 199,90' : tier === 'silver' ? 'R$ 79,90' : tier === 'bronze' ? 'R$ 19,90' : (
+                            <div className="flex flex-col items-end">
+                              <span>R$ 0,00</span>
+                              <span className="text-[9px] font-medium text-gray-500">Sem mensalidade</span>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );

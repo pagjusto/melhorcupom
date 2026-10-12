@@ -90,11 +90,18 @@ export const AppProvider = ({ children }) => {
   });
 
   // Estado de Lojas / Comerciantes (com auto-mesclagem de todas as marcas reais da rede)
+  // Parceiros via API / Catálogo possuem tier: 'api' (sem mensalidade / R$ 0,00 de receita mensal)
   const [stores, setStores] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_stores_v8') || localStorage.getItem('melhor_cupom_stores_v7');
+    const normalizeInitialStore = (st) => ({
+      ...st,
+      tier: st.adminPaidPlan ? st.tier : 'api'
+    });
+
+    const saved = localStorage.getItem('melhor_cupom_stores_v9') || localStorage.getItem('melhor_cupom_stores_v8') || localStorage.getItem('melhor_cupom_stores_v7');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_stores_v8', JSON.stringify(INITIAL_STORES));
-      return INITIAL_STORES;
+      const normalized = INITIAL_STORES.map(normalizeInitialStore);
+      localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(normalized));
+      return normalized;
     }
     try {
       const parsed = JSON.parse(saved);
@@ -105,6 +112,11 @@ export const AppProvider = ({ children }) => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
+        const isPayingMerchant = Boolean(s.isNewPartner || s.adminPaidPlan);
+        const resolvedTier = isPayingMerchant
+          ? ((s.tier && s.tier !== 'free' && s.tier !== 'api') ? s.tier : 'bronze')
+          : 'api';
+
         return {
           ...s,
           name: init?.name || s.name,
@@ -112,7 +124,8 @@ export const AppProvider = ({ children }) => {
           logo: init?.logo || s.logo || '🏪',
           logoImage: init?.logoImage || s.logoImage || '',
           image: init?.image || s.image || '',
-          tier: ((init?.tier || s.tier) && (init?.tier || s.tier) !== 'free') ? (init?.tier || s.tier) : 'bronze',
+          tier: resolvedTier,
+          adminPaidPlan: Boolean(s.adminPaidPlan),
           category: init?.category || s.category || 'gastronomia',
           city: init?.city || s.city || 'Todo o Brasil (Online)',
           cities: init?.cities || s.cities || (init?.city ? [init.city] : []),
@@ -138,7 +151,7 @@ export const AppProvider = ({ children }) => {
         };
       });
     } catch {
-      return INITIAL_STORES;
+      return INITIAL_STORES.map(normalizeInitialStore);
     }
   });
 
@@ -493,8 +506,8 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
+    localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(stores));
     localStorage.setItem('melhor_cupom_stores_v8', JSON.stringify(stores));
-    localStorage.setItem('melhor_cupom_stores_v7', JSON.stringify(stores));
   }, [stores]);
 
   useEffect(() => {
@@ -627,7 +640,7 @@ export const AppProvider = ({ children }) => {
   const adminUpdateStoreTier = (storeId, newTier) => {
     setStores(prev => prev.map(s => {
       if (s.id === storeId) {
-        return { ...s, tier: newTier };
+        return { ...s, tier: newTier, adminPaidPlan: newTier !== 'api' };
       }
       return s;
     }));
@@ -963,6 +976,7 @@ export const AppProvider = ({ children }) => {
         return { 
           ...s, 
           tier: newTier,
+          adminPaidPlan: newTier !== 'api',
           referralBalance: remainingBalance
         };
       }
@@ -1171,6 +1185,7 @@ export const AppProvider = ({ children }) => {
       address: `${selectedCities[0] || 'Brasil'}`,
       hours: 'Seg a Sáb: 10h às 22h',
       tier: 'bronze',
+      adminPaidPlan: true,
       referralCode: storeRefCode,
       referralBalance: 0.00,
       referrals: [],
