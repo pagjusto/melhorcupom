@@ -71,7 +71,7 @@ Somos do *Melhor Cupom (@omelhorcupom.com.br)*, o clube oficial de descontos loc
 Queremos liberar uma *Parceria Oficial de Afiliado* exclusiva para a página *${partner.handle}* monetizar com a audiência de vocês:
 
 💰 *COMO FUNCIONA O SEU SALDO DE AFILIADO:*
-✅ *R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar pelo link de vocês!
+✅ *R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
 ✅ *R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo link de vocês!
 🏦 *Saque via PIX:* Todo valor acumula automaticamente no *Saldo do Caixa* da conta de vocês na plataforma. Ao atingir a partir de *R$ 250,00 de saldo*, vocês já podem solicitar o *Saque direto no PIX* pelo painel!
 
@@ -80,7 +80,7 @@ Queremos liberar uma *Parceria Oficial de Afiliado* exclusiva para a página *${
 *(Código Oficial: ${partner.code})*
 
 📈 *Simulação rápida para a página de vocês:*
-• Com apenas 50 seguidores no clube (R$ 150) + 20 comércios cadastrados (R$ 100), vocês já batem *R$ 250,00 de saldo* e liberam o saque no PIX!
+• Com apenas 50 seguidores no clube (R$ 150) + 20 comércios que se cadastrarem e assinarem VIP (R$ 100), vocês já batem *R$ 250,00 de saldo* e liberam o saque no PIX!
 • Nós enviamos as artes prontas de Stories e Feed para vocês só postarem com o link!
 
 Topam ativar essa parceria hoje? Basta criar o acesso da página no site para acompanhar o saldo em tempo real! 🤝🚀`
@@ -94,8 +94,8 @@ Topam ativar essa parceria hoje? Basta criar o acesso da página no site para ac
 Aqui é da direção do *@omelhorcupom.com.br*! Estamos selecionando grandes páginas do Instagram para o nosso *Programa de Páginas Parceiras*.
 
 Vocês acumulam saldo em dinheiro no Caixa da plataforma a cada indicação:
-🏪 *+R$ 5,00 de saldo* por cada empresa/comércio cadastrado pelo link de vocês
-🙋‍♂️ *+R$ 3,00 de saldo* por cada seguidor que ativar o Clube VIP pelo link de vocês
+🏪 *+R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
+🙋‍♂️ *+R$ 3,00 de saldo* por cada *Usuário / Seguidor* que ativar o Clube VIP pelo link de vocês!
 💸 *Saque no PIX:* Atingindo *R$ 250,00 de saldo acumulado*, é só solicitar o saque direto para a chave PIX da página!
 
 Já até reservamos o link personalizado da página de vocês:
@@ -111,11 +111,11 @@ Posso te mandar aqui o Kit de Stories pronto e ativar o painel de saldo de você
 
 Vimos que a página de vocês tem uma força gigante com o público e com os comércios da região!
 
-No *Melhor Cupom (@omelhorcupom.com.br)*, os comércios locais podem divulgar cupons para atrair clientes, e os seguidores economizam até 50% todos os dias.
+No *Melhor Cupom (@omelhorcupom.com.br)*, os comércios locais divulgam cupons (e já ganham acesso VIP no site a partir de R$ 19,90/mês), e os seguidores economizam até 50% todos os dias.
 
 Criamos um link exclusivo para o *${partner.handle}* acumular saldo divulgando para os seguidores e lojistas da cidade:
-💵 *+R$ 5,00 no Caixa* por cada empresa/lojista que se cadastrar pelo seu link!
-💵 *+R$ 3,00 no Caixa* por cada seguidor que assinar o Clube VIP pelo seu link!
+✅ *R$ 5,00 de saldo* por cada *Empresa / Comércio* que se cadastrar e assinar VIP pelo link de vocês!
+✅ *R$ 3,00 de saldo* por cada *Usuário / Seguidor* que assinar o Clube VIP pelo link de vocês!
 🏦 *Saque via PIX:* O valor fica salvo no Caixa da sua conta e, a partir de *R$ 250,00 acumulados*, você solicita a transferência direto no seu PIX!
 
 🔗 *Link Oficial da sua Página:*
@@ -370,8 +370,8 @@ export const AdminInstagramPartners = ({ showToast }) => {
     ctx.font = '900 66px Inter, sans-serif';
     ctx.fillText('+ R$ 5,00 DE SALDO', 540, 480);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 28px Inter, sans-serif';
-    ctx.fillText('POR CADA EMPRESA / COMÉRCIO CADASTRADO PELO SEU LINK', 540, 540);
+    ctx.font = '700 26px Inter, sans-serif';
+    ctx.fillText('POR CADA EMPRESA / COMÉRCIO QUE CADASTRAR E ASSINAR VIP', 540, 540);
 
     // Card 2: R$ 3,00 por Usuário
     ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
@@ -450,7 +450,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
                 <span>Programa de Afiliados para Páginas de Instagram</span>
               </span>
               <span className="text-xs text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30 font-black">
-                🏪 +R$ 5,00 / Empresa • 🙋‍♂️ +R$ 3,00 / Usuário • 🏦 Saque PIX a partir de R$ 250,00
+                🏪 +R$ 5,00 / Empresa (Cadastro + VIP) • 🙋‍♂️ +R$ 3,00 / Usuário • 🏦 Saque PIX ≥ R$ 250,00
               </span>
             </div>
 
@@ -459,7 +459,7 @@ export const AdminInstagramPartners = ({ showToast }) => {
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Cada indicação fica acumulada no <strong>Saldo do Caixa</strong> da página parceira (<code className="text-amber-300 font-mono">+R$ 5,00 por loja</code> e <code className="text-emerald-300 font-mono">+R$ 3,00 por usuário</code>). Quando o saldo acumulado atinge <strong>R$ 250,00 ou mais</strong>, a página libera a solicitação de saque via PIX!
+              Cada indicação fica acumulada no <strong>Saldo do Caixa</strong> da página parceira (<code className="text-amber-300 font-mono">+R$ 5,00 por empresa/comércio que se cadastrar e assinar VIP</code> e <code className="text-emerald-300 font-mono">+R$ 3,00 por usuário que assinar VIP</code>). Quando o saldo acumulado atinge <strong>R$ 250,00 ou mais</strong>, a página libera a solicitação de saque via PIX!
             </p>
           </div>
 
