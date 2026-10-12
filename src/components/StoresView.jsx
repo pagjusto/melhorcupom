@@ -143,9 +143,6 @@ export const StoresView = ({ onSelectStore }) => {
                     <Sparkles size={11} className="text-amber-200" />
                     Para Comerciantes & Lojistas
                   </span>
-                  <span className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
-                    Adesão Grátis
-                  </span>
                 </div>
                 
                 <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
@@ -175,9 +172,6 @@ export const StoresView = ({ onSelectStore }) => {
                 onClick={() => openAuthModal('merchant_register')}
                 className="relative group/btn w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white font-black text-sm sm:text-base shadow-2xl shadow-orange-600/60 hover:shadow-orange-500/80 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 border border-amber-300/60 cursor-pointer"
               >
-                <div className="absolute -top-3 -right-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg border border-white/20 animate-pulse">
-                  100% GRÁTIS
-                </div>
                 <Sparkles size={20} className="text-amber-200 group-hover/btn:rotate-12 transition-transform" />
                 <span className="tracking-wide">SEJA UM PARCEIRO CREDENCIADO</span>
                 <ArrowRight size={20} className="group-hover/btn:translate-x-1.5 transition-transform" />
