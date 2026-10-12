@@ -26,18 +26,20 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     addHotDeal, 
     deleteHotDeal, 
     syncShopeeHotDeals,
-    syncMagaluHotDeals
+    syncMagaluHotDeals,
+    syncSheinHotDeals
   } = useApp();
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncingMagalu, setIsSyncingMagalu] = useState(false);
+  const [isSyncingShein, setIsSyncingShein] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
 
-  // Formulário de Cadastro Rápido de Oferta (Shopee ou Magalu Influencer)
+  // Formulário de Cadastro Rápido de Oferta (Shopee, Magalu ou SHEIN)
   const [newDealForm, setNewDealForm] = useState({
     title: '',
-    store: 'shopee', // 'shopee' | 'magalu'
+    store: 'shopee', // 'shopee' | 'magalu' | 'shein'
     category: 'tech',
     categoryLabel: 'Tecnologia & Gadgets',
     originalPrice: '',
@@ -53,7 +55,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     'tech': 'Tecnologia & Gadgets',
     'casa': 'Casa & Cozinha',
     'beleza': 'Beleza & Cuidados',
-    'moda': 'Moda & Viagem',
+    'moda': 'Moda & Tendências',
     'utilidades': 'Achadinhos & Utilidades'
   };
 
@@ -61,7 +63,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   const handleAutoExtractMetadata = async (urlToFetch) => {
     const target = urlToFetch || newDealForm.affiliateUrl;
     if (!target || !target.startsWith('http')) {
-      if (showToast) showToast('Insira um link válido da Shopee ou Magalu para puxar a imagem.', 'warning');
+      if (showToast) showToast('Insira um link válido da Shopee, Magalu ou SHEIN para puxar a imagem.', 'warning');
       return;
     }
 
@@ -75,10 +77,11 @@ export const AdminImperdiveisManager = ({ showToast }) => {
       const data = await res.json();
       if (data.success) {
         const isMagaluLink = target.includes('magazinevoce') || target.includes('magazineluiza') || target.includes('maga.lu');
+        const isSheinLink = target.includes('shein.com');
         setNewDealForm(prev => ({
           ...prev,
-          store: isMagaluLink ? 'magalu' : prev.store,
-          tag: isMagaluLink ? '💙 Oferta Magalu' : prev.tag,
+          store: isMagaluLink ? 'magalu' : isSheinLink ? 'shein' : prev.store,
+          tag: isMagaluLink ? '💙 Oferta Magalu' : isSheinLink ? '🖤 Achadinho SHEIN' : prev.tag,
           image: data.image || prev.image,
           title: prev.title || data.title || '',
           promoPrice: prev.promoPrice || (data.price ? String(data.price) : ''),
@@ -111,6 +114,18 @@ export const AdminImperdiveisManager = ({ showToast }) => {
       }
     } finally {
       setTimeout(() => setIsSyncing(false), 800);
+    }
+  };
+
+  const handleSyncSheinStore = async () => {
+    setIsSyncingShein(true);
+    try {
+      const res = await syncSheinHotDeals();
+      if (showToast) {
+        showToast(`🖤 Sucesso! ${res.count} Achadinhos Virais TikTok da SHEIN Oficial sincronizados com fotos reais!`, 'success');
+      }
+    } finally {
+      setTimeout(() => setIsSyncingShein(false), 800);
     }
   };
 
@@ -150,10 +165,12 @@ export const AdminImperdiveisManager = ({ showToast }) => {
 
     const isMagalu = newDealForm.store === 'magalu' || 
                      (newDealForm.affiliateUrl && (newDealForm.affiliateUrl.includes('magazinevoce') || newDealForm.affiliateUrl.includes('magazineluiza') || newDealForm.affiliateUrl.includes('maga.lu')));
+    const isShein = newDealForm.store === 'shein' ||
+                    (newDealForm.affiliateUrl && newDealForm.affiliateUrl.includes('shein.com'));
 
     addHotDeal({
       title: newDealForm.title.trim(),
-      store: isMagalu ? 'Magazine Luiza' : 'Shopee Oficial',
+      store: isMagalu ? 'Magazine Luiza' : isShein ? 'SHEIN Oficial' : 'Shopee Oficial',
       category: newDealForm.category,
       categoryLabel: categoriesMap[newDealForm.category] || 'Ofertas Imperdíveis',
       originalPrice: origPrice,
@@ -162,15 +179,15 @@ export const AdminImperdiveisManager = ({ showToast }) => {
       discountPercent: discountPercent,
       savings: Math.max(0, origPrice - promoPrice),
       image: newDealForm.image.trim() || (isMagalu ? 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=700&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=700&auto=format&fit=crop&q=80'),
-      affiliateUrl: newDealForm.affiliateUrl.trim() || (isMagalu ? 'https://www.magazinevoce.com.br/' : 'https://shopee.com.br/'),
-      tag: newDealForm.tag.trim() || (isMagalu ? '💙 Oferta Magalu' : '🔥 Oferta Imperdível'),
-      badgeColor: isMagalu ? 'bg-blue-600' : 'bg-red-500',
+      affiliateUrl: newDealForm.affiliateUrl.trim() || (isMagalu ? 'https://www.magazinevoce.com.br/' : isShein ? 'https://br.shein.com/' : 'https://shopee.com.br/'),
+      tag: newDealForm.tag.trim() || (isMagalu ? '💙 Oferta Magalu' : isShein ? '🖤 Achadinho SHEIN' : '🔥 Oferta Imperdível'),
+      badgeColor: isMagalu ? 'bg-blue-600' : isShein ? 'bg-neutral-900' : 'bg-red-500',
       freeShipping: newDealForm.freeShipping,
-      description: newDealForm.description.trim() || (isMagalu ? 'Oferta verificada Magazine Luiza com entrega rápida e garantia oficial.' : 'Produto verificado em promoção oficial com frete grátis Shopee.')
+      description: newDealForm.description.trim() || (isMagalu ? 'Oferta verificada Magazine Luiza com entrega rápida e garantia oficial.' : isShein ? 'Achadinho viral verificado SHEIN Brasil com frete grátis.' : 'Produto verificado em promoção oficial com frete grátis Shopee.')
     });
 
     if (showToast) {
-      showToast(isMagalu ? 'Oferta do Parceiro Magalu cadastrada com sucesso!' : 'Nova Oferta Imperdível publicada com sucesso!');
+      showToast(isMagalu ? 'Oferta do Parceiro Magalu cadastrada com sucesso!' : isShein ? 'Achadinho SHEIN publicado com sucesso!' : 'Nova Oferta Imperdível publicada com sucesso!');
     }
 
     setNewDealForm({
@@ -189,7 +206,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   };
 
   const handleCopyFormattedText = (deal) => {
-    const text = `🔥 *OFERTA IMPERDÍVEL SHOPEE* 🔥\n\n*${deal.title}*\n\n❌ De: R$ ${deal.originalPrice.toFixed(2).replace('.', ',')}\n✅ *Por apenas: R$ ${deal.promoPrice.toFixed(2).replace('.', ',')} (${deal.discountBadge})*\n\n🚚 Frete Grátis Shopee\n👉 Compre no link oficial: ${deal.affiliateUrl}`;
+    const text = `🔥 *OFERTA IMPERDÍVEL* 🔥\n\n*${deal.title}*\n\n❌ De: R$ ${deal.originalPrice.toFixed(2).replace('.', ',')}\n✅ *Por apenas: R$ ${deal.promoPrice.toFixed(2).replace('.', ',')} (${deal.discountBadge})*\n\n🚚 Frete Grátis\n👉 Compre no link oficial: ${deal.affiliateUrl}`;
     navigator.clipboard.writeText(text);
     setCopiedId(deal.id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -210,13 +227,16 @@ export const AdminImperdiveisManager = ({ showToast }) => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF5F00] text-white text-xs font-black uppercase tracking-wider">
                 <Flame size={14} />
-                <span>Robô de Ofertas Shopee & Magalu</span>
+                <span>Robô de Ofertas Shopee, Magalu & SHEIN</span>
               </span>
               <span className="text-xs text-orange-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10 font-bold">
                 Shopee: 18305641225
               </span>
               <span className="text-xs text-blue-300 bg-blue-600/20 px-2.5 py-0.5 rounded-full border border-blue-500/30 font-bold">
                 Magalu: magazinemelhorcupom
+              </span>
+              <span className="text-xs text-white bg-black/60 px-2.5 py-0.5 rounded-full border border-white/25 font-bold">
+                SHEIN: Achadinhos TikTok
               </span>
             </div>
 
@@ -225,11 +245,20 @@ export const AdminImperdiveisManager = ({ showToast }) => {
             </h2>
 
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
-              O robô monitora ofertas da Shopee Brasil e sincroniza automaticamente os produtos da sua vitrine oficial de <strong>Influencer Magalu (magazinemelhorcupom)</strong> com fotos reais, descontos e links diretos comissionados.
+              O robô monitora ofertas da Shopee Brasil, vitrine oficial de <strong>Influencer Magalu (magazinemelhorcupom)</strong> e <strong>Achadinhos Virais SHEIN TikTok</strong> com fotos reais da CDN, descontos e links diretos comissionados.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSyncSheinStore}
+              disabled={isSyncingShein}
+              className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-black hover:from-neutral-800 hover:to-neutral-900 text-white border border-white/25 font-black px-4 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-black/60 transition-all hover:scale-105 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw size={16} className={isSyncingShein ? 'animate-spin' : ''} />
+              <span>{isSyncingShein ? 'Sincronizando SHEIN...' : '🖤 Sincronizar SHEIN TikTok'}</span>
+            </button>
+
             <button
               onClick={handleSyncMagaluStore}
               disabled={isSyncingMagalu}
@@ -311,12 +340,13 @@ export const AdminImperdiveisManager = ({ showToast }) => {
                 onChange={(e) => setNewDealForm(prev => ({ 
                   ...prev, 
                   store: e.target.value,
-                  tag: e.target.value === 'magalu' ? '💙 Oferta Magalu' : '🔥 Oferta Imperdível'
+                  tag: e.target.value === 'magalu' ? '💙 Oferta Magalu' : e.target.value === 'shein' ? '🖤 Achadinho SHEIN' : '🔥 Oferta Imperdível'
                 }))}
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-bold focus:border-orange-500 focus:outline-none cursor-pointer"
               >
                 <option value="shopee">🧡 Shopee Oficial (Afiliado)</option>
                 <option value="magalu">💙 Magazine Luiza (Influencer Magalu)</option>
+                <option value="shein">🖤 SHEIN Oficial (Achadinhos TikTok)</option>
               </select>
             </div>
 

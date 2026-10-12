@@ -452,6 +452,8 @@ export const ImperdiveisView = () => {
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                         deal.store && deal.store.toLowerCase().includes('magalu') 
                           ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' 
+                          : deal.store && deal.store.toLowerCase().includes('shein')
+                          ? 'bg-white/10 text-white border border-white/25'
                           : 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
                       }`}>
                         {deal.store || 'Shopee Oficial'}

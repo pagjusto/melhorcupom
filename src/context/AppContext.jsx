@@ -254,20 +254,26 @@ export const AppProvider = ({ children }) => {
   const ALL_BASE_HOT_DEALS = [...MAGALU_RADAR_TOP10, ...SHEIN_VIRAL_TOP18, ...INITIAL_HOT_DEALS];
 
   const [hotDeals, setHotDeals] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_hot_deals_v8');
+    const saved = localStorage.getItem('melhor_cupom_hot_deals_v9') || localStorage.getItem('melhor_cupom_hot_deals_v8');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(ALL_BASE_HOT_DEALS));
+      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(ALL_BASE_HOT_DEALS));
       return ALL_BASE_HOT_DEALS;
     }
     try {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
+        // Atualizar imagens existentes e garantir que todas as ofertas base (SHEIN, Magalu e Shopee) existam no cache
         const updated = parsed.map(item => {
           const fresh = ALL_BASE_HOT_DEALS.find(d => d.id === item.id);
-          return fresh && fresh.image ? { ...item, image: fresh.image } : item;
+          return fresh && fresh.image ? { ...item, image: fresh.image, store: fresh.store || item.store, affiliateUrl: fresh.affiliateUrl || item.affiliateUrl } : item;
         });
-        localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
-        return updated;
+
+        const existingIds = new Set(updated.map(d => d.id));
+        const missingBaseDeals = ALL_BASE_HOT_DEALS.filter(d => !existingIds.has(d.id));
+        const finalDeals = [...missingBaseDeals, ...updated];
+
+        localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(finalDeals));
+        return finalDeals;
       }
       return ALL_BASE_HOT_DEALS;
     } catch {
@@ -280,7 +286,6 @@ export const AppProvider = ({ children }) => {
     
     // Se for link Magalu / Magazine Você / Influencer Magalu
     if (storeType === 'magalu' || rawUrl.includes('magazinevoce.com.br') || rawUrl.includes('magazineluiza.com.br') || rawUrl.includes('maga.lu')) {
-      // Já é o link direto de vitrine ou produto do parceiro Magalu
       return rawUrl;
     }
 
@@ -304,16 +309,18 @@ export const AppProvider = ({ children }) => {
   const addHotDeal = (dealData) => {
     const isMagalu = (dealData.store && dealData.store.toLowerCase().includes('magalu')) ||
                      (dealData.affiliateUrl && (dealData.affiliateUrl.includes('magazinevoce') || dealData.affiliateUrl.includes('magazineluiza') || dealData.affiliateUrl.includes('maga.lu')));
+    const isShein = (dealData.store && dealData.store.toLowerCase().includes('shein')) ||
+                    (dealData.affiliateUrl && dealData.affiliateUrl.includes('shein.com'));
     
-    const storeName = dealData.store || (isMagalu ? 'Magazine Luiza' : 'Shopee Oficial');
-    const affiliateUrl = formatAffiliateUrl(dealData.affiliateUrl || dealData.link, isMagalu ? 'magalu' : 'shopee');
+    const storeName = dealData.store || (isMagalu ? 'Magazine Luiza' : isShein ? 'SHEIN Oficial' : 'Shopee Oficial');
+    const affiliateUrl = formatAffiliateUrl(dealData.affiliateUrl || dealData.link, isMagalu ? 'magalu' : isShein ? 'shein' : 'shopee');
     
     const newDeal = {
       id: `deal_${Date.now()}`,
       rating: 4.9,
       salesCount: '1.2k vendidos',
-      tag: isMagalu ? '💙 Oferta Magalu' : '🔥 Oferta Imperdível',
-      badgeColor: isMagalu ? 'bg-blue-600' : 'bg-red-500',
+      tag: isMagalu ? '💙 Oferta Magalu' : isShein ? '🖤 Achadinho SHEIN' : '🔥 Oferta Imperdível',
+      badgeColor: isMagalu ? 'bg-blue-600' : isShein ? 'bg-neutral-900' : 'bg-red-500',
       freeShipping: dealData.freeShipping ?? true,
       category: dealData.category || 'utilidades',
       categoryLabel: dealData.categoryLabel || 'Achadinhos & Utilidades',
@@ -323,7 +330,7 @@ export const AppProvider = ({ children }) => {
     };
     setHotDeals(prev => {
       const updated = [newDeal, ...prev];
-      localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
       return updated;
     });
 
@@ -340,19 +347,56 @@ export const AppProvider = ({ children }) => {
   const deleteHotDeal = (id) => {
     setHotDeals(prev => {
       const updated = prev.filter(d => d.id !== id);
-      localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
+      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
       return updated;
     });
   };
 
   const syncShopeeHotDeals = async () => {
-    const synced = INITIAL_HOT_DEALS.map(d => ({
+    const syncedShopee = INITIAL_HOT_DEALS.map(d => ({
       ...d,
       lastSync: 'Sincronizado Agora'
     }));
-    setHotDeals(synced);
-    localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(synced));
-    return { count: synced.length };
+    setHotDeals(prev => {
+      // Manter ofertas da Magalu e SHEIN já existentes e atualizar/injetar as da Shopee
+      const nonShopee = prev.filter(p => {
+        const s = (p.store || '').toLowerCase();
+        const u = (p.affiliateUrl || '').toLowerCase();
+        return s.includes('magalu') || s.includes('magazine') || s.includes('shein') || u.includes('shein') || u.includes('magazine');
+      });
+      // Garantir que SHEIN e Magalu base estejam presentes
+      const hasShein = nonShopee.some(p => (p.store || '').toLowerCase().includes('shein'));
+      const hasMagalu = nonShopee.some(p => (p.store || '').toLowerCase().includes('magalu') || (p.store || '').toLowerCase().includes('magazine'));
+      const updated = [
+        ...(hasMagalu ? [] : MAGALU_RADAR_TOP10),
+        ...(hasShein ? [] : SHEIN_VIRAL_TOP18),
+        ...nonShopee,
+        ...syncedShopee
+      ];
+      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+      return updated;
+    });
+    return { count: syncedShopee.length };
+  };
+
+  const syncSheinHotDeals = async () => {
+    const syncedShein = SHEIN_VIRAL_TOP18.map(d => ({
+      ...d,
+      lastSync: 'Sincronizado Agora'
+    }));
+    setHotDeals(prev => {
+      const withoutShein = prev.filter(p => !p.id.startsWith('deal_shein_') && !(p.store || '').toLowerCase().includes('shein'));
+      const updated = [...syncedShein, ...withoutShein];
+      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+      return updated;
+    });
+    confetti({
+      particleCount: 70,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#111111', '#EC4899', '#F43F5E', '#10B981']
+    });
+    return { count: syncedShein.length };
   };
 
   const syncMagaluHotDeals = async () => {
@@ -366,8 +410,13 @@ export const AppProvider = ({ children }) => {
 
       setHotDeals(prev => {
         const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
-        const updated = [...allMagaluDeals, ...currentWithoutMagalu];
-        localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
+        const hasShein = currentWithoutMagalu.some(p => (p.store || '').toLowerCase().includes('shein'));
+        const updated = [
+          ...allMagaluDeals,
+          ...(hasShein ? [] : SHEIN_VIRAL_TOP18),
+          ...currentWithoutMagalu
+        ];
+        localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
         return updated;
       });
 
@@ -383,8 +432,13 @@ export const AppProvider = ({ children }) => {
       console.warn('Erro ao sincronizar Magalu, ativando Radar Top 10 oficial:', err);
       setHotDeals(prev => {
         const currentWithoutMagalu = prev.filter(p => !p.id.startsWith('deal_magalu_'));
-        const updated = [...MAGALU_RADAR_TOP10, ...currentWithoutMagalu];
-        localStorage.setItem('melhor_cupom_hot_deals_v8', JSON.stringify(updated));
+        const hasShein = currentWithoutMagalu.some(p => (p.store || '').toLowerCase().includes('shein'));
+        const updated = [
+          ...MAGALU_RADAR_TOP10,
+          ...(hasShein ? [] : SHEIN_VIRAL_TOP18),
+          ...currentWithoutMagalu
+        ];
+        localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
         return updated;
       });
 
@@ -1602,6 +1656,7 @@ export const AppProvider = ({ children }) => {
       deleteHotDeal,
       syncShopeeHotDeals,
       syncMagaluHotDeals,
+      syncSheinHotDeals,
       // Navegação Global & Ofertas Imperdíveis
       activeTab,
       setActiveTab,
