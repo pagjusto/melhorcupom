@@ -1216,8 +1216,30 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         }
 
         if (data.success) {
+          let isStoryOk = !!data.storyPublished;
+
+          // Se o Feed publicou mas o Story precisou de mais tempo, dispara requisição dedicada de Story
+          if (!isStoryOk && storyImageBase64) {
+            try {
+              const storyRes = await fetch('/api/instagram-publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  onlyStory: true,
+                  storyImageBase64,
+                  storeName: cleanStoreName
+                })
+              });
+              const storyData = await storyRes.json();
+              if (storyData?.storyPublished) {
+                isStoryOk = true;
+              }
+            } catch (storyRetryErr) {
+              console.warn('Retentativa dedicada de Story:', storyRetryErr);
+            }
+          }
+
           const finalPostUrl = data.postUrl || `https://www.instagram.com/${cleanUser}/`;
-          const isStoryOk = !!data.storyPublished;
           const newPost = {
             id: `post_inst_${Date.now()}`,
             storeId: selectedStore?.id,
@@ -1235,7 +1257,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           markStoreAsPublished(selectedStore, newPost);
 
           const toastMsg = isStoryOk
-            ? `🎉 Arte de "${cleanStoreName}" publicada com sucesso no FEED e no STORIES (com link do site) de @omelhorcupom.com.br!`
+            ? `🎉 Arte de "${cleanStoreName}" publicada com sucesso no FEED e no STORIES de @omelhorcupom.com.br!`
             : `🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`;
           showToast(toastMsg, 'success');
           setIsPublishing(false);

@@ -569,7 +569,24 @@ export const autoPublishStoreToInstagram = async (store, coupons = []) => {
       throw new Error(data.error || data.message || 'Falha ao publicar');
     }
 
-    const isStoryOk = !!data.storyPublished;
+    let isStoryOk = !!data.storyPublished;
+    if (!isStoryOk && storyImageBase64) {
+      try {
+        const storyRes = await fetch('/api/instagram-publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            onlyStory: true,
+            storyImageBase64,
+            storeName: store.name
+          })
+        });
+        const storyData = await storyRes.json();
+        if (storyData?.storyPublished) {
+          isStoryOk = true;
+        }
+      } catch (e) {}
+    }
     const newPost = {
       id: `post_auto_${Date.now()}`,
       storeId: store.id,
