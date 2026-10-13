@@ -517,7 +517,7 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 <span className="text-sm animate-pulse">🏪</span>
                 <span>Seja um Parceiro (Cadastre sua Loja)</span>
               </div>
-              <span className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black uppercase">1º Mês Grátis</span>
+              <span className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black uppercase">3 Meses Grátis</span>
             </button>
           )}
           <button

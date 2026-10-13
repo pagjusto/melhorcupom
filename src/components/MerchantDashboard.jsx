@@ -117,15 +117,35 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [merchantJustEarned, setMerchantJustEarned] = useState(null);
   const [previewingCoupon, setPreviewingCoupon] = useState(null);
   
-  // Plano de assinatura atual do lojista (padrão automático: Bronze com 1 oferta + VIP)
-  const effectiveTier = (!currentStore.tier || currentStore.tier === 'free') ? 'bronze' : currentStore.tier;
-  const currentPlan = merchantPlans?.find(p => p.id === effectiveTier) || {
+  // Identificar se a loja está no período de degustação gratuita de 3 meses (1 cupom ativo, sem acesso VIP)
+  const isTrialStore = Boolean(
+    currentStore?.freeTrialActive ||
+    currentStore?.firstMonthFree ||
+    currentStore?.tier === 'free_trial' ||
+    currentStore?.tier === 'free' ||
+    (!currentStore?.adminPaidPlan && (!currentStore?.tier || currentStore?.tier === 'free' || currentStore?.tier === 'free_trial'))
+  );
+
+  const effectiveTier = isTrialStore ? 'free_trial' : (currentStore.tier || 'bronze');
+  const currentPlan = isTrialStore ? {
+    id: 'free_trial',
+    name: 'Degustação (3 Meses Grátis)',
+    shortName: '3 Meses Grátis',
+    badge: '🎁 3 Meses Grátis (1 Cupom)',
+    price: 0,
+    priceLabel: 'Grátis por 3 Meses',
+    period: 'por 90 dias',
+    tagline: 'Período gratuito de 3 meses restrito a 1 cupom ativo da sua loja (sem acesso ao Clube VIP).',
+    maxCoupons: 1,
+    isTrial: true
+  } : (merchantPlans?.find(p => p.id === effectiveTier) || {
     id: 'bronze',
-    name: 'Plano Bronze + Acesso VIP',
+    name: 'Plano Bronze (2 Cupons + VIP)',
+    shortName: 'Bronze',
     priceLabel: 'R$ 19,90',
     period: '/mês',
-    maxCoupons: 1
-  };
+    maxCoupons: 2
+  });
   const isLimitReached = storeCoupons.length >= currentPlan.maxCoupons;
   const [planUpgradeSuccess, setPlanUpgradeSuccess] = useState('');
 
@@ -453,31 +473,36 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                {effectiveTier === 'gold' ? (
+                {isTrialStore ? (
+                  <span className="text-xs uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/20 px-3 py-0.5 rounded-full border border-emerald-500/40 flex items-center gap-1.5 shadow-sm">
+                    <Sparkles size={13} className="text-emerald-300" />
+                    <span>Degustação (3 Meses Grátis • 1 Cupom)</span>
+                  </span>
+                ) : effectiveTier === 'gold' ? (
                   <span className="text-xs uppercase font-black tracking-wider text-amber-300 bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1.5 shadow-md shadow-amber-950/40">
                     <Crown size={13} fill="currentColor" className="text-amber-400 animate-pulse" />
-                    <span>Plano Ouro VIP (Ofertas Ilimitadas)</span>
+                    <span>Plano Ouro VIP (Ilimitado + VIP)</span>
                   </span>
                 ) : effectiveTier === 'silver' ? (
                   <span className="text-xs uppercase font-bold tracking-wider text-slate-200 bg-slate-500/20 px-3 py-0.5 rounded-full border border-slate-400/40 flex items-center gap-1.5">
                     <Award size={13} className="text-slate-300" />
-                    <span>Plano Prata Pro (Até 3 Ofertas)</span>
+                    <span>Plano Prata Pro (5 Cupons + VIP)</span>
                   </span>
                 ) : (
                   <span className="text-xs uppercase font-bold tracking-wider text-[#E09858] bg-[#CD7F32]/20 px-3 py-0.5 rounded-full border border-[#CD7F32]/50 flex items-center gap-1.5 shadow-sm">
                     <Medal size={13} className="text-[#CD7F32]" />
-                    <span>Plano Bronze (1 Cupom Grátis no 1º Mês)</span>
+                    <span>Plano Bronze (2 Cupons + VIP)</span>
                   </span>
                 )}
 
-                {(!currentStore.firstMonthFree || currentStore.adminPaidPlan || effectiveTier === 'silver' || effectiveTier === 'gold') ? (
+                {!isTrialStore ? (
                   <span className="text-xs font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                     <Crown size={11} className="text-amber-400" fill="currentColor" />
                     <span>Seu Acesso VIP no Site: LIBERADO</span>
                   </span>
                 ) : (
-                  <span className="text-xs font-bold text-gray-300 bg-white/5 border border-white/15 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <span>🎁 1º Mês Grátis (1 Cupom • Sem Acesso VIP)</span>
+                  <span className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <span>🔒 Sem Acesso VIP (Assine Bronze, Prata ou Ouro para liberar)</span>
                   </span>
                 )}
 
@@ -1182,15 +1207,26 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           {isLimitReached ? (
             <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border-2 border-amber-500/40 rounded-3xl p-8 text-center space-y-4 animate-fade-in">
               <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-2xl shadow-lg">
-                👑
+                {isTrialStore ? '🎁' : '👑'}
               </div>
               <h3 className="text-xl font-black text-white">
-                Limite de Ofertas Atingido ({currentPlan.maxCoupons} {currentPlan.maxCoupons === 1 ? 'oferta' : 'ofertas'} no {currentPlan.name})
+                {isTrialStore
+                  ? 'Limite da Degustação Atingido (1 Cupom Ativo nos 3 Meses Grátis)'
+                  : `Limite de Ofertas Atingido (${currentPlan.maxCoupons} ${currentPlan.maxCoupons === 1 ? 'oferta' : 'ofertas'} no ${currentPlan.name})`
+                }
               </h3>
               <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed">
-                Seu estabelecimento está atualmente no <strong>{currentPlan.name}</strong>, que permite até <strong>{currentPlan.maxCoupons} {currentPlan.maxCoupons === 1 ? 'oferta ativa' : 'ofertas ativas'}</strong> simultaneamente.
-                <br /><br />
-                Para cadastrar mais ofertas, ter <strong>cupons ilimitados</strong> e posicionar sua marca no <strong>topo absoluto das buscas com borda dourada</strong>, faça o upgrade de plano agora mesmo!
+                {isTrialStore ? (
+                  <>
+                    Sua loja está aproveitando a <strong>Degustação de 3 Meses Grátis</strong>, restrita a <strong>1 cupom ativo</strong> (sem acesso VIP).<br /><br />
+                    Para cadastrar mais cupons e <strong>liberar seu Acesso VIP</strong> para resgatar cupons em todo o site, faça upgrade para <strong>Bronze (2 cupons + VIP)</strong>, <strong>Prata (5 cupons + VIP)</strong> ou <strong>Ouro (Ilimitado + VIP)</strong>!
+                  </>
+                ) : (
+                  <>
+                    Seu estabelecimento está atualmente no <strong>{currentPlan.name}</strong>, que permite até <strong>{currentPlan.maxCoupons} {currentPlan.maxCoupons === 1 ? 'oferta ativa' : 'ofertas ativas'}</strong> simultaneamente.<br /><br />
+                    Para cadastrar mais ofertas, ter <strong>cupons ilimitados</strong> e posicionar sua marca no <strong>topo absoluto das buscas com borda dourada</strong>, faça o upgrade de plano agora mesmo!
+                  </>
+                )}
               </p>
               
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -1200,7 +1236,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   className="bg-gradient-to-r from-amber-400 to-[#FF5F00] hover:from-amber-300 hover:to-orange-500 text-black font-black px-6 py-3 rounded-2xl text-sm shadow-xl shadow-orange-600/30 flex items-center gap-2 transition-all transform hover:scale-105"
                 >
                   <Crown size={16} fill="currentColor" />
-                  <span>Ver Planos & Fazer Upgrade</span>
+                  <span>{isTrialStore ? 'Ver Planos com VIP Incluso (Bronze, Prata, Ouro)' : 'Ver Planos & Fazer Upgrade'}</span>
                 </button>
                 <button
                   type="button"
@@ -2072,14 +2108,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     ? 'bg-amber-800/30 border-2 border-amber-600 text-amber-400'
                     : 'bg-white/5 border border-white/10 text-gray-400'
                 }`}>
-                  {currentPlan.id === 'gold' ? '👑' : currentPlan.id === 'silver' ? '🥈' : currentPlan.id === 'bronze' ? '🥉' : '🆓'}
+                  {currentPlan.id === 'gold' ? '👑' : currentPlan.id === 'silver' ? '🥈' : currentPlan.id === 'bronze' ? '🥉' : '🎁'}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-black tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                      Assinatura Ativa
+                    <span className={`text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full border ${
+                      isTrialStore 
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    }`}>
+                      {isTrialStore ? 'Degustação (3 Meses Grátis)' : 'Assinatura Ativa'}
                     </span>
-                    <span className="text-xs text-gray-400">Renovação mensal</span>
+                    <span className="text-xs text-gray-400">
+                      {isTrialStore ? '1 cupom ativo • Sem VIP' : 'Renovação mensal'}
+                    </span>
                   </div>
                   <h3 className="text-xl font-black text-white mt-1 flex items-center gap-2">
                     <span>{currentPlan.name}</span>
@@ -2088,7 +2130,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     )}
                   </h3>
                   <p className="text-xs text-gray-400">
-                    Investimento: <strong className="text-white">{currentPlan.priceLabel}</strong>{currentPlan.period}
+                    Investimento: <strong className="text-white">{currentPlan.priceLabel}</strong> {currentPlan.period}
                   </p>
                 </div>
               </div>
@@ -2162,6 +2204,31 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           )}
 
+          {/* Banner de Aviso de Degustação Gratuita (3 Meses Grátis) */}
+          {isTrialStore && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-[#181824] border-2 border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-2xl flex-shrink-0">
+                  🎁
+                </div>
+                <div>
+                  <div className="text-sm font-black text-white flex items-center gap-2">
+                    <span>Sua loja está na Degustação Gratuita (3 Meses Grátis)</span>
+                    <span className="text-[10px] bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full font-bold">1 Cupom • Sem VIP</span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-1 max-w-2xl leading-relaxed">
+                    Você pode manter <strong>1 cupom ativo gratuitamente por 90 dias</strong>. Para ter <strong>Acesso VIP liberado</strong> (resgatar cupons em todo o site) e criar mais cupons, assine um dos planos abaixo:
+                  </p>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0 w-full sm:w-auto">
+                <span className="text-xs font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-3 py-1.5 rounded-xl block text-center sm:text-right">
+                  A partir de R$ 19,90/mês
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Grid dos 3 Planos (Bronze, Prata, Ouro) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(merchantPlans || []).map((plan) => {
@@ -2190,21 +2257,21 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   {isGold && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-black text-[11px] uppercase tracking-wider px-4 py-1 rounded-full shadow-lg flex items-center gap-1 whitespace-nowrap">
                       <Crown size={12} fill="currentColor" />
-                      <span>Máximo Destaque & Ilimitado</span>
+                      <span>Máximo Destaque & Ilimitado + VIP</span>
                     </div>
                   )}
 
                   {isSilver && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-900 font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap">
                       <Award size={12} />
-                      <span>Até 3 Ofertas Ativas</span>
+                      <span>Até 5 Ofertas Ativas + VIP</span>
                     </div>
                   )}
 
                   {isBronze && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-600 text-black font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-emerald-400/60">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-600 to-amber-800 text-white font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-amber-500/60">
                       <Medal size={12} />
-                      <span>🎁 1º Mês Grátis (1 Cupom Ativo)</span>
+                      <span>2 Cupons Ativos + VIP</span>
                     </div>
                   )}
 
@@ -2328,7 +2395,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             <span>
                               {storeDiscount > 0 
                                 ? `Contratar por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
-                                : 'Contratar Plano Ouro (Ilimitado)'}
+                                : 'Contratar Plano Ouro (Ilimitado + VIP)'}
                             </span>
                           </>
                         ) : isSilver ? (
@@ -2337,7 +2404,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             <span>
                               {storeDiscount > 0 
                                 ? `Upgrade por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
-                                : 'Fazer Upgrade para Prata (3 Ofertas)'}
+                                : 'Fazer Upgrade para Prata (5 Ofertas + VIP)'}
                             </span>
                           </>
                         ) : (
@@ -2346,7 +2413,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                             <span>
                               {storeDiscount > 0 
                                 ? `Selecionar por R$ ${finalPlanPrice.toFixed(2).replace('.', ',')}` 
-                                : 'Selecionar Plano Bronze (1 Oferta)'}
+                                : 'Selecionar Plano Bronze (2 Ofertas + VIP)'}
                             </span>
                           </>
                         )}
@@ -2378,7 +2445,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <Medal size={12} className="text-[#CD7F32]" />
                     <span>Card no Plano Bronze (R$ 19,90):</span>
                   </span>
-                  <span className="text-[10px] text-[#CD7F32] font-bold bg-[#CD7F32]/20 px-2 py-0.5 rounded border border-[#CD7F32]/40">1 Oferta + VIP</span>
+                  <span className="text-[10px] text-[#CD7F32] font-bold bg-[#CD7F32]/20 px-2 py-0.5 rounded border border-[#CD7F32]/40">2 Ofertas + VIP</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
@@ -2396,7 +2463,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <Medal size={11} className="text-[#CD7F32]" />
                   <span>{currentStore.name}</span>
                 </div>
-                <p className="text-[11px] text-gray-300">Borda bronze (#CD7F32), medalha bronze metálica, 1 cupom ativo na loja + Acesso VIP liberado no site.</p>
+                <p className="text-[11px] text-gray-300">Borda bronze (#CD7F32), medalha bronze metálica, 2 cupons ativos na loja + Acesso VIP liberado no site.</p>
               </div>
 
               {/* Preview Prata */}
@@ -2406,7 +2473,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <Award size={12} />
                     <span>Card no Plano Prata (R$ 79,90):</span>
                   </span>
-                  <span className="text-[10px] text-slate-300 font-bold">Até 3 Ofertas</span>
+                  <span className="text-[10px] text-slate-300 font-bold">Até 5 Ofertas + VIP</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />
@@ -2421,7 +2488,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </div>
                 </div>
                 <div className="text-xs font-bold text-slate-200">{currentStore.name}</div>
-                <p className="text-[11px] text-gray-300">Borda prateada, medalha prata em destaque, até 3 ofertas simultâneas + Acesso VIP incluso.</p>
+                <p className="text-[11px] text-gray-300">Borda prateada, medalha prata em destaque, até 5 ofertas simultâneas + Acesso VIP incluso.</p>
               </div>
 
               {/* Preview Ouro */}
@@ -2431,7 +2498,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     <Crown size={12} fill="currentColor" />
                     <span>Card no Plano Ouro (R$ 199,90):</span>
                   </span>
-                  <span className="text-[10px] text-amber-400 font-black">⭐ Ilimitado + Topo</span>
+                  <span className="text-[10px] text-amber-400 font-black">⭐ Ilimitado + VIP</span>
                 </div>
                 <div className="relative h-28 rounded-xl overflow-hidden bg-black/60">
                   <img src={currentStore.image} alt="Exemplo" className="w-full h-full object-cover" />

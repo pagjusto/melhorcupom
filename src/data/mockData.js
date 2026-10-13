@@ -50,54 +50,66 @@ export const CATEGORIES = [
   { id: 'lazer', name: 'Lazer & Experiências', icon: 'Ticket', color: 'from-amber-500 to-yellow-500' }
 ];
 
+export const MERCHANT_FREE_TRIAL = {
+  id: 'free_trial',
+  name: 'Degustação (3 Meses Grátis)',
+  shortName: '3 Meses Grátis',
+  badge: '🎁 3 Meses Grátis (1 Cupom)',
+  durationMonths: 3,
+  durationDays: 90,
+  price: 0,
+  priceLabel: 'Grátis por 3 Meses',
+  period: 'por 90 dias',
+  tagline: 'Período gratuito de 3 meses restrito a 1 cupom ativo (sem acesso VIP ao site).',
+  maxCoupons: 1,
+  includesVip: false
+};
+
 export const MERCHANT_PLANS = [
   {
     id: 'bronze',
-    name: 'Plano Bronze (1º Mês Grátis)',
+    name: 'Plano Bronze (2 Cupons + VIP)',
     shortName: 'Bronze',
-    badge: '🥉 Destaque Bronze (1º Mês Grátis)',
+    badge: '🥉 Destaque Bronze (2 Cupons + VIP)',
     price: 19.90,
     priceLabel: 'R$ 19,90',
-    firstMonthFree: true,
-    firstMonthLabel: '1º Mês GRÁTIS',
-    period: '/mês (após 1º mês grátis)',
-    tagline: '1º Mês GRÁTIS para criar 1 cupom ativo da sua loja na plataforma (não inclui acesso ao Clube VIP no mês grátis).',
-    maxCoupons: 1,
+    period: '/mês',
+    tagline: '2 cupons ativos da sua loja + Acesso VIP incluso para resgatar cupons em todo o site.',
+    maxCoupons: 2,
     weight: 2,
     color: 'from-amber-700 via-amber-800 to-amber-950',
     borderColor: 'border-amber-700/60',
     popular: false,
     perks: [
-      '🎁 1º Mês 100% GRÁTIS para publicar 1 cupom ativo na plataforma',
-      '1 oferta/cupom ativo na loja (após o 1º mês, apenas R$ 19,90/mês)',
+      'Até 2 ofertas/cupons ativos simultaneamente da sua loja',
+      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
       'Badge de destaque "🥉 Destaque Bronze" e borda acobreada',
       'Divulgação automática no Instagram @omelhorcupom.com.br',
       'Validador de balcão (PDV) e QR Code',
       'Suporte via WhatsApp'
     ],
     missingPerks: [
-      'Acesso ao Clube VIP de usuário (liberado apenas nos planos pagos)',
       'Prioridade Alta / Topo da Home',
       'Borda prateada ou dourada Glow',
-      'Múltiplas ofertas simultâneas (3 na Prata ou Ilimitadas no Ouro)'
+      'Mais de 2 ofertas simultâneas (5 na Prata ou Ilimitadas no Ouro)'
     ]
   },
   {
     id: 'silver',
-    name: 'Plano Prata Pro',
+    name: 'Plano Prata Pro (5 Cupons + VIP)',
     shortName: 'Prata',
-    badge: '🥈 Destaque Prata',
+    badge: '🥈 Destaque Prata (5 Cupons + VIP)',
     price: 79.90,
     priceLabel: 'R$ 79,90',
     period: '/mês',
-    tagline: 'Mais visibilidade e até 3 ofertas de cupom ativas simultaneamente',
-    maxCoupons: 3,
+    tagline: 'Até 5 ofertas de cupons ativas simultaneamente + Acesso VIP liberado.',
+    maxCoupons: 5,
     weight: 3,
     color: 'from-slate-400 to-slate-600',
     borderColor: 'border-slate-300/40',
     popular: false,
     perks: [
-      'Até 3 ofertas VIP ativas simultaneamente',
+      'Até 5 ofertas/cupons ativos simultaneamente da sua loja',
       '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
       'Prioridade Alta (acima das lojas Bronze)',
       'Badge de destaque "🥈 Destaque Prata"',
@@ -114,20 +126,20 @@ export const MERCHANT_PLANS = [
   },
   {
     id: 'gold',
-    name: 'Plano Ouro VIP Top',
+    name: 'Plano Ouro VIP Top (Ilimitado + VIP)',
     shortName: 'Ouro',
-    badge: '👑 Top Destaque Ouro',
+    badge: '👑 Top Destaque Ouro (Ilimitado + VIP)',
     price: 199.90,
     priceLabel: 'R$ 199,90',
     period: '/mês',
-    tagline: 'Máxima conversão, topo absoluto do app e cupons ilimitados',
+    tagline: 'Máxima conversão, topo absoluto do app e cupons ilimitados + Acesso VIP liberado.',
     maxCoupons: 9999,
     weight: 4,
     color: 'from-amber-400 via-orange-500 to-amber-600',
     borderColor: 'border-amber-400/80',
     popular: true,
     perks: [
-      'Ofertas VIP ILIMITADAS ativas',
+      'Ofertas VIP ILIMITADAS ativas simultaneamente',
       '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
       'PRIORIDADE MÁXIMA (Topo absoluto de todas as buscas)',
       'Badge dourada vibrante "👑 Top Destaque Ouro"',

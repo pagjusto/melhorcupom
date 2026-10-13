@@ -1028,6 +1028,7 @@ export const AppProvider = ({ children }) => {
         return { 
           ...s, 
           tier: newTier,
+          freeTrialActive: false,
           firstMonthFree: false,
           adminPaidPlan: newTier !== 'api',
           referralBalance: remainingBalance
@@ -1237,9 +1238,11 @@ export const AppProvider = ({ children }) => {
       instagram: (instagram || '').trim(),
       address: `${selectedCities[0] || 'Brasil'}`,
       hours: 'Seg a Sáb: 10h às 22h',
-      tier: 'bronze',
-      firstMonthFree: true,
-      freeTrialEndsAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+      tier: 'free_trial',
+      freeTrialActive: true,
+      freeTrialMonths: 3,
+      freeTrialEndsAt: new Date(Date.now() + 90 * 86400000).toISOString(),
+      maxCoupons: 1,
       adminPaidPlan: false,
       referralCode: storeRefCode,
       referralBalance: 0.00,
@@ -1700,14 +1703,16 @@ export const AppProvider = ({ children }) => {
   const isPaidMerchantVip = Boolean(
     activeMerchantStore &&
     activeMerchantStore.tier !== 'api' &&
-    (!activeMerchantStore.firstMonthFree || activeMerchantStore.adminPaidPlan || activeMerchantStore.tier === 'silver' || activeMerchantStore.tier === 'gold')
+    activeMerchantStore.tier !== 'free_trial' &&
+    !activeMerchantStore.freeTrialActive &&
+    (activeMerchantStore.adminPaidPlan || activeMerchantStore.tier === 'bronze' || activeMerchantStore.tier === 'silver' || activeMerchantStore.tier === 'gold')
   );
 
   const isVipUser = 
     currentRole === 'vip' || 
     currentRole === 'admin' || 
     isPaidMerchantVip || 
-    (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && Boolean(userProfile.isVip));
+    (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && !currentRole.startsWith('merchant_') && Boolean(userProfile.isVip));
 
   return (
     <AppContext.Provider value={{
