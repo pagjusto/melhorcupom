@@ -799,18 +799,33 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     });
   const selectableStores = showAllStores ? stores : (pendingStores.length > 0 ? pendingStores : []);
 
-  const selectedStore = stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {};
+  const PROMO_SEJA_PARCEIRO_STORE = {
+    id: 'promo_seja_parceiro',
+    name: '⭐ ARTE OFICIAL: Seja um Parceiro (3 Meses Grátis)',
+    city: 'Brasil',
+    address: 'Brasil',
+    type: 'institutional',
+    image: '/artes/folder-seja-parceiro-feed.png',
+    storyImage: '/artes/folder-seja-parceiro-story.png',
+    instagram: '@omelhorcupom.com.br',
+    isPromoCampaign: true
+  };
+
+  const selectedStore = selectedStoreId === 'promo_seja_parceiro'
+    ? PROMO_SEJA_PARCEIRO_STORE
+    : (stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {});
   const locationText = getStoreLocationText(selectedStore);
 
   // Auto-selecionar primeira loja pendente
   useEffect(() => {
+    if (selectedStoreId === 'promo_seja_parceiro') return;
     if (!showAllStores && pendingStores.length > 0) {
       const isCurrentPending = pendingStores.some(s => s.id === selectedStoreId);
       if (!isCurrentPending) {
         setSelectedStoreId(pendingStores[0].id);
       }
     }
-  }, [pendingStores.length, showAllStores]);
+  }, [pendingStores.length, showAllStores, selectedStoreId]);
 
   // Ouvir publicações automáticas disparadas em tempo real
   useEffect(() => {
@@ -832,11 +847,13 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const featuredCoupon = storeCoupons[0];
 
   // URL direta da oferta/cupom da loja no site
-  const storyOfferUrl = selectedStore?.id
-    ? (featuredCoupon 
-        ? `https://www.omelhorcupom.com.br/?loja=${selectedStore.id}&cupom=${featuredCoupon.id}`
-        : `https://www.omelhorcupom.com.br/?loja=${selectedStore.id}`)
-    : 'https://www.omelhorcupom.com.br';
+  const storyOfferUrl = selectedStoreId === 'promo_seja_parceiro'
+    ? 'https://www.omelhorcupom.com.br'
+    : (selectedStore?.id
+        ? (featuredCoupon 
+            ? `https://www.omelhorcupom.com.br/?loja=${selectedStore.id}&cupom=${featuredCoupon.id}`
+            : `https://www.omelhorcupom.com.br/?loja=${selectedStore.id}`)
+        : 'https://www.omelhorcupom.com.br');
 
   // Sincronizar status da Meta Graph API
   useEffect(() => {
@@ -886,6 +903,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
   // Inicializar legenda oficial com marcação do @ do parceiro
   useEffect(() => {
+    if (selectedStoreId === 'promo_seja_parceiro') {
+      const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
+      setCustomCaption(
+        `🚀 SEJA UM PARCEIRO OFICIAL NO MELHOR CUPOM! 🏪✨\n\nTem uma loja física, restaurante, cafeteria, barbearia ou franquia?\nColoque seu negócio na vitrine para milhares de assinantes VIP com alto poder de compra da sua região!\n\n🎁 3 MESES 100% GRÁTIS PARA NOVOS PARCEIROS!\n🎟️ Crie já a oferta de cupom da sua loja sem pagar nada\n📱 Validador de balcão via QR Code direto no caixa (PDV)\n⭐ Aumente o fluxo de clientes e turbine suas vendas\n\n👉 Cadastre sua empresa agora pelo link da nossa bio ${activeHandle} ou acesse:\nhttps://www.omelhorcupom.com.br\n\n#MelhorCupom #SejaUmParceiro #ComercioLocal #CuponsDeDesconto #LojasParceiras #Empreendedorismo #Promocoes #Descontos`
+      );
+      return;
+    }
+
     if (selectedStore?.name) {
       const cleanStore = selectedStore.name;
       const isBig = isBigNetworkOrApiStore(selectedStore);
@@ -914,7 +939,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   // Renderizar criativo no Canvas
   useEffect(() => {
     drawAdminArtwork();
-  }, [format, selectedStore]);
+  }, [format, selectedStore, selectedStoreId]);
 
   const renderAdminArtworkToCanvas = async (targetCanvas, targetFormat = format) => {
     if (!targetCanvas) return;
@@ -927,6 +952,28 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     targetCanvas.width = width;
     targetCanvas.height = height;
+
+    // Se for a campanha oficial "Seja um Parceiro", desenhar diretamente a arte HD pré-renderizada
+    if (selectedStoreId === 'promo_seja_parceiro') {
+      const artSrc = currentFormat === 'feed' 
+        ? '/artes/folder-seja-parceiro-feed.png' 
+        : '/artes/folder-seja-parceiro-story.png';
+      try {
+        const artImg = new Image();
+        artImg.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          artImg.onload = resolve;
+          artImg.onerror = resolve;
+          artImg.src = artSrc;
+        });
+        if (artImg.width > 0) {
+          ctx.drawImage(artImg, 0, 0, width, height);
+          return;
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar arte seja parceiro no canvas:', err);
+      }
+    }
 
     // 1. Fundo Gradiente Luxury Dark
     const bgGrad = ctx.createLinearGradient(0, 0, width, height);
@@ -1536,6 +1583,73 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         </button>
       </div>
 
+      {/* 2.5 BANNER DE ATALHO RÁPIDO: POSTAGEM DIÁRIA "SEJA UM PARCEIRO" */}
+      <div className="bg-gradient-to-r from-amber-500/20 via-[#26150D] to-[#14141E] border-2 border-amber-500/60 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 p-0.5 shadow-lg flex-shrink-0">
+              <div className="w-full h-full bg-[#161622] rounded-[14px] flex items-center justify-center text-2xl">
+                🏪
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="bg-gradient-to-r from-amber-400 to-[#FF5F00] text-black font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
+                  ⭐ Postagem Diária para Atrair Lojistas
+                </span>
+                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  Artes Oficiais em Alta Resolução
+                </span>
+              </div>
+              <h4 className="text-base sm:text-lg font-black text-white">
+                Campanha Oficial: Seja um Parceiro Melhor Cupom (3 Meses Grátis)
+              </h4>
+              <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">
+                Poste todos os dias para captar novos lojistas e comércios da sua região. As artes de <strong>Story (1080x1920)</strong> e <strong>Feed (1080x1080)</strong> e a legenda oficial já estão disponíveis com 1 clique!
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedStoreId('promo_seja_parceiro');
+                showToast('⭐ Campanha "Seja um Parceiro" selecionada para publicação imediata!', 'success');
+              }}
+              className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-lg flex items-center gap-1.5 ${
+                selectedStoreId === 'promo_seja_parceiro'
+                  ? 'bg-emerald-500 text-white shadow-emerald-950/60'
+                  : 'bg-gradient-to-r from-amber-400 to-[#FF5F00] hover:from-amber-300 hover:to-orange-500 text-black'
+              }`}
+            >
+              <Sparkles size={14} />
+              <span>{selectedStoreId === 'promo_seja_parceiro' ? '✓ Selecionada no Painel' : 'Postar Esta Arte Agora'}</span>
+            </button>
+
+            <a
+              href="/artes/folder-seja-parceiro-story.png"
+              download="folder-seja-parceiro-story-1080x1920.png"
+              className="bg-white/10 hover:bg-white/20 text-white px-3 py-2.5 rounded-xl text-xs font-bold border border-white/10 transition-colors flex items-center gap-1.5"
+              title="Baixar Story (1080x1920)"
+            >
+              <Download size={13} />
+              <span>Story HD</span>
+            </a>
+
+            <a
+              href="/artes/folder-seja-parceiro-feed.png"
+              download="folder-seja-parceiro-feed-1080x1080.png"
+              className="bg-white/10 hover:bg-white/20 text-white px-3 py-2.5 rounded-xl text-xs font-bold border border-white/10 transition-colors flex items-center gap-1.5"
+              title="Baixar Feed (1080x1080)"
+            >
+              <Download size={13} />
+              <span>Feed HD</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* 3. Área de Criação de Post & Seleção de Lojista */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
@@ -1552,7 +1666,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             <div className="space-y-2.5">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <label className="text-xs font-bold text-gray-300">
-                  Selecione a Loja para Divulgar no Feed Oficial:
+                  Selecione o Fornecedor ou Campanha para Divulgar:
                 </label>
                 <button
                   type="button"
@@ -1563,37 +1677,37 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 </button>
               </div>
 
-              {selectableStores.length > 0 ? (
-                <select
-                  value={selectedStoreId}
-                  onChange={(e) => setSelectedStoreId(e.target.value)}
-                  className="w-full bg-[#12121C] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition-colors cursor-pointer"
-                >
+              <select
+                value={selectedStoreId}
+                onChange={(e) => setSelectedStoreId(e.target.value)}
+                className="w-full bg-[#12121C] border border-amber-500/40 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400 transition-colors cursor-pointer"
+              >
+                <optgroup label="🌟 CAMPANHA INSTITUCIONAL DIÁRIA" className="bg-[#241508] text-amber-300 font-black">
+                  <option value="promo_seja_parceiro" className="bg-[#241508] text-amber-300 font-bold">
+                    ⭐ ARTE OFICIAL: Seja um Parceiro (3 Meses Grátis • Crie Já Seu Cupom) 🔥
+                  </option>
+                </optgroup>
+                <optgroup label="🏪 FORNECEDORES E LOJAS CADASTRADAS" className="bg-[#161622] text-gray-300 font-bold">
                   {selectableStores.map((s) => {
                     const isPub = isStoreAlreadyPublished(s, postHistory);
                     return (
-                      <option key={s.id} value={s.id} className="bg-[#161622] text-white">
+                      <option key={s.id} value={s.id} className="bg-[#161622] text-white font-normal">
                         {s.name} ({getStoreLocationText(s)}) {isPub ? '✓ (Já Publicado)' : '• Pendente de Divulgação'}
                       </option>
                     );
                   })}
-                </select>
-              ) : (
+                </optgroup>
+              </select>
+
+              {selectableStores.length === 0 && (
                 <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 text-xs text-emerald-300 space-y-2">
                   <div className="font-bold flex items-center gap-1.5 text-sm">
                     <CheckCircle2 size={16} className="text-emerald-400" />
                     <span>Todas as lojas parceiras já foram divulgadas!</span>
                   </div>
                   <p className="text-gray-300 text-[11px] leading-relaxed">
-                    Nenhum estabelecimento pendente de divulgação no momento. Novos parceiros cadastrados a partir de agora aparecerão aqui e serão publicados automaticamente no Instagram!
+                    Você pode continuar postando diariamente a <strong>Arte Oficial: Seja um Parceiro</strong> selecionada acima!
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowAllStores(true)}
-                    className="text-xs font-bold text-orange-400 hover:underline pt-1 inline-block cursor-pointer"
-                  >
-                    Clique aqui para ver as lojas já publicadas (republicar)
-                  </button>
                 </div>
               )}
 

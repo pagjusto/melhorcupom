@@ -21,6 +21,7 @@ import {
   LogIn
 } from 'lucide-react';
 import { BrandMediaKitSection } from './BrandMediaKitSection';
+import { PartnerPromoArtsSection } from './PartnerPromoArtsSection';
 
 export const ReferralModal = () => {
   const { 
@@ -350,6 +351,9 @@ export const ReferralModal = () => {
               <span>Lembre-se de marcar sempre <strong className="text-white underline">@omelhorcupom.com.br</strong> nas suas divulgações!</span>
             </div>
           </div>
+
+          {/* 2.4 ARTES OFICIAIS DE DIVULGAÇÃO: FOLDER SEJA UM PARCEIRO */}
+          <PartnerPromoArtsSection compact />
 
           {/* 2.5 MEDIA KIT OFICIAL: LOGOS VETORIZADAS (.SVG E .PNG TRANSPARENTE) */}
           <BrandMediaKitSection compact />

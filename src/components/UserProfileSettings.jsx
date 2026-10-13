@@ -25,6 +25,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { BrandMediaKitSection } from './BrandMediaKitSection';
+import { PartnerPromoArtsSection } from './PartnerPromoArtsSection';
 
 export const UserProfileSettings = () => {
   const { 
@@ -631,12 +632,10 @@ export const UserProfileSettings = () => {
                   <span>Enviar no WhatsApp</span>
                 </button>
               </div>
-
-              <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-black flex items-center gap-2">
-                <span>📢</span>
-                <span>Lembre-se de marcar sempre <strong className="text-white underline">@omelhorcupom.com.br</strong> nas suas divulgações!</span>
-              </div>
             </div>
+
+            {/* Artes Oficiais de Divulgação: Folder Seja um Parceiro Oficial */}
+            <PartnerPromoArtsSection />
 
             {/* Media Kit Oficial: Logos Vetorizadas (.SVG & .PNG Transparente) para Divulgação nas Mídias */}
             <BrandMediaKitSection />
