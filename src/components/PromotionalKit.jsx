@@ -20,7 +20,9 @@ import {
   LogIn,
   AlertCircle,
   X,
-  Key
+  Key,
+  Users,
+  Store
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
