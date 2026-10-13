@@ -330,9 +330,9 @@ export const BrandMediaKitSection = ({ compact = false }) => {
     ctx.fillText('Crie o Cupom da Sua Loja', width / 2, line2Y);
     ctx.restore();
 
-    // 5. Selo Elegante e Minimalista: "1º MÊS GRÁTIS"
+    // 5. Selo Elegante e Minimalista: "100% GRÁTIS"
     const pillY = line2Y + (isStory ? 85 : 52);
-    const pillW = isStory ? 480 : 360;
+    const pillW = isStory ? 390 : 290;
     const pillH = isStory ? 58 : 42;
     const pillX = (width - pillW) / 2;
 
@@ -346,10 +346,10 @@ export const BrandMediaKitSection = ({ compact = false }) => {
     ctx.stroke();
 
     ctx.fillStyle = '#34D399';
-    ctx.font = isStory ? '900 24px "Inter", "Segoe UI", sans-serif' : '900 18px "Inter", "Segoe UI", sans-serif';
+    ctx.font = isStory ? '900 25px "Inter", "Segoe UI", sans-serif' : '900 18px "Inter", "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🎁 1º MÊS 100% GRÁTIS', width / 2, pillY + pillH / 2 + 1);
+    ctx.fillText('🎁 100% GRÁTIS', width / 2, pillY + pillH / 2 + 1);
     ctx.restore();
 
     // 6. Subtítulo Limpo
@@ -436,8 +436,8 @@ export const BrandMediaKitSection = ({ compact = false }) => {
 
 Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na maior vitrine de descontos da região?
 
-🎁 *1º MÊS 100% GRÁTIS • 1 CUPOM GRATUITO LIBERADO!*
-✅ Cadastre sua loja gratuitamente e publique seu 1º cupom sem custo no primeiro mês!
+🎁 *CADASTRO 100% GRÁTIS • 1 CUPOM GRATUITO LIBERADO!*
+✅ Cadastre sua loja gratuitamente e publique seu 1º cupom sem custo!
 ✅ Divulgação oficial no Instagram *@omelhorcupom.com.br*
 ✅ Painel exclusivo para gerenciar suas ofertas e atrair clientes reais para o seu negócio!
 
@@ -580,7 +580,7 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
             </h3>
 
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-              Arte oficial pronta com a <strong>Logo 3D do Melhor Cupom</strong> e o destaque de <strong>🎁 1º Mês Grátis (1 Cupom Gratuito)</strong> para publicar nos Stories, Feed, Status ou enviar diretamente para comércios e lojistas da cidade!
+              Arte oficial pronta com a <strong>Logo 3D do Melhor Cupom</strong> e o destaque de <strong>🎁 100% Grátis (1 Cupom Gratuito)</strong> para publicar nos Stories, Feed, Status ou enviar diretamente para comércios e lojistas da cidade!
             </p>
 
             {/* Seletor de Formato do Folder */}
