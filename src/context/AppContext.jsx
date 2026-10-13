@@ -97,10 +97,10 @@ export const AppProvider = ({ children }) => {
       tier: st.adminPaidPlan ? st.tier : 'api'
     });
 
-    const saved = localStorage.getItem('melhor_cupom_stores_v9') || localStorage.getItem('melhor_cupom_stores_v8') || localStorage.getItem('melhor_cupom_stores_v7');
+    const saved = localStorage.getItem('melhor_cupom_stores_v10') || localStorage.getItem('melhor_cupom_stores_v9');
     if (!saved) {
       const normalized = INITIAL_STORES.map(normalizeInitialStore);
-      localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(normalized));
+      localStorage.setItem('melhor_cupom_stores_v10', JSON.stringify(normalized));
       return normalized;
     }
     try {

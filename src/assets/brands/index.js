@@ -28,6 +28,10 @@ import maderoLogo from './madero.png';
 import fogodechaoLogo from './fogodechao.png';
 import appleLogo from './apple.svg';
 import paodeacucarLogo from './paodeacucar.svg';
+import pinguimLogo from './pinguim.jpg';
+import belmonteLogo from './botecobelmonte.jpg';
+import corleoneLogo from './corleone.jpg';
+import trackfieldLogo from './trackfield.jpg';
 
 export const BRAND_LOGOS = {
   amazon: amazonLogo,
@@ -66,7 +70,16 @@ export const BRAND_LOGOS = {
   iplace: appleLogo,
   apple: appleLogo,
   paodeacucar: paodeacucarLogo,
-  gpa: paodeacucarLogo
+  gpa: paodeacucarLogo,
+  pinguim: pinguimLogo,
+  choperiapinguim: pinguimLogo,
+  belmonte: belmonteLogo,
+  botecobelmonte: belmonteLogo,
+  corleone: corleoneLogo,
+  barbeariacorleone: corleoneLogo,
+  trackfield: trackfieldLogo,
+  trackandfield: trackfieldLogo,
+  'track & field': trackfieldLogo
 };
 
 export const getBrandLogo = (identifier) => {
