@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Download, 
   Sparkles, 
@@ -8,7 +8,10 @@ import {
   CheckCircle2,
   Eye,
   Instagram,
-  Copy
+  Copy,
+  Share2,
+  Store,
+  Gift
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
@@ -225,10 +228,333 @@ export const BrandMediaKitSection = ({ compact = false }) => {
   const [bgPreview, setBgPreview] = useState('checker'); // 'checker' | 'dark' | 'light'
   const [downloadedKey, setDownloadedKey] = useState(null);
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [flyerFormat, setFlyerFormat] = useState('story'); // 'story' (1080x1920) | 'feed' (1080x1080)
+  const flyerCanvasRef = useRef(null);
 
   const markDownloaded = (key) => {
     setDownloadedKey(key);
     setTimeout(() => setDownloadedKey(null), 2500);
+  };
+
+  // Renderiza o Folder Oficial: "Seja um Parceiro Melhor Cupom e crie já o cupom da sua loja"
+  useEffect(() => {
+    drawPartnerFlyer();
+  }, [flyerFormat]);
+
+  const drawPartnerFlyer = async () => {
+    const canvas = flyerCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const isStory = flyerFormat === 'story';
+    const width = 1080;
+    const height = isStory ? 1920 : 1080;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // 1. Fundo Gradiente Luxury Dark + Laranja Profundo
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#09090F');
+    bgGrad.addColorStop(0.35, '#15101B');
+    bgGrad.addColorStop(0.7, '#1B110E');
+    bgGrad.addColorStop(1, '#08080D');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. Auras Luminosas Laranja e Dourada
+    const topAura = ctx.createRadialGradient(
+      width * 0.5,
+      isStory ? 360 : 230,
+      30,
+      width * 0.5,
+      isStory ? 360 : 230,
+      isStory ? 560 : 420
+    );
+    topAura.addColorStop(0, 'rgba(255, 95, 0, 0.45)');
+    topAura.addColorStop(0.5, 'rgba(255, 168, 0, 0.14)');
+    topAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = topAura;
+    ctx.fillRect(0, 0, width, height);
+
+    const bottomAura = ctx.createRadialGradient(
+      width * 0.5,
+      isStory ? 1420 : 820,
+      20,
+      width * 0.5,
+      isStory ? 1420 : 820,
+      isStory ? 520 : 380
+    );
+    bottomAura.addColorStop(0, 'rgba(255, 95, 0, 0.32)');
+    bottomAura.addColorStop(0.6, 'rgba(255, 95, 0, 0.08)');
+    bottomAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = bottomAura;
+    ctx.fillRect(0, 0, width, height);
+
+    // Moldura Externa Fina Dourada/Laranja
+    ctx.save();
+    const borderGrad = ctx.createLinearGradient(0, 0, width, height);
+    borderGrad.addColorStop(0, 'rgba(255, 95, 0, 0.55)');
+    borderGrad.addColorStop(0.5, 'rgba(255, 184, 0, 0.35)');
+    borderGrad.addColorStop(1, 'rgba(255, 95, 0, 0.55)');
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(28, 28, width - 56, height - 56, 42);
+    ctx.stroke();
+    ctx.restore();
+
+    // 3. Selo Superior: CONVITE OFICIAL PARA EMPRESAS & LOJISTAS
+    const topBadgeY = isStory ? 95 : 64;
+    const topBadgeW = isStory ? 680 : 620;
+    const topBadgeH = isStory ? 54 : 44;
+    const topBadgeX = (width - topBadgeW) / 2;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 95, 0, 0.18)';
+    ctx.strokeStyle = 'rgba(255, 184, 0, 0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(topBadgeX, topBadgeY, topBadgeW, topBadgeH, topBadgeH / 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFD166';
+    ctx.font = isStory ? '900 21px "Inter", sans-serif' : '900 18px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🚀 CONVITE OFICIAL PARA EMPRESAS & COMÉRCIOS', width / 2, topBadgeY + topBadgeH / 2 + 1);
+    ctx.restore();
+
+    // 4. LOGO OFICIAL DO MELHOR CUPOM EM DESTAQUE
+    let logoBottomY = isStory ? 520 : 325;
+    try {
+      const mcLogoImg = new Image();
+      mcLogoImg.crossOrigin = 'anonymous';
+      await new Promise((resolve) => {
+        mcLogoImg.onload = resolve;
+        mcLogoImg.onerror = resolve;
+        mcLogoImg.src = logoMelhorCupom;
+      });
+
+      if (mcLogoImg.width > 0) {
+        const logoW = isStory ? 520 : 350;
+        const logoH = (mcLogoImg.height / mcLogoImg.width) * logoW;
+        const logoX = (width - logoW) / 2;
+        const logoY = isStory ? 180 : 122;
+        logoBottomY = logoY + logoH;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(255, 95, 0, 0.55)';
+        ctx.shadowBlur = 35;
+        ctx.drawImage(mcLogoImg, logoX, logoY, logoW, logoH);
+        ctx.restore();
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar logo no folder:', e);
+    }
+
+    // 5. CHAMADA PRINCIPAL: "SEJA UM PARCEIRO MELHOR CUPOM E CRIE JÁ O CUPOM DA SUA LOJA!"
+    const titleStartY = isStory ? logoBottomY + 65 : logoBottomY + 38;
+
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Linha 1: SEJA UM PARCEIRO
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+    ctx.shadowBlur = 14;
+    ctx.font = isStory ? '900 66px "Inter", sans-serif' : '900 48px "Inter", sans-serif';
+    ctx.fillText('SEJA UM PARCEIRO', width / 2, titleStartY);
+
+    // Linha 2: MELHOR CUPOM (Gradiente Laranja / Ouro)
+    const line2Y = titleStartY + (isStory ? 78 : 54);
+    const titleGrad = ctx.createLinearGradient(width * 0.2, line2Y - 30, width * 0.8, line2Y + 30);
+    titleGrad.addColorStop(0, '#FF7A00');
+    titleGrad.addColorStop(0.5, '#FFB800');
+    titleGrad.addColorStop(1, '#FF5F00');
+    ctx.fillStyle = titleGrad;
+    ctx.font = isStory ? '900 78px "Inter", sans-serif' : '900 56px "Inter", sans-serif';
+    ctx.fillText('MELHOR CUPOM', width / 2, line2Y);
+
+    // Linha 3: E CRIE JÁ O CUPOM DA SUA LOJA!
+    const line3Y = line2Y + (isStory ? 76 : 52);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = isStory ? '900 46px "Inter", sans-serif' : '900 35px "Inter", sans-serif';
+    ctx.fillText('E CRIE JÁ O CUPOM DA SUA LOJA!', width / 2, line3Y);
+    ctx.restore();
+
+    // 6. FAIXA DE DESTAQUE: 1º MÊS GRÁTIS (1 CUPOM GRATUITO)
+    const promoY = line3Y + (isStory ? 62 : 40);
+    const promoW = isStory ? 840 : 760;
+    const promoH = isStory ? 74 : 54;
+    const promoX = (width - promoW) / 2;
+
+    ctx.save();
+    const promoGrad = ctx.createLinearGradient(promoX, promoY, promoX + promoW, promoY);
+    promoGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+    promoGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.25)');
+    promoGrad.addColorStop(1, 'rgba(16, 185, 129, 0.22)');
+    ctx.fillStyle = promoGrad;
+    ctx.strokeStyle = '#10B981';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(promoX, promoY, promoW, promoH, 22);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#6EE7B7';
+    ctx.font = isStory ? '900 28px "Inter", sans-serif' : '900 23px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎁 1º MÊS GRÁTIS • 1 CUPOM GRATUITO LIBERADO!', width / 2, promoY + promoH / 2 + 1);
+    ctx.restore();
+
+    // 7. CARD DE BENEFÍCIOS PARA A LOJA (Exibido completo no Story e compacto no Feed)
+    let afterCardY = promoY + promoH;
+    if (isStory) {
+      const cardY = promoY + promoH + 42;
+      const cardW = 860;
+      const cardH = 310;
+      const cardX = (width - cardW) / 2;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(20, 20, 32, 0.88)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, cardW, cardH, 32);
+      ctx.fill();
+      ctx.stroke();
+
+      const perks = [
+        '✅ Atraia novos clientes da sua cidade todos os dias',
+        '✅ Divulgação oficial no Instagram @omelhorcupom.com.br',
+        '✅ Painel exclusivo para criar e gerenciar seus cupons',
+        '✅ Fidelize clientes com descontos e ofertas reais'
+      ];
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 26px "Inter", sans-serif';
+      perks.forEach((perk, idx) => {
+        ctx.fillStyle = '#F3F4F6';
+        ctx.fillText(perk, cardX + 46, cardY + 56 + idx * 64);
+      });
+      ctx.restore();
+      afterCardY = cardY + cardH;
+    } else {
+      // No Feed 1:1 mostra 2 linhas rápidas de benefícios
+      const perkY = promoY + promoH + 30;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#E5E7EB';
+      ctx.font = 'bold 22px "Inter", sans-serif';
+      ctx.fillText('✅ Atraia novos clientes todos os dias  •  ✅ Divulgação no Instagram Oficial', width / 2, perkY);
+      ctx.restore();
+      afterCardY = perkY + 18;
+    }
+
+    // 8. BOTÃO CTA PRINCIPAL: "CADASTRE SUA LOJA GRÁTIS AGORA"
+    const ctaY = isStory ? afterCardY + 52 : afterCardY + 26;
+    const ctaW = isStory ? 780 : 680;
+    const ctaH = isStory ? 96 : 72;
+    const ctaX = (width - ctaW) / 2;
+
+    ctx.save();
+    const ctaGrad = ctx.createLinearGradient(ctaX, ctaY, ctaX + ctaW, ctaY + ctaH);
+    ctaGrad.addColorStop(0, '#FF5F00');
+    ctaGrad.addColorStop(0.5, '#FF7A00');
+    ctaGrad.addColorStop(1, '#FF2E00');
+    ctx.fillStyle = ctaGrad;
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.75)';
+    ctx.shadowBlur = 32;
+    ctx.beginPath();
+    ctx.roundRect(ctaX, ctaY, ctaW, ctaH, ctaH / 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 10;
+    ctx.font = isStory ? '900 34px "Inter", sans-serif' : '900 27px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('CRIE JÁ O CUPOM DA SUA LOJA!', width / 2, ctaY + ctaH / 2 + 1);
+    ctx.restore();
+
+    // 9. RODAPÉ COM SITE E @OMELHORCUPOM.COM.BR
+    const footerY = isStory ? ctaY + ctaH + 62 : ctaY + ctaH + 38;
+    ctx.save();
+    ctx.textAlign = 'center';
+
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = isStory ? 'bold 22px "Inter", sans-serif' : 'bold 18px "Inter", sans-serif';
+    ctx.fillText('Cadastre-se em 1 minuto pelo site ou chame no Direct:', width / 2, footerY);
+
+    ctx.fillStyle = '#FFB800';
+    ctx.font = isStory ? '900 36px "Inter", sans-serif' : '900 28px "Inter", sans-serif';
+    ctx.fillText('www.omelhorcupom.com.br', width / 2, footerY + (isStory ? 44 : 32));
+
+    ctx.fillStyle = '#FF7A29';
+    ctx.font = isStory ? '800 26px "Inter", sans-serif' : '800 20px "Inter", sans-serif';
+    ctx.fillText('📲 Siga e marque: @omelhorcupom.com.br', width / 2, footerY + (isStory ? 86 : 62));
+    ctx.restore();
+  };
+
+  const handleDownloadFlyerPng = () => {
+    const canvas = flyerCanvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL('image/png', 1.0);
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `folder-seja-parceiro-melhor-cupom-${flyerFormat}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    markDownloaded('flyer-png');
+  };
+
+  const handleDownloadFlyerSvg = () => {
+    const canvas = flyerCanvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL('image/png', 1.0);
+    const w = canvas.width;
+    const h = canvas.height;
+    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">
+  <title>Folder Seja um Parceiro Melhor Cupom</title>
+  <image width="${w}" height="${h}" xlink:href="${dataUrl}" href="${dataUrl}" />
+</svg>`;
+    downloadSvgString(svgStr, `folder-seja-parceiro-melhor-cupom-${flyerFormat}.svg`);
+    markDownloaded('flyer-svg');
+  };
+
+  const partnerFlyerCaption = `🚀 *SEJA UM PARCEIRO MELHOR CUPOM E CRIE JÁ O CUPOM DA SUA LOJA!* 🎟️🔥
+
+Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na maior vitrine de descontos da região?
+
+🎁 *1º MÊS 100% GRÁTIS • 1 CUPOM GRATUITO LIBERADO!*
+✅ Cadastre sua loja gratuitamente e publique seu 1º cupom sem custo no primeiro mês!
+✅ Divulgação oficial no Instagram *@omelhorcupom.com.br*
+✅ Painel exclusivo para gerenciar suas ofertas e atrair clientes reais para o seu negócio!
+
+📲 *Cadastre sua loja em 1 minuto:*
+👉 https://omelhorcupom.com.br
+
+📢 Lembre-se de marcar sempre *@omelhorcupom.com.br* nas suas divulgações!`;
+
+  const handleCopyFlyerCaption = () => {
+    navigator.clipboard.writeText(partnerFlyerCaption);
+    markDownloaded('flyer-caption');
+  };
+
+  const handleShareFlyerWhatsApp = () => {
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(partnerFlyerCaption)}`, '_blank');
   };
 
   const assets = [
@@ -340,6 +666,124 @@ export const BrandMediaKitSection = ({ compact = false }) => {
   return (
     <div className="bg-gradient-to-br from-[#1A1A28] via-[#141420] to-[#101018] border-2 border-orange-500/30 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
       
+      {/* FOLDER OFICIAL DE DIVULGAÇÃO: SEJA UM PARCEIRO MELHOR CUPOM */}
+      <div className="bg-gradient-to-br from-[#23140D] via-[#181422] to-[#12121A] border-2 border-amber-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          {/* Coluna Esquerda: Controles, Textos e Botões de Download do Folder */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider">
+              <Store size={13} className="text-[#FF5F00]" />
+              <span>Folder Oficial de Captação de Lojas & Parceiros</span>
+            </div>
+
+            <h3 className="text-xl sm:text-2xl font-black text-white font-display leading-tight">
+              Folder: &ldquo;Seja um Parceiro Melhor Cupom e crie já o cupom da sua loja!&rdquo;
+            </h3>
+
+            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Arte oficial pronta com a <strong>Logo 3D do Melhor Cupom</strong> e o destaque de <strong>🎁 1º Mês Grátis (1 Cupom Gratuito)</strong> para publicar nos Stories, Feed, Status ou enviar diretamente para comércios e lojistas da cidade!
+            </p>
+
+            {/* Seletor de Formato do Folder */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-xs font-bold text-gray-400 mr-1">Formato do Folder:</span>
+              <button
+                type="button"
+                onClick={() => setFlyerFormat('story')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  flyerFormat === 'story'
+                    ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/30'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
+                }`}
+              >
+                <span>📱 Folder Vertical / Story (9:16)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFlyerFormat('feed')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  flyerFormat === 'feed'
+                    ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/30'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
+                }`}
+              >
+                <span>🟦 Post Quadrado / Feed (1:1)</span>
+              </button>
+            </div>
+
+            {/* Botões Principais de Download e Compartilhamento */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={handleDownloadFlyerPng}
+                className="bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 transition-all cursor-pointer"
+              >
+                {downloadedKey === 'flyer-png' ? <Check size={16} /> : <Download size={16} />}
+                <span>{downloadedKey === 'flyer-png' ? 'Folder PNG Baixado!' : 'Baixar Folder em PNG HD'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDownloadFlyerSvg}
+                className="bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                {downloadedKey === 'flyer-svg' ? <Check size={16} className="text-emerald-400" /> : <Layers size={16} className="text-amber-400" />}
+                <span>{downloadedKey === 'flyer-svg' ? 'Folder SVG Baixado!' : 'Baixar Folder em Vetor (.SVG)'}</span>
+              </button>
+            </div>
+
+            {/* Legenda Pronta para Enviar Junto com o Folder */}
+            <div className="bg-black/40 border border-white/10 rounded-2xl p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                  <Gift size={13} className="text-[#FF5F00]" />
+                  <span>Texto Pronto para Enviar com o Folder:</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyFlyerCaption}
+                    className="text-[11px] font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 cursor-pointer bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-500/30"
+                  >
+                    {downloadedKey === 'flyer-caption' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    <span>{downloadedKey === 'flyer-caption' ? 'Texto Copiado!' : 'Copiar Texto'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleShareFlyerWhatsApp}
+                    className="text-[11px] font-black text-emerald-300 hover:text-emerald-200 flex items-center gap-1 cursor-pointer bg-emerald-500/15 px-2.5 py-1 rounded-lg border border-emerald-500/30"
+                  >
+                    <Share2 size={12} />
+                    <span>WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-300 font-mono whitespace-pre-line line-clamp-3">
+                {partnerFlyerCaption}
+              </p>
+            </div>
+          </div>
+
+          {/* Coluna Direita: Preview ao Vivo do Folder */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center bg-black/50 border border-white/10 rounded-2xl p-4">
+            <div className="text-[11px] font-bold text-gray-400 mb-2.5 flex items-center gap-1.5">
+              <Eye size={13} className="text-amber-400" />
+              <span>Pré-visualização do Folder Oficial ({flyerFormat === 'story' ? '1080x1920' : '1080x1080'})</span>
+            </div>
+            <canvas
+              ref={flyerCanvasRef}
+              className="rounded-xl shadow-2xl border border-amber-500/30 max-w-full h-auto transition-all"
+              style={{
+                maxHeight: flyerFormat === 'story' ? '420px' : '320px',
+                aspectRatio: flyerFormat === 'story' ? '9 / 16' : '1 / 1'
+              }}
+            />
+          </div>
+
+        </div>
+      </div>
+
       {/* Header do Media Kit Oficial */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div className="space-y-1.5">

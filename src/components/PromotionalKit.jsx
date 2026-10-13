@@ -1890,6 +1890,9 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         )}
       </div>
 
+      {/* 4. Folder Oficial "Seja um Parceiro" & Logos Vetorizadas */}
+      <BrandMediaKitSection />
+
       {/* Modal de Conexão Real com o Instagram */}
       <InstagramLoginModal
         isOpen={isLoginModalOpen}
