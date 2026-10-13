@@ -2496,7 +2496,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1">
                     <Crown size={12} fill="currentColor" />
-                    <span>Card no Plano Ouro (R$ 199,90):</span>
+                    <span>Card no Plano Ouro (R$ 109,90):</span>
                   </span>
                   <span className="text-[10px] text-amber-400 font-black">⭐ Ilimitado + VIP</span>
                 </div>
@@ -2570,7 +2570,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-300 mt-2 max-w-lg">
-                  Use esse saldo acumulado para abater mensalidades dos planos <strong>Bronze (R$ 39,90)</strong>, <strong>Prata (R$ 79,90)</strong> ou <strong>Ouro (R$ 199,90)</strong> e garantir o topo das buscas!
+                  Use esse saldo acumulado para abater mensalidades dos planos <strong>Bronze (R$ 19,90)</strong>, <strong>Prata (R$ 79,90)</strong> ou <strong>Ouro (R$ 109,90)</strong> e garantir o topo das buscas!
                 </p>
               </div>
 
@@ -2666,7 +2666,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <p>
                   Imprima o QR Code ao lado e coloque nos displays de mesa e balcão com o texto: 
                   <em> "Escaneie aqui e ganhe descontos VIP nesta e em dezenas de lojas!"</em>. 
-                  Com 40 clientes cadastrados, você ganha <strong>R$ 200,00</strong> no caixa — o suficiente para pagar integralmente o <strong>Plano Ouro VIP (R$ 199,90)</strong> e ficar no topo de tudo!
+                  Com 22 clientes cadastrados, você ganha <strong>R$ 110,00</strong> no caixa — o suficiente para pagar integralmente o <strong>Plano Ouro VIP (R$ 109,90)</strong> e ficar no topo de tudo!
                 </p>
               </div>
             </div>

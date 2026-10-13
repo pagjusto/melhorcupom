@@ -257,25 +257,25 @@ const PREDEFINED_TEMPLATES = [
     id: 'proposta_irrecusavel_balcao',
     name: '2. Lotar Balcão no Plano Bronze + VIP (R$ 19,90)',
     badge: 'Proposta Irrecusável',
-    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan, do *Melhor Cupom* em {cidade}.\n\nTenho uma proposta irrecusável: queremos colocar novos clientes pagantes dentro da {loja} já nesta semana!\n\nCom o nosso *Plano Bronze de apenas R$ 19,90/mês*:\n🥉 Você cadastra *1 oferta de cupom ativa* da {loja} (100% do valor da venda fica no seu caixa, zero comissão!);\n👑 E de bônus você já ganha *Acesso VIP completo* para usar todos os cupons de desconto das outras lojas e grandes redes do nosso site!\n\nUm único cliente novo ou um único cupom que você usar no site já paga o mês inteiro com sobra!\n\nCadastre a {loja} agora:\nwww.omelhorcupom.com.br`
+    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan, do *Melhor Cupom* em {cidade}.\n\nTenho uma proposta irrecusável: queremos colocar novos clientes pagantes dentro da {loja} já nesta semana!\n\nCom o nosso *Plano Bronze de apenas R$ 19,90/mês*:\n🥉 Você cadastra *2 ofertas de cupom ativas* da {loja} (100% do valor da venda fica no seu caixa, zero comissão!);\n👑 E de bônus você já ganha *Acesso VIP completo* para usar todos os cupons de desconto das outras lojas e grandes redes do nosso site!\n\nUm único cliente novo ou um único cupom que você usar no site já paga o mês inteiro com sobra!\n\nCadastre a {loja} agora:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'destaque_ouro_gratis',
-    name: '3. Planos Bronze (1), Prata (3) & Ouro (Ilimitado)',
+    name: '3. Planos Bronze (2), Prata (5) & Ouro (Ilimitado)',
     badge: 'Escada de Destaque',
-    text: `Olá, equipe da {loja}! Tudo bem?\n\nAqui é o Renan, diretor da plataforma *Melhor Cupom* em {cidade}.\n\nEstamos selecionando comércios em {cidade} na categoria de {categoria} para aparecer em destaque para milhares de clientes da região!\n\nNossos planos incluem *Acesso VIP Liberado* em todo o site e zero comissão sobre suas vendas:\n🥉 *Plano Bronze (R$ 19,90/mês)*: 1 oferta de cupom ativa + Acesso VIP;\n🥈 *Plano Prata (R$ 79,90/mês)*: até 3 ofertas de cupom ativas + Alta Prioridade;\n👑 *Plano Ouro (R$ 199,90/mês)*: ofertas de cupom ILIMITADAS + Topo Absoluto!\n\nGaranta a vaga da {loja} agora:\nwww.omelhorcupom.com.br`
+    text: `Olá, equipe da {loja}! Tudo bem?\n\nAqui é o Renan, diretor da plataforma *Melhor Cupom* em {cidade}.\n\nEstamos selecionando comércios em {cidade} na categoria de {categoria} para aparecer em destaque para milhares de clientes da região!\n\nNossos planos incluem *Acesso VIP Liberado* em todo o site e zero comissão sobre suas vendas:\n🥉 *Plano Bronze (R$ 19,90/mês)*: 2 ofertas de cupom ativas + Acesso VIP;\n🥈 *Plano Prata (R$ 79,90/mês)*: até 5 ofertas de cupom ativas + Alta Prioridade;\n👑 *Plano Ouro (R$ 109,90/mês)*: ofertas de cupom ILIMITADAS + Topo Absoluto!\n\nGaranta a vaga da {loja} agora:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'zero_taxa_lucro_total',
     name: '4. Zero Comissão sobre Vendas (100% no seu Bolso)',
     badge: 'Sem Comissão',
-    text: `Olá equipe da {loja}, tudo bem?\n\nMe chamo Renan, do *Melhor Cupom* em {cidade}.\n\nVocê sabia que a maioria dos apps convencionais chegam a tirar até 27% do seu faturamento em taxas e comissões?\n\nNo *Melhor Cupom* a nossa proposta é simples e justa:\n✅ Taxa de comissão sobre vendas: *ZERO*\n✅ 100% do valor da conta do cliente fica no seu caixa!\n✅ *Plano Bronze de apenas R$ 19,90/mês*: divulgue 1 cupom ativo da sua loja e ainda ganhe *Acesso VIP Liberado* para economizar em todos os cupons do site!\n\nCadastre sua loja em menos de 2 minutos:\nwww.omelhorcupom.com.br`
+    text: `Olá equipe da {loja}, tudo bem?\n\nMe chamo Renan, do *Melhor Cupom* em {cidade}.\n\nVocê sabia que a maioria dos apps convencionais chegam a tirar até 27% do seu faturamento em taxas e comissões?\n\nNo *Melhor Cupom* a nossa proposta é simples e justa:\n✅ Taxa de comissão sobre vendas: *ZERO*\n✅ 100% do valor da conta do cliente fica no seu caixa!\n✅ *Plano Bronze de apenas R$ 19,90/mês*: divulgue até 2 cupons ativos da sua loja e ainda ganhe *Acesso VIP Liberado* para economizar em todos os cupons do site!\n\nCadastre sua loja em menos de 2 minutos:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'conversa_rapida',
     name: '5. Áudio Rápido (Conversa 2 Min)',
     badge: 'Aproximação Direta',
-    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan do *Melhor Cupom* em {cidade}.\n\nEstamos direcionando centenas de clientes para comércios parceiros na nossa cidade! Por apenas *R$ 19,90/mês* no Plano Bronze você ativa 1 cupom da {loja} no site (sem nenhuma comissão sobre vendas) e já ganha o *Acesso VIP* para usar todos os cupons da plataforma.\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona na prática? Dá uma olhada no site oficial:\nwww.omelhorcupom.com.br`
+    text: `Olá, {responsavel} da {loja}! Tudo bem?\n\nAqui é o Renan do *Melhor Cupom* em {cidade}.\n\nEstamos direcionando centenas de clientes para comércios parceiros na nossa cidade! Por apenas *R$ 19,90/mês* no Plano Bronze você ativa 2 cupons da {loja} no site (sem nenhuma comissão sobre vendas) e já ganha o *Acesso VIP* para usar todos os cupons da plataforma.\n\nPodemos conversar 2 minutinhos para eu te mostrar como funciona na prática? Dá uma olhada no site oficial:\nwww.omelhorcupom.com.br`
   },
   {
     id: 'custom',
