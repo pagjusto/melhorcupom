@@ -16,132 +16,73 @@ import {
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
-// Gera SVG 100% Vetorial Puro da Logo Tipográfica + Ícone Ticket Oficial (Escalável Infinito para Canva, Illustrator, Corel, Gráficas)
-const getPureVectorLogoSvg = (theme = 'dark') => {
-  const textFill = theme === 'light' ? '#111118' : '#FFFFFF';
-  const strokeColor = theme === 'light' ? '#000000' : '#08080C';
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420">
+// Gera SVG do Selo / Sticker Oficial de Parceria com o Mascote 3D Oficial para Stories, Posts e Vitrines
+const getPureVectorStickerSvg = (mascotSrc = '/favicon.png') => {
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 960 320" width="960" height="320">
   <defs>
-    <linearGradient id="mcOrangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF7A00" />
-      <stop offset="50%" stop-color="#FF5F00" />
-      <stop offset="100%" stop-color="#E04800" />
+    <linearGradient id="seloBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181424" />
+      <stop offset="50%" stop-color="#12101B" />
+      <stop offset="100%" stop-color="#0A0910" />
     </linearGradient>
-    <linearGradient id="mcGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFE169" />
-      <stop offset="50%" stop-color="#FFB800" />
+    <linearGradient id="seloBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7A00" />
+      <stop offset="35%" stop-color="#FFB800" />
+      <stop offset="70%" stop-color="#FF5F00" />
       <stop offset="100%" stop-color="#F59E0B" />
     </linearGradient>
-    <linearGradient id="mcGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34D399" />
-      <stop offset="100%" stop-color="#059669" />
+    <linearGradient id="tagBg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5F00" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#FFB800" stop-opacity="0.2" />
     </linearGradient>
-    <filter id="mcDropShadow" x="-10%" y="-10%" width="125%" height="125%">
-      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.45" />
+    <filter id="seloDropShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+    <filter id="glowMascot" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#FF7A00" flood-opacity="0.45" />
     </filter>
   </defs>
 
-  <!-- Ícone Vetorial do Cupom / Ticket Sorriso à Direita -->
-  <g transform="translate(770, 28)" filter="url(#mcDropShadow)">
-    <!-- Notas Verdes Vetoriais -->
-    <g transform="translate(210, 15) rotate(18)">
-      <rect x="0" y="0" width="95" height="56" rx="8" fill="url(#mcGreenGrad)" stroke="#064E3B" stroke-width="5"/>
-      <rect x="8" y="8" width="79" height="40" rx="4" fill="none" stroke="#A7F3D0" stroke-width="2" stroke-dasharray="6 4"/>
-      <circle cx="47.5" cy="28" r="14" fill="#065F46"/>
-      <text x="47.5" y="34" font-family="Arial Black, Inter, sans-serif" font-weight="900" font-size="20" fill="#ECFDF5" text-anchor="middle">$</text>
-    </g>
-    <g transform="translate(185, 5) rotate(-4)">
-      <rect x="0" y="0" width="95" height="56" rx="8" fill="url(#mcGreenGrad)" stroke="#064E3B" stroke-width="5"/>
-      <rect x="8" y="8" width="79" height="40" rx="4" fill="none" stroke="#A7F3D0" stroke-width="2" stroke-dasharray="6 4"/>
-      <circle cx="47.5" cy="28" r="14" fill="#065F46"/>
-      <text x="47.5" y="34" font-family="Arial Black, Inter, sans-serif" font-weight="900" font-size="20" fill="#ECFDF5" text-anchor="middle">$</text>
-    </g>
-
-    <!-- Corpo do Ticket Dourado -->
-    <path d="M30,20 H190 A16,16 0 0 1 206,36 V62 A18,18 0 0 0 206,98 V192 A18,18 0 0 0 206,228 V250 A16,16 0 0 1 190,266 H30 A16,16 0 0 1 14,250 V228 A18,18 0 0 0 14,192 V98 A18,18 0 0 0 14,62 V36 A16,16 0 0 1 30,20 Z" fill="url(#mcGoldGrad)" stroke="#0A0A0E" stroke-width="10" stroke-linejoin="round"/>
-    
-    <!-- Linha tracejada interna do cupom -->
-    <line x1="34" y1="52" x2="186" y2="52" stroke="#78350F" stroke-width="5" stroke-dasharray="10 8" stroke-linecap="round"/>
-    <line x1="34" y1="236" x2="186" y2="236" stroke="#78350F" stroke-width="5" stroke-dasharray="10 8" stroke-linecap="round"/>
-
-    <!-- Óculos Escuros VIP -->
-    <rect x="38" y="84" width="62" height="42" rx="10" fill="#111118" stroke="#000000" stroke-width="6"/>
-    <rect x="120" y="84" width="62" height="42" rx="10" fill="#111118" stroke="#000000" stroke-width="6"/>
-    <line x1="100" y1="100" x2="120" y2="100" stroke="#000000" stroke-width="7" stroke-linecap="round"/>
-    <!-- Brilho da lente -->
-    <polygon points="48,90 62,90 50,120 42,120" fill="#FFFFFF" opacity="0.75"/>
-    <polygon points="130,90 144,90 132,120 124,120" fill="#FFFFFF" opacity="0.75"/>
-
-    <!-- Sorriso -->
-    <path d="M62,148 Q110,162 158,148 Q152,208 110,208 Q68,208 62,148 Z" fill="#111118" stroke="#000000" stroke-width="5"/>
-    <path d="M68,150 Q110,160 152,150 L148,166 Q110,174 72,166 Z" fill="#FFFFFF"/>
-    <ellipse cx="110" cy="194" rx="24" ry="12" fill="#EF4444"/>
+  <!-- Cápsula Base com Sombra e Borda Dourada Neon -->
+  <g filter="url(#seloDropShadow)">
+    <rect x="16" y="16" width="928" height="288" rx="144" fill="url(#seloBg)" stroke="url(#seloBorder)" stroke-width="7" />
+    <rect x="26" y="26" width="908" height="268" rx="134" fill="none" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="2" />
   </g>
 
-  <!-- Tipografia Oficial Vetorizada: MELHOR % -->
-  <g filter="url(#mcDropShadow)">
-    <text x="55" y="205" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="148" letter-spacing="-4" fill="${textFill}" stroke="${strokeColor}" stroke-width="18" paint-order="stroke fill">Melh</text>
+  <!-- Medalhão do Mascote Oficial 3D Bonitinho à Esquerda -->
+  <g transform="translate(36, 36)">
+    <!-- Glow circular de fundo -->
+    <circle cx="124" cy="124" r="116" fill="#0D0B14" stroke="url(#seloBorder)" stroke-width="4" />
+    <circle cx="124" cy="124" r="104" fill="none" stroke="#FFB800" stroke-opacity="0.25" stroke-width="2" stroke-dasharray="8 6" />
     
-    <!-- O com símbolo % integrado -->
-    <g transform="translate(525, 152)">
-      <circle cx="0" cy="0" r="56" fill="${textFill}" stroke="${strokeColor}" stroke-width="16"/>
-      <circle cx="0" cy="0" r="38" fill="#111118"/>
-      <text x="0" y="16" font-family="'Arial Black', 'Inter', sans-serif" font-weight="900" font-size="46" fill="#FF5F00" text-anchor="middle">%</text>
-    </g>
-
-    <text x="588" y="205" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="148" letter-spacing="-4" fill="${textFill}" stroke="${strokeColor}" stroke-width="18" paint-order="stroke fill">r</text>
-
-    <!-- Segunda Linha: CUP$M -->
-    <text x="85" y="348" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="156" letter-spacing="-4" fill="${textFill}" stroke="${strokeColor}" stroke-width="18" paint-order="stroke fill">Cup</text>
-
-    <!-- O com símbolo $ integrado -->
-    <g transform="translate(565, 294)">
-      <circle cx="0" cy="0" r="62" fill="${textFill}" stroke="${strokeColor}" stroke-width="16"/>
-      <circle cx="0" cy="0" r="43" fill="url(#mcOrangeGrad)"/>
-      <text x="0" y="21" font-family="'Arial Black', 'Inter', sans-serif" font-weight="900" font-size="58" fill="#FFFFFF" text-anchor="middle">$</text>
-    </g>
-
-    <text x="632" y="348" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="156" letter-spacing="-4" fill="${textFill}" stroke="${strokeColor}" stroke-width="18" paint-order="stroke fill">m</text>
+    <!-- Mascote Oficial 3D com Óculos Escuros e Notas -->
+    <image x="16" y="16" width="216" height="216" xlink:href="${mascotSrc}" href="${mascotSrc}" filter="url(#glowMascot)" />
   </g>
-</svg>`;
-};
 
-// Gera SVG 100% Vetorial Puro do Selo / Sticker Oficial para Stories, Posts e Vitrines
-const getPureVectorStickerSvg = () => {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300">
-  <defs>
-    <linearGradient id="badgeBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#18121E" />
-      <stop offset="50%" stop-color="#12121A" />
-      <stop offset="100%" stop-color="#0B0B10" />
-    </linearGradient>
-    <linearGradient id="badgeBorder" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FF5F00" />
-      <stop offset="50%" stop-color="#FFB800" />
-      <stop offset="100%" stop-color="#FF5F00" />
-    </linearGradient>
-    <linearGradient id="iconCircle" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF7A00" />
-      <stop offset="100%" stop-color="#FF5F00" />
-    </linearGradient>
-  </defs>
+  <!-- Conteúdo Informativo à Direita -->
+  <g transform="translate(305, 52)">
+    <!-- Tag Superior: PARCEIRO OFICIAL & DIVULGADOR -->
+    <rect x="0" y="0" width="350" height="36" rx="18" fill="url(#tagBg)" stroke="#FF7A00" stroke-width="2" />
+    <text x="175" y="24" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="14" fill="#FFD54F" letter-spacing="1.5" text-anchor="middle">★ PARCEIRO OFICIAL &amp; DIVULGADOR ★</text>
 
-  <!-- Cápsula Principal -->
-  <rect x="16" y="16" width="868" height="268" rx="134" fill="url(#badgeBg)" stroke="url(#badgeBorder)" stroke-width="8"/>
-  <rect x="28" y="28" width="844" height="244" rx="122" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
+    <!-- Título Principal com Tipografia Impactante -->
+    <text x="0" y="105" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="58" fill="#FFFFFF" letter-spacing="-1.5">Melhor Cupom</text>
 
-  <!-- Ícone Esquerdo (% / $) -->
-  <circle cx="150" cy="150" r="96" fill="url(#iconCircle)"/>
-  <circle cx="150" cy="150" r="84" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="3" stroke-dasharray="10 6"/>
-  <text x="150" y="142" font-family="'Arial Black', 'Inter', sans-serif" font-weight="900" font-size="68" fill="#FFFFFF" text-anchor="middle">%</text>
-  <text x="150" y="202" font-family="'Arial Black', 'Inter', sans-serif" font-weight="900" font-size="48" fill="#FFE169" text-anchor="middle">VIP</text>
+    <!-- Tagline com Website e Descontos -->
+    <g transform="translate(0, 142)">
+      <text x="0" y="24" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="800" font-size="24" fill="#FF7A00">omelhorcupom.com.br</text>
+      <circle cx="315" cy="17" r="4" fill="#FFFFFF" opacity="0.6" />
+      <text x="335" y="24" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="800" font-size="24" fill="#FBBF24">Até 50% OFF</text>
+    </g>
 
-  <!-- Textos Direita -->
-  <rect x="275" y="54" width="290" height="36" rx="18" fill="#FF5F00" fill-opacity="0.2" stroke="#FF5F00" stroke-width="2"/>
-  <text x="420" y="78" font-family="'Inter', 'Arial', sans-serif" font-weight="800" font-size="18" fill="#FFB800" letter-spacing="2" text-anchor="middle">PARCEIRO &amp; DIVULGADOR</text>
-
-  <text x="275" y="162" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="68" fill="#FFFFFF">Melhor Cupom</text>
-  <text x="278" y="216" font-family="'Inter', 'Arial', sans-serif" font-weight="700" font-size="28" fill="#FF7A00">omelhorcupom.com.br • Até 50% OFF</text>
+    <!-- Selo de Verificação / Autenticidade -->
+    <g transform="translate(470, 75)">
+      <rect x="0" y="0" width="145" height="34" rx="17" fill="#059669" fill-opacity="0.2" stroke="#10B981" stroke-width="1.5" />
+      <circle cx="20" cy="17" r="8" fill="#10B981" />
+      <path d="M16 17 L19 20 L24 14" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      <text x="36" y="22" font-family="'Arial Black', 'Inter', sans-serif" font-weight="900" font-size="12" fill="#34D399" letter-spacing="1">VERIFICADO</text>
+    </g>
+  </g>
 </svg>`;
 };
 
@@ -228,9 +169,34 @@ const downloadSvgString = (svgString, fileName) => {
 export const BrandMediaKitSection = ({ compact = false }) => {
   const [bgPreview, setBgPreview] = useState('checker'); // 'checker' | 'dark' | 'light'
   const [downloadedKey, setDownloadedKey] = useState(null);
+  const [downloadingAll, setDownloadingAll] = useState(false);
+  const [mascotDataUrl, setMascotDataUrl] = useState('');
   const [flyerType, setFlyerType] = useState('user'); // 'user' (Clientes & Economia) | 'partner' (Lojas & Parceiros)
   const [flyerFormat, setFlyerFormat] = useState('story'); // 'story' (1080x1920) | 'feed' (1080x1080)
   const flyerCanvasRef = useRef(null);
+
+  // Carrega o mascote oficial como Data URL para inserção direta no SVG/Downloads
+  useEffect(() => {
+    let isMounted = true;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth || 512;
+        c.height = img.naturalHeight || 512;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        if (isMounted) {
+          setMascotDataUrl(c.toDataURL('image/png', 1.0));
+        }
+      } catch (e) {
+        console.warn('Fallback mascot URL:', e);
+      }
+    };
+    img.src = '/favicon.png';
+    return () => { isMounted = false; };
+  }, []);
 
   const markDownloaded = (key) => {
     setDownloadedKey(key);
@@ -693,16 +659,6 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
       pngFileName: 'melhor-cupom-logo-oficial-completa-hd.png'
     },
     {
-      id: 'logo-vetor-curvas-dark',
-      title: 'Logo Vetorizada em Curvas (Fundo Escuro)',
-      badge: '100% Vetor Puro (.SVG)',
-      description: 'Versão vetorial escalável sem perda de qualidade para Canva, Illustrator, CorelDRAW, gráficas, fachadas e vídeos.',
-      type: 'svg',
-      svgContent: getPureVectorLogoSvg('dark'),
-      svgFileName: 'melhor-cupom-logo-vetor-curvas-dark.svg',
-      pngFileName: 'melhor-cupom-logo-vetor-curvas-dark-hd.png'
-    },
-    {
       id: 'mascote-isolado',
       title: 'Mascote Oficial Isolado (Sticker)',
       badge: 'Fundo Transparente',
@@ -714,13 +670,13 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
     },
     {
       id: 'selo-parceiro-vetor',
-      title: 'Selo / Sticker "Parceiro & Divulgador"',
-      badge: '100% Vetor Puro (.SVG)',
-      description: 'Etiqueta oficial horizontal pronta para aplicar no canto de fotos de produtos, stories de ofertas, cardápios e vitrines.',
+      title: 'Selo Oficial "Parceiro & Divulgador"',
+      badge: 'Selo Oficial com Mascote 3D',
+      description: 'Cápsula oficial com o mascote Cupomzinho VIP e selo verificado, ideal para colar em fotos de produtos, stories e vitrines.',
       type: 'svg',
-      svgContent: getPureVectorStickerSvg(),
-      svgFileName: 'melhor-cupom-selo-oficial-vetor.svg',
-      pngFileName: 'melhor-cupom-selo-oficial-hd.png'
+      svgContent: getPureVectorStickerSvg(mascotDataUrl || '/favicon.png'),
+      svgFileName: 'melhor-cupom-selo-oficial-parceiro.svg',
+      pngFileName: 'melhor-cupom-selo-oficial-parceiro-hd.png'
     }
   ];
 
@@ -1067,8 +1023,8 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
         </button>
       </div>
 
-      {/* Grid dos 4 Arquivos Oficiais Vetorizados */}
-      <div className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-4'} gap-4`}>
+      {/* Grid dos 3 Arquivos Oficiais de Mídia */}
+      <div className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4`}>
         {assets.map((asset) => {
           const isSvgDownloaded = downloadedKey === `${asset.id}-svg`;
           const isPngDownloaded = downloadedKey === `${asset.id}-png`;
