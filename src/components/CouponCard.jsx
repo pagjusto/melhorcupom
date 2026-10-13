@@ -179,16 +179,6 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           )}
         </div>
 
-        {/* Badge de Integração de API Oficial */}
-        {(coupon.isApiIntegrated || store?.isApiIntegrated) && (
-          <div className="absolute bottom-1.5 left-10 z-10">
-            <span className="inline-flex items-center gap-0.5 bg-emerald-950/90 backdrop-blur-md text-[8px] font-black text-emerald-300 px-1 py-0.2 rounded border border-emerald-500/40 shadow-sm">
-              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{coupon.apiSource || store?.apiSource || 'API'}</span>
-            </span>
-          </div>
-        )}
-
         {/* Modalidade / Cidade badge no banner */}
         <div className="absolute bottom-1.5 right-1.5 z-10">
           <span className="inline-flex items-center gap-0.5 bg-black/70 backdrop-blur-md text-[9px] font-bold text-gray-200 px-1.5 py-0.5 rounded-full border border-white/10">

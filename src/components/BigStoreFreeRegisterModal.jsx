@@ -139,10 +139,6 @@ export const BigStoreFreeRegisterModal = ({ coupon, store, onClose, onProceedToC
                 <span className="text-xs font-bold text-white truncate">
                   {store?.name || 'Loja Parceira'}
                 </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-950 border border-emerald-500/30 text-emerald-300 text-[9px] font-bold flex-shrink-0">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{apiSource}</span>
-                </span>
               </div>
               <h4 className="text-xs text-gray-200 font-medium truncate mt-0.5" title={coupon.title}>
                 {coupon.title}

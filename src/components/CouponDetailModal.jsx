@@ -230,11 +230,11 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               </div>
               <div className="flex items-center gap-2 text-emerald-300 font-bold">
                 <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
-                <span>Cashback ativado via API oficial ({coupon.apiSource || store?.apiSource || 'Awin / Lomadee'})</span>
+                <span>Desconto e benefícios ativados para sua compra</span>
               </div>
               <div className="flex items-center gap-2 text-blue-300">
                 <span className="w-4 h-4 rounded-full border-2 border-blue-400 border-t-transparent animate-spin flex-shrink-0" />
-                <span>SubID injetado com segurança: melhorcupom_vip</span>
+                <span>Redirecionando para a página oficial da loja...</span>
               </div>
             </div>
 
@@ -497,11 +497,11 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 </div>
               )}
 
-              {/* Badge de Integração Oficial via API */}
+              {/* Badge de Oferta Oficial Verificada */}
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Sincronizado via API Oficial ({coupon.apiSource || store?.apiSource || 'Awin / Lomadee'})</span>
+                  <span>Oferta Oficial Verificada</span>
                 </span>
                 <span className="text-[11px] text-gray-400 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/5">
                   Verificado hoje

@@ -177,7 +177,7 @@ export const StoresView = ({ onSelectStore }) => {
                 <ArrowRight size={20} className="group-hover/btn:translate-x-1.5 transition-transform" />
               </button>
               <span className="text-[11px] text-emerald-400 mt-2 text-center font-bold">
-                🎁 1 Cupom Gratuito no 1º Mês + Acesso VIP Incluso
+                🎁 1 Cupom Gratuito no 1º Mês
               </span>
             </div>
           </div>
@@ -343,12 +343,11 @@ export const StoresView = ({ onSelectStore }) => {
                 {/* Glow sutil de fundo ao passar mouse */}
                 <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF5F00]/10 rounded-full blur-xl group-hover:bg-[#FF5F00]/25 transition-all pointer-events-none" />
 
-                {/* Badges superiores: Origem da API no topo esquerdo e Tier no topo direito */}
+                {/* Badges superiores: Modalidade no topo esquerdo e Tier no topo direito */}
                 <div className="w-full flex items-center justify-between gap-1 mb-2 relative z-10">
-                  {store.apiSource || store.isApiIntegrated ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[9px] font-bold tracking-tight">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>{store.apiSource || 'API Oficial'}</span>
+                  {isOnlineStore ? (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-950/80 border border-blue-500/30 text-blue-300 text-[9px] font-bold tracking-tight">
+                      <span>Online</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-950/80 border border-orange-500/30 text-orange-300 text-[9px] font-bold tracking-tight">

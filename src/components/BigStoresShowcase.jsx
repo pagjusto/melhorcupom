@@ -316,12 +316,6 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold tracking-tight">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="truncate max-w-[130px]">{apiSource}</span>
-                </span>
-              </div>
             </div>
           </div>
 
