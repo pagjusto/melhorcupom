@@ -402,6 +402,15 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.font = '500 16px "Inter", sans-serif';
     ctx.fillText('A maior rede de cupons e economia do comércio local', width / 2, footerY + 70);
     ctx.restore();
+
+    // Borda Externa Minimalista Fina (Padrão Oficial do Folder de Divulgação)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(32, 32, width - 64, height - 64, 36);
+    ctx.stroke();
+    ctx.restore();
   };
 
   // Download do arquivo PNG em alta resolução
@@ -634,7 +643,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
           <div className="relative w-full flex items-center justify-center bg-black/40 rounded-2xl p-3 border border-white/5 overflow-hidden">
             <canvas
               ref={canvasRef}
-              className="rounded-xl shadow-2xl max-w-full h-auto transition-all border border-white/10"
+              className="rounded-xl shadow-2xl max-w-full h-auto transition-all border border-amber-500/30"
               style={{
                 maxHeight: format === 'feed' ? '480px' : '620px',
                 aspectRatio: format === 'feed' ? '1 / 1' : '9 / 16'
@@ -1238,6 +1247,15 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = '#9CA3AF';
     ctx.font = '600 16px "Inter", sans-serif';
     ctx.fillText(`Siga ${instagramSession.username || '@omelhorcupom.com.br'} para não perder nenhuma oferta`, width / 2, footerY + 34);
+    ctx.restore();
+
+    // 11. Borda Externa Minimalista Fina (Padrão Oficial do Folder de Divulgação)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(32, 32, width - 64, height - 64, 36);
+    ctx.stroke();
     ctx.restore();
   };
 
@@ -1898,7 +1916,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             </div>
 
             {/* Container do Canvas */}
-            <div className="relative border-4 border-[#FF5F00]/30 rounded-2xl overflow-hidden shadow-2xl bg-black max-w-[420px] w-full flex items-center justify-center">
+            <div className="relative border-2 border-amber-500/40 rounded-2xl overflow-hidden shadow-2xl bg-black max-w-[420px] w-full flex items-center justify-center">
               <canvas
                 ref={canvasRef}
                 className="w-full h-auto object-contain block"

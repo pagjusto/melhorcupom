@@ -556,10 +556,14 @@ export const AdminInstagramPartners = ({ showToast }) => {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 1080, 1350);
 
-    // Moldura neon laranja/dourada
+    // Borda Externa Minimalista Fina (Padrão Oficial do Folder de Divulgação)
+    ctx.save();
     ctx.strokeStyle = '#FF5F00';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(35, 35, 1010, 1280);
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(32, 32, 1080 - 64, 1350 - 64, 36);
+    ctx.stroke();
+    ctx.restore();
 
     // Topo Badge
     ctx.fillStyle = '#FF5F00';

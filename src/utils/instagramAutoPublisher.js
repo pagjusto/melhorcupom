@@ -414,6 +414,15 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.font = '600 16px "Inter", sans-serif';
   ctx.fillText(`Siga ${activeHandle} para não perder nenhuma oferta`, width / 2, footerY + 34);
   ctx.restore();
+
+  // 10. Borda Externa Minimalista Fina (Padrão Oficial do Folder de Divulgação)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(32, 32, width - 64, height - 64, 36);
+  ctx.stroke();
+  ctx.restore();
 };
 
 // Gerar Base64 da arte
