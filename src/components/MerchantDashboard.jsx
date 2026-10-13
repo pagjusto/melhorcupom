@@ -466,14 +466,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 ) : (
                   <span className="text-xs uppercase font-bold tracking-wider text-[#E09858] bg-[#CD7F32]/20 px-3 py-0.5 rounded-full border border-[#CD7F32]/50 flex items-center gap-1.5 shadow-sm">
                     <Medal size={13} className="text-[#CD7F32]" />
-                    <span>Plano Bronze + VIP (1 Cupom Grátis no 1º Mês)</span>
+                    <span>Plano Bronze (1 Cupom Grátis no 1º Mês)</span>
                   </span>
                 )}
 
-                <span className="text-xs font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <Crown size={11} className="text-amber-400" fill="currentColor" />
-                  <span>Seu Acesso VIP no Site: LIBERADO</span>
-                </span>
+                {(!currentStore.firstMonthFree || currentStore.adminPaidPlan || effectiveTier === 'silver' || effectiveTier === 'gold') ? (
+                  <span className="text-xs font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <Crown size={11} className="text-amber-400" fill="currentColor" />
+                    <span>Seu Acesso VIP no Site: LIBERADO</span>
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-gray-300 bg-white/5 border border-white/15 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <span>🎁 1º Mês Grátis (1 Cupom • Sem Acesso VIP)</span>
+                  </span>
+                )}
 
                 {currentStore.tier !== 'gold' && (
                   <button
@@ -2198,7 +2204,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   {isBronze && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-600 text-black font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-emerald-400/60">
                       <Medal size={12} />
-                      <span>🎁 1º Mês Grátis (1 Cupom) + VIP</span>
+                      <span>🎁 1º Mês Grátis (1 Cupom Ativo)</span>
                     </div>
                   )}
 

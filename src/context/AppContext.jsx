@@ -1028,6 +1028,7 @@ export const AppProvider = ({ children }) => {
         return { 
           ...s, 
           tier: newTier,
+          firstMonthFree: false,
           adminPaidPlan: newTier !== 'api',
           referralBalance: remainingBalance
         };
@@ -1261,8 +1262,8 @@ export const AppProvider = ({ children }) => {
       phone: phone || prev.phone,
       isRegistered: true,
       isLoggedIn: true,
-      isVip: true,
-      vipPlan: 'merchant_vip'
+      isVip: false,
+      vipPlan: null
     }));
     setActiveTab('merchant-dashboard');
 
@@ -1693,10 +1694,19 @@ export const AppProvider = ({ children }) => {
     return { success: true, count: 347, timestamp: timeStr };
   };
 
+  const activeMerchantStore = (typeof currentRole === 'string' && currentRole.startsWith('merchant_'))
+    ? stores.find(s => s.merchantId === currentRole)
+    : null;
+  const isPaidMerchantVip = Boolean(
+    activeMerchantStore &&
+    activeMerchantStore.tier !== 'api' &&
+    (!activeMerchantStore.firstMonthFree || activeMerchantStore.adminPaidPlan || activeMerchantStore.tier === 'silver' || activeMerchantStore.tier === 'gold')
+  );
+
   const isVipUser = 
     currentRole === 'vip' || 
     currentRole === 'admin' || 
-    (typeof currentRole === 'string' && currentRole.startsWith('merchant_')) || 
+    isPaidMerchantVip || 
     (currentRole !== 'visitor' && currentRole !== 'user_free' && currentRole !== 'user' && Boolean(userProfile.isVip));
 
   return (

@@ -53,7 +53,7 @@ export const CATEGORIES = [
 export const MERCHANT_PLANS = [
   {
     id: 'bronze',
-    name: 'Plano Bronze + Acesso VIP',
+    name: 'Plano Bronze (1º Mês Grátis)',
     shortName: 'Bronze',
     badge: '🥉 Destaque Bronze (1º Mês Grátis)',
     price: 19.90,
@@ -61,7 +61,7 @@ export const MERCHANT_PLANS = [
     firstMonthFree: true,
     firstMonthLabel: '1º Mês GRÁTIS',
     period: '/mês (após 1º mês grátis)',
-    tagline: '1º Mês GRÁTIS com 1 oferta de cupom ativa na sua loja + Acesso VIP liberado em todo o site!',
+    tagline: '1º Mês GRÁTIS para criar 1 cupom ativo da sua loja na plataforma (não inclui acesso ao Clube VIP no mês grátis).',
     maxCoupons: 1,
     weight: 2,
     color: 'from-amber-700 via-amber-800 to-amber-950',
@@ -70,13 +70,13 @@ export const MERCHANT_PLANS = [
     perks: [
       '🎁 1º Mês 100% GRÁTIS para publicar 1 cupom ativo na plataforma',
       '1 oferta/cupom ativo na loja (após o 1º mês, apenas R$ 19,90/mês)',
-      '👑 Acesso VIP Liberado (resgate cupons em todas as lojas do site!)',
       'Badge de destaque "🥉 Destaque Bronze" e borda acobreada',
       'Divulgação automática no Instagram @omelhorcupom.com.br',
       'Validador de balcão (PDV) e QR Code',
       'Suporte via WhatsApp'
     ],
     missingPerks: [
+      'Acesso ao Clube VIP de usuário (liberado apenas nos planos pagos)',
       'Prioridade Alta / Topo da Home',
       'Borda prateada ou dourada Glow',
       'Múltiplas ofertas simultâneas (3 na Prata ou Ilimitadas no Ouro)'

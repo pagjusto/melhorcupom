@@ -542,7 +542,7 @@ export const AuthModal = () => {
           {authModalMode === 'merchant_register' && (
             <form onSubmit={handleSubmitMerchant} className="space-y-4">
               
-              {/* Oferta Especial: 1 Cupom Gratuito no 1º Mês + Acesso VIP */}
+              {/* Oferta Especial: 1 Cupom Gratuito no 1º Mês (Sem Acesso VIP) */}
               <div className="bg-gradient-to-r from-[#2D1405] via-[#1E140B] to-[#13221A] border-2 border-emerald-500/70 rounded-2xl p-3.5 sm:p-4 space-y-2 shadow-lg">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-black shadow-sm">
@@ -556,20 +556,20 @@ export const AuthModal = () => {
                   </div>
                 </div>
                 <div className="text-xs sm:text-sm font-black text-white">
-                  Cadastre sua Loja com 1 Cupom Gratuito no 1º Mês + Seu Acesso VIP! 👑
+                  Cadastre sua Loja e Crie 1 Cupom Gratuito no 1º Mês! 🎟️
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-gray-200">
                   <div className="flex items-center gap-1.5 bg-emerald-500/15 px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-300">
                     <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0" />
                     <span><strong>1 Cupom Gratuito no 1º Mês</strong></span>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-black/30 px-2.5 py-1.5 rounded-lg border border-white/5 text-amber-200">
+                  <div className="flex items-center gap-1.5 bg-black/30 px-2.5 py-1.5 rounded-lg border border-white/5 text-gray-300">
                     <CheckCircle2 size={13} className="text-amber-400 flex-shrink-0" />
-                    <span><strong>Acesso VIP Incluso</strong> em todo o site!</span>
+                    <span><strong>Painel do Lojista + QR Code</strong></span>
                   </div>
                 </div>
                 <p className="text-[10px] text-gray-300 leading-relaxed">
-                  Você cadastra sua empresa agora <strong>sem pagar nada</strong> e ganha <strong>1 cupom ativo gratuito durante todo o 1º mês (30 dias)</strong>! Após o 1º mês, apenas R$ 19,90/mês no Plano Bronze, ou faça upgrade para <strong>Prata (3 ofertas)</strong> ou <strong>Ouro (Ilimitado)</strong> quando quiser.
+                  Você cadastra sua empresa agora <strong>sem pagar nada</strong> e ganha a criação de <strong>1 cupom ativo gratuito no 1º mês (30 dias)</strong> para atrair clientes! <em>(Nota: o período gratuito de 1 cupom não inclui acesso ao Clube VIP de usuário, liberado apenas nos planos pagos).</em>
                 </p>
               </div>
 
