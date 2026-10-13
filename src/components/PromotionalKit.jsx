@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
+import { BrandMediaKitSection } from './BrandMediaKitSection';
 import { useApp } from '../context/AppContext';
 import { 
   isStoreAlreadyPublished, 
@@ -643,6 +644,9 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
         </div>
 
       </div>
+
+      {/* Media Kit Oficial: Logos Vetorizadas (.SVG & .PNG Transparente) para Parceiros */}
+      <BrandMediaKitSection />
 
     </div>
   );

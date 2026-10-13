@@ -20,6 +20,7 @@ import {
   UserPlus,
   LogIn
 } from 'lucide-react';
+import { BrandMediaKitSection } from './BrandMediaKitSection';
 
 export const ReferralModal = () => {
   const { 
@@ -345,6 +346,9 @@ export const ReferralModal = () => {
               Seu código exclusivo de indicação é <strong>{referralCode}</strong>.
             </p>
           </div>
+
+          {/* 2.5 MEDIA KIT OFICIAL: LOGOS VETORIZADAS (.SVG E .PNG TRANSPARENTE) */}
+          <BrandMediaKitSection compact />
 
           {/* 3. SIMULADOR DE TESTE RÁPIDO */}
           <div className="bg-[#12121A] rounded-2xl p-4 sm:p-5 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

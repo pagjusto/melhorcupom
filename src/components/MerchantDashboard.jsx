@@ -45,6 +45,7 @@ import {
   Eye
 } from 'lucide-react';
 import { MerchantPromoKit } from './PromotionalKit';
+import { BrandMediaKitSection } from './BrandMediaKitSection';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -2620,6 +2621,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
 
           </div>
+
+          {/* Media Kit Oficial: Logos Vetorizadas (.SVG e .PNG Transparente) */}
+          <BrandMediaKitSection />
 
           {/* Histórico de Indicações da Loja */}
           <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-7">

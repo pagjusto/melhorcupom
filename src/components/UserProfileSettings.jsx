@@ -24,6 +24,7 @@ import {
   Zap,
   CheckCircle2
 } from 'lucide-react';
+import { BrandMediaKitSection } from './BrandMediaKitSection';
 
 export const UserProfileSettings = () => {
   const { 
@@ -631,6 +632,9 @@ export const UserProfileSettings = () => {
                 </button>
               </div>
             </div>
+
+            {/* Media Kit Oficial: Logos Vetorizadas (.SVG & .PNG Transparente) para Divulgação nas Mídias */}
+            <BrandMediaKitSection />
 
             {/* Extrato de Indicações */}
             <div className="bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-7">
