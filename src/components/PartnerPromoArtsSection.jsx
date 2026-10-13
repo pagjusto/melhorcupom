@@ -40,17 +40,18 @@ export const PartnerPromoArtsSection = ({ compact = false }) => {
     ? '/artes/folder-cadastro-usuario-feed.png'
     : '/artes/folder-seja-parceiro-feed.png';
 
-  const userCaptionText = `🎟️ *ECONOMIZE EM DEZENAS DE LOJAS COM O MELHOR CUPOM!* 🔥✨
+  const userCaptionText = `🎟️ *SÃO MAIS DE 450 CUPONS ESPERANDO SEREM RESGATADOS!* 🔥✨
 
-Você sabia que dá pra resgatar cupons de desconto 100% grátis em restaurantes, lanchonetes e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)?
+Você sabia que no Melhor Cupom são mais de 450 cupons de desconto ativos esperando por você? Dá pra economizar em restaurantes, hamburguerias, pizzarias e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)!
 
 🎁 *CADASTRO 100% GRATUITO:*
+✅ Mais de 450 cupons prontos para resgate imediato
 ✅ Economize até 50% OFF na sua conta
 ✅ Sem mensalidade, resgate direto pelo celular
 ✅ Apresente o cupom no balcão ou use online
 ✅ Clube VIP com ofertas exclusivas e secretas
 
-👉 *Cadastre-se grátis pelo meu link exclusivo:*
+👉 *Cadastre-se grátis pelo meu link exclusivo e garanta seus cupons:*
 ${referralLink}
 
 #MelhorCupom #Economia #Descontos #CuponsGratis #ComercioLocal`;

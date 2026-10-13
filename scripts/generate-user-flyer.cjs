@@ -110,31 +110,61 @@ async function generateUserFlyers() {
       }
 
       // 4. Headline Principal Direta e Forte
-      const headStartY = isStory ? logoBottomY + 115 : logoBottomY + 46;
+      const headStartY = isStory ? logoBottomY + 95 : logoBottomY + 36;
       ctx.save();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
       // "Economize Todos os Dias"
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = isStory ? '900 68px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 44px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.font = isStory ? '900 64px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 42px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.fillText('Economize Todos os Dias', width / 2, headStartY);
 
       // "Cadastre-se no Melhor Cupom" (Gradiente Laranja Vibrante)
-      const line2Y = headStartY + (isStory ? 84 : 54);
+      const line2Y = headStartY + (isStory ? 76 : 48);
       const grad = ctx.createLinearGradient(width * 0.2, line2Y, width * 0.8, line2Y);
       grad.addColorStop(0, '#FF8A00');
       grad.addColorStop(0.5, '#FFB800');
       grad.addColorStop(1, '#FF5F00');
       ctx.fillStyle = grad;
-      ctx.font = isStory ? '900 70px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 46px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.font = isStory ? '900 68px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 45px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.fillText('Cadastre-se no Melhor Cupom', width / 2, line2Y);
       ctx.restore();
 
-      // 5. Selo Elegante e Minimalista: "🎁 100% GRÁTIS • ATÉ 50% OFF"
-      const pillY = line2Y + (isStory ? 85 : 52);
-      const pillW = isStory ? 540 : 410;
-      const pillH = isStory ? 58 : 42;
+      // 5. GRANDE DESTAQUE DE IMPACTO: "🔥 SÃO MAIS DE 450 CUPONS ESPERANDO SEREM RESGATADOS!"
+      const badgeY = line2Y + (isStory ? 70 : 42);
+      const badgeW = isStory ? 890 : 840;
+      const badgeH = isStory ? 72 : 54;
+      const badgeX = (width - badgeW) / 2;
+
+      ctx.save();
+      const badgeGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY + badgeH);
+      badgeGrad.addColorStop(0, 'rgba(255, 95, 0, 0.28)');
+      badgeGrad.addColorStop(0.5, 'rgba(255, 184, 0, 0.32)');
+      badgeGrad.addColorStop(1, 'rgba(255, 95, 0, 0.28)');
+      ctx.fillStyle = badgeGrad;
+      ctx.strokeStyle = '#FF8A00';
+      ctx.lineWidth = isStory ? 3 : 2.5;
+      ctx.shadowColor = 'rgba(255, 120, 0, 0.55)';
+      ctx.shadowBlur = isStory ? 24 : 16;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFF5CC';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 8;
+      ctx.font = isStory ? '900 27px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 21px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🔥 SÃO MAIS DE 450 CUPONS ESPERANDO SEREM RESGATADOS!', width / 2, badgeY + badgeH / 2 + 1);
+      ctx.restore();
+
+      // 6. Selo Elegante e Minimalista: "🎁 100% GRÁTIS • ATÉ 50% OFF"
+      const pillY = badgeY + badgeH + (isStory ? 24 : 16);
+      const pillW = isStory ? 540 : 430;
+      const pillH = isStory ? 52 : 38;
       const pillX = (width - pillW) / 2;
 
       ctx.save();
@@ -147,25 +177,25 @@ async function generateUserFlyers() {
       ctx.stroke();
 
       ctx.fillStyle = '#34D399';
-      ctx.font = isStory ? '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.font = isStory ? '900 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('🎁 100% GRÁTIS • DESCONTOS DE ATÉ 50% OFF', width / 2, pillY + pillH / 2 + 1);
       ctx.restore();
 
-      // 6. Subtítulo Limpo
-      const subY = pillY + pillH + (isStory ? 65 : 38);
+      // 7. Subtítulo Limpo
+      const subY = pillY + pillH + (isStory ? 50 : 30);
       ctx.save();
       ctx.textAlign = 'center';
       ctx.fillStyle = '#9CA3AF';
-      ctx.font = isStory ? '600 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '600 19px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.font = isStory ? '600 27px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '600 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.fillText('Restaurantes, comércio local e grandes lojas online em um só lugar.', width / 2, subY);
       ctx.restore();
 
       // Se for Story, card de benefícios
       let afterPerksY = subY;
       if (isStory) {
-        const cardY = subY + 50;
+        const cardY = subY + 44;
         const cardW = 860;
         const cardH = 290;
         const cardX = (width - cardW) / 2;
@@ -180,27 +210,27 @@ async function generateUserFlyers() {
         ctx.stroke();
 
         const perks = [
+          '🎟️ Mais de 450 cupons prontos para resgate imediato',
           '🍔 Restaurantes, hamburguerias, pizzarias e lojas da sua cidade',
           '🛍️ Achadinhos virais da Shopee, Magalu, Shein e Mercado Livre',
-          '🎟️ Resgate cupons em 1 clique sem custo direto no celular',
-          '👑 Clube VIP com ofertas exclusivas e descontos turbinados'
+          '⚡ Resgate em 1 clique sem mensalidade direto no celular'
         ];
 
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.font = '600 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         perks.forEach((perk, idx) => {
-          ctx.fillStyle = '#E5E7EB';
+          ctx.fillStyle = idx === 0 ? '#FFE082' : '#E5E7EB';
           ctx.fillText(perk, cardX + 44, cardY + 48 + (idx * 64));
         });
         ctx.restore();
         afterPerksY = cardY + cardH;
       }
 
-      // 7. Botão de Ação Sofisticado e Limpo
-      const btnY = isStory ? afterPerksY + 65 : subY + 48;
-      const btnW = isStory ? 680 : 530;
-      const btnH = isStory ? 94 : 68;
+      // 8. Botão de Ação Sofisticado e Limpo
+      const btnY = isStory ? afterPerksY + 58 : subY + 42;
+      const btnW = isStory ? 680 : 540;
+      const btnH = isStory ? 92 : 66;
       const btnX = (width - btnW) / 2;
 
       ctx.save();
@@ -224,7 +254,7 @@ async function generateUserFlyers() {
       ctx.font = isStory ? '900 32px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 23px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Criar Conta Grátis & Economizar', width / 2, btnY + btnH / 2);
+      ctx.fillText('Criar Conta Grátis & Resgatar Cupons', width / 2, btnY + btnH / 2);
       ctx.restore();
 
       // 8. Rodapé Minimalista

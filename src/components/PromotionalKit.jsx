@@ -929,7 +929,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     if (selectedStoreId === 'promo_cadastro_usuario') {
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
       setCustomCaption(
-        `🎟️ *ECONOMIZE EM DEZENAS DE LOJAS COM O MELHOR CUPOM!* 🔥✨\n\nVocê sabia que dá pra resgatar cupons de desconto 100% grátis em restaurantes, lanchonetes e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)?\n\n🎁 *CADASTRO 100% GRATUITO:*\n✅ Economize até 50% OFF na sua conta\n✅ Sem mensalidade, resgate direto pelo celular\n✅ Apresente o cupom no balcão ou use online\n✅ Clube VIP com ofertas exclusivas e secretas\n\n👉 Acesse o link da nossa bio ${activeHandle} ou acesse:\nhttps://www.omelhorcupom.com.br\n\n#MelhorCupom #Economia #Descontos #CuponsGratis #ComercioLocal #Restaurantes #Shopee #Magalu #Shein`
+        `🎟️ *SÃO MAIS DE 450 CUPONS ESPERANDO SEREM RESGATADOS!* 🔥✨\n\nVocê sabia que no Melhor Cupom são mais de 450 cupons de desconto ativos esperando por você? Dá pra economizar em restaurantes, hamburguerias, pizzarias e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)!\n\n🎁 *CADASTRO 100% GRATUITO:*\n✅ Mais de 450 cupons prontos para resgate imediato\n✅ Economize até 50% OFF na sua conta\n✅ Sem mensalidade, resgate direto pelo celular\n✅ Apresente o cupom no balcão ou use online\n✅ Clube VIP com ofertas exclusivas e secretas\n\n👉 Acesse o link da nossa bio ${activeHandle} ou acesse:\nhttps://www.omelhorcupom.com.br\n\n#MelhorCupom #Economia #Descontos #CuponsGratis #ComercioLocal #Restaurantes #Shopee #Magalu #Shein`
       );
       return;
     }
