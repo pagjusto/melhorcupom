@@ -153,8 +153,8 @@ export const StoresView = ({ onSelectStore }) => {
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3 text-[11px] text-gray-300 font-semibold">
-                  <span className="flex items-center gap-1 text-emerald-400">
-                    <CheckCircle2 size={13} /> Sem taxa de intermediação
+                  <span className="flex items-center gap-1 text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-black">
+                    <CheckCircle2 size={13} /> 🎁 1 Cupom GRÁTIS no 1º Mês
                   </span>
                   <span className="flex items-center gap-1 text-amber-300">
                     <CheckCircle2 size={13} /> Validador com Câmera PDV
@@ -173,11 +173,11 @@ export const StoresView = ({ onSelectStore }) => {
                 className="relative group/btn w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-[#FF9E00] hover:from-[#E04F00] hover:to-[#FF8800] text-white font-black text-sm sm:text-base shadow-2xl shadow-orange-600/60 hover:shadow-orange-500/80 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 border border-amber-300/60 cursor-pointer"
               >
                 <Sparkles size={20} className="text-amber-200 group-hover/btn:rotate-12 transition-transform" />
-                <span className="tracking-wide">SEJA UM PARCEIRO CREDENCIADO</span>
+                <span className="tracking-wide">CADASTRAR LOJA (1º MÊS GRÁTIS)</span>
                 <ArrowRight size={20} className="group-hover/btn:translate-x-1.5 transition-transform" />
               </button>
-              <span className="text-[11px] text-gray-400 mt-2 text-center font-medium">
-                Cadastro rápido e descomplicado
+              <span className="text-[11px] text-emerald-400 mt-2 text-center font-bold">
+                🎁 1 Cupom Gratuito no 1º Mês + Acesso VIP Incluso
               </span>
             </div>
           </div>

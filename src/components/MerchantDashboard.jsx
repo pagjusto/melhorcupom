@@ -466,7 +466,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 ) : (
                   <span className="text-xs uppercase font-bold tracking-wider text-[#E09858] bg-[#CD7F32]/20 px-3 py-0.5 rounded-full border border-[#CD7F32]/50 flex items-center gap-1.5 shadow-sm">
                     <Medal size={13} className="text-[#CD7F32]" />
-                    <span>Plano Bronze + VIP (1 Oferta • R$ 19,90)</span>
+                    <span>Plano Bronze + VIP (1 Cupom Grátis no 1º Mês)</span>
                   </span>
                 )}
 
@@ -2196,9 +2196,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   )}
 
                   {isBronze && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#CD7F32] to-[#8C4A1E] text-white font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-[#CD7F32]/60">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-600 text-black font-black text-[10px] uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 whitespace-nowrap border border-emerald-400/60">
                       <Medal size={12} />
-                      <span>Plano de Entrada + VIP</span>
+                      <span>🎁 1º Mês Grátis (1 Cupom) + VIP</span>
                     </div>
                   )}
 
