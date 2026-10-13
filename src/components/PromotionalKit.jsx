@@ -808,6 +808,18 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     });
   const selectableStores = showAllStores ? stores : (pendingStores.length > 0 ? pendingStores : []);
 
+  const PROMO_CADASTRO_USUARIO_STORE = {
+    id: 'promo_cadastro_usuario',
+    name: '👥 ARTE OFICIAL: Cadastro de Usuários (Economize Já)',
+    city: 'Brasil',
+    address: 'Brasil',
+    type: 'institutional',
+    image: '/artes/folder-cadastro-usuario-feed.png',
+    storyImage: '/artes/folder-cadastro-usuario-story.png',
+    instagram: '@omelhorcupom.com.br',
+    isPromoCampaign: true
+  };
+
   const PROMO_SEJA_PARCEIRO_STORE = {
     id: 'promo_seja_parceiro',
     name: '⭐ ARTE OFICIAL: Seja um Parceiro (3 Meses Grátis)',
@@ -820,14 +832,16 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     isPromoCampaign: true
   };
 
-  const selectedStore = selectedStoreId === 'promo_seja_parceiro'
-    ? PROMO_SEJA_PARCEIRO_STORE
-    : (stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {});
+  const selectedStore = selectedStoreId === 'promo_cadastro_usuario'
+    ? PROMO_CADASTRO_USUARIO_STORE
+    : selectedStoreId === 'promo_seja_parceiro'
+      ? PROMO_SEJA_PARCEIRO_STORE
+      : (stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {});
   const locationText = getStoreLocationText(selectedStore);
 
   // Auto-selecionar primeira loja pendente
   useEffect(() => {
-    if (selectedStoreId === 'promo_seja_parceiro') return;
+    if (selectedStoreId === 'promo_seja_parceiro' || selectedStoreId === 'promo_cadastro_usuario') return;
     if (!showAllStores && pendingStores.length > 0) {
       const isCurrentPending = pendingStores.some(s => s.id === selectedStoreId);
       if (!isCurrentPending) {
@@ -856,7 +870,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   const featuredCoupon = storeCoupons[0];
 
   // URL direta da oferta/cupom da loja no site
-  const storyOfferUrl = selectedStoreId === 'promo_seja_parceiro'
+  const storyOfferUrl = (selectedStoreId === 'promo_seja_parceiro' || selectedStoreId === 'promo_cadastro_usuario')
     ? 'https://www.omelhorcupom.com.br'
     : (selectedStore?.id
         ? (featuredCoupon 
@@ -912,6 +926,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
   // Inicializar legenda oficial com marcação do @ do parceiro
   useEffect(() => {
+    if (selectedStoreId === 'promo_cadastro_usuario') {
+      const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
+      setCustomCaption(
+        `🎟️ *ECONOMIZE EM DEZENAS DE LOJAS COM O MELHOR CUPOM!* 🔥✨\n\nVocê sabia que dá pra resgatar cupons de desconto 100% grátis em restaurantes, lanchonetes e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)?\n\n🎁 *CADASTRO 100% GRATUITO:*\n✅ Economize até 50% OFF na sua conta\n✅ Sem mensalidade, resgate direto pelo celular\n✅ Apresente o cupom no balcão ou use online\n✅ Clube VIP com ofertas exclusivas e secretas\n\n👉 Acesse o link da nossa bio ${activeHandle} ou acesse:\nhttps://www.omelhorcupom.com.br\n\n#MelhorCupom #Economia #Descontos #CuponsGratis #ComercioLocal #Restaurantes #Shopee #Magalu #Shein`
+      );
+      return;
+    }
+
     if (selectedStoreId === 'promo_seja_parceiro') {
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
       setCustomCaption(
@@ -961,6 +983,28 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
     targetCanvas.width = width;
     targetCanvas.height = height;
+
+    // Se for a campanha oficial "Cadastro de Usuários", desenhar diretamente a arte HD pré-renderizada
+    if (selectedStoreId === 'promo_cadastro_usuario') {
+      const artSrc = currentFormat === 'feed' 
+        ? '/artes/folder-cadastro-usuario-feed.png' 
+        : '/artes/folder-cadastro-usuario-story.png';
+      try {
+        const artImg = new Image();
+        artImg.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          artImg.onload = resolve;
+          artImg.onerror = resolve;
+          artImg.src = artSrc;
+        });
+        if (artImg.width > 0) {
+          ctx.drawImage(artImg, 0, 0, width, height);
+          return;
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar arte cadastro usuario no canvas:', err);
+      }
+    }
 
     // Se for a campanha oficial "Seja um Parceiro", desenhar diretamente a arte HD pré-renderizada
     if (selectedStoreId === 'promo_seja_parceiro') {
@@ -1601,69 +1645,67 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         </button>
       </div>
 
-      {/* 2.5 BANNER DE ATALHO RÁPIDO: POSTAGEM DIÁRIA "SEJA UM PARCEIRO" */}
-      <div className="bg-gradient-to-r from-amber-500/20 via-[#26150D] to-[#14141E] border-2 border-amber-500/60 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+      {/* 2.5 BANNER DE ATALHO RÁPIDO: POSTAGENS DIÁRIAS OFICIAIS */}
+      <div className="bg-gradient-to-r from-amber-500/20 via-[#26150D] to-[#14141E] border-2 border-amber-500/60 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden space-y-4">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 p-0.5 shadow-lg flex-shrink-0">
               <div className="w-full h-full bg-[#161622] rounded-[14px] flex items-center justify-center text-2xl">
-                🏪
+                🚀
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <span className="bg-gradient-to-r from-amber-400 to-[#FF5F00] text-black font-black text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
-                  ⭐ Postagem Diária para Atrair Lojistas
+                  ⭐ Postagens Diárias Oficiais
                 </span>
                 <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  Artes Oficiais em Alta Resolução
+                  Artes Oficiais em Alta Resolução (HD)
                 </span>
               </div>
               <h4 className="text-base sm:text-lg font-black text-white">
-                Campanha Oficial: Seja um Parceiro Melhor Cupom (3 Meses Grátis)
+                Campanhas Oficiais do Melhor Cupom: Clientes & Parceiros
               </h4>
               <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">
-                Poste todos os dias para captar novos lojistas e comércios da sua região. As artes de <strong>Story (1080x1920)</strong> e <strong>Feed (1080x1080)</strong> e a legenda oficial já estão disponíveis com 1 clique!
+                Poste todos os dias para cadastrar novos <strong>Clientes/Usuários</strong> que buscam descontos ou novos <strong>Lojistas/Parceiros</strong>. As artes de <strong>Story (1080x1920)</strong> e <strong>Feed (1080x1080)</strong> já estão prontas!
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+            {/* Botão Campanha 1: Cadastro de Usuários */}
             <button
               type="button"
               onClick={() => {
-                setSelectedStoreId('promo_seja_parceiro');
-                showToast('⭐ Campanha "Seja um Parceiro" selecionada para publicação imediata!', 'success');
+                setSelectedStoreId('promo_cadastro_usuario');
+                showToast('👥 Campanha "Cadastro de Usuários" selecionada para publicação!', 'success');
               }}
-              className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-lg flex items-center gap-1.5 ${
-                selectedStoreId === 'promo_seja_parceiro'
+              className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-lg flex items-center gap-1.5 ${
+                selectedStoreId === 'promo_cadastro_usuario'
                   ? 'bg-emerald-500 text-white shadow-emerald-950/60'
                   : 'bg-gradient-to-r from-amber-400 to-[#FF5F00] hover:from-amber-300 hover:to-orange-500 text-black'
               }`}
             >
-              <Sparkles size={14} />
-              <span>{selectedStoreId === 'promo_seja_parceiro' ? '✓ Selecionada no Painel' : 'Postar Esta Arte Agora'}</span>
+              <Users size={14} />
+              <span>{selectedStoreId === 'promo_cadastro_usuario' ? '✓ Usuários Ativo' : 'Postar Cadastro de Usuários'}</span>
             </button>
 
-            <a
-              href="/artes/folder-seja-parceiro-story.png"
-              download="folder-seja-parceiro-story-1080x1920.png"
-              className="bg-white/10 hover:bg-white/20 text-white px-3 py-2.5 rounded-xl text-xs font-bold border border-white/10 transition-colors flex items-center gap-1.5"
-              title="Baixar Story (1080x1920)"
+            {/* Botão Campanha 2: Seja um Parceiro */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedStoreId('promo_seja_parceiro');
+                showToast('⭐ Campanha "Seja um Parceiro" selecionada para publicação!', 'success');
+              }}
+              className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-lg flex items-center gap-1.5 ${
+                selectedStoreId === 'promo_seja_parceiro'
+                  ? 'bg-emerald-500 text-white shadow-emerald-950/60'
+                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+              }`}
             >
-              <Download size={13} />
-              <span>Story HD</span>
-            </a>
-
-            <a
-              href="/artes/folder-seja-parceiro-feed.png"
-              download="folder-seja-parceiro-feed-1080x1080.png"
-              className="bg-white/10 hover:bg-white/20 text-white px-3 py-2.5 rounded-xl text-xs font-bold border border-white/10 transition-colors flex items-center gap-1.5"
-              title="Baixar Feed (1080x1080)"
-            >
-              <Download size={13} />
-              <span>Feed HD</span>
-            </a>
+              <Store size={14} />
+              <span>{selectedStoreId === 'promo_seja_parceiro' ? '✓ Parceiros Ativo' : 'Postar Seja um Parceiro'}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1700,9 +1742,12 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 onChange={(e) => setSelectedStoreId(e.target.value)}
                 className="w-full bg-[#12121C] border border-amber-500/40 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400 transition-colors cursor-pointer"
               >
-                <optgroup label="🌟 CAMPANHA INSTITUCIONAL DIÁRIA" className="bg-[#241508] text-amber-300 font-black">
+                <optgroup label="🌟 CAMPANHAS INSTITUCIONAIS DIÁRIAS" className="bg-[#241508] text-amber-300 font-black">
+                  <option value="promo_cadastro_usuario" className="bg-[#241508] text-amber-300 font-bold">
+                    👥 ARTE OFICIAL: Cadastro de Usuários (Clientes & Economia) ✨
+                  </option>
                   <option value="promo_seja_parceiro" className="bg-[#241508] text-amber-300 font-bold">
-                    ⭐ ARTE OFICIAL: Seja um Parceiro (3 Meses Grátis • Crie Já Seu Cupom) 🔥
+                    ⭐ ARTE OFICIAL: Seja um Parceiro (Lojas & Comércio • 3 Meses Grátis) 🏪
                   </option>
                 </optgroup>
                 <optgroup label="🏪 FORNECEDORES E LOJAS CADASTRADAS" className="bg-[#161622] text-gray-300 font-bold">

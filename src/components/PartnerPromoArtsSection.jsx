@@ -11,7 +11,8 @@ import {
   Layers,
   CheckCircle2,
   X,
-  Store
+  Store,
+  Users
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -26,36 +27,60 @@ export const PartnerPromoArtsSection = ({ compact = false }) => {
 
   const referralLink = `https://www.omelhorcupom.com.br/convite/${referralCode}`;
 
+  const [activeCampaign, setActiveCampaign] = useState('user'); // 'user' (Clientes & Amigos) | 'partner' (Lojas & Parceiros)
   const [activeFormat, setActiveFormat] = useState('story'); // 'story' ou 'feed'
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [previewModalImg, setPreviewModalImg] = useState(null);
 
-  const storyImgUrl = '/artes/folder-seja-parceiro-story.png';
-  const feedImgUrl = '/artes/folder-seja-parceiro-feed.png';
+  const storyImgUrl = activeCampaign === 'user'
+    ? '/artes/folder-cadastro-usuario-story.png'
+    : '/artes/folder-seja-parceiro-story.png';
 
-  const captionText = `🚀 SEJA UM PARCEIRO NO MELHOR CUPOM! 🏪🎟️
+  const feedImgUrl = activeCampaign === 'user'
+    ? '/artes/folder-cadastro-usuario-feed.png'
+    : '/artes/folder-seja-parceiro-feed.png';
+
+  const userCaptionText = `🎟️ *ECONOMIZE EM DEZENAS DE LOJAS COM O MELHOR CUPOM!* 🔥✨
+
+Você sabia que dá pra resgatar cupons de desconto 100% grátis em restaurantes, lanchonetes e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)?
+
+🎁 *CADASTRO 100% GRATUITO:*
+✅ Economize até 50% OFF na sua conta
+✅ Sem mensalidade, resgate direto pelo celular
+✅ Apresente o cupom no balcão ou use online
+✅ Clube VIP com ofertas exclusivas e secretas
+
+👉 *Cadastre-se grátis pelo meu link exclusivo:*
+${referralLink}
+
+#MelhorCupom #Economia #Descontos #CuponsGratis #ComercioLocal`;
+
+  const partnerCaptionText = `🚀 *SEJA UM PARCEIRO NO MELHOR CUPOM!* 🏪🎟️
 
 Tem uma loja física, restaurante, cafeteria, barbearia ou franquia?
 Cadastre sua empresa no Melhor Cupom e coloque suas ofertas na vitrine para milhares de clientes da sua cidade!
 
-🎁 3 MESES 100% GRÁTIS!
+🎁 *3 MESES 100% GRÁTIS!*
 ✅ Crie já o primeiro cupom ativo da sua loja sem pagar nada
 ✅ Validador no balcão via QR Code no caixa (PDV)
 ✅ Sem mensalidade durante o período de degustação
 ✅ Mais clientes e aumento no faturamento!
 
-👉 Cadastre sua loja agora pelo meu link exclusivo:
+👉 *Cadastre sua loja agora pelo meu link exclusivo:*
 ${referralLink}
 
 #MelhorCupom #SejaUmParceiro #ComercioLocal #CuponsDeDesconto #LojasParceiras #Empreendedorismo #Promocao`;
+
+  const captionText = activeCampaign === 'user' ? userCaptionText : partnerCaptionText;
 
   const handleDownload = (formatType) => {
     const isStory = formatType === 'story';
     const link = document.createElement('a');
     link.href = isStory ? storyImgUrl : feedImgUrl;
+    const baseName = activeCampaign === 'user' ? 'folder-cadastro-usuario' : 'folder-seja-parceiro';
     link.download = isStory 
-      ? `folder-seja-parceiro-story-1080x1920.png` 
-      : `folder-seja-parceiro-feed-1080x1080.png`;
+      ? `${baseName}-story-1080x1920.png` 
+      : `${baseName}-feed-1080x1080.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -68,9 +93,7 @@ ${referralLink}
   };
 
   const handleShareWhatsApp = () => {
-    const textEncoded = encodeURIComponent(
-      `🚀 *SEJA UM PARCEIRO NO MELHOR CUPOM!*\n\nCadastre seu comércio e ganhe *3 MESES 100% GRÁTIS* para criar ofertas e atrair clientes!\n\n👉 Acesse agora: ${referralLink}`
-    );
+    const textEncoded = encodeURIComponent(captionText);
     window.open(`https://api.whatsapp.com/send?text=${textEncoded}`, '_blank');
   };
 
@@ -79,6 +102,41 @@ ${referralLink}
       {/* Luzes de Fundo */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF5F00]/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Seletor de Campanha (Usuários vs Parceiros) */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-5 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-black uppercase tracking-wider text-gray-300">Escolha o Folder para Divulgar:</span>
+        </div>
+
+        <div className="flex items-center gap-2 bg-black/60 p-1 rounded-2xl border border-white/10">
+          <button
+            type="button"
+            onClick={() => setActiveCampaign('user')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeCampaign === 'user'
+                ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black shadow-md'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Users size={13} />
+            <span>👥 Cadastro de Usuários (Clientes)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveCampaign('partner')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeCampaign === 'partner'
+                ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black shadow-md'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Store size={13} />
+            <span>🏪 Seja um Parceiro (Lojas)</span>
+          </button>
+        </div>
+      </div>
 
       {/* Cabeçalho */}
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 border-b border-white/10 pb-4">
@@ -89,15 +147,25 @@ ${referralLink}
               <span>Artes Prontas para Divulgação</span>
             </span>
             <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
-              {isMerchantRole ? 'Ganhe R$ 5 por loja indicada' : 'Ganhe R$ 3 por amigo indicado'}
+              {activeCampaign === 'user'
+                ? 'Ganhe R$ 3 por amigo indicado'
+                : (isMerchantRole ? 'Ganhe R$ 5 por loja indicada' : 'Ganhe R$ 5 por loja indicada')}
             </span>
           </div>
           <h3 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-            <span>Folder Oficial: Seja um Parceiro</span>
-            <span className="text-amber-400 font-normal text-xs sm:text-sm">(3 Meses Grátis)</span>
+            <span>
+              {activeCampaign === 'user' 
+                ? 'Folder Oficial: Cadastro de Usuários' 
+                : 'Folder Oficial: Seja um Parceiro'}
+            </span>
+            <span className="text-amber-400 font-normal text-xs sm:text-sm">
+              {activeCampaign === 'user' ? '(Economize Todos os Dias)' : '(3 Meses Grátis)'}
+            </span>
           </h3>
           <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">
-            Baixe as artes oficiais prontas para postar todos os dias nos <strong>Stories</strong> e no <strong>Feed</strong> do Instagram, WhatsApp ou grupos, convidando comerciantes para cadastrar suas lojas pelo seu link!
+            {activeCampaign === 'user'
+              ? 'Baixe as artes oficiais prontas para postar nos Stories e no Feed do Instagram, WhatsApp ou grupos, convidando amigos e seguidores a se cadastrarem para economizar com cupons grátis pelo seu link!'
+              : 'Baixe as artes oficiais prontas para postar nos Stories e no Feed do Instagram, WhatsApp ou grupos, convidando comerciantes para cadastrar suas lojas pelo seu link!'}
           </p>
         </div>
 

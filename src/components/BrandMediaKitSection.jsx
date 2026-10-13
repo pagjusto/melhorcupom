@@ -11,7 +11,8 @@ import {
   Copy,
   Share2,
   Store,
-  Gift
+  Gift,
+  Users
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
@@ -227,7 +228,7 @@ const downloadSvgString = (svgString, fileName) => {
 export const BrandMediaKitSection = ({ compact = false }) => {
   const [bgPreview, setBgPreview] = useState('checker'); // 'checker' | 'dark' | 'light'
   const [downloadedKey, setDownloadedKey] = useState(null);
-  const [downloadingAll, setDownloadingAll] = useState(false);
+  const [flyerType, setFlyerType] = useState('user'); // 'user' (Clientes & Economia) | 'partner' (Lojas & Parceiros)
   const [flyerFormat, setFlyerFormat] = useState('story'); // 'story' (1080x1920) | 'feed' (1080x1080)
   const flyerCanvasRef = useRef(null);
 
@@ -236,11 +237,216 @@ export const BrandMediaKitSection = ({ compact = false }) => {
     setTimeout(() => setDownloadedKey(null), 2500);
   };
 
-  // Renderiza o Folder Oficial: "Seja um Parceiro Melhor Cupom e crie já o cupom da sua loja"
+  // Renderiza o Folder Selecionado (Usuários ou Parceiros)
   useEffect(() => {
-    drawPartnerFlyer();
-  }, [flyerFormat]);
+    if (flyerType === 'user') {
+      drawUserFlyer();
+    } else {
+      drawPartnerFlyer();
+    }
+  }, [flyerType, flyerFormat]);
 
+  // FOLDER 1: CADASTRO DE USUÁRIOS (CLIENTES & ECONOMIA)
+  const drawUserFlyer = async () => {
+    const canvas = flyerCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const isStory = flyerFormat === 'story';
+    const width = 1080;
+    const height = isStory ? 1920 : 1080;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // 1. Fundo Minimalista Dark
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#07070B');
+    bgGrad.addColorStop(0.5, '#100D16');
+    bgGrad.addColorStop(1, '#07070B');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. Aura Central Suave e Elegante
+    const auraCenterY = isStory ? height * 0.38 : height * 0.40;
+    const aura = ctx.createRadialGradient(width * 0.5, auraCenterY, 40, width * 0.5, auraCenterY, isStory ? 580 : 440);
+    aura.addColorStop(0, 'rgba(255, 95, 0, 0.32)');
+    aura.addColorStop(0.5, 'rgba(255, 120, 0, 0.08)');
+    aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = aura;
+    ctx.fillRect(0, 0, width, height);
+
+    // Borda Externa Minimalista Fina
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(32, 32, width - 64, height - 64, 36);
+    ctx.stroke();
+    ctx.restore();
+
+    // 3. Logo Oficial em Grande Destaque
+    let logoBottomY = isStory ? 700 : 450;
+    try {
+      const mcLogoImg = new Image();
+      mcLogoImg.crossOrigin = 'anonymous';
+      await new Promise((resolve) => {
+        mcLogoImg.onload = resolve;
+        mcLogoImg.onerror = resolve;
+        mcLogoImg.src = logoMelhorCupom;
+      });
+
+      if (mcLogoImg.width > 0) {
+        const logoW = isStory ? 600 : 380;
+        const logoH = (mcLogoImg.height / mcLogoImg.width) * logoW;
+        const logoX = (width - logoW) / 2;
+        const logoY = isStory ? 240 : 110;
+        logoBottomY = logoY + logoH;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(255, 95, 0, 0.5)';
+        ctx.shadowBlur = 40;
+        ctx.drawImage(mcLogoImg, logoX, logoY, logoW, logoH);
+        ctx.restore();
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar logo no folder:', e);
+    }
+
+    // 4. Headline Principal Direta e Forte
+    const headStartY = isStory ? logoBottomY + 115 : logoBottomY + 46;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // "Economize Todos os Dias"
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = isStory ? '900 68px "Inter", "Segoe UI", sans-serif' : '900 44px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('Economize Todos os Dias', width / 2, headStartY);
+
+    // "Cadastre-se no Melhor Cupom" (Gradiente Laranja Vibrante)
+    const line2Y = headStartY + (isStory ? 84 : 54);
+    const grad = ctx.createLinearGradient(width * 0.2, line2Y, width * 0.8, line2Y);
+    grad.addColorStop(0, '#FF8A00');
+    grad.addColorStop(0.5, '#FFB800');
+    grad.addColorStop(1, '#FF5F00');
+    ctx.fillStyle = grad;
+    ctx.font = isStory ? '900 70px "Inter", "Segoe UI", sans-serif' : '900 46px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('Cadastre-se no Melhor Cupom', width / 2, line2Y);
+    ctx.restore();
+
+    // 5. Selo Elegante e Minimalista: "🎁 100% GRÁTIS • ATÉ 50% OFF"
+    const pillY = line2Y + (isStory ? 85 : 52);
+    const pillW = isStory ? 540 : 410;
+    const pillH = isStory ? 58 : 42;
+    const pillX = (width - pillW) / 2;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+    ctx.strokeStyle = '#10B981';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#34D399';
+    ctx.font = isStory ? '900 24px "Inter", "Segoe UI", sans-serif' : '900 17px "Inter", "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎁 100% GRÁTIS • DESCONTOS DE ATÉ 50% OFF', width / 2, pillY + pillH / 2 + 1);
+    ctx.restore();
+
+    // 6. Subtítulo Limpo
+    const subY = pillY + pillH + (isStory ? 65 : 38);
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = isStory ? '600 28px "Inter", "Segoe UI", sans-serif' : '600 19px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('Restaurantes, comércio local e grandes lojas online em um só lugar.', width / 2, subY);
+    ctx.restore();
+
+    // Se for Story, card com 4 destaques
+    let afterPerksY = subY;
+    if (isStory) {
+      const cardY = subY + 50;
+      const cardW = 860;
+      const cardH = 290;
+      const cardX = (width - cardW) / 2;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, cardW, cardH, 28);
+      ctx.fill();
+      ctx.stroke();
+
+      const perks = [
+        '🍔 Restaurantes, hamburguerias, pizzarias e lojas da sua cidade',
+        '🛍️ Achadinhos virais da Shopee, Magalu, Shein e Mercado Livre',
+        '🎟️ Resgate cupons em 1 clique sem custo direto no celular',
+        '👑 Clube VIP com ofertas exclusivas e descontos turbinados'
+      ];
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.font = '600 25px "Inter", "Segoe UI", sans-serif';
+      perks.forEach((perk, idx) => {
+        ctx.fillStyle = '#E5E7EB';
+        ctx.fillText(perk, cardX + 44, cardY + 48 + (idx * 64));
+      });
+      ctx.restore();
+      afterPerksY = cardY + cardH;
+    }
+
+    // 7. Botão de Ação Sofisticado e Limpo
+    const btnY = isStory ? afterPerksY + 65 : subY + 48;
+    const btnW = isStory ? 680 : 530;
+    const btnH = isStory ? 94 : 68;
+    const btnX = (width - btnW) / 2;
+
+    ctx.save();
+    const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + btnW, btnY + btnH);
+    btnGrad.addColorStop(0, '#FF5F00');
+    btnGrad.addColorStop(1, '#E04F00');
+    ctx.fillStyle = btnGrad;
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
+    ctx.shadowBlur = 28;
+    ctx.beginPath();
+    ctx.roundRect(btnX, btnY, btnW, btnH, btnH / 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 8;
+    ctx.font = isStory ? '900 32px "Inter", "Segoe UI", sans-serif' : '900 23px "Inter", "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Criar Conta Grátis & Economizar', width / 2, btnY + btnH / 2);
+    ctx.restore();
+
+    // 8. Rodapé Minimalista
+    const footY = isStory ? 1730 : 965;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#E5E7EB';
+    ctx.font = isStory ? '900 32px "Inter", "Segoe UI", sans-serif' : '900 24px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('omelhorcupom.com.br', width / 2, footY);
+
+    ctx.fillStyle = '#FF7A29';
+    ctx.font = isStory ? '700 22px "Inter", "Segoe UI", sans-serif' : '700 17px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('@omelhorcupom.com.br', width / 2, footY + (isStory ? 42 : 30));
+    ctx.restore();
+  };
+
+  // FOLDER 2: SEJA UM PARCEIRO (LOJAS & COMÉRCIO)
   const drawPartnerFlyer = async () => {
     const canvas = flyerCanvasRef.current;
     if (!canvas) return;
@@ -411,7 +617,8 @@ export const BrandMediaKitSection = ({ compact = false }) => {
     const dataUrl = canvas.toDataURL('image/png', 1.0);
     const a = document.createElement('a');
     a.href = dataUrl;
-    a.download = `folder-seja-parceiro-melhor-cupom-${flyerFormat}.png`;
+    const baseName = flyerType === 'user' ? 'folder-cadastro-usuario-melhor-cupom' : 'folder-seja-parceiro-melhor-cupom';
+    a.download = `${baseName}-${flyerFormat}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -424,13 +631,30 @@ export const BrandMediaKitSection = ({ compact = false }) => {
     const dataUrl = canvas.toDataURL('image/png', 1.0);
     const w = canvas.width;
     const h = canvas.height;
+    const titleText = flyerType === 'user' ? 'Folder Cadastro de Usuários Melhor Cupom' : 'Folder Seja um Parceiro Melhor Cupom';
     const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">
-  <title>Folder Seja um Parceiro Melhor Cupom</title>
+  <title>${titleText}</title>
   <image width="${w}" height="${h}" xlink:href="${dataUrl}" href="${dataUrl}" />
 </svg>`;
-    downloadSvgString(svgStr, `folder-seja-parceiro-melhor-cupom-${flyerFormat}.svg`);
+    const baseName = flyerType === 'user' ? 'folder-cadastro-usuario-melhor-cupom' : 'folder-seja-parceiro-melhor-cupom';
+    downloadSvgString(svgStr, `${baseName}-${flyerFormat}.svg`);
     markDownloaded('flyer-svg');
   };
+
+  const userFlyerCaption = `🎟️ *ECONOMIZE EM DEZENAS DE LOJAS COM O MELHOR CUPOM!* 🔥✨
+
+Você sabia que dá pra resgatar cupons de desconto 100% grátis em restaurantes, lanchonetes e serviços da nossa cidade, além de grandes lojas da internet (Shopee, Magalu, Shein e Mercado Livre)?
+
+🎁 *CADASTRO 100% GRATUITO:*
+✅ Economize até 50% OFF na sua conta
+✅ Sem mensalidade, resgate direto pelo celular
+✅ Apresente o cupom no balcão ou use online
+✅ Clube VIP com ofertas exclusivas e secretas
+
+📲 *Cadastre-se grátis em menos de 1 minuto:*
+👉 https://omelhorcupom.com.br
+
+📢 Siga nosso Instagram oficial: *@omelhorcupom.com.br*`;
 
   const partnerFlyerCaption = `🚀 *SEJA UM PARCEIRO MELHOR CUPOM E CRIE JÁ O CUPOM DA SUA LOJA!* 🎟️🔥
 
@@ -446,13 +670,15 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
 
 📢 Lembre-se de marcar sempre *@omelhorcupom.com.br* nas suas divulgações!`;
 
+  const currentFlyerCaption = flyerType === 'user' ? userFlyerCaption : partnerFlyerCaption;
+
   const handleCopyFlyerCaption = () => {
-    navigator.clipboard.writeText(partnerFlyerCaption);
+    navigator.clipboard.writeText(currentFlyerCaption);
     markDownloaded('flyer-caption');
   };
 
   const handleShareFlyerWhatsApp = () => {
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(partnerFlyerCaption)}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(currentFlyerCaption)}`, '_blank');
   };
 
   const assets = [
@@ -564,23 +790,71 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
   return (
     <div className="bg-gradient-to-br from-[#1A1A28] via-[#141420] to-[#101018] border-2 border-orange-500/30 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
       
-      {/* FOLDER OFICIAL DE DIVULGAÇÃO: SEJA UM PARCEIRO MELHOR CUPOM */}
+      {/* FOLDER OFICIAL DE DIVULGAÇÃO: USUÁRIOS OU PARCEIROS */}
       <div className="bg-gradient-to-br from-[#23140D] via-[#181422] to-[#12121A] border-2 border-amber-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl">
+        {/* Seletor de Tipo de Folder (Usuários vs Parceiros) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4 mb-5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black uppercase tracking-wider text-gray-300">Campanha do Folder:</span>
+          </div>
+
+          <div className="flex items-center gap-2 bg-black/60 p-1 rounded-2xl border border-white/10">
+            <button
+              type="button"
+              onClick={() => setFlyerType('user')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                flyerType === 'user'
+                  ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Users size={13} />
+              <span>👥 Cadastro de Usuários (Clientes)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFlyerType('partner')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                flyerType === 'partner'
+                  ? 'bg-gradient-to-r from-amber-500 to-[#FF5F00] text-black shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <Store size={13} />
+              <span>🏪 Seja um Parceiro (Lojas)</span>
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           
           {/* Coluna Esquerda: Controles, Textos e Botões de Download do Folder */}
           <div className="lg:col-span-7 space-y-4">
             <div className="inline-flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider">
-              <Store size={13} className="text-[#FF5F00]" />
-              <span>Folder Oficial de Captação de Lojas & Parceiros</span>
+              {flyerType === 'user' ? (
+                <>
+                  <Users size={13} className="text-[#FF5F00]" />
+                  <span>Folder Oficial de Cadastro de Usuários (Clientes & Economia)</span>
+                </>
+              ) : (
+                <>
+                  <Store size={13} className="text-[#FF5F00]" />
+                  <span>Folder Oficial de Captação de Lojas & Parceiros</span>
+                </>
+              )}
             </div>
 
             <h3 className="text-xl sm:text-2xl font-black text-white font-display leading-tight">
-              Folder: &ldquo;Seja um Parceiro Melhor Cupom e crie já o cupom da sua loja!&rdquo;
+              {flyerType === 'user' 
+                ? 'Folder: "Economize Todos os Dias • Cadastre-se no Melhor Cupom"'
+                : 'Folder: "Seja um Parceiro Melhor Cupom e crie já o cupom da sua loja!"'}
             </h3>
 
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-              Arte oficial pronta com a <strong>Logo 3D do Melhor Cupom</strong> e o destaque de <strong>🎁 100% Grátis (1 Cupom Gratuito)</strong> para publicar nos Stories, Feed, Status ou enviar diretamente para comércios e lojistas da cidade!
+              {flyerType === 'user'
+                ? 'Arte oficial pronta para convidar clientes e consumidores a se cadastrarem gratuitamente para resgatar cupons de até 50% OFF em restaurantes locais e compras online (Shopee, Magalu, Shein e Mercado Livre)!'
+                : 'Arte oficial pronta com a Logo 3D do Melhor Cupom e o destaque de 🎁 100% Grátis (1 Cupom Gratuito) para publicar nos Stories, Feed, Status ou enviar diretamente para comércios e lojistas da cidade!'}
             </p>
 
             {/* Seletor de Formato do Folder */}
@@ -658,7 +932,7 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
                 </div>
               </div>
               <p className="text-[11px] text-gray-300 font-mono whitespace-pre-line line-clamp-3">
-                {partnerFlyerCaption}
+                {currentFlyerCaption}
               </p>
             </div>
           </div>
