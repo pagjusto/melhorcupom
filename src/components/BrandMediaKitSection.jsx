@@ -254,81 +254,34 @@ export const BrandMediaKitSection = ({ compact = false }) => {
     canvas.width = width;
     canvas.height = height;
 
-    // 1. Fundo Gradiente Luxury Dark + Laranja Profundo
+    // 1. Fundo Minimalista Dark
     const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#09090F');
-    bgGrad.addColorStop(0.35, '#15101B');
-    bgGrad.addColorStop(0.7, '#1B110E');
-    bgGrad.addColorStop(1, '#08080D');
+    bgGrad.addColorStop(0, '#07070B');
+    bgGrad.addColorStop(0.5, '#100D16');
+    bgGrad.addColorStop(1, '#07070B');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, width, height);
 
-    // 2. Auras Luminosas Laranja e Dourada
-    const topAura = ctx.createRadialGradient(
-      width * 0.5,
-      isStory ? 360 : 230,
-      30,
-      width * 0.5,
-      isStory ? 360 : 230,
-      isStory ? 560 : 420
-    );
-    topAura.addColorStop(0, 'rgba(255, 95, 0, 0.45)');
-    topAura.addColorStop(0.5, 'rgba(255, 168, 0, 0.14)');
-    topAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = topAura;
+    // 2. Aura Central Suave e Elegante
+    const auraCenterY = isStory ? height * 0.38 : height * 0.40;
+    const aura = ctx.createRadialGradient(width * 0.5, auraCenterY, 40, width * 0.5, auraCenterY, isStory ? 580 : 440);
+    aura.addColorStop(0, 'rgba(255, 95, 0, 0.32)');
+    aura.addColorStop(0.5, 'rgba(255, 120, 0, 0.08)');
+    aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = aura;
     ctx.fillRect(0, 0, width, height);
 
-    const bottomAura = ctx.createRadialGradient(
-      width * 0.5,
-      isStory ? 1420 : 820,
-      20,
-      width * 0.5,
-      isStory ? 1420 : 820,
-      isStory ? 520 : 380
-    );
-    bottomAura.addColorStop(0, 'rgba(255, 95, 0, 0.32)');
-    bottomAura.addColorStop(0.6, 'rgba(255, 95, 0, 0.08)');
-    bottomAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = bottomAura;
-    ctx.fillRect(0, 0, width, height);
-
-    // Moldura Externa Fina Dourada/Laranja
+    // Borda Externa Minimalista Fina
     ctx.save();
-    const borderGrad = ctx.createLinearGradient(0, 0, width, height);
-    borderGrad.addColorStop(0, 'rgba(255, 95, 0, 0.55)');
-    borderGrad.addColorStop(0.5, 'rgba(255, 184, 0, 0.35)');
-    borderGrad.addColorStop(1, 'rgba(255, 95, 0, 0.55)');
-    ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.roundRect(28, 28, width - 56, height - 56, 42);
-    ctx.stroke();
-    ctx.restore();
-
-    // 3. Selo Superior: CONVITE OFICIAL PARA EMPRESAS & LOJISTAS
-    const topBadgeY = isStory ? 95 : 64;
-    const topBadgeW = isStory ? 680 : 620;
-    const topBadgeH = isStory ? 54 : 44;
-    const topBadgeX = (width - topBadgeW) / 2;
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 95, 0, 0.18)';
-    ctx.strokeStyle = 'rgba(255, 184, 0, 0.55)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(topBadgeX, topBadgeY, topBadgeW, topBadgeH, topBadgeH / 2);
-    ctx.fill();
+    ctx.roundRect(32, 32, width - 64, height - 64, 36);
     ctx.stroke();
-
-    ctx.fillStyle = '#FFD166';
-    ctx.font = isStory ? '900 21px "Inter", sans-serif' : '900 18px "Inter", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🚀 CONVITE OFICIAL PARA EMPRESAS & COMÉRCIOS', width / 2, topBadgeY + topBadgeH / 2 + 1);
     ctx.restore();
 
-    // 4. LOGO OFICIAL DO MELHOR CUPOM EM DESTAQUE
-    let logoBottomY = isStory ? 520 : 325;
+    // 3. Logo Oficial em Grande Destaque
+    let logoBottomY = isStory ? 700 : 450;
     try {
       const mcLogoImg = new Image();
       mcLogoImg.crossOrigin = 'anonymous';
@@ -339,15 +292,15 @@ export const BrandMediaKitSection = ({ compact = false }) => {
       });
 
       if (mcLogoImg.width > 0) {
-        const logoW = isStory ? 520 : 350;
+        const logoW = isStory ? 600 : 380;
         const logoH = (mcLogoImg.height / mcLogoImg.width) * logoW;
         const logoX = (width - logoW) / 2;
-        const logoY = isStory ? 180 : 122;
+        const logoY = isStory ? 240 : 110;
         logoBottomY = logoY + logoH;
 
         ctx.save();
-        ctx.shadowColor = 'rgba(255, 95, 0, 0.55)';
-        ctx.shadowBlur = 35;
+        ctx.shadowColor = 'rgba(255, 95, 0, 0.5)';
+        ctx.shadowBlur = 40;
         ctx.drawImage(mcLogoImg, logoX, logoY, logoW, logoH);
         ctx.restore();
       }
@@ -355,155 +308,100 @@ export const BrandMediaKitSection = ({ compact = false }) => {
       console.warn('Erro ao carregar logo no folder:', e);
     }
 
-    // 5. CHAMADA PRINCIPAL: "SEJA UM PARCEIRO MELHOR CUPOM E CRIE JÁ O CUPOM DA SUA LOJA!"
-    const titleStartY = isStory ? logoBottomY + 65 : logoBottomY + 38;
-
+    // 4. Headline Principal Direta e Forte
+    const headStartY = isStory ? logoBottomY + 120 : logoBottomY + 48;
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Linha 1: SEJA UM PARCEIRO
+    // "Seja um Parceiro Oficial"
     ctx.fillStyle = '#FFFFFF';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
-    ctx.shadowBlur = 14;
-    ctx.font = isStory ? '900 66px "Inter", sans-serif' : '900 48px "Inter", sans-serif';
-    ctx.fillText('SEJA UM PARCEIRO', width / 2, titleStartY);
+    ctx.font = isStory ? '900 68px "Inter", "Segoe UI", sans-serif' : '900 44px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('Seja um Parceiro Oficial', width / 2, headStartY);
 
-    // Linha 2: MELHOR CUPOM (Gradiente Laranja / Ouro)
-    const line2Y = titleStartY + (isStory ? 78 : 54);
-    const titleGrad = ctx.createLinearGradient(width * 0.2, line2Y - 30, width * 0.8, line2Y + 30);
-    titleGrad.addColorStop(0, '#FF7A00');
-    titleGrad.addColorStop(0.5, '#FFB800');
-    titleGrad.addColorStop(1, '#FF5F00');
-    ctx.fillStyle = titleGrad;
-    ctx.font = isStory ? '900 78px "Inter", sans-serif' : '900 56px "Inter", sans-serif';
-    ctx.fillText('MELHOR CUPOM', width / 2, line2Y);
-
-    // Linha 3: E CRIE JÁ O CUPOM DA SUA LOJA!
-    const line3Y = line2Y + (isStory ? 76 : 52);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = isStory ? '900 46px "Inter", sans-serif' : '900 35px "Inter", sans-serif';
-    ctx.fillText('E CRIE JÁ O CUPOM DA SUA LOJA!', width / 2, line3Y);
+    // "Crie o Cupom da Sua Loja" (Gradiente Laranja Vibrante)
+    const line2Y = headStartY + (isStory ? 84 : 54);
+    const grad = ctx.createLinearGradient(width * 0.25, line2Y, width * 0.75, line2Y);
+    grad.addColorStop(0, '#FF8A00');
+    grad.addColorStop(0.5, '#FFB800');
+    grad.addColorStop(1, '#FF5F00');
+    ctx.fillStyle = grad;
+    ctx.font = isStory ? '900 74px "Inter", "Segoe UI", sans-serif' : '900 48px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('Crie o Cupom da Sua Loja', width / 2, line2Y);
     ctx.restore();
 
-    // 6. FAIXA DE DESTAQUE: 1º MÊS GRÁTIS (1 CUPOM GRATUITO)
-    const promoY = line3Y + (isStory ? 62 : 40);
-    const promoW = isStory ? 840 : 760;
-    const promoH = isStory ? 74 : 54;
-    const promoX = (width - promoW) / 2;
+    // 5. Selo Elegante e Minimalista: "1º MÊS GRÁTIS"
+    const pillY = line2Y + (isStory ? 85 : 52);
+    const pillW = isStory ? 480 : 360;
+    const pillH = isStory ? 58 : 42;
+    const pillX = (width - pillW) / 2;
 
     ctx.save();
-    const promoGrad = ctx.createLinearGradient(promoX, promoY, promoX + promoW, promoY);
-    promoGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
-    promoGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.25)');
-    promoGrad.addColorStop(1, 'rgba(16, 185, 129, 0.22)');
-    ctx.fillStyle = promoGrad;
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
     ctx.strokeStyle = '#10B981';
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(promoX, promoY, promoW, promoH, 22);
+    ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#6EE7B7';
-    ctx.font = isStory ? '900 28px "Inter", sans-serif' : '900 23px "Inter", sans-serif';
+    ctx.fillStyle = '#34D399';
+    ctx.font = isStory ? '900 24px "Inter", "Segoe UI", sans-serif' : '900 18px "Inter", "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🎁 1º MÊS GRÁTIS • 1 CUPOM GRATUITO LIBERADO!', width / 2, promoY + promoH / 2 + 1);
+    ctx.fillText('🎁 1º MÊS 100% GRÁTIS', width / 2, pillY + pillH / 2 + 1);
     ctx.restore();
 
-    // 7. CARD DE BENEFÍCIOS PARA A LOJA (Exibido completo no Story e compacto no Feed)
-    let afterCardY = promoY + promoH;
-    if (isStory) {
-      const cardY = promoY + promoH + 42;
-      const cardW = 860;
-      const cardH = 310;
-      const cardX = (width - cardW) / 2;
+    // 6. Subtítulo Limpo
+    const subY = pillY + pillH + (isStory ? 70 : 40);
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = isStory ? '600 28px "Inter", "Segoe UI", sans-serif' : '600 20px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('Atraia novos clientes e aumente suas vendas todos os dias.', width / 2, subY);
+    ctx.restore();
 
-      ctx.save();
-      ctx.fillStyle = 'rgba(20, 20, 32, 0.88)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(cardX, cardY, cardW, cardH, 32);
-      ctx.fill();
-      ctx.stroke();
-
-      const perks = [
-        '✅ Atraia novos clientes da sua cidade todos os dias',
-        '✅ Divulgação oficial no Instagram @omelhorcupom.com.br',
-        '✅ Painel exclusivo para criar e gerenciar seus cupons',
-        '✅ Fidelize clientes com descontos e ofertas reais'
-      ];
-
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.font = 'bold 26px "Inter", sans-serif';
-      perks.forEach((perk, idx) => {
-        ctx.fillStyle = '#F3F4F6';
-        ctx.fillText(perk, cardX + 46, cardY + 56 + idx * 64);
-      });
-      ctx.restore();
-      afterCardY = cardY + cardH;
-    } else {
-      // No Feed 1:1 mostra 2 linhas rápidas de benefícios
-      const perkY = promoY + promoH + 30;
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#E5E7EB';
-      ctx.font = 'bold 22px "Inter", sans-serif';
-      ctx.fillText('✅ Atraia novos clientes todos os dias  •  ✅ Divulgação no Instagram Oficial', width / 2, perkY);
-      ctx.restore();
-      afterCardY = perkY + 18;
-    }
-
-    // 8. BOTÃO CTA PRINCIPAL: "CADASTRE SUA LOJA GRÁTIS AGORA"
-    const ctaY = isStory ? afterCardY + 52 : afterCardY + 26;
-    const ctaW = isStory ? 780 : 680;
-    const ctaH = isStory ? 96 : 72;
-    const ctaX = (width - ctaW) / 2;
+    // 7. Botão de Ação Sofisticado e Limpo
+    const btnY = subY + (isStory ? 100 : 52);
+    const btnW = isStory ? 660 : 520;
+    const btnH = isStory ? 94 : 68;
+    const btnX = (width - btnW) / 2;
 
     ctx.save();
-    const ctaGrad = ctx.createLinearGradient(ctaX, ctaY, ctaX + ctaW, ctaY + ctaH);
-    ctaGrad.addColorStop(0, '#FF5F00');
-    ctaGrad.addColorStop(0.5, '#FF7A00');
-    ctaGrad.addColorStop(1, '#FF2E00');
-    ctx.fillStyle = ctaGrad;
-    ctx.shadowColor = 'rgba(255, 95, 0, 0.75)';
-    ctx.shadowBlur = 32;
+    const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + btnW, btnY + btnH);
+    btnGrad.addColorStop(0, '#FF5F00');
+    btnGrad.addColorStop(1, '#E04F00');
+    ctx.fillStyle = btnGrad;
+    ctx.shadowColor = 'rgba(255, 95, 0, 0.6)';
+    ctx.shadowBlur = 28;
     ctx.beginPath();
-    ctx.roundRect(ctaX, ctaY, ctaW, ctaH, ctaH / 2);
+    ctx.roundRect(btnX, btnY, btnW, btnH, btnH / 2);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 10;
-    ctx.font = isStory ? '900 34px "Inter", sans-serif' : '900 27px "Inter", sans-serif';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 8;
+    ctx.font = isStory ? '900 32px "Inter", "Segoe UI", sans-serif' : '900 24px "Inter", "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('CRIE JÁ O CUPOM DA SUA LOJA!', width / 2, ctaY + ctaH / 2 + 1);
+    ctx.fillText('Cadastre sua Loja Grátis', width / 2, btnY + btnH / 2);
     ctx.restore();
 
-    // 9. RODAPÉ COM SITE E @OMELHORCUPOM.COM.BR
-    const footerY = isStory ? ctaY + ctaH + 62 : ctaY + ctaH + 38;
+    // 8. Rodapé Minimalista
+    const footY = isStory ? 1730 : 965;
     ctx.save();
     ctx.textAlign = 'center';
-
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = isStory ? 'bold 22px "Inter", sans-serif' : 'bold 18px "Inter", sans-serif';
-    ctx.fillText('Cadastre-se em 1 minuto pelo site ou chame no Direct:', width / 2, footerY);
-
-    ctx.fillStyle = '#FFB800';
-    ctx.font = isStory ? '900 36px "Inter", sans-serif' : '900 28px "Inter", sans-serif';
-    ctx.fillText('www.omelhorcupom.com.br', width / 2, footerY + (isStory ? 44 : 32));
+    ctx.fillStyle = '#E5E7EB';
+    ctx.font = isStory ? '900 32px "Inter", "Segoe UI", sans-serif' : '900 24px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('omelhorcupom.com.br', width / 2, footY);
 
     ctx.fillStyle = '#FF7A29';
-    ctx.font = isStory ? '800 26px "Inter", sans-serif' : '800 20px "Inter", sans-serif';
-    ctx.fillText('📲 Siga e marque: @omelhorcupom.com.br', width / 2, footerY + (isStory ? 86 : 62));
+    ctx.font = isStory ? '700 22px "Inter", "Segoe UI", sans-serif' : '700 17px "Inter", "Segoe UI", sans-serif';
+    ctx.fillText('@omelhorcupom.com.br', width / 2, footY + (isStory ? 42 : 30));
     ctx.restore();
   };
 
