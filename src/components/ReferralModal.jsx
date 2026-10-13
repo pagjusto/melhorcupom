@@ -345,6 +345,10 @@ export const ReferralModal = () => {
             <p className="text-[11px] text-gray-400 mt-2">
               Seu código exclusivo de indicação é <strong>{referralCode}</strong>.
             </p>
+            <div className="mt-2.5 p-3 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-black flex items-center gap-2">
+              <span>📢</span>
+              <span>Lembre-se de marcar sempre <strong className="text-white underline">@omelhorcupom.com.br</strong> nas suas divulgações!</span>
+            </div>
           </div>
 
           {/* 2.5 MEDIA KIT OFICIAL: LOGOS VETORIZADAS (.SVG E .PNG TRANSPARENTE) */}

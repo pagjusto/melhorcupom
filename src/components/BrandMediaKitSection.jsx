@@ -6,7 +6,9 @@ import {
   Layers, 
   Image as ImageIcon,
   CheckCircle2,
-  Eye
+  Eye,
+  Instagram,
+  Copy
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
@@ -410,6 +412,43 @@ export const BrandMediaKitSection = ({ compact = false }) => {
             )}
           </button>
         </div>
+      </div>
+
+      {/* AVISO EM DESTAQUE: MARCAR @omelhorcupom.com.br */}
+      <div className="bg-gradient-to-r from-orange-500/20 via-amber-500/15 to-pink-500/15 border-2 border-[#FF5F00]/60 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#FF5F00] to-pink-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+            <Instagram size={20} />
+          </div>
+          <div>
+            <div className="text-xs sm:text-sm font-black text-white flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+              <span>📢 Lembre-se de marcar sempre</span>
+              <span className="text-amber-300 bg-black/40 px-2 py-0.5 rounded-lg border border-amber-500/40 font-mono">
+                @omelhorcupom.com.br
+              </span>
+              <span>nas suas divulgações!</span>
+            </div>
+            <p className="text-[11px] text-gray-300 mt-0.5">
+              Quando você marca nosso perfil oficial nos Stories, Reels ou Posts, nossa equipe visualiza e reposta para impulsionar seus resultados!
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard.writeText('@omelhorcupom.com.br');
+            markDownloaded('copy-ig-handle');
+          }}
+          className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all flex-shrink-0 cursor-pointer ${
+            downloadedKey === 'copy-ig-handle'
+              ? 'bg-emerald-500 text-white shadow-md'
+              : 'bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-500/40'
+          }`}
+        >
+          {downloadedKey === 'copy-ig-handle' ? <Check size={14} /> : <Copy size={14} />}
+          <span>{downloadedKey === 'copy-ig-handle' ? '@ Copiado!' : 'Copiar @omelhorcupom.com.br'}</span>
+        </button>
       </div>
 
       {/* Grid dos 4 Arquivos Oficiais Vetorizados */}

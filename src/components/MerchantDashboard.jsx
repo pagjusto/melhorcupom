@@ -2580,6 +2580,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 </button>
               </div>
 
+              <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-black flex items-center gap-2">
+                <span>📢</span>
+                <span>Lembre-se de marcar sempre <strong className="text-white underline">@omelhorcupom.com.br</strong> nas suas divulgações!</span>
+              </div>
+
               <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2 text-xs text-gray-300">
                 <div className="font-bold text-white flex items-center gap-1.5">
                   <Sparkles size={14} className="text-amber-400" />

@@ -631,6 +631,11 @@ export const UserProfileSettings = () => {
                   <span>Enviar no WhatsApp</span>
                 </button>
               </div>
+
+              <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-black flex items-center gap-2">
+                <span>📢</span>
+                <span>Lembre-se de marcar sempre <strong className="text-white underline">@omelhorcupom.com.br</strong> nas suas divulgações!</span>
+              </div>
             </div>
 
             {/* Media Kit Oficial: Logos Vetorizadas (.SVG & .PNG Transparente) para Divulgação nas Mídias */}

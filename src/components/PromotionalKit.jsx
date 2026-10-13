@@ -507,9 +507,15 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-gray-400">
-            <Tag size={13} className="text-orange-400" />
-            <span>{activeCouponsCount} ofertas ativas para divulgação</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="px-3.5 py-1.5 rounded-xl font-black border border-amber-500/40 bg-amber-500/15 text-amber-300 flex items-center gap-1.5">
+              <Instagram size={14} className="text-[#FF5F00]" />
+              <span>Lembre-se de marcar sempre <strong>@omelhorcupom.com.br</strong> nas suas divulgações!</span>
+            </span>
+            <div className="flex items-center gap-2 text-gray-400">
+              <Tag size={13} className="text-orange-400" />
+              <span>{activeCouponsCount} ofertas ativas para divulgação</span>
+            </div>
           </div>
         </div>
       </div>
