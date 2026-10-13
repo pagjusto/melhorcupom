@@ -161,9 +161,9 @@ async function generateUserFlyers() {
       ctx.fillText('🔥 SÃO MAIS DE 450 CUPONS ESPERANDO SEREM RESGATADOS!', width / 2, badgeY + badgeH / 2 + 1);
       ctx.restore();
 
-      // 6. Selo Elegante e Minimalista: "🎁 100% GRÁTIS • ATÉ 50% OFF"
+      // 6. Selo Elegante: "DESCONTOS DE ATÉ 50% OFF"
       const pillY = badgeY + badgeH + (isStory ? 24 : 16);
-      const pillW = isStory ? 540 : 430;
+      const pillW = isStory ? 480 : 380;
       const pillH = isStory ? 52 : 38;
       const pillX = (width - pillW) / 2;
 
@@ -180,7 +180,7 @@ async function generateUserFlyers() {
       ctx.font = isStory ? '900 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' : '900 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🎁 100% GRÁTIS • DESCONTOS DE ATÉ 50% OFF', width / 2, pillY + pillH / 2 + 1);
+      ctx.fillText('🏷️ DESCONTOS DE ATÉ 50% OFF', width / 2, pillY + pillH / 2 + 1);
       ctx.restore();
 
       // 7. Subtítulo Limpo
@@ -210,17 +210,17 @@ async function generateUserFlyers() {
         ctx.stroke();
 
         const perks = [
-          '🎟️ Mais de 450 cupons prontos para resgate imediato',
+          '🎟️ Cupons exclusivos prontos para resgate imediato',
           '🍔 Restaurantes, hamburguerias, pizzarias e lojas da sua cidade',
           '🛍️ Achadinhos virais da Shopee, Magalu, Shein e Mercado Livre',
-          '⚡ Resgate em 1 clique sem mensalidade direto no celular'
+          '⚡ Resgate em 1 clique direto no celular'
         ];
 
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.font = '600 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         perks.forEach((perk, idx) => {
-          ctx.fillStyle = idx === 0 ? '#FFE082' : '#E5E7EB';
+          ctx.fillStyle = '#E5E7EB';
           ctx.fillText(perk, cardX + 44, cardY + 48 + (idx * 64));
         });
         ctx.restore();
