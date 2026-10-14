@@ -20,6 +20,7 @@
     "sync:all": "node scripts/sync-all.cjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "canvas-confetti": "^1.9.3",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.453.0",

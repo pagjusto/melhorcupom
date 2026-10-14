@@ -16,6 +16,7 @@ import { autoPublishStoreToInstagram, getPartnerInstagramHandle } from '../utils
 import { INITIAL_HOT_DEALS } from '../data/hotDealsData';
 import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
 import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
+import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
 
 const AppContext = createContext();
 
@@ -529,6 +530,126 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('melhor_cupom_admin_users', JSON.stringify(registeredUsers));
   }, [registeredUsers]);
 
+  // Sincronização inicial e em tempo real com o Supabase Cloud
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    let isMounted = true;
+
+    const initSupabaseData = async () => {
+      try {
+        // 1. Sincronizar Sessão Ativa
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && isMounted) {
+          const profile = await db.getProfile(session.user.id);
+          if (profile) {
+            setUserProfile(prev => ({
+              ...prev,
+              id: profile.id,
+              name: profile.name || prev.name,
+              email: profile.email || session.user.email,
+              phone: profile.phone || prev.phone,
+              cpf: profile.cpf || prev.cpf,
+              city: profile.city || prev.city,
+              role: profile.role || 'user',
+              isVip: profile.is_vip ?? false,
+              vipPlan: profile.vip_plan,
+              referralCode: profile.referral_code,
+              referralBalance: Number(profile.referral_balance) || 0,
+              isLoggedIn: true,
+              isRegistered: true,
+              isAdmin: profile.role === 'admin'
+            }));
+            if (profile.role === 'admin') {
+              setCurrentRole('admin');
+            } else if (profile.role === 'merchant') {
+              // Lojista
+            } else if (profile.is_vip) {
+              setCurrentRole('vip');
+            } else {
+              setCurrentRole('user_free');
+            }
+          }
+        }
+
+        // 2. Carregar Lojas do Supabase
+        const cloudStores = await db.getStores();
+        if (isMounted && Array.isArray(cloudStores) && cloudStores.length > 0) {
+          setStores(prev => {
+            const cloudIds = new Set(cloudStores.map(s => s.id));
+            const existingNonCloud = prev.filter(s => !cloudIds.has(s.id));
+            return [...cloudStores, ...existingNonCloud];
+          });
+        }
+
+        // 3. Carregar Resgates do Supabase
+        const cloudRedemptions = await db.getRedemptions();
+        if (isMounted && Array.isArray(cloudRedemptions) && cloudRedemptions.length > 0) {
+          setRedemptions(cloudRedemptions);
+        }
+
+        // 4. Carregar Perfis para o Painel ADM
+        const cloudProfiles = await db.getAllProfiles();
+        if (isMounted && Array.isArray(cloudProfiles) && cloudProfiles.length > 0) {
+          setRegisteredUsers(prev => {
+            const mapped = cloudProfiles.map(p => ({
+              id: p.id,
+              name: p.name,
+              email: p.email,
+              phone: p.phone,
+              cpf: p.cpf,
+              city: p.city,
+              role: p.role,
+              isVip: p.is_vip,
+              vipPlan: p.vip_plan,
+              vipSince: p.vip_since,
+              monthlySavings: Number(p.monthly_savings) || 0,
+              referralCode: p.referral_code,
+              referralBalance: Number(p.referral_balance) || 0,
+              createdAt: p.created_at,
+              status: 'active'
+            }));
+            const mappedIds = new Set(mapped.map(m => m.id));
+            const remaining = prev.filter(u => !mappedIds.has(u.id));
+            return [...mapped, ...remaining];
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Sync] Erro na sincronização inicial:', err);
+      }
+    };
+
+    initSupabaseData();
+
+    // Ouvinte de mudanças na autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user && isMounted) {
+        const profile = await db.getProfile(session.user.id);
+        if (profile) {
+          setUserProfile(prev => ({
+            ...prev,
+            id: profile.id,
+            name: profile.name || prev.name,
+            email: profile.email || session.user.email,
+            phone: profile.phone || prev.phone,
+            cpf: profile.cpf || prev.cpf,
+            city: profile.city || prev.city,
+            role: profile.role || 'user',
+            isVip: profile.is_vip ?? false,
+            isLoggedIn: true,
+            isRegistered: true,
+            isAdmin: profile.role === 'admin'
+          }));
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
+  }, []);
+
   // Estado de Simulação Ativa pelo Administrador Master
   const [isSimulatingRole, setIsSimulatingRole] = useState(() => {
     return localStorage.getItem('melhor_cupom_simulating') === 'true';
@@ -838,6 +959,24 @@ export const AppProvider = ({ children }) => {
       colors: ['#FF5F00', '#10B981']
     });
 
+    if (isSupabaseConfigured && supabase) {
+      db.createRedemption({
+        id: newRedemption.id,
+        coupon_id: newRedemption.couponId,
+        store_id: newRedemption.storeId,
+        store_name: newRedemption.storeName,
+        user_name: newRedemption.userName,
+        user_cpf: newRedemption.userCpf,
+        code: newRedemption.code,
+        pass_code: newRedemption.passCode,
+        savings: newRedemption.savings,
+        status: newRedemption.status,
+        is_api_redemption: newRedemption.isApiRedemption,
+        expires_at: newRedemption.expiresAt,
+        used_at: newRedemption.usedAt
+      }).catch(err => console.warn('[Supabase Redemption]', err));
+    }
+
     return newRedemption;
   };
 
@@ -935,6 +1074,13 @@ export const AppProvider = ({ children }) => {
       }
       return r;
     }));
+
+    if (isSupabaseConfigured && supabase) {
+      db.updateRedemption(found.id, {
+        status: 'used',
+        used_at: now
+      }).catch(err => console.warn('[Supabase Update Redemption]', err));
+    }
 
     // Contabilizar nas economias do usuário (se ainda não contabilizado)
     const savingsAmount = Number(found.savings) || 20.00;
@@ -1234,6 +1380,34 @@ export const AppProvider = ({ children }) => {
     } catch {}
 
     setIsAuthModalOpen(false);
+
+    // Salvar no Supabase Cloud se estiver configurado
+    if (isSupabaseConfigured && supabase && email) {
+      db.signUp(email, password || '123456', {
+        name: cleanName,
+        cpf: cpf || '',
+        cep: cep || '',
+        city: city || 'São Paulo - SP',
+        phone: phone || '',
+        role: 'user'
+      }).then(({ data, error }) => {
+        if (!error && data?.user) {
+          db.upsertProfile({
+            id: data.user.id,
+            name: cleanName,
+            email: email,
+            phone: phone || '',
+            cpf: cpf || '',
+            cep: cep || '',
+            city: city || 'São Paulo - SP',
+            role: 'user',
+            referral_code: generatedReferralCode,
+            is_vip: false
+          });
+        }
+      }).catch(err => console.warn('[Supabase SignUp]', err));
+    }
+
     return { success: true, name: cleanName, referralCode: generatedReferralCode };
   };
 
@@ -1296,6 +1470,28 @@ export const AppProvider = ({ children }) => {
       vipPlan: null
     }));
     setActiveTab('merchant-dashboard');
+
+    // Salvar no Supabase Cloud se estiver configurado
+    if (isSupabaseConfigured && supabase) {
+      db.createStore({
+        id: storeId,
+        merchant_id: merchantId,
+        name: cleanName,
+        legal_name: legalName || cleanName,
+        cnpj: cnpj || '',
+        cep: cep || '',
+        category: category || 'gastronomia',
+        cities: selectedCities,
+        city: selectedCities[0] || 'São Paulo - SP',
+        phone: phone || '',
+        email: email || '',
+        instagram: (instagram || '').trim(),
+        address: `${selectedCities[0] || 'Brasil'}`,
+        tier: 'free_trial',
+        free_trial_active: true,
+        referral_code: storeRefCode
+      }).catch(err => console.warn('[Supabase Store]', err));
+    }
 
     // Se a empresa se cadastrou pelo link de uma página parceira (?convite=CODIGO), contabilizar +1 empresa (+R$ 5,00)
     try {
@@ -1470,6 +1666,10 @@ export const AppProvider = ({ children }) => {
         colors: ['#FF5F00', '#3B82F6', '#10B981']
       });
 
+      if (isSupabaseConfigured && supabase && password && clean.includes('@')) {
+        db.signIn(clean, password).catch(err => console.warn('[Supabase Login]', err));
+      }
+
       return {
         success: true,
         type: 'user',
@@ -1482,6 +1682,9 @@ export const AppProvider = ({ children }) => {
 
   // Logout / Sair da Conta
   const logoutAccount = () => {
+    if (isSupabaseConfigured && supabase) {
+      db.signOut().catch(err => console.warn('[Supabase SignOut]', err));
+    }
     setIsSimulatingRole(false);
     localStorage.removeItem('melhor_cupom_simulating');
     setCurrentRole('visitor');
