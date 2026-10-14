@@ -141,6 +141,21 @@ export const db = {
     return data;
   },
 
+  // Cupons (Tabela 'coupons')
+  async createCoupon(coupon) {
+    if (!isSupabaseConfigured || !supabase) return coupon;
+    const { data, error } = await supabase
+      .from('coupons')
+      .insert([coupon])
+      .select()
+      .single();
+    if (error) {
+      console.warn('[Supabase] createCoupon error:', error.message);
+      return coupon;
+    }
+    return data;
+  },
+
   // Resgates de Cupons (Tabela 'redemptions')
   async getRedemptions() {
     if (!isSupabaseConfigured || !supabase) return [];

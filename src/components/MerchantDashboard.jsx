@@ -379,7 +379,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       finalExpiresAt = 'unlimited';
     }
 
-    addCoupon({
+    const result = addCoupon({
       storeId: currentStore.id,
       merchantId: currentStore.merchantId,
       title: formData.title,
@@ -402,6 +402,10 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       expiresAt: finalExpiresAt,
       rules: rulesArray
     });
+
+    if (result && result.error) {
+      return;
+    }
 
     // Resetar e voltar para lista
     setFormData({

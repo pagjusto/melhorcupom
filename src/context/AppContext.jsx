@@ -17,7 +17,7 @@ import { INITIAL_HOT_DEALS } from '../data/hotDealsData';
 import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
 import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
 import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
-import { validateStoreSafety, validateUserSafety } from '../utils/contentModeration';
+import { validateStoreSafety, validateUserSafety, validateCouponSafety } from '../utils/contentModeration';
 
 const AppContext = createContext();
 
@@ -1115,6 +1115,13 @@ export const AppProvider = ({ children }) => {
 
   // Adicionar Novo Cupom (Criado pelo Lojista)
   const addCoupon = (couponData) => {
+    // Validação de Moderação e Segurança de Conteúdo
+    const safety = validateCouponSafety(couponData);
+    if (!safety.safe) {
+      alert(`⚠️ Bloqueio de Conteúdo:\n${safety.reason}`);
+      return { error: safety.reason };
+    }
+
     const newCoupon = {
       id: `cupom_${Date.now()}`,
       viewsCount: 0,
@@ -1126,6 +1133,23 @@ export const AppProvider = ({ children }) => {
     };
 
     setCoupons(prev => [newCoupon, ...prev]);
+
+    // Persistência em Nuvem (Supabase)
+    if (isSupabaseConfigured && supabase) {
+      db.createCoupon({
+        id: newCoupon.id,
+        store_id: newCoupon.storeId || currentRole,
+        title: newCoupon.title,
+        description: newCoupon.description,
+        discount_badge: newCoupon.discountBadge,
+        original_price: Number(newCoupon.originalPrice) || null,
+        promo_price: Number(newCoupon.promoPrice) || null,
+        category: newCoupon.category || 'gastronomia',
+        code: newCoupon.code,
+        rules: newCoupon.rules,
+        max_uses_per_user: newCoupon.maxUsesPerUser || 1
+      }).catch(err => console.warn('[Supabase CreateCoupon]', err));
+    }
 
     confetti({
       particleCount: 50,
