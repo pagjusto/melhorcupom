@@ -28,7 +28,7 @@ import maderoLogo from './madero.png';
 import fogodechaoLogo from './fogodechao.png';
 import appleLogo from './apple.svg';
 import paodeacucarLogo from './paodeacucar.svg';
-import pinguimLogo from './pinguim.jpg';
+import pinguimLogo from './pinguim.png';
 import belmonteLogo from './botecobelmonte.jpg';
 import corleoneLogo from './corleone.jpg';
 import trackfieldLogo from './trackfield.jpg';

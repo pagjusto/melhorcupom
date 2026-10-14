@@ -252,9 +252,10 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
 
       if (naturalW > 0 && naturalH > 0) {
         const aspect = naturalW / naturalH;
-        const innerR = logoRadius - 16;
-        const maxBoxW = innerR * 1.55;
-        const maxBoxH = innerR * 1.35;
+        const innerR = logoRadius - 8;
+        // Preenchimento imersivo da logo no badge oficial
+        const maxBoxW = innerR * 1.95;
+        const maxBoxH = innerR * 1.85;
 
         let drawW, drawH;
         if (aspect >= 1) {
@@ -312,7 +313,7 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   }
 
   // 5. Nome da Loja
-  const storeNameY = logoY + logoRadius + 36;
+  const storeNameY = logoY + logoRadius + 38;
   ctx.save();
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '900 40px "Inter", sans-serif';
@@ -322,7 +323,7 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.fillText(storeName.length > 28 ? storeName.substring(0, 26) + '...' : storeName, width / 2, storeNameY);
 
   if (!isBig && locationText && locationText !== 'Brasil') {
-    const cityY = storeNameY + 34;
+    const cityY = storeNameY + 38;
     ctx.fillStyle = '#FF9D5C';
     ctx.font = '700 24px "Inter", sans-serif';
     ctx.fillText(locationText, width / 2, cityY);

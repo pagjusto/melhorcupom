@@ -1124,9 +1124,10 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
         if (naturalW > 0 && naturalH > 0) {
           const aspect = naturalW / naturalH;
-          const innerR = logoRadius - 16;
-          const maxBoxW = innerR * 1.55;
-          const maxBoxH = innerR * 1.35;
+          const innerR = logoRadius - 8;
+          // Preenchimento imersivo da logo no badge oficial
+          const maxBoxW = innerR * 1.95;
+          const maxBoxH = innerR * 1.85;
 
           let drawW, drawH;
           if (aspect >= 1) {
@@ -1186,7 +1187,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     }
 
     // 5. Nome da Loja
-    const storeNameY = logoY + logoRadius + 36;
+    const storeNameY = logoY + logoRadius + 38;
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '900 40px "Inter", sans-serif';
@@ -1198,7 +1199,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     // 6. ABAIXO DO NOME APARECER A CIDADE (SOMENTE SE NÃO FOR REDE GRANDE / API)
     const isBig = isBigNetworkOrApiStore(selectedStore);
     if (!isBig && locationText && locationText !== 'Brasil') {
-      const cityY = storeNameY + 34;
+      const cityY = storeNameY + 38;
       ctx.fillStyle = '#FF9D5C';
       ctx.font = '700 24px "Inter", sans-serif';
       ctx.fillText(locationText, width / 2, cityY);
@@ -1206,7 +1207,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.restore();
 
     // 7. SÍMBOLO DE COLABORAÇÃO: "+" AO INVÉS DA ESCRITA
-    const plusY = currentFormat === 'feed' ? (isBig ? 425 : 445) : (isBig ? 685 : 710);
+    const plusY = currentFormat === 'feed' ? (isBig ? 430 : 455) : (isBig ? 690 : 720);
     ctx.save();
     const gradText = ctx.createLinearGradient(width * 0.45, plusY - 25, width * 0.55, plusY + 25);
     gradText.addColorStop(0, '#FFFFFF');
