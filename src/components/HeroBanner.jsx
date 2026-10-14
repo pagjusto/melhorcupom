@@ -101,8 +101,8 @@ export const HeroBanner = ({
   return (
     <div 
       style={{
-        paddingTop: `${Math.max(12, 56 + heroOffsetY)}px`,
-        marginTop: heroOffsetY < -44 ? `${heroOffsetY + 44}px` : undefined,
+        paddingTop: isMobile ? '36px' : `${Math.max(12, 56 + heroOffsetY)}px`,
+        marginTop: isMobile ? '0px' : (heroOffsetY < -44 ? `${heroOffsetY + 44}px` : undefined),
         transition: 'padding-top 0.25s cubic-bezier(0.16, 1, 0.3, 1), margin-top 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
       }}
       className="relative overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#14141C] to-[#0D0D11] border-b border-white/5 pb-14 sm:pb-20"
@@ -144,7 +144,7 @@ export const HeroBanner = ({
       >
         
         {/* LOGO OU VÍDEO NO MEIO DO APP (MODO HÍBRIDO INTELIGENTE) */}
-        <div className="relative flex flex-col justify-center items-center my-4 group">
+        <div className={`relative flex flex-col justify-center items-center ${isMobile ? 'mt-4 mb-2' : 'my-4'} group`}>
           <div 
             style={{
               opacity: 0.20 * glowScale,
@@ -156,22 +156,22 @@ export const HeroBanner = ({
           
           <style>{`
             @keyframes heroFloat {
-              0%, 100% { transform: translateY(0px) scale(1); }
-              50% { transform: translateY(-7px) scale(1.015); }
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-5px); }
             }
           `}</style>
 
           {isMobile ? (
             /* Versão Mobile Ultrarrápida: Logo 3D Oficial HD com Flutuação Suave e Brilho (Carregamento em 0.1s) */
-            <div className="w-full flex flex-col justify-center items-center py-2 px-3">
-              <div className="relative group cursor-pointer">
+            <div className="w-full flex flex-col justify-center items-center pt-3 pb-1 px-4">
+              <div className="relative group cursor-pointer max-w-[280px] xs:max-w-[310px] sm:max-w-[380px] w-full flex justify-center">
                 {/* Aura de brilho pulsante */}
-                <div className="absolute -inset-4 bg-gradient-to-r from-orange-500/35 via-amber-400/30 to-orange-600/35 blur-2xl rounded-full opacity-80 pointer-events-none" />
+                <div className="absolute -inset-3 bg-gradient-to-r from-orange-500/35 via-amber-400/30 to-orange-600/35 blur-2xl rounded-full opacity-80 pointer-events-none" />
                 
                 <img
                   src={logoMelhorCupom}
                   alt="Melhor Cupom Oficial"
-                  className="relative z-10 w-full max-w-[310px] sm:max-w-[400px] h-auto object-contain drop-shadow-[0_16px_32px_rgba(255,95,0,0.38)] select-none transition-transform duration-500 hover:scale-105 active:scale-95"
+                  className="relative z-10 w-full h-auto object-contain drop-shadow-[0_14px_28px_rgba(255,95,0,0.35)] select-none transition-transform duration-500 hover:scale-105 active:scale-95"
                   style={{
                     animation: 'heroFloat 3.8s ease-in-out infinite'
                   }}
