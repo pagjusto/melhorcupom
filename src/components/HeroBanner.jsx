@@ -11,6 +11,7 @@ import {
   X
 } from 'lucide-react';
 import { TransparentVideo } from './TransparentVideo';
+import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
 export const HeroBanner = ({ 
   selectedCity, 
@@ -20,6 +21,22 @@ export const HeroBanner = ({
 }) => {
   const { isVipUser, setIsSubscriptionModalOpen } = useApp();
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Detecção Inteligente de Dispositivo para o Modo Híbrido (< 768px = Mobile)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Configurações padrão oficiais salvas:
   // Início 2.1s, Final 4.1s, Hero -120px, Container 1040px, Aura 40%
@@ -126,7 +143,7 @@ export const HeroBanner = ({
         className="w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center"
       >
         
-        {/* LOGO OU VÍDEO NO MEIO DO APP (TAMANHO 2X) */}
+        {/* LOGO OU VÍDEO NO MEIO DO APP (MODO HÍBRIDO INTELIGENTE) */}
         <div className="relative flex flex-col justify-center items-center my-4 group">
           <div 
             style={{
@@ -137,24 +154,51 @@ export const HeroBanner = ({
             className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 blur-3xl -z-10 rounded-full pointer-events-none" 
           />
           
-          <TransparentVideo
-            src="/video_loop_32s.mp4"
-            containerClassName="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]"
-            trimIntroSeconds={trimIntroSeconds}
-            loopEndSeconds={loopEndSeconds}
-            removeGreen={removeGreenBg}
-            removeWhite={removeWhiteBg}
-            preserveWhiteContent={preserveWhiteContent}
-            threshold={whiteThreshold}
-            feather={25}
-            trimOutro={trimCapCutOutro}
-            trimOutroSeconds={trimSeconds}
-            transitionMode={transitionMode}
-            transitionDuration={transitionDuration}
-            maskWatermark={maskWatermark}
-            className="w-full h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
-            alt="Melhor Cupom Vídeo 32s"
-          />
+          <style>{`
+            @keyframes heroFloat {
+              0%, 100% { transform: translateY(0px) scale(1); }
+              50% { transform: translateY(-7px) scale(1.015); }
+            }
+          `}</style>
+
+          {isMobile ? (
+            /* Versão Mobile Ultrarrápida: Logo 3D Oficial HD com Flutuação Suave e Brilho (Carregamento em 0.1s) */
+            <div className="w-full flex flex-col justify-center items-center py-2 px-3">
+              <div className="relative group cursor-pointer">
+                {/* Aura de brilho pulsante */}
+                <div className="absolute -inset-4 bg-gradient-to-r from-orange-500/35 via-amber-400/30 to-orange-600/35 blur-2xl rounded-full opacity-80 pointer-events-none" />
+                
+                <img
+                  src={logoMelhorCupom}
+                  alt="Melhor Cupom Oficial"
+                  className="relative z-10 w-full max-w-[310px] sm:max-w-[400px] h-auto object-contain drop-shadow-[0_16px_32px_rgba(255,95,0,0.38)] select-none transition-transform duration-500 hover:scale-105 active:scale-95"
+                  style={{
+                    animation: 'heroFloat 3.8s ease-in-out infinite'
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            /* Versão Desktop / Telas Grandes: Vídeo 3D do Mascote com Loop Contínuo */
+            <TransparentVideo
+              src="/video_loop_32s.mp4"
+              containerClassName="w-full max-w-[680px] sm:max-w-[880px] md:max-w-[1080px] lg:max-w-[1200px] xl:max-w-[1300px]"
+              trimIntroSeconds={trimIntroSeconds}
+              loopEndSeconds={loopEndSeconds}
+              removeGreen={removeGreenBg}
+              removeWhite={removeWhiteBg}
+              preserveWhiteContent={preserveWhiteContent}
+              threshold={whiteThreshold}
+              feather={25}
+              trimOutro={trimCapCutOutro}
+              trimOutroSeconds={trimSeconds}
+              transitionMode={transitionMode}
+              transitionDuration={transitionDuration}
+              maskWatermark={maskWatermark}
+              className="w-full h-auto object-contain drop-shadow-[0_25px_45px_rgba(255,95,0,0.35)] transition-transform duration-500 hover:scale-102 select-none"
+              alt="Melhor Cupom Vídeo 32s"
+            />
+          )}
         </div>
 
         {/* 3. Headline & Descrição */}
