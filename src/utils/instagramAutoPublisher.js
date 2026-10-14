@@ -1,6 +1,7 @@
 // src/utils/instagramAutoPublisher.js
 // Utilitário de Publicação Automática no Instagram para Novos Parceiros Credenciados
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+import { validateStoreSafety, validateCouponSafety } from './contentModeration';
 
 export const getStoreLocationText = (store) => {
   if (!store) return 'Brasil';
@@ -520,6 +521,34 @@ export const autoPublishStoreToInstagram = async (store, coupons = []) => {
   if (isStoreAlreadyPublished(store)) {
     console.log(`[AutoPublish] Loja "${store.name}" já foi publicada anteriormente. Pulando.`);
     return { success: false, reason: 'already_published' };
+  }
+
+  // 1. FILTRO DE SEGURANÇA E MODERAÇÃO ANTI-PORNOGRAFIA / ZUEIRAS / TROLLS
+  const storeSafety = validateStoreSafety(store);
+  if (!storeSafety.safe) {
+    console.warn(`🚨 [AutoPublish BLOQUEADO] Conteúdo impróprio detectado para "${store.name}":`, storeSafety.reason);
+    try {
+      const flaggedStores = JSON.parse(localStorage.getItem('melhor_cupom_flagged_stores') || '[]');
+      flaggedStores.unshift({
+        storeId: store.id,
+        storeName: store.name,
+        reason: storeSafety.reason,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('melhor_cupom_flagged_stores', JSON.stringify(flaggedStores.slice(0, 50)));
+    } catch {}
+    return { success: false, reason: 'blocked_by_content_safety', detail: storeSafety };
+  }
+
+  // Encontrar oferta da loja e validar conteúdo
+  const storeCoupons = Array.isArray(coupons) ? coupons.filter(c => c.storeId === store.id) : [];
+  const featuredCoupon = storeCoupons[0];
+  if (featuredCoupon) {
+    const couponSafety = validateCouponSafety(featuredCoupon);
+    if (!couponSafety.safe) {
+      console.warn(`🚨 [AutoPublish BLOQUEADO] Cupom com conteúdo impróprio para "${store.name}":`, couponSafety.reason);
+      return { success: false, reason: 'blocked_by_coupon_safety', detail: couponSafety };
+    }
   }
 
   console.log(`🚀 [AutoPublish] Iniciando publicação automática para o novo parceiro: ${store.name}`);

@@ -196,8 +196,29 @@ export default async function handler(req, res) {
     const feedImageBase64 = body.feedImageBase64 || body.imageBase64 || '';
     const storyImageBase64 = body.storyImageBase64 || body.imageBase64 || '';
     const caption = body.caption || '🎉 Cupons exclusivos em www.omelhorcupom.com.br! Siga @omelhorcupom.com.br';
+    const storeName = body.storeName || '';
     const publishStory = body.publishStory !== false;
     const onlyStory = body.onlyStory === true;
+
+    // Filtro de Segurança Server-Side Anti-Pornografia, Explícito e Trolls
+    const textToCheck = `${storeName} ${caption}`.toLowerCase();
+    const bannedPatterns = [
+      /p[o0]rn/i, /s[e3]x[o0]/i, /buc[e3]t/i, /p[i1]r[o0]c/i, /c[a4]r[a4]lh/i,
+      /p[a4]ul[a4]\s*t[e3]j[a4]n/i, /t[o0]m[a4]s\s*turb/i, /cuc[a4]\s*b[e3]lud/i,
+      /j[a4]c[i1]nt[o0]\s*p[i1]nt/i, /m[i1][a4]p[i1]c[a4]/i, /b[o0]qu[e3]t/i,
+      /put[a4]/i, /pr[o0]st[i1]tut/i, /s[u4]rub[a4]/i, /n[a4]z[i1]st/i, /h[i1]tl[e3]r/i,
+      /c[o0]c[a4][i1]n/i, /cr[a4]ck/i, /tr[a4]f[i1]c/i, /xvideos/i, /onlyfans/i
+    ];
+
+    for (const pat of bannedPatterns) {
+      if (pat.test(textToCheck)) {
+        console.warn(`[API Instagram Publish BLOQUEADO] Conteúdo impróprio detectado:`, pat);
+        return res.status(400).json({
+          success: false,
+          error: 'Publicação rejeitada pelo filtro de segurança e moderação de conteúdo.'
+        });
+      }
+    }
 
     const accessToken = body.accessToken || META_ACCESS_TOKEN;
     const igAccountId = body.instagramAccountId || META_IG_ACCOUNT_ID;

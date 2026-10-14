@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
+import { validateStoreSafety, validateUserSafety } from '../utils/contentModeration';
 
 export const AuthModal = () => {
   const { 
@@ -176,6 +177,13 @@ export const AuthModal = () => {
       return;
     }
 
+    // Filtro Anti-Pornografia, Explícito e Trolls
+    const safetyCheck = validateUserSafety(userForm);
+    if (!safetyCheck.safe) {
+      setErrorMsg(`⚠️ Bloqueio de Conteúdo: ${safetyCheck.reason} Por favor, utilize dados reais e respeitosos.`);
+      return;
+    }
+
     registerUser(userForm);
   };
 
@@ -192,6 +200,13 @@ export const AuthModal = () => {
     }
     if (merchantForm.cities.length === 0) {
       setErrorMsg('Adicione ao menos uma cidade de atuação da loja ou franquia.');
+      return;
+    }
+
+    // Filtro Anti-Pornografia, Explícito e Trolls para Lojas
+    const safetyCheck = validateStoreSafety(merchantForm);
+    if (!safetyCheck.safe) {
+      setErrorMsg(`⚠️ Bloqueio de Segurança: ${safetyCheck.reason} Por favor, utilize um nome e termos comerciais legítimos.`);
       return;
     }
 

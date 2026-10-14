@@ -17,6 +17,7 @@ import { INITIAL_HOT_DEALS } from '../data/hotDealsData';
 import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
 import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
 import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
+import { validateStoreSafety, validateUserSafety } from '../utils/contentModeration';
 
 const AppContext = createContext();
 
@@ -1305,6 +1306,13 @@ export const AppProvider = ({ children }) => {
 
   // Cadastrar Novo Usuário (Pessoa Física com Nome, CPF, CEP, Cidade, Email, WhatsApp, Senha)
   const registerUser = (userData) => {
+    // Validação Anti-Pornografia, Explícito e Trolls
+    const safety = validateUserSafety(userData);
+    if (!safety.safe) {
+      console.warn('[RegisterUser BLOQUEADO]', safety.reason);
+      return { success: false, error: safety.reason };
+    }
+
     const { name, cpf, cep, city, email, phone, password } = userData;
     const cleanName = name?.trim() || 'Usuário';
     const firstName = cleanName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
@@ -1413,6 +1421,13 @@ export const AppProvider = ({ children }) => {
 
   // Cadastrar Novo Lojista / Franquia (com Nome, CNPJ, CEP, Cidades Franquia, Email, WhatsApp, Senha, Instagram)
   const registerMerchant = (merchantData) => {
+    // Validação Anti-Pornografia, Explícito e Trolls
+    const safety = validateStoreSafety(merchantData);
+    if (!safety.safe) {
+      console.warn('[RegisterMerchant BLOQUEADO]', safety.reason);
+      return { success: false, error: safety.reason };
+    }
+
     const { name, legalName, cnpj, cep, cities, email, phone, category, instagram } = merchantData;
     const storeId = `store_${Date.now()}`;
     const merchantId = `merchant_${Date.now()}`;
