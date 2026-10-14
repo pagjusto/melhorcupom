@@ -86,6 +86,7 @@ async function publishDirectToInstagram({
   storyImagePath,
   storyImageBase64,
   publishStory = true,
+  onlyStory = false,
   caption = '',
   accessToken = META_ACCESS_TOKEN,
   instagramAccountId = META_IG_ACCOUNT_ID
@@ -114,6 +115,36 @@ async function publishDirectToInstagram({
     storyBuffer = fs.readFileSync(storyImagePath);
   } else {
     storyBuffer = feedBuffer;
+  }
+
+  // MODO EXCLUSIVO DE STORY
+  if (onlyStory) {
+    if (!storyBuffer || storyBuffer.length === 0) {
+      throw new Error('Nenhuma imagem válida fornecida para publicação no Story.');
+    }
+    console.log('📲 [Meta Graph API v20.0] Publicando EXCLUSIVAMENTE no Story oficial...');
+    const storyPublicUrl = await uploadBufferToPublicUrl(storyBuffer, `story-${Date.now()}.jpg`);
+    const createStoryRes = await fetch(`https://graph.instagram.com/v20.0/${instagramAccountId}/media`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image_url: storyPublicUrl,
+        media_type: 'STORIES',
+        access_token: accessToken
+      })
+    });
+    const createStoryJson = await createStoryRes.json();
+    if (!createStoryRes.ok || !createStoryJson.id) {
+      throw new Error(`Falha ao criar container do Story: ${createStoryJson?.error?.message || JSON.stringify(createStoryJson)}`);
+    }
+    const publishedStoryId = await publishGraphContainer(instagramAccountId, createStoryJson.id, accessToken);
+    return {
+      success: true,
+      storyPublished: true,
+      mediaId: publishedStoryId,
+      storyUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/',
+      postUrl: 'https://www.instagram.com/stories/omelhorcupom.com.br/'
+    };
   }
 
   if (!feedBuffer || feedBuffer.length === 0) {

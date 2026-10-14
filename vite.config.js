@@ -186,7 +186,8 @@ export default defineConfig({
                 const result = await publishDirectToInstagram({
                   imagePath: tempImagePath,
                   storyImagePath: tempStoryImagePath,
-                  publishStory: parsed.publishStory !== false,
+                  publishStory: (parsed.publishStory !== false && parsed.format !== 'feed_only'),
+                  onlyStory: (parsed.onlyStory === true || parsed.format === 'story_only'),
                   storyLinkUrl: parsed.storyLinkUrl || 'https://www.omelhorcupom.com.br',
                   caption: parsed.caption || '🎉 Cupons exclusivos no www.omelhorcupom.com.br! Siga @omelhorcupom.com.br'
                 });

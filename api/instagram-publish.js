@@ -197,8 +197,8 @@ export default async function handler(req, res) {
     const storyImageBase64 = body.storyImageBase64 || body.imageBase64 || '';
     const caption = body.caption || '🎉 Cupons exclusivos em www.omelhorcupom.com.br! Siga @omelhorcupom.com.br';
     const storeName = body.storeName || '';
-    const publishStory = body.publishStory !== false;
-    const onlyStory = body.onlyStory === true;
+    const onlyStory = body.onlyStory === true || body.format === 'story_only';
+    const publishStory = !onlyStory && body.publishStory !== false && body.format !== 'feed_only';
 
     // Filtro de Segurança Server-Side Anti-Pornografia, Explícito e Trolls
     const textToCheck = `${storeName} ${caption}`.toLowerCase();

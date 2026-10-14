@@ -755,6 +755,46 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     return true; // Ativado por padrão para novos parceiros
   });
 
+  // Lojas / Parceiros de API excluídos manualmente da fila de divulgação pelo 'X'
+  const [dismissedStoreIds, setDismissedStoreIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('melhor_cupom_dismissed_promo_stores_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const handleDismissStore = (storeId, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const next = [...new Set([...dismissedStoreIds, storeId])];
+    setDismissedStoreIds(next);
+    localStorage.setItem('melhor_cupom_dismissed_promo_stores_v1', JSON.stringify(next));
+    const targetStore = stores.find(s => s.id === storeId);
+    showToast(`✕ "${targetStore?.name || 'Parceiro'}" removido da fila de divulgação.`, 'info');
+
+    // Se a loja removida estava selecionada, selecionar a próxima
+    if (selectedStoreId === storeId) {
+      const remaining = pendingStores.filter(s => s.id !== storeId);
+      if (remaining.length > 0) {
+        setSelectedStoreId(remaining[0].id);
+      } else {
+        setSelectedStoreId('promo_cadastro_usuario');
+      }
+    }
+  };
+
+  const handleRestoreDismissedStores = () => {
+    setDismissedStoreIds([]);
+    localStorage.removeItem('melhor_cupom_dismissed_promo_stores_v1');
+    showToast('✓ Lojas e parceiros de API restaurados para a fila de divulgação!', 'success');
+  };
+
+  // Destino da Publicação: 'both' (Feed + Stories), 'feed_only' (Apenas Feed), 'story_only' (Apenas Stories)
+  const [publishDestination, setPublishDestination] = useState('both');
+
   const toggleAutoPublish = () => {
     const next = !autoPublishEnabled;
     setAutoPublishEnabled(next);
@@ -800,15 +840,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     showToast(`🔄 "${postOrStore?.storeName || postOrStore?.name}" voltou para a fila de divulgação!`, 'info');
   };
 
-  // Filtrar lojas pendentes (que ainda não foram publicadas), priorizando Sephora e Petz no topo da fila
+  // Filtrar lojas pendentes (que ainda não foram publicadas e não foram excluídas pelo X)
   const pendingStores = stores
-    .filter(s => !isStoreAlreadyPublished(s, postHistory))
+    .filter(s => !isStoreAlreadyPublished(s, postHistory) && !dismissedStoreIds.includes(s.id))
     .sort((a, b) => {
       const aPriority = (a.id === 'store_sephora' || a.id === 'store_petz') ? 0 : 1;
       const bPriority = (b.id === 'store_sephora' || b.id === 'store_petz') ? 0 : 1;
       return aPriority - bPriority;
     });
-  const selectableStores = showAllStores ? stores : (pendingStores.length > 0 ? pendingStores : []);
+  const selectableStores = showAllStores 
+    ? stores.filter(s => !dismissedStoreIds.includes(s.id))
+    : (pendingStores.length > 0 ? pendingStores : []);
 
   const PROMO_CADASTRO_USUARIO_STORE = {
     id: 'promo_cadastro_usuario',
@@ -1381,6 +1423,9 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
         const savedSessionId = localStorage.getItem('melhor_cupom_instagram_sessionid') || '';
 
+        const willPublishStory = publishDestination === 'both' || publishDestination === 'story_only';
+        const isOnlyStory = publishDestination === 'story_only';
+
         const res = await fetch('/api/instagram-publish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1388,13 +1433,14 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             imageBase64: feedImageBase64,
             feedImageBase64,
             storyImageBase64,
-            publishStory: true,
+            publishStory: willPublishStory,
+            onlyStory: isOnlyStory,
             storyLinkUrl: storyOfferUrl,
             linkTitle: 'RESGATAR CUPOM',
             caption: customCaption,
             storeName: cleanStoreName,
             sessionId: savedSessionId,
-            format: 'feed_and_story'
+            format: publishDestination === 'both' ? 'feed_and_story' : (publishDestination === 'story_only' ? 'story_only' : 'feed_only')
           })
         });
 
@@ -1408,8 +1454,8 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         if (data.success) {
           let isStoryOk = !!data.storyPublished;
 
-          // Se o Feed publicou mas o Story precisou de mais tempo, dispara requisição dedicada de Story
-          if (!isStoryOk && storyImageBase64) {
+          // Se o Feed publicou mas o Story precisou de mais tempo, dispara requisição dedicada de Story (apenas se story foi solicitado)
+          if (!isStoryOk && willPublishStory && storyImageBase64) {
             try {
               const storyRes = await fetch('/api/instagram-publish', {
                 method: 'POST',
@@ -1430,14 +1476,33 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           }
 
           const finalPostUrl = data.postUrl || `https://www.instagram.com/${cleanUser}/`;
+
+          let formatText = 'Feed (1080x1080) + Stories (1080x1920)';
+          let statusText = 'Publicado no Feed & Stories (com link do site)';
+          let toastMsg = `🎉 Arte de "${cleanStoreName}" publicada com sucesso no FEED e no STORIES de @omelhorcupom.com.br!`;
+
+          if (publishDestination === 'feed_only') {
+            formatText = 'Feed (1080x1080)';
+            statusText = 'Publicado Somente no Feed Oficial';
+            toastMsg = `🎉 Arte de "${cleanStoreName}" publicada com sucesso SOMENTE NO FEED oficial de @omelhorcupom.com.br!`;
+          } else if (publishDestination === 'story_only') {
+            formatText = 'Stories (1080x1920)';
+            statusText = 'Publicado Somente nos Stories (com link interativo)';
+            toastMsg = `🎉 Arte de "${cleanStoreName}" publicada com sucesso SOMENTE NOS STORIES com link de @omelhorcupom.com.br!`;
+          } else if (!isStoryOk) {
+            formatText = 'Feed (1080x1080)';
+            statusText = 'Publicado no Feed Oficial';
+            toastMsg = `🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`;
+          }
+
           const newPost = {
             id: `post_inst_${Date.now()}`,
             storeId: selectedStore?.id,
             storeName: cleanStoreName,
             city: locationText,
             publishedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            format: isStoryOk ? 'Feed (1080x1080) + Stories (1080x1920)' : 'Feed (1080x1080)',
-            status: isStoryOk ? 'Publicado no Feed & Stories (com link do site)' : 'Publicado no Feed Oficial',
+            format: formatText,
+            status: statusText,
             postUrl: finalPostUrl,
             storyUrl: data.storyUrl || 'https://www.instagram.com/stories/omelhorcupom.com.br/'
           };
@@ -1446,9 +1511,6 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           localStorage.setItem('melhor_cupom_instagram_history_v2', JSON.stringify(updated));
           markStoreAsPublished(selectedStore, newPost);
 
-          const toastMsg = isStoryOk
-            ? `🎉 Arte de "${cleanStoreName}" publicada com sucesso no FEED e no STORIES de @omelhorcupom.com.br!`
-            : `🎉 Arte de "${cleanStoreName}" publicada com sucesso no feed oficial de @omelhorcupom.com.br!`;
           showToast(toastMsg, 'success');
           setIsPublishing(false);
           return;
@@ -1777,6 +1839,59 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 </div>
               )}
 
+              {/* FILA VISUAL DE PARCEIROS PENDENTES COM BOTÃO 'X' PARA EXCLUIR DA LISTA */}
+              {pendingStores.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-gray-300 flex items-center gap-1.5">
+                      <span>Fila de Lojas & Parceiros ({pendingStores.length}):</span>
+                    </span>
+                    {dismissedStoreIds.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleRestoreDismissedStores}
+                        className="text-[10px] text-orange-400 hover:text-orange-300 font-bold underline cursor-pointer"
+                      >
+                        ↺ Restaurar {dismissedStoreIds.length} excluídos
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Chips interativos com X para remoção imediata da lista */}
+                  <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto p-2 bg-[#101017] rounded-2xl border border-white/10">
+                    {pendingStores.map((s) => {
+                      const isSelected = s.id === selectedStoreId;
+                      const isApi = Boolean(s.isApiIntegrated || s.apiSource || s.tier === 'api');
+                      return (
+                        <div
+                          key={s.id}
+                          onClick={() => setSelectedStoreId(s.id)}
+                          className={`group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                            isSelected
+                              ? 'bg-[#FF5F00]/25 border-[#FF5F00] text-white shadow-md'
+                              : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          <span className="text-sm">{s.logo || '🏪'}</span>
+                          <span className="truncate max-w-[130px]">{s.name}</span>
+                          {isApi && (
+                            <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1 py-0.2 rounded font-bold">API</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDismissStore(s.id, e)}
+                            className="ml-0.5 p-0.5 rounded-full hover:bg-red-500/30 text-gray-400 hover:text-red-400 transition-colors"
+                            title={`Excluir ${s.name} da fila de divulgação`}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-[11px] text-gray-400 pt-0.5">
                 <span>
                   {pendingStores.length} {pendingStores.length === 1 ? 'loja pendente' : 'lojas pendentes'} de divulgação
@@ -1810,10 +1925,82 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
               </div>
             </div>
 
+            {/* DESTINO DA PUBLICAÇÃO: STORIES + FEED, SOMENTE FEED OU SOMENTE STORIES */}
+            <div className="space-y-2 pt-1 bg-[#12121C] border border-white/10 rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-amber-400" />
+                  <span>Destino da Divulgação no Instagram:</span>
+                </label>
+                <span className="text-[10px] text-gray-400 font-bold">
+                  {publishDestination === 'both' ? 'Feed + Stories' : publishDestination === 'feed_only' ? 'Apenas Feed' : 'Apenas Stories'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {/* Opção 1: Stories + Feed */}
+                <button
+                  type="button"
+                  onClick={() => setPublishDestination('both')}
+                  className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                    publishDestination === 'both'
+                      ? 'bg-gradient-to-r from-fuchsia-600/30 via-rose-600/30 to-[#FF5F00]/30 border-orange-500 text-white font-bold shadow-md shadow-orange-600/20 ring-1 ring-orange-400'
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-1 text-xs">
+                    <Layers size={13} />
+                    <span>Feed + Stories</span>
+                  </div>
+                  <span className="text-[9px] text-gray-400">Completo</span>
+                </button>
+
+                {/* Opção 2: Somente Feed */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPublishDestination('feed_only');
+                    setFormat('feed');
+                  }}
+                  className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                    publishDestination === 'feed_only'
+                      ? 'bg-orange-500/25 border-orange-400 text-white font-bold shadow-md ring-1 ring-orange-400'
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-1 text-xs">
+                    <Instagram size={13} />
+                    <span>Somente Feed</span>
+                  </div>
+                  <span className="text-[9px] text-gray-400">1080x1080</span>
+                </button>
+
+                {/* Opção 3: Somente Stories */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPublishDestination('story_only');
+                    setFormat('story');
+                  }}
+                  className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                    publishDestination === 'story_only'
+                      ? 'bg-fuchsia-600/25 border-fuchsia-400 text-white font-bold shadow-md ring-1 ring-fuchsia-400'
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-1 text-xs text-fuchsia-300">
+                    <ExternalLink size={13} />
+                    <span>Somente Stories</span>
+                  </div>
+                  <span className="text-[9px] text-gray-400">9:16 + Link</span>
+                </button>
+              </div>
+            </div>
+
             {/* Formato da Arte */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-300">
-                Formato do Criativo:
+                Pré-visualização do Formato:
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -1877,15 +2064,24 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                 {isPublishing ? (
                   <>
                     <RefreshCw size={18} className="animate-spin text-white" />
-                    <span>Publicando no Feed e Stories com Link...</span>
+                    <span>
+                      {publishDestination === 'both' && 'Publicando no Feed e Stories com Link...'}
+                      {publishDestination === 'feed_only' && 'Publicando Somente no Feed Oficial...'}
+                      {publishDestination === 'story_only' && 'Publicando Somente nos Stories com Link...'}
+                    </span>
                   </>
                 ) : (
                   <>
                     <Sparkles size={18} />
-                    <span>🚀 Publicar no Feed e Stories com Link (Robô)</span>
+                    <span>
+                      {publishDestination === 'both' && '🚀 Publicar no Feed e Stories com Link (Robô)'}
+                      {publishDestination === 'feed_only' && '📸 Publicar Somente no Feed Oficial (Robô)'}
+                      {publishDestination === 'story_only' && '⏳ Publicar Somente nos Stories com Link (Robô)'}
+                    </span>
                   </>
                 )}
               </button>
+
 
               <button
                 type="button"
