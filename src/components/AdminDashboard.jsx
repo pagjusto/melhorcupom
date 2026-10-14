@@ -59,6 +59,7 @@ import { RoleSwitcher } from './RoleSwitcher';
 import { AdminWhatsAppManager } from './AdminWhatsAppManager';
 import { AdminImperdiveisManager } from './AdminImperdiveisManager';
 import { AdminInstagramPartners } from './AdminInstagramPartners';
+import { AdminCouponsManager } from './AdminCouponsManager';
 
 export const AdminDashboard = () => {
   const { 
@@ -461,6 +462,18 @@ export const AdminDashboard = () => {
           >
             <Store size={15} />
             <span>Lojas Parceiras ({stores.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveAdminTab('cupons-avulsos')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeAdminTab === 'cupons-avulsos'
+                ? 'bg-gradient-to-r from-amber-500 via-[#FF5F00] to-rose-500 text-white shadow-md shadow-orange-600/40 ring-1 ring-amber-400/50'
+                : 'bg-white/5 hover:bg-white/10 text-amber-300 hover:text-white border border-amber-500/30'
+            }`}
+          >
+            <Tag size={15} className="text-amber-300" />
+            <span>🎟️ Cupons Avulsos ({coupons.length})</span>
           </button>
 
           <button
@@ -2279,6 +2292,11 @@ export const AdminDashboard = () => {
       {/* ABA 11: PARCERIAS COM PÁGINAS DE INSTAGRAM (R$ 5 POR EMPRESA / R$ 3 POR USUÁRIO) */}
       {activeAdminTab === 'paginas-parceiras' && (
         <AdminInstagramPartners showToast={showToast} />
+      )}
+
+      {/* ABA 12: CENTRAL DE CUPONS AVULSOS */}
+      {activeAdminTab === 'cupons-avulsos' && (
+        <AdminCouponsManager showToast={showToast} />
       )}
 
     </div>

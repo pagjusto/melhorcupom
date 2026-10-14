@@ -1166,6 +1166,19 @@ export const AppProvider = ({ children }) => {
     setCoupons(prev => prev.map(c => c.id === couponId ? { ...c, viewsCount: (c.viewsCount || 0) + 1 } : c));
   };
 
+  // Excluir Cupom (Admin ou Lojista)
+  const deleteCoupon = (couponId) => {
+    setCoupons(prev => prev.filter(c => c.id !== couponId));
+    if (isSupabaseConfigured && supabase) {
+      db.deleteCoupon(couponId).catch(err => console.warn('[Supabase DeleteCoupon]', err));
+    }
+  };
+
+  // Alternar Destaque Ouro do Cupom (Admin)
+  const toggleHighlightCoupon = (couponId) => {
+    setCoupons(prev => prev.map(c => c.id === couponId ? { ...c, highlight: !c.highlight } : c));
+  };
+
   // Alternar Favorito
   const toggleFavorite = (couponId) => {
     setUserProfile(prev => {
@@ -2032,6 +2045,8 @@ export const AppProvider = ({ children }) => {
       redeemCoupon,
       validateRedemption,
       addCoupon,
+      deleteCoupon,
+      toggleHighlightCoupon,
       recordCouponView,
       toggleFavorite,
       resetToFactoryDefaults,

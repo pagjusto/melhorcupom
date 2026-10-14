@@ -156,6 +156,19 @@ export const db = {
     return data;
   },
 
+  async deleteCoupon(id) {
+    if (!isSupabaseConfigured || !supabase) return true;
+    const { error } = await supabase
+      .from('coupons')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.warn('[Supabase] deleteCoupon error:', error.message);
+      return false;
+    }
+    return true;
+  },
+
   // Resgates de Cupons (Tabela 'redemptions')
   async getRedemptions() {
     if (!isSupabaseConfigured || !supabase) return [];
