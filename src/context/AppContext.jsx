@@ -1159,13 +1159,38 @@ export const AppProvider = ({ children }) => {
 
   // Cadastrar Novo Usuário (Pessoa Física com Nome, CPF, CEP, Cidade, Email, WhatsApp, Senha)
   const registerUser = (userData) => {
-    const { name, cpf, cep, city, email, phone } = userData;
+    const { name, cpf, cep, city, email, phone, password } = userData;
     const cleanName = name?.trim() || 'Usuário';
     const firstName = cleanName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
     const generatedReferralCode = (firstName.substring(0, 5) + Math.floor(10 + Math.random() * 90)).toUpperCase();
 
+    const newUserRecord = {
+      id: `usr_${Date.now()}`,
+      name: cleanName,
+      email: email || '',
+      phone: phone || '',
+      cpf: cpf || '',
+      cep: cep || '01310-100',
+      city: city || 'São Paulo - SP',
+      password: password || '',
+      role: 'user',
+      isVip: false,
+      vipPlan: null,
+      vipSince: null,
+      monthlySavings: 0,
+      totalRedemptions: 0,
+      referralCode: generatedReferralCode,
+      referralBalance: 0.00,
+      referralsCount: 0,
+      createdAt: new Date().toISOString(),
+      status: 'active'
+    };
+
+    setRegisteredUsers(prev => [newUserRecord, ...prev.filter(u => u.email?.toLowerCase() !== email?.toLowerCase())]);
+
     setUserProfile(prev => ({
       ...prev,
+      id: newUserRecord.id,
       name: cleanName,
       cpf: cpf || prev.cpf,
       cep: cep || prev.cep || '01310-100',
@@ -1174,7 +1199,9 @@ export const AppProvider = ({ children }) => {
       phone: phone || prev.phone,
       referralCode: generatedReferralCode,
       isRegistered: true,
-      isLoggedIn: true
+      isLoggedIn: true,
+      isVip: false,
+      isAdmin: false
     }));
 
     setCurrentRole('user_free');
@@ -1408,14 +1435,27 @@ export const AppProvider = ({ children }) => {
       };
     } else {
       // 2. Usuário / Consumidor
-      const isVip = userProfile.isVip || clean.includes('vip');
+      const matchedUser = registeredUsers.find(u => 
+        (u.email && u.email.toLowerCase() === clean) ||
+        (u.cpf && digits.length >= 11 && u.cpf.replace(/\D/g, '') === digits)
+      );
+
+      const targetUser = matchedUser || {
+        ...userProfile,
+        name: clean.split('@')[0] || userProfile.name,
+        email: clean.includes('@') ? clean : userProfile.email
+      };
+
+      const isVip = Boolean(targetUser.isVip || clean.includes('vip'));
 
       setUserProfile(prev => ({
         ...prev,
+        ...targetUser,
         isLoggedIn: true,
         isRegistered: true,
         isVip: isVip,
-        vipPlan: isVip ? (prev.vipPlan || 'monthly') : null
+        isAdmin: false,
+        vipPlan: isVip ? (targetUser.vipPlan || 'monthly') : null
       }));
 
       const targetRole = isVip ? 'vip' : 'user_free';
