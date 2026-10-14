@@ -15,76 +15,7 @@ import {
   Users
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
-
-// Gera SVG do Selo / Sticker Oficial de Parceria com o Mascote 3D Oficial para Stories, Posts e Vitrines
-const getPureVectorStickerSvg = (mascotSrc = '/favicon.png') => {
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 960 320" width="960" height="320">
-  <defs>
-    <linearGradient id="seloBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#181424" />
-      <stop offset="50%" stop-color="#12101B" />
-      <stop offset="100%" stop-color="#0A0910" />
-    </linearGradient>
-    <linearGradient id="seloBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF7A00" />
-      <stop offset="35%" stop-color="#FFB800" />
-      <stop offset="70%" stop-color="#FF5F00" />
-      <stop offset="100%" stop-color="#F59E0B" />
-    </linearGradient>
-    <linearGradient id="tagBg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FF5F00" stop-opacity="0.35" />
-      <stop offset="100%" stop-color="#FFB800" stop-opacity="0.2" />
-    </linearGradient>
-    <filter id="seloDropShadow" x="-10%" y="-10%" width="125%" height="125%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.6" />
-    </filter>
-    <filter id="glowMascot" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#FF7A00" flood-opacity="0.45" />
-    </filter>
-  </defs>
-
-  <!-- Cápsula Base com Sombra e Borda Dourada Neon -->
-  <g filter="url(#seloDropShadow)">
-    <rect x="16" y="16" width="928" height="288" rx="144" fill="url(#seloBg)" stroke="url(#seloBorder)" stroke-width="7" />
-    <rect x="26" y="26" width="908" height="268" rx="134" fill="none" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="2" />
-  </g>
-
-  <!-- Medalhão do Mascote Oficial 3D Bonitinho à Esquerda -->
-  <g transform="translate(36, 36)">
-    <!-- Glow circular de fundo -->
-    <circle cx="124" cy="124" r="116" fill="#0D0B14" stroke="url(#seloBorder)" stroke-width="4" />
-    <circle cx="124" cy="124" r="104" fill="none" stroke="#FFB800" stroke-opacity="0.25" stroke-width="2" stroke-dasharray="8 6" />
-    
-    <!-- Mascote Oficial 3D com Óculos Escuros e Notas -->
-    <image x="16" y="16" width="216" height="216" xlink:href="${mascotSrc}" href="${mascotSrc}" filter="url(#glowMascot)" />
-  </g>
-
-  <!-- Conteúdo Informativo à Direita -->
-  <g transform="translate(305, 52)">
-    <!-- Tag Superior: PARCEIRO OFICIAL & DIVULGADOR -->
-    <rect x="0" y="0" width="350" height="36" rx="18" fill="url(#tagBg)" stroke="#FF7A00" stroke-width="2" />
-    <text x="175" y="24" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="14" fill="#FFD54F" letter-spacing="1.5" text-anchor="middle">★ PARCEIRO OFICIAL &amp; DIVULGADOR ★</text>
-
-    <!-- Título Principal com Tipografia Impactante -->
-    <text x="0" y="105" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="900" font-size="58" fill="#FFFFFF" letter-spacing="-1.5">Melhor Cupom</text>
-
-    <!-- Tagline com Website e Descontos -->
-    <g transform="translate(0, 142)">
-      <text x="0" y="24" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="800" font-size="24" fill="#FF7A00">omelhorcupom.com.br</text>
-      <circle cx="315" cy="17" r="4" fill="#FFFFFF" opacity="0.6" />
-      <text x="335" y="24" font-family="'Arial Black', 'Montserrat', 'Inter', sans-serif" font-weight="800" font-size="24" fill="#FBBF24">Até 50% OFF</text>
-    </g>
-
-    <!-- Selo de Verificação / Autenticidade -->
-    <g transform="translate(470, 75)">
-      <rect x="0" y="0" width="145" height="34" rx="17" fill="#059669" fill-opacity="0.2" stroke="#10B981" stroke-width="1.5" />
-      <circle cx="20" cy="17" r="8" fill="#10B981" />
-      <path d="M16 17 L19 20 L24 14" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-      <text x="36" y="22" font-family="'Arial Black', 'Inter', sans-serif" font-weight="900" font-size="12" fill="#34D399" letter-spacing="1">VERIFICADO</text>
-    </g>
-  </g>
-</svg>`;
-};
+import seloDescontoGarantido from '../assets/selo-desconto-garantido.png';
 
 // Converte uma imagem (PNG local) em um arquivo SVG Vetorial Híbrido de Alta Definição (com viewBox escalável)
 const buildEmbeddedSvgFromImage = async (imgSrc, width = 1200, height = 800) => {
@@ -170,33 +101,9 @@ export const BrandMediaKitSection = ({ compact = false }) => {
   const [bgPreview, setBgPreview] = useState('checker'); // 'checker' | 'dark' | 'light'
   const [downloadedKey, setDownloadedKey] = useState(null);
   const [downloadingAll, setDownloadingAll] = useState(false);
-  const [mascotDataUrl, setMascotDataUrl] = useState('');
   const [flyerType, setFlyerType] = useState('user'); // 'user' (Clientes & Economia) | 'partner' (Lojas & Parceiros)
   const [flyerFormat, setFlyerFormat] = useState('story'); // 'story' (1080x1920) | 'feed' (1080x1080)
   const flyerCanvasRef = useRef(null);
-
-  // Carrega o mascote oficial como Data URL para inserção direta no SVG/Downloads
-  useEffect(() => {
-    let isMounted = true;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth || 512;
-        c.height = img.naturalHeight || 512;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        if (isMounted) {
-          setMascotDataUrl(c.toDataURL('image/png', 1.0));
-        }
-      } catch (e) {
-        console.warn('Fallback mascot URL:', e);
-      }
-    };
-    img.src = '/favicon.png';
-    return () => { isMounted = false; };
-  }, []);
 
   const markDownloaded = (key) => {
     setDownloadedKey(key);
@@ -700,14 +607,14 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
       pngFileName: 'melhor-cupom-mascote-oficial-hd.png'
     },
     {
-      id: 'selo-parceiro-vetor',
-      title: 'Selo Oficial "Parceiro & Divulgador"',
-      badge: 'Selo Oficial com Mascote 3D',
-      description: 'Cápsula oficial com o mascote Cupomzinho VIP e selo verificado, ideal para colar em fotos de produtos, stories e vitrines.',
-      type: 'svg',
-      svgContent: getPureVectorStickerSvg(mascotDataUrl || '/favicon.png'),
-      svgFileName: 'melhor-cupom-selo-oficial-parceiro.svg',
-      pngFileName: 'melhor-cupom-selo-oficial-parceiro-hd.png'
+      id: 'selo-desconto-garantido',
+      title: 'Selo Oficial "Desconto Garantido"',
+      badge: 'Selo 3D • Fundo Transparente',
+      description: 'Medalhão dourado 3D oficial com o mascote Cupomzinho, faixa "Desconto Garantido" e fundo 100% transparente para aplicar em fotos, stories, vitrines e cardápios.',
+      type: 'image',
+      imgSrc: seloDescontoGarantido,
+      svgFileName: 'melhor-cupom-selo-desconto-garantido.svg',
+      pngFileName: 'melhor-cupom-selo-desconto-garantido-hd.png'
     }
   ];
 
