@@ -301,10 +301,14 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   // Salvar Configurações Globais da Loja
   const handleSaveStore = (e) => {
     e.preventDefault();
+    const isOnline = storeForm.city.includes('Online') || storeForm.city.includes('Todas as Cidades') || storeForm.city.includes('Brasil') || currentStore.type === 'online';
     updateStore(currentStore.id, {
       name: storeForm.name,
       category: storeForm.category,
-      city: storeForm.city,
+      city: isOnline ? 'Brasil (Todo o País / Online)' : storeForm.city,
+      cities: isOnline ? ['Todas as Cidades (Online / Brasil Todo)'] : (currentStore.cities?.length ? currentStore.cities : [storeForm.city]),
+      type: isOnline ? 'online' : 'physical',
+      isOnline: isOnline,
       address: storeForm.address,
       phone: storeForm.phone,
       hours: storeForm.hours,
@@ -1933,6 +1937,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     onChange={(e) => setStoreForm({ ...storeForm, city: e.target.value })}
                     className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                   >
+                    <option value="Brasil (Todo o País / Online)">🌐 Loja Online / Atuação Nacional (Abrange Todos os Locais)</option>
                     {POPULAR_CITIES.filter(c => c !== 'Todas as Cidades').map((city, idx) => (
                       <option key={idx} value={city}>{city}</option>
                     ))}

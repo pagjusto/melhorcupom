@@ -1452,16 +1452,21 @@ export const AppProvider = ({ children }) => {
       return { success: false, error: safety.reason };
     }
 
-    const { name, legalName, cnpj, cep, cities, email, phone, category, instagram } = merchantData;
+    const { name, legalName, cnpj, cep, cities, email, phone, category, instagram, storeType, isOnline } = merchantData;
     const storeId = `store_${Date.now()}`;
     const merchantId = `merchant_${Date.now()}`;
     const cleanName = name?.trim() || 'Nova Loja Parceira';
     const cleanShort = cleanName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '').substring(0, 5);
     const storeRefCode = (cleanShort + '5').toUpperCase();
 
-    const selectedCities = Array.isArray(cities) && cities.length > 0 
-      ? cities 
-      : ['São Paulo - SP'];
+    const isOnlineStore = storeType === 'online' || isOnline || (Array.isArray(cities) && cities.some(c => {
+      const lower = String(c).toLowerCase();
+      return lower.includes('online') || lower.includes('todas as cidades') || lower.includes('todo o brasil') || lower.includes('todos os locais');
+    }));
+
+    const selectedCities = isOnlineStore
+      ? ['Todas as Cidades (Online / Brasil Todo)']
+      : (Array.isArray(cities) && cities.length > 0 ? cities : ['São Paulo - SP']);
 
     const newStore = {
       id: storeId,
@@ -1469,15 +1474,17 @@ export const AppProvider = ({ children }) => {
       name: cleanName,
       legalName: legalName || cleanName,
       cnpj: cnpj || '00.000.000/0001-00',
-      cep: cep || '01310-100',
+      cep: cep || (isOnlineStore ? '00000-000' : '01310-100'),
       category: category || 'gastronomia',
-      cities: selectedCities, // Suporte a múltiplas cidades para franquias
-      city: selectedCities[0] || 'São Paulo - SP',
+      cities: selectedCities, // Suporte a múltiplas cidades para franquias e abrangência nacional
+      city: isOnlineStore ? 'Brasil (Todo o País / Online)' : (selectedCities[0] || 'São Paulo - SP'),
       phone: phone || '(11) 98123-4567',
       email: email || 'contato@lojaparceira.com.br',
       instagram: (instagram || '').trim(),
-      address: `${selectedCities[0] || 'Brasil'}`,
-      hours: 'Seg a Sáb: 10h às 22h',
+      address: isOnlineStore ? 'Atendimento Online em Todo o Brasil' : `${selectedCities[0] || 'Brasil'}`,
+      type: isOnlineStore ? 'online' : 'physical',
+      isOnline: isOnlineStore,
+      hours: isOnlineStore ? 'Online 24 horas por dia' : 'Seg a Sáb: 10h às 22h',
       tier: 'free_trial',
       freeTrialActive: true,
       freeTrialMonths: 3,
@@ -1491,8 +1498,10 @@ export const AppProvider = ({ children }) => {
       reviewsCount: 1,
       createdAt: new Date().toISOString(),
       isNewPartner: true,
-      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
-      logo: '🏪',
+      image: isOnlineStore 
+        ? 'https://images.unsplash.com/photo-1556742049-0a67e557224f?w=700&auto=format&fit=crop&q=80'
+        : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
+      logo: isOnlineStore ? '🌐' : '🏪',
       logoImage: ''
     };
 
@@ -1521,13 +1530,15 @@ export const AppProvider = ({ children }) => {
         cep: cep || '',
         category: category || 'gastronomia',
         cities: selectedCities,
-        city: selectedCities[0] || 'São Paulo - SP',
+        city: isOnlineStore ? 'Brasil (Todo o País / Online)' : (selectedCities[0] || 'São Paulo - SP'),
         phone: phone || '',
         email: email || '',
         instagram: (instagram || '').trim(),
-        address: `${selectedCities[0] || 'Brasil'}`,
+        address: isOnlineStore ? 'Atendimento Online em Todo o Brasil' : `${selectedCities[0] || 'Brasil'}`,
         tier: 'free_trial',
         free_trial_active: true,
+        type: isOnlineStore ? 'online' : 'physical',
+        is_online: isOnlineStore,
         referral_code: storeRefCode
       }).catch(err => console.warn('[Supabase Store]', err));
     }

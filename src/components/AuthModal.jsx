@@ -18,7 +18,8 @@ import {
   AlertCircle,
   ArrowRight,
   LogIn,
-  Check
+  Check,
+  Globe
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
@@ -54,6 +55,8 @@ export const AuthModal = () => {
     legalName: '',
     cnpj: '',
     cep: '',
+    storeType: 'physical', // 'physical' | 'online'
+    isOnline: false,
     cities: ['São Paulo - SP'],
     email: '',
     phone: '',
@@ -109,6 +112,25 @@ export const AuthModal = () => {
       .substring(0, 15);
   };
 
+  // Alternar Loja Online / Atuação Nacional (Abrange Todos os Locais)
+  const handleSetOnlineStore = (enableOnline) => {
+    if (enableOnline) {
+      setMerchantForm(prev => ({
+        ...prev,
+        storeType: 'online',
+        isOnline: true,
+        cities: ['Todas as Cidades (Online / Brasil Todo)']
+      }));
+    } else {
+      setMerchantForm(prev => ({
+        ...prev,
+        storeType: 'physical',
+        isOnline: false,
+        cities: prev.cities.some(c => c.includes('Todas as Cidades') || c.includes('Online')) ? ['São Paulo - SP'] : prev.cities
+      }));
+    }
+  };
+
   // Busca rápida de CEP via ViaCEP com preenchimento automático de cidade
   const handleCepLookup = async (cepValue, target) => {
     const cleanCep = cepValue.replace(/\D/g, '');
@@ -123,6 +145,7 @@ export const AuthModal = () => {
             setUserForm(prev => ({ ...prev, city: detectedCity }));
           } else if (target === 'merchant') {
             setMerchantForm(prev => {
+              if (prev.storeType === 'online' || prev.isOnline) return prev;
               const currentCities = prev.cities || [];
               const withoutDefault = currentCities.filter(c => c !== 'São Paulo - SP' || detectedCity === 'São Paulo - SP');
               return {
@@ -144,18 +167,45 @@ export const AuthModal = () => {
   const handleAddCity = (cityToAdd) => {
     const trimmed = cityToAdd.trim();
     if (!trimmed) return;
-    if (!merchantForm.cities.includes(trimmed)) {
-      setMerchantForm(prev => ({
-        ...prev,
-        cities: [...prev.cities, trimmed]
-      }));
+
+    if (
+      trimmed.toLowerCase().includes('todas as cidades') || 
+      trimmed.toLowerCase().includes('online') || 
+      trimmed.toLowerCase().includes('todo o brasil') ||
+      trimmed.toLowerCase().includes('todos os locais')
+    ) {
+      handleSetOnlineStore(true);
+      setCustomCityInput('');
+      return;
     }
+
+    setMerchantForm(prev => {
+      const filtered = prev.cities.filter(c => !c.includes('Todas as Cidades') && !c.includes('Online'));
+      if (!filtered.includes(trimmed)) {
+        return {
+          ...prev,
+          storeType: 'physical',
+          isOnline: false,
+          cities: [...filtered, trimmed]
+        };
+      }
+      return {
+        ...prev,
+        storeType: 'physical',
+        isOnline: false,
+        cities: filtered
+      };
+    });
     setCustomCityInput('');
   };
 
   const handleRemoveCity = (cityToRemove) => {
+    if (merchantForm.storeType === 'online' || merchantForm.isOnline) {
+      handleSetOnlineStore(false);
+      return;
+    }
     if (merchantForm.cities.length <= 1) {
-      setErrorMsg('O estabelecimento precisa atender pelo menos 1 cidade.');
+      setErrorMsg('O estabelecimento precisa atender pelo menos 1 cidade ou ser Loja Online.');
       setTimeout(() => setErrorMsg(''), 3000);
       return;
     }
@@ -198,19 +248,31 @@ export const AuthModal = () => {
       setErrorMsg('CNPJ inválido. Digite os 14 dígitos do CNPJ.');
       return;
     }
-    if (merchantForm.cities.length === 0) {
-      setErrorMsg('Adicione ao menos uma cidade de atuação da loja ou franquia.');
+    const isOnline = merchantForm.storeType === 'online' || merchantForm.isOnline;
+    const finalCities = isOnline 
+      ? ['Todas as Cidades (Online / Brasil Todo)'] 
+      : merchantForm.cities;
+
+    if (!isOnline && finalCities.length === 0) {
+      setErrorMsg('Adicione ao menos uma cidade de atuação da loja ou selecione a opção de Loja Online.');
       return;
     }
 
     // Filtro Anti-Pornografia, Explícito e Trolls para Lojas
-    const safetyCheck = validateStoreSafety(merchantForm);
+    const payload = {
+      ...merchantForm,
+      cities: finalCities,
+      storeType: isOnline ? 'online' : 'physical',
+      isOnline
+    };
+
+    const safetyCheck = validateStoreSafety(payload);
     if (!safetyCheck.safe) {
       setErrorMsg(`⚠️ Bloqueio de Segurança: ${safetyCheck.reason} Por favor, utilize um nome e termos comerciais legítimos.`);
       return;
     }
 
-    registerMerchant(merchantForm);
+    registerMerchant(payload);
     if (setActiveTab) {
       setActiveTab('merchant-dashboard');
     }
@@ -656,101 +718,211 @@ export const AuthModal = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-bold text-gray-300 block">CEP Sede / Matriz *</label>
+                    <label className="text-xs font-bold text-gray-300 block">
+                      {merchantForm.storeType === 'online' || merchantForm.isOnline ? 'CEP da Sede / Distribuição (Opcional)' : 'CEP Sede / Matriz *'}
+                    </label>
                     {isSearchingCep && (
                       <span className="text-[10px] text-amber-400 animate-pulse">Detectando cidade...</span>
                     )}
                   </div>
                   <input
                     type="text"
-                    required
+                    required={merchantForm.storeType !== 'online' && !merchantForm.isOnline}
                     maxLength={9}
                     placeholder="00000-000"
                     value={merchantForm.cep}
                     onChange={(e) => {
                       const masked = formatCEP(e.target.value);
                       setMerchantForm({ ...merchantForm, cep: masked });
-                      handleCepLookup(masked, 'merchant');
+                      if (merchantForm.storeType !== 'online' && !merchantForm.isOnline) {
+                        handleCepLookup(masked, 'merchant');
+                      }
                     }}
                     className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white font-mono focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* ================= CIDADES DE ATUAÇÃO (MULTI-SELEÇÃO PARA FRANQUIAS) ================= */}
-              <div className="bg-[#101017] p-4 rounded-2xl border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin size={14} />
-                    <span>Cidades de Atuação ({merchantForm.cities.length}):</span>
-                  </label>
-                  <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full">
-                    Franquias / Redes
-                  </span>
-                </div>
-
-                {/* Chips das Cidades Selecionadas */}
-                <div className="flex flex-wrap gap-1.5">
-                  {merchantForm.cities.map((city, idx) => (
-                    <span 
-                      key={idx}
-                      className="inline-flex items-center gap-1.5 bg-[#FF5F00]/20 border border-[#FF5F00]/40 text-orange-200 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                    >
-                      <span>{city}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCity(city)}
-                        className="hover:text-white hover:bg-white/10 rounded p-0.5"
-                        title={`Remover ${city}`}
-                      >
-                        <X size={12} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                {/* Seletor rápido de Cidades Populares */}
+              {/* ================= MODALIDADE & CIDADES DE ATUAÇÃO ================= */}
+              <div className="bg-[#101017] p-4 rounded-2xl border border-white/10 space-y-3.5">
+                
+                {/* 1. SELETOR DE MODALIDADE: LOJA FÍSICA VS LOJA ONLINE (TODOS OS LOCAIS) */}
                 <div>
-                  <div className="text-[11px] text-gray-400 mb-1.5">Adicione rapidamente com 1 clique:</div>
-                  <div className="flex flex-wrap gap-1">
-                    {POPULAR_CITIES.filter(c => c !== 'Todas as Cidades' && !merchantForm.cities.includes(c)).slice(0, 7).map((city, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleAddCity(city)}
-                        className="text-[10px] bg-white/5 hover:bg-white/15 text-gray-300 border border-white/10 rounded-md px-2 py-1 flex items-center gap-1 transition-colors"
-                      >
-                        <Plus size={10} className="text-emerald-400" />
-                        <span>{city}</span>
-                      </button>
-                    ))}
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <MapPin size={14} />
+                      <span>Modalidade de Atuação da Loja:</span>
+                    </label>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full">
+                      {merchantForm.storeType === 'online' || merchantForm.isOnline ? '🌐 Nacional' : '🏬 Local / Franquias'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {/* Botão Opção 1: Loja Física */}
+                    <button
+                      type="button"
+                      onClick={() => handleSetOnlineStore(false)}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                        merchantForm.storeType !== 'online' && !merchantForm.isOnline
+                          ? 'bg-[#FF5F00]/15 border-[#FF5F00] text-white shadow-md shadow-orange-600/10 ring-1 ring-[#FF5F00]'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="text-xl mt-0.5">🏬</span>
+                      <div>
+                        <div className="text-xs font-black text-white">Loja Física / Franquia</div>
+                        <div className="text-[10px] text-gray-400 mt-0.5 leading-tight">
+                          Atendimento no balcão em cidades específicas.
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Botão Opção 2: Loja Online que Abrange Todos os Locais */}
+                    <button
+                      type="button"
+                      onClick={() => handleSetOnlineStore(true)}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 ${
+                        merchantForm.storeType === 'online' || merchantForm.isOnline
+                          ? 'bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-[#FF5F00]/15 border-emerald-400 text-white shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="text-xl mt-0.5">🌐</span>
+                      <div>
+                        <div className="text-xs font-black text-emerald-300 flex items-center gap-1">
+                          <span>Loja Online / E-commerce</span>
+                          <span className="text-[9px] bg-emerald-500/30 text-emerald-300 px-1.5 py-0.2 rounded font-extrabold uppercase">Todos os Locais</span>
+                        </div>
+                        <div className="text-[10px] text-gray-400 mt-0.5 leading-tight">
+                          Abrange todo o Brasil, delivery nacional ou vendas online.
+                        </div>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
-                {/* Campo para Adicionar Outra Cidade Personalizada */}
-                <div className="flex gap-2 pt-1">
-                  <input
-                    type="text"
-                    placeholder="Adicionar outra cidade (ex: Jundiaí - SP)"
-                    value={customCityInput}
-                    onChange={(e) => setCustomCityInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddCity(customCityInput);
-                      }
-                    }}
-                    className="flex-grow bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF5F00]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleAddCity(customCityInput)}
-                    className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
-                  >
-                    <Plus size={14} />
-                    <span>Adicionar</span>
-                  </button>
-                </div>
+                {/* 2. CONTEÚDO ESPECÍFICO CONFORME A MODALIDADE */}
+                {merchantForm.storeType === 'online' || merchantForm.isOnline ? (
+                  /* Painel Informativo para Loja Online com Abrangência Nacional */
+                  <div className="bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-transparent border border-emerald-500/30 rounded-xl p-3.5 space-y-2.5 animate-fade-in">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-emerald-400 font-black text-xs">
+                        <Globe size={16} />
+                        <span>Abrangência Nacional: Visível em Todos os Locais</span>
+                      </div>
+                      <span className="text-[10px] bg-emerald-500/25 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/40">
+                        🇧🇷 100% Brasil
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-gray-300 leading-relaxed">
+                      Sua loja e suas ofertas serão <strong>exibidas para clientes de qualquer cidade ou estado do país</strong>. Os clientes poderão resgatar o cupom com link direto para seu site, WhatsApp ou aplicativo.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 px-3 py-1 rounded-lg text-xs font-bold">
+                        <Globe size={13} className="text-emerald-400" />
+                        <span>Todas as Cidades (Online / Brasil Todo)</span>
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSetOnlineStore(false)}
+                        className="text-[11px] text-gray-400 hover:text-white underline ml-auto"
+                      >
+                        Mudar para loja física por cidade
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Painel para Loja Física / Franquias (Seleção por Cidades) */
+                  <div className="space-y-3 pt-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                        <MapPin size={13} className="text-[#FF5F00]" />
+                        <span>Cidades de Atuação ({merchantForm.cities.length}):</span>
+                      </label>
+                      <span className="text-[10px] text-gray-400">
+                        Suas ofertas aparecem no feed dessas cidades
+                      </span>
+                    </div>
+
+                    {/* Chips das Cidades Selecionadas */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {merchantForm.cities.map((city, idx) => (
+                        <span 
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 bg-[#FF5F00]/20 border border-[#FF5F00]/40 text-orange-200 px-2.5 py-1 rounded-lg text-xs font-semibold"
+                        >
+                          <span>{city}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCity(city)}
+                            className="hover:text-white hover:bg-white/10 rounded p-0.5"
+                            title={`Remover ${city}`}
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Seletor rápido de Cidades Populares + Atalho para Loja Online */}
+                    <div>
+                      <div className="text-[11px] text-gray-400 mb-1.5">Adicione rapidamente com 1 clique:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {/* Botão em destaque de Loja Online (Todos os Locais) */}
+                        <button
+                          type="button"
+                          onClick={() => handleSetOnlineStore(true)}
+                          className="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold rounded-md px-2.5 py-1 flex items-center gap-1 transition-all shadow-sm"
+                          title="Sua loja atende todo o Brasil online"
+                        >
+                          <Globe size={11} className="text-emerald-400" />
+                          <span>🌐 Loja Online (Todos os Locais / Brasil)</span>
+                        </button>
+
+                        {POPULAR_CITIES.filter(c => c !== 'Todas as Cidades' && !merchantForm.cities.includes(c)).slice(0, 7).map((city, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleAddCity(city)}
+                            className="text-[10px] bg-white/5 hover:bg-white/15 text-gray-300 border border-white/10 rounded-md px-2 py-1 flex items-center gap-1 transition-colors"
+                          >
+                            <Plus size={10} className="text-emerald-400" />
+                            <span>{city}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Campo para Adicionar Outra Cidade Personalizada */}
+                    <div className="flex gap-2 pt-1">
+                      <input
+                        type="text"
+                        placeholder="Adicionar outra cidade (ex: Jundiaí - SP)"
+                        value={customCityInput}
+                        onChange={(e) => setCustomCityInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCity(customCityInput);
+                          }
+                        }}
+                        className="flex-grow bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF5F00]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddCity(customCityInput)}
+                        className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
+                      >
+                        <Plus size={14} />
+                        <span>Adicionar</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Categoria do Estabelecimento */}

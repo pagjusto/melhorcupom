@@ -111,7 +111,7 @@ const MainLayout = () => {
   const filteredCoupons = coupons.filter(coupon => {
     const store = stores.find(s => s.id === coupon.storeId);
     const couponCity = (coupon.city || store?.city || '').toLowerCase();
-    const isOnline = coupon.type === 'online' || couponCity.includes('online');
+    const isOnline = coupon.type === 'online' || couponCity.includes('online') || store?.type === 'online' || store?.isOnline;
 
     // REGRA DE OURO: Não misturar cupons das grandes lojas com os cupons comuns
     // Cupons de APIs/Grandes redes ficam exclusivamente na vitrine horizontal superior!
@@ -134,13 +134,28 @@ const MainLayout = () => {
       const q = activeCityFilter.toLowerCase().trim();
       const baseCity = q.split('-')[0].trim(); // ex: 'Campinas - SP' -> 'campinas'
 
+      // Loja Online / Atuação Nacional abrange todos os locais e cidades
+      const isStoreCoveringAll = isOnline || 
+        couponCity.includes('brasil') || 
+        couponCity.includes('todas as cidades') ||
+        (Array.isArray(store?.cities) && store.cities.some(c => {
+          const cl = String(c).toLowerCase();
+          return cl.includes('todas as cidades') || cl.includes('todo o brasil') || cl.includes('online') || cl.includes('todos os locais');
+        })) ||
+        (Array.isArray(coupon.cities) && coupon.cities.some(c => {
+          const cl = String(c).toLowerCase();
+          return cl.includes('todas as cidades') || cl.includes('todo o brasil') || cl.includes('online') || cl.includes('todos os locais');
+        }));
+
       const matchCity = (field) => {
         if (!field) return false;
         const lower = String(field).toLowerCase();
+        if (lower.includes('todas as cidades') || lower.includes('todo o brasil') || lower.includes('todos os locais') || lower.includes('online')) return true;
         return lower.includes(q) || (baseCity.length >= 3 && lower.includes(baseCity));
       };
 
-      const matchesCity = matchCity(coupon.city) ||
+      const matchesCity = isStoreCoveringAll ||
+                          matchCity(coupon.city) ||
                           matchCity(store?.city) ||
                           matchCity(store?.address) ||
                           (Array.isArray(store?.cities) && store.cities.some(matchCity)) ||
