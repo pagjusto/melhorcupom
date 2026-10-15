@@ -52,7 +52,13 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const isImageLogo = rawLogo && typeof rawLogo === 'string' && (rawLogo.startsWith('data:') || rawLogo.startsWith('http') || rawLogo.startsWith('/') || rawLogo.endsWith('.png') || rawLogo.endsWith('.jpg') || rawLogo.endsWith('.svg'));
   const storeLogo = isImageLogo ? rawLogo : (getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage);
   const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
-  const isLogoBanner = bannerImage && (bannerImage.includes('/logos/') || bannerImage.includes('/logo') || bannerImage.endsWith('.svg'));
+  const isLogoBanner = bannerImage && (
+    bannerImage.includes('/logos/') || 
+    bannerImage.includes('/logo') || 
+    bannerImage.endsWith('.svg') ||
+    storeName.toLowerCase().includes('omens') ||
+    coupon.title?.toLowerCase().includes('omens')
+  );
 
   // Configuração visual de acordo com o plano de assinatura do lojista:
   // - Borda da logo do lojista na cor da assinatura (branca para Free)
@@ -159,7 +165,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         </div>
 
         {/* 2. LOGO DA EMPRESA COM BORDA RESPECTIVA DA ASSINATURA */}
-        <div className={`absolute bottom-1.5 left-2 w-8 h-8 rounded-lg bg-white shadow-lg flex items-center justify-center overflow-hidden z-20 transition-all duration-300 ${tierConfig.logoBorder}`}>
+        <div className={`absolute bottom-1.5 left-2 min-w-[32px] max-w-[72px] h-8 px-1.5 rounded-lg bg-white shadow-lg flex items-center justify-center overflow-hidden z-20 transition-all duration-300 ${tierConfig.logoBorder}`}>
           {storeLogo ? (
             <>
               <img 

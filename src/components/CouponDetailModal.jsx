@@ -147,6 +147,10 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const couponCode = coupon.codePrefix || activeRedemption?.code || 'MELHORVIP';
   const affiliateDestinationUrl = getStoreDestinationUrl(store, coupon);
 
+  const storeName = coupon.storeName || store?.name || 'Loja Parceira';
+  const rawLogo = coupon.storeLogoImage || coupon.logoImage || store?.logoImage || (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('data:') || coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
+  const storeLogo = rawLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
+
   const handleCopy = () => {
     navigator.clipboard.writeText(couponCode);
     setCopied(true);
@@ -185,14 +189,14 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
           <div className="relative w-full max-w-md bg-[#161622] border-2 border-emerald-500/60 rounded-3xl p-6 sm:p-8 text-center shadow-2xl shadow-emerald-950/70 space-y-6">
             
             {/* Logo da Loja Pulsando */}
-            <div className="relative w-20 h-20 mx-auto">
+            <div className="relative min-w-[84px] max-w-[160px] h-20 mx-auto">
               <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping pointer-events-none" />
-              <div className="relative w-full h-full rounded-2xl bg-white border-2 border-emerald-400 p-2 flex items-center justify-center shadow-xl overflow-hidden">
-                {store?.logoImage ? (
+              <div className="relative w-full h-full rounded-2xl bg-white border-2 border-emerald-400 px-4 py-2 flex items-center justify-center shadow-xl overflow-hidden">
+                {storeLogo ? (
                   <>
                     <img 
-                      src={store.logoImage} 
-                      alt={store.name} 
+                      src={storeLogo} 
+                      alt={storeName} 
                       className="w-full h-full object-contain rounded-xl" 
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
@@ -290,17 +294,21 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
         
         {/* Header com Imagem e Fechar */}
         {(() => {
-          const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-          const storeLogo = coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
           const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700';
-          const isLogoBanner = bannerImage && (bannerImage.includes('/logos/') || bannerImage.includes('/logo') || bannerImage.endsWith('.svg'));
+          const isLogoBanner = bannerImage && (
+            bannerImage.includes('/logos/') || 
+            bannerImage.includes('/logo') || 
+            bannerImage.endsWith('.svg') ||
+            storeName.toLowerCase().includes('omens') ||
+            coupon.title?.toLowerCase().includes('omens')
+          );
 
           return (
             <div className={`relative h-40 overflow-hidden ${isLogoBanner ? 'bg-gradient-to-br from-[#1E1E2E] via-[#161624] to-[#101018] flex items-center justify-center p-6' : 'bg-[#26150D]'}`}>
               <img 
                 src={bannerImage} 
                 alt={coupon.title} 
-                className={isLogoBanner ? "h-20 max-w-[60%] object-contain drop-shadow-2xl" : "w-full h-full object-cover"}
+                className={isLogoBanner ? "h-20 max-w-[70%] object-contain drop-shadow-2xl" : "w-full h-full object-cover"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#181822] via-[#181822]/40 to-black/50 pointer-events-none" />
               
@@ -312,7 +320,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               </button>
 
               <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
-                <div className="w-14 h-14 rounded-2xl bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-xl p-1.5">
+                <div className="min-w-[60px] max-w-[130px] h-14 rounded-2xl bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-xl px-2.5 py-1.5 transition-all">
                   {storeLogo ? (
                     <>
                       <img 

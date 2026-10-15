@@ -28,6 +28,7 @@ import {
 import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
+import { getBrandLogo } from '../assets/brands';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -1042,8 +1043,18 @@ export const AdminCouponsManager = ({ showToast }) => {
             {filteredCoupons.map((coupon) => {
               const store = stores.find(s => s.id === coupon.storeId);
               const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-              const storeLogo = coupon.storeLogo || store?.logo || '🏪';
+              const rawLogo = coupon.storeLogoImage || coupon.logoImage || store?.logoImage || (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('data:') || coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
+              const storeLogo = rawLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
               const isOnline = coupon.type === 'online' || coupon.city?.toLowerCase().includes('online');
+
+              const bannerImage = coupon.banner || coupon.image || BANNER_PRESETS[0].url;
+              const isLogoBanner = bannerImage && (
+                bannerImage.includes('/logos/') || 
+                bannerImage.includes('/logo') || 
+                bannerImage.endsWith('.svg') ||
+                storeName.toLowerCase().includes('omens') ||
+                coupon.title?.toLowerCase().includes('omens')
+              );
 
               return (
                 <div 
@@ -1057,30 +1068,36 @@ export const AdminCouponsManager = ({ showToast }) => {
                   }`}
                 >
                   {/* Banner */}
-                  <div className="relative h-36 w-full bg-black/60 overflow-hidden">
+                  <div className={`relative h-36 w-full overflow-hidden ${isLogoBanner ? 'bg-gradient-to-br from-[#1E1E2E] via-[#161624] to-[#101018] flex items-center justify-center p-4' : 'bg-black/60'}`}>
                     <img 
-                      src={coupon.banner || coupon.image || BANNER_PRESETS[0].url} 
+                      src={bannerImage} 
                       alt={coupon.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                      className={isLogoBanner ? "h-16 max-w-[70%] object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300" : "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"} 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                     
                     {/* Badge de Desconto */}
-                    <div className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white px-2.5 py-0.5 rounded-lg text-xs font-black shadow-md">
+                    <div className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white px-2.5 py-0.5 rounded-lg text-xs font-black shadow-md z-10">
                       {coupon.discountBadge || 'OFERTA'}
                     </div>
 
                     {/* Badge Destaque Ouro */}
                     {coupon.highlight && (
-                      <div className="absolute top-2.5 right-2.5 bg-gradient-to-r from-amber-400 to-[#FF5F00] text-black px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1 shadow-md">
+                      <div className="absolute top-2.5 right-2.5 bg-gradient-to-r from-amber-400 to-[#FF5F00] text-black px-2 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1 shadow-md z-10">
                         <Star size={11} fill="currentColor" />
                         <span>DESTAQUE</span>
                       </div>
                     )}
 
                     {/* Logo e Nome da Loja */}
-                    <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center gap-2">
-                      <span className="text-lg">{storeLogo}</span>
+                    <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center gap-2 z-10">
+                      <div className="min-w-[28px] max-w-[64px] h-7 px-1.5 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
+                        {storeLogo ? (
+                          <img src={storeLogo} alt={storeName} className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-xs">{coupon.storeLogo || store?.logo || '🏪'}</span>
+                        )}
+                      </div>
                       <span className="text-xs font-bold text-white drop-shadow truncate">{storeName}</span>
                     </div>
                   </div>

@@ -32,8 +32,12 @@ import pinguimLogo from './pinguim.png';
 import belmonteLogo from './botecobelmonte.jpg';
 import corleoneLogo from './corleone.jpg';
 import trackfieldLogo from './trackfield.jpg';
+import omensLogo from './omens.svg';
 
 export const BRAND_LOGOS = {
+  omens: omensLogo,
+  'omens saúde masculina': omensLogo,
+  omenssaudemasculina: omensLogo,
   amazon: amazonLogo,
   mercadolivre: mercadolivreLogo,
   meli: mercadolivreLogo,
@@ -83,10 +87,15 @@ export const BRAND_LOGOS = {
 };
 
 export const getBrandLogo = (identifier) => {
-  if (!identifier) return null;
-  const key = identifier.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!identifier || typeof identifier !== 'string') return null;
+  const key = identifier.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  if (!key) return null;
+
   for (const [k, v] of Object.entries(BRAND_LOGOS)) {
-    if (key.includes(k)) return v;
+    const cleanK = k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    if (cleanK && (key.includes(cleanK) || cleanK.includes(key))) {
+      return v;
+    }
   }
   return null;
 };

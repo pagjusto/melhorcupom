@@ -19,6 +19,7 @@ import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
 import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
 import { validateStoreSafety, validateUserSafety, validateCouponSafety } from '../utils/contentModeration';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
+import { getBrandLogo } from '../assets/brands';
 
 const AppContext = createContext();
 
@@ -116,7 +117,7 @@ export const AppProvider = ({ children }) => {
             banner: init.banner || c.banner,
             storeName: init.storeName || c.storeName,
             storeLogo: init.storeLogo || c.storeLogo,
-            logoImage: init.logoImage || c.logoImage,
+            logoImage: init.logoImage || c.logoImage || getBrandLogo(init.storeName || c.storeName) || '',
             viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
             isApiIntegrated: init.isApiIntegrated ?? c.isApiIntegrated ?? false,
             apiSource: init.apiSource || c.apiSource || null,
@@ -135,9 +136,11 @@ export const AppProvider = ({ children }) => {
           };
         }
         const cleanAffiliate = c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, c);
+        const resolvedLogo = c.logoImage || c.storeLogoImage || getBrandLogo(c.storeName) || '';
         return {
           ...c,
-          affiliateUrl: cleanAffiliate
+          affiliateUrl: cleanAffiliate,
+          logoImage: resolvedLogo
         };
       });
     } catch {
@@ -178,7 +181,7 @@ export const AppProvider = ({ children }) => {
           name: init?.name || s.name,
           instagram,
           logo: init?.logo || s.logo || '🏪',
-          logoImage: init?.logoImage || s.logoImage || '',
+          logoImage: init?.logoImage || s.logoImage || getBrandLogo(init?.name || s.name) || '',
           image: init?.image || s.image || '',
           tier: resolvedTier,
           adminPaidPlan: Boolean(s.adminPaidPlan),
@@ -1218,7 +1221,7 @@ export const AppProvider = ({ children }) => {
             type: isOnline ? 'online' : 'physical',
             isOnline,
             logo: newCoupon.storeLogo || '🏪',
-            logoImage: typeof newCoupon.storeLogo === 'string' && newCoupon.storeLogo.startsWith('http') ? newCoupon.storeLogo : '',
+            logoImage: newCoupon.storeLogoImage || newCoupon.logoImage || (typeof newCoupon.storeLogo === 'string' && (newCoupon.storeLogo.startsWith('http') || newCoupon.storeLogo.startsWith('data:') || newCoupon.storeLogo.startsWith('/')) ? newCoupon.storeLogo : '') || getBrandLogo(newCoupon.storeName) || '',
             image: newCoupon.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
             tier: 'api',
             adminPaidPlan: false,
