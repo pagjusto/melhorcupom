@@ -21,7 +21,9 @@ import {
   Calendar,
   Layers,
   ChevronDown,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Pencil,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
@@ -43,15 +45,18 @@ export const AdminCouponsManager = ({ showToast }) => {
     stores = [], 
     coupons = [], 
     addCoupon, 
+    updateCoupon,
     deleteCoupon, 
     toggleHighlightCoupon 
   } = useApp();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all' | 'physical' | 'online' | 'highlight'
   const fileInputRef = useRef(null);
   const logoInputRef = useRef(null);
+  const formContainerRef = useRef(null);
 
   // Modo de vínculo: 'existing' (loja cadastrada) ou 'custom' (loja/marca avulsa)
   const [storeLinkMode, setStoreLinkMode] = useState('existing');
@@ -139,7 +144,91 @@ export const AdminCouponsManager = ({ showToast }) => {
     setFormData(prev => ({ ...prev, code: `${prefix}${rand}` }));
   };
 
-  // Submissão do Formulário de Cupom Avulso
+  // Iniciar Edição de um Cupom Existente
+  const handleStartEdit = (coupon) => {
+    setEditingCoupon(coupon);
+
+    const isCustom = Boolean(
+      coupon.isAvulso || 
+      coupon.storeId?.startsWith('store_avulsa_') || 
+      coupon.merchantId?.startsWith('merchant_avulso_') || 
+      !stores.some(s => s.id === coupon.storeId && !s.id.startsWith('store_avulsa_'))
+    );
+    setStoreLinkMode(isCustom ? 'custom' : 'existing');
+
+    const maxUses = coupon.maxUsesPerUser;
+    let limitType = 'unlimited';
+    let customMax = 2;
+    if (Number(maxUses) === 1) {
+      limitType = 'one';
+    } else if (typeof maxUses === 'number' && maxUses > 1) {
+      limitType = 'custom';
+      customMax = maxUses;
+    }
+
+    const validityType = (coupon.expiresAt === 'unlimited' || !coupon.expiresAt) ? 'unlimited' : 'days';
+    const rulesStr = Array.isArray(coupon.rules) ? coupon.rules.join('\n') : (coupon.rules || '');
+
+    setFormData({
+      selectedStoreId: coupon.storeId || stores[0]?.id || '',
+      customStoreName: coupon.storeName || '',
+      customStoreLogoImage: coupon.customStoreLogoImage || coupon.logoImage || coupon.storeLogoImage || (typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') ? coupon.storeLogo : ''),
+      title: coupon.title || '',
+      description: coupon.description || '',
+      originalPrice: (coupon.originalPrice !== null && coupon.originalPrice !== undefined) ? String(coupon.originalPrice) : '',
+      promoPrice: (coupon.promoPrice !== null && coupon.promoPrice !== undefined) ? String(coupon.promoPrice) : '',
+      discountBadge: coupon.discountBadge || '30% OFF',
+      discountType: coupon.discountType || 'percentage',
+      type: coupon.type || 'physical',
+      city: coupon.city || 'São Paulo - SP',
+      category: coupon.category || 'gastronomia',
+      banner: coupon.banner || BANNER_PRESETS[0].url,
+      code: coupon.code || coupon.codePrefix || '',
+      limitType,
+      customMaxUses: customMax,
+      validityType,
+      validityDays: coupon.validityDays || 30,
+      highlight: Boolean(coupon.highlight),
+      rules: rulesStr || 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.',
+      affiliateUrl: coupon.affiliateUrl || ''
+    });
+
+    setIsFormOpen(true);
+    setTimeout(() => {
+      formContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  // Cancelar Edição e Resetar Formulário
+  const handleCancelEdit = () => {
+    setEditingCoupon(null);
+    setFormData({
+      selectedStoreId: stores[0]?.id || '',
+      customStoreName: '',
+      customStoreLogoImage: '',
+      title: '',
+      description: '',
+      originalPrice: '',
+      promoPrice: '',
+      discountBadge: '30% OFF',
+      discountType: 'percentage',
+      type: 'physical',
+      city: 'São Paulo - SP',
+      category: 'gastronomia',
+      banner: BANNER_PRESETS[0].url,
+      code: '',
+      limitType: 'one',
+      customMaxUses: 2,
+      validityType: 'days',
+      validityDays: 30,
+      highlight: false,
+      rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.',
+      affiliateUrl: ''
+    });
+    setIsFormOpen(false);
+  };
+
+  // Submissão do Formulário de Cupom Avulso (Criar ou Atualizar)
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -163,10 +252,14 @@ export const AdminCouponsManager = ({ showToast }) => {
         alert('Por favor, digite o nome do estabelecimento ou marca da oferta avulsa.');
         return;
       }
-      finalStoreId = `store_avulsa_${Date.now()}`;
+      finalStoreId = editingCoupon?.storeId?.startsWith('store_avulsa_') 
+        ? editingCoupon.storeId 
+        : `store_avulsa_${Date.now()}`;
       finalStoreName = formData.customStoreName.trim();
       finalStoreLogo = formData.customStoreLogoImage || '';
-      finalMerchantId = `merchant_avulso_${Date.now()}`;
+      finalMerchantId = editingCoupon?.merchantId?.startsWith('merchant_avulso_')
+        ? editingCoupon.merchantId
+        : `merchant_avulso_${Date.now()}`;
     }
 
     const orig = formData.originalPrice ? parseFloat(formData.originalPrice) : null;
@@ -210,6 +303,54 @@ export const AdminCouponsManager = ({ showToast }) => {
       ? formData.code.trim().toUpperCase() 
       : `${finalStoreName.substring(0, 4).toUpperCase().replace(/\s+/g, '')}${Math.floor(10 + Math.random() * 90)}`;
 
+    const resolvedAffiliateUrl = formData.affiliateUrl?.trim() || getStoreDestinationUrl(
+      storeLinkMode === 'existing' ? stores.find(s => s.id === finalStoreId) : { name: finalStoreName, id: finalStoreId },
+      { title: formData.title.trim() }
+    );
+
+    // MODO EDIÇÃO: Atualizar cupom existente
+    if (editingCoupon) {
+      const updatePayload = {
+        storeId: finalStoreId,
+        merchantId: finalMerchantId,
+        storeName: finalStoreName,
+        storeLogo: finalStoreLogo,
+        storeLogoImage: formData.customStoreLogoImage || (typeof finalStoreLogo === 'string' && (finalStoreLogo.startsWith('data:') || finalStoreLogo.startsWith('http')) ? finalStoreLogo : ''),
+        logoImage: formData.customStoreLogoImage || (typeof finalStoreLogo === 'string' && (finalStoreLogo.startsWith('data:') || finalStoreLogo.startsWith('http')) ? finalStoreLogo : ''),
+        title: formData.title.trim(),
+        description: formData.description.trim() || `Oferta especial exclusiva de ${finalStoreName} para membros VIP.`,
+        originalPrice: orig,
+        promoPrice: promo,
+        discountBadge: formData.discountBadge || '30% OFF',
+        estimatedSavings: computedSavings,
+        category: formData.category,
+        city: finalCity,
+        cities: finalCities,
+        type: formData.type,
+        banner: formData.banner,
+        code: finalCode,
+        codePrefix: finalCode,
+        affiliateUrl: resolvedAffiliateUrl,
+        highlight: formData.highlight,
+        maxUsesPerUser: maxUses,
+        expiresAt: finalExpiresAt,
+        rules: rulesArray
+      };
+
+      const res = updateCoupon(editingCoupon.id, updatePayload);
+      if (res && res.error) {
+        return;
+      }
+
+      if (showToast) {
+        showToast(`✏️ Cupom "${updatePayload.title}" atualizado com sucesso!`);
+      }
+
+      handleCancelEdit();
+      return;
+    }
+
+    // MODO CRIAÇÃO: Adicionar novo cupom
     const newCouponPayload = {
       storeId: finalStoreId,
       merchantId: finalMerchantId,
@@ -229,10 +370,7 @@ export const AdminCouponsManager = ({ showToast }) => {
       type: formData.type,
       banner: formData.banner,
       code: finalCode,
-      affiliateUrl: formData.affiliateUrl?.trim() || getStoreDestinationUrl(
-        storeLinkMode === 'existing' ? stores.find(s => s.id === finalStoreId) : { name: finalStoreName, id: finalStoreId },
-        { title: formData.title.trim() }
-      ),
+      affiliateUrl: resolvedAffiliateUrl,
       highlight: formData.highlight,
       vipOnly: true,
       maxUsesPerUser: maxUses,
@@ -251,32 +389,7 @@ export const AdminCouponsManager = ({ showToast }) => {
       showToast(`🎟️ Cupom "${newCouponPayload.title}" publicado com sucesso no site!`);
     }
 
-    // Resetar formulário
-    setFormData({
-      selectedStoreId: stores[0]?.id || '',
-      customStoreName: '',
-      customStoreLogoImage: '',
-      title: '',
-      description: '',
-      originalPrice: '',
-      promoPrice: '',
-      discountBadge: '30% OFF',
-      discountType: 'percentage',
-      type: 'physical',
-      city: 'São Paulo - SP',
-      category: 'gastronomia',
-      banner: BANNER_PRESETS[0].url,
-      code: '',
-      limitType: 'one',
-      customMaxUses: 2,
-      validityType: 'days',
-      validityDays: 30,
-      highlight: false,
-      rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.',
-      affiliateUrl: ''
-    });
-
-    setIsFormOpen(false);
+    handleCancelEdit();
   };
 
   // Filtragem da Lista de Cupons
@@ -323,11 +436,20 @@ export const AdminCouponsManager = ({ showToast }) => {
         </div>
 
         <button
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          className="bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-6 py-3 rounded-2xl text-sm shadow-xl shadow-orange-600/30 flex items-center gap-2 transition-all transform hover:scale-105"
+          onClick={() => {
+            if (isFormOpen && editingCoupon) {
+              handleCancelEdit();
+            } else {
+              if (!isFormOpen) {
+                setEditingCoupon(null);
+              }
+              setIsFormOpen(!isFormOpen);
+            }
+          }}
+          className="bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-6 py-3 rounded-2xl text-sm shadow-xl shadow-orange-600/30 flex items-center gap-2 transition-all transform hover:scale-105 cursor-pointer"
         >
           <Plus size={18} />
-          <span>{isFormOpen ? 'Fechar Formulário' : '+ Novo Cupom Avulso'}</span>
+          <span>{isFormOpen ? (editingCoupon ? 'Cancelar Edição' : 'Fechar Formulário') : '+ Novo Cupom Avulso'}</span>
         </button>
       </div>
 
@@ -376,23 +498,43 @@ export const AdminCouponsManager = ({ showToast }) => {
         </div>
       </div>
 
-      {/* 3. FORMULÁRIO DE CRIAÇÃO (QUANDO ABERTO) */}
+      {/* 3. FORMULÁRIO DE CRIAÇÃO / EDIÇÃO (QUANDO ABERTO) */}
       {isFormOpen && (
-        <div className="bg-[#181824] border-2 border-[#FF5F00]/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-fade-in">
+        <div 
+          ref={formContainerRef} 
+          className={`bg-[#181824] border-2 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-fade-in transition-all ${
+            editingCoupon 
+              ? 'border-amber-400/80 shadow-amber-950/40 ring-1 ring-amber-400/50' 
+              : 'border-[#FF5F00]/40'
+          }`}
+        >
           <div className="flex items-center justify-between pb-4 border-b border-white/10">
             <div>
               <h3 className="text-xl font-black text-white flex items-center gap-2">
-                <span>➕ Criar e Publicar Novo Cupom Avulso</span>
+                {editingCoupon ? (
+                  <>
+                    <span className="p-1.5 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center">
+                      <Pencil size={18} />
+                    </span>
+                    <span>Editar Cupom: <span className="text-amber-400">{editingCoupon.title}</span></span>
+                  </>
+                ) : (
+                  <span>➕ Criar e Publicar Novo Cupom Avulso</span>
+                )}
               </h3>
-              <p className="text-xs text-gray-400">
-                Preencha os dados abaixo. O cupom ficará disponível imediatamente para todos os membros VIP.
+              <p className="text-xs text-gray-400 mt-0.5">
+                {editingCoupon 
+                  ? 'Modifique os dados da oferta abaixo e clique em Salvar Alterações.' 
+                  : 'Preencha os dados abaixo. O cupom ficará disponível imediatamente para todos os membros VIP.'}
               </p>
             </div>
             <button
-              onClick={() => setIsFormOpen(false)}
-              className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-xl text-xs"
+              type="button"
+              onClick={handleCancelEdit}
+              className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              Fechar
+              <X size={15} />
+              <span>{editingCoupon ? 'Cancelar Edição' : 'Fechar'}</span>
             </button>
           </div>
 
@@ -822,17 +964,26 @@ export const AdminCouponsManager = ({ showToast }) => {
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white"
+                onClick={handleCancelEdit}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="bg-gradient-to-r from-[#FF5F00] via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-8 py-3 rounded-xl text-sm shadow-xl shadow-orange-600/30 flex items-center gap-2 transform hover:scale-105 transition-all"
+                className="bg-gradient-to-r from-[#FF5F00] via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-8 py-3 rounded-xl text-sm shadow-xl shadow-orange-600/30 flex items-center gap-2 transform hover:scale-105 transition-all cursor-pointer"
               >
-                <Sparkles size={16} />
-                <span>🚀 Publicar Cupom Avulso Agora</span>
+                {editingCoupon ? (
+                  <>
+                    <Check size={16} />
+                    <span>💾 Salvar Alterações do Cupom</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    <span>🚀 Publicar Cupom Avulso Agora</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -898,9 +1049,11 @@ export const AdminCouponsManager = ({ showToast }) => {
                 <div 
                   key={coupon.id}
                   className={`bg-[#12121A] rounded-2xl border overflow-hidden flex flex-col transition-all group ${
-                    coupon.highlight 
-                      ? 'border-amber-400/60 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/40' 
-                      : 'border-white/10 hover:border-white/20'
+                    coupon.id === editingCoupon?.id
+                      ? 'border-amber-400 ring-2 ring-amber-400/80 shadow-xl shadow-amber-500/20 scale-[1.01]'
+                      : (coupon.highlight 
+                          ? 'border-amber-400/60 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/40' 
+                          : 'border-white/10 hover:border-white/20')
                   }`}
                 >
                   {/* Banner */}
@@ -979,36 +1132,58 @@ export const AdminCouponsManager = ({ showToast }) => {
 
                     {/* Ações Administrativas */}
                     <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          toggleHighlightCoupon(coupon.id);
-                          if (showToast) {
-                            showToast(coupon.highlight ? '⭐ Destaque ouro removido.' : '⭐ Cupom promovido para Destaque Ouro!');
-                          }
-                        }}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
-                          coupon.highlight
-                            ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 hover:bg-amber-400/30'
-                            : 'bg-white/5 text-gray-400 hover:text-amber-300 hover:bg-white/10 border border-white/5'
-                        }`}
-                        title="Alternar Destaque Ouro"
-                      >
-                        <Star size={12} fill={coupon.highlight ? 'currentColor' : 'none'} />
-                        <span>{coupon.highlight ? 'Em Destaque' : 'Destacar Ouro'}</span>
-                      </button>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Botão Editar */}
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(coupon)}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                            editingCoupon?.id === coupon.id
+                              ? 'bg-amber-400 text-black border border-amber-300 shadow-md font-black'
+                              : 'bg-white/5 hover:bg-amber-400/20 text-gray-300 hover:text-amber-300 border border-white/10 hover:border-amber-400/40'
+                          }`}
+                          title="Editar informações deste cupom"
+                        >
+                          <Pencil size={12} className={editingCoupon?.id === coupon.id ? 'text-black' : 'text-amber-400'} />
+                          <span>{editingCoupon?.id === coupon.id ? 'Editando...' : 'Editar'}</span>
+                        </button>
 
+                        {/* Botão Destaque Ouro */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleHighlightCoupon(coupon.id);
+                            if (showToast) {
+                              showToast(coupon.highlight ? '⭐ Destaque ouro removido.' : '⭐ Cupom promovido para Destaque Ouro!');
+                            }
+                          }}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                            coupon.highlight
+                              ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 hover:bg-amber-400/30'
+                              : 'bg-white/5 text-gray-400 hover:text-amber-300 hover:bg-white/10 border border-white/5'
+                          }`}
+                          title="Alternar Destaque Ouro"
+                        >
+                          <Star size={12} fill={coupon.highlight ? 'currentColor' : 'none'} />
+                          <span>{coupon.highlight ? 'Destaque' : 'Destacar'}</span>
+                        </button>
+                      </div>
+
+                      {/* Botão Excluir */}
                       <button
                         type="button"
                         onClick={() => {
                           if (window.confirm(`Tem certeza que deseja excluir o cupom "${coupon.title}"?`)) {
                             deleteCoupon(coupon.id);
+                            if (editingCoupon?.id === coupon.id) {
+                              handleCancelEdit();
+                            }
                             if (showToast) {
                               showToast(`🗑️ Cupom "${coupon.title}" excluído do site.`);
                             }
                           }
                         }}
-                        className="p-1.5 rounded-xl text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/30 border border-red-500/20 transition-colors"
+                        className="p-1.5 rounded-xl text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/30 border border-red-500/20 transition-colors cursor-pointer"
                         title="Excluir Cupom"
                       >
                         <Trash2 size={14} />

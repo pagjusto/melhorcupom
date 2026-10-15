@@ -1268,6 +1268,62 @@ export const AppProvider = ({ children }) => {
     });
   };
 
+  // Atualizar Cupom Existente (Admin ou Lojista)
+  const updateCoupon = (couponId, updatedFields) => {
+    // Validação de Moderação e Segurança de Conteúdo
+    const safety = validateCouponSafety(updatedFields);
+    if (!safety.safe) {
+      alert(`⚠️ Bloqueio de Conteúdo:\n${safety.reason}`);
+      return { error: safety.reason };
+    }
+
+    let updatedCoupon = null;
+    setCoupons(prev => {
+      const updated = prev.map(c => {
+        if (c.id === couponId) {
+          updatedCoupon = {
+            ...c,
+            ...updatedFields,
+            updatedAt: new Date().toISOString()
+          };
+          return updatedCoupon;
+        }
+        return c;
+      });
+      safeSaveCoupons(updated);
+      return updated;
+    });
+
+    // Se houver loja associada e atualizou dados de marca/logo, manter sincronizado
+    if (updatedCoupon?.storeId && (updatedFields.storeName || updatedFields.storeLogoImage || updatedFields.logoImage)) {
+      setStores(prevStores => {
+        const updatedStores = prevStores.map(s => {
+          if (s.id === updatedCoupon.storeId) {
+            return {
+              ...s,
+              name: updatedCoupon.storeName || s.name,
+              logo: updatedCoupon.storeLogo || s.logo,
+              logoImage: updatedCoupon.logoImage || updatedCoupon.storeLogoImage || s.logoImage
+            };
+          }
+          return s;
+        });
+        try {
+          localStorage.setItem('melhor_cupom_stores_v10', JSON.stringify(updatedStores));
+          localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(updatedStores));
+        } catch {}
+        return updatedStores;
+      });
+    }
+
+    // Persistência em Nuvem (Supabase)
+    if (isSupabaseConfigured && supabase && updatedCoupon) {
+      db.createCoupon(updatedCoupon).catch(err => console.warn('[Supabase UpdateCoupon]', err));
+    }
+
+    return updatedCoupon;
+  };
+
   // Excluir Cupom (Admin ou Lojista)
   const deleteCoupon = (couponId) => {
     setCoupons(prev => {
@@ -2159,6 +2215,7 @@ export const AppProvider = ({ children }) => {
       redeemCoupon,
       validateRedemption,
       addCoupon,
+      updateCoupon,
       deleteCoupon,
       toggleHighlightCoupon,
       recordCouponView,
