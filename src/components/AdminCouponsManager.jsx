@@ -23,12 +23,14 @@ import {
   ChevronDown,
   Image as ImageIcon,
   Pencil,
-  X
+  X,
+  ZoomIn
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
+import { ImageFramingModal } from './ImageFramingModal';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -53,6 +55,11 @@ export const AdminCouponsManager = ({ showToast }) => {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
+  const [framingModalState, setFramingModalState] = useState({
+    isOpen: false,
+    imageSrc: '',
+    targetType: 'logo'
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all' | 'physical' | 'online' | 'highlight'
   const fileInputRef = useRef(null);
@@ -100,40 +107,54 @@ export const AdminCouponsManager = ({ showToast }) => {
     setFormData(updated);
   };
 
-  // Upload da Logo da Marca / Loja Avulsa com Compressão Automática
-  const handleLogoUpload = async (e) => {
+  // Upload da Logo da Marca / Loja Avulsa (abre imediatamente o modal de zoom & enquadramento)
+  const handleLogoUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        const compressed = await compressImage(file, { maxWidth: 350, maxHeight: 350, quality: 0.8 });
-        setFormData(prev => ({ ...prev, customStoreLogoImage: compressed }));
-      } catch (err) {
-        console.warn('Erro ao comprimir logo:', err);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData(prev => ({ ...prev, customStoreLogoImage: reader.result }));
-        };
-        reader.readAsDataURL(file);
-      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFramingModalState({
+          isOpen: true,
+          imageSrc: reader.result,
+          targetType: 'logo'
+        });
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
     }
   };
 
-  // Upload de Banner Customizado com Compressão Automática (evita estouro de LocalStorage)
-  const handleBannerUpload = async (e) => {
+  // Upload de Banner Customizado (abre imediatamente o modal de zoom & enquadramento)
+  const handleBannerUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        const compressed = await compressImage(file, { maxWidth: 900, maxHeight: 550, quality: 0.72 });
-        setFormData(prev => ({ ...prev, banner: compressed }));
-      } catch (err) {
-        console.warn('Compressão falhou, usando fallback direto:', err);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData(prev => ({ ...prev, banner: reader.result }));
-        };
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFramingModalState({
+          isOpen: true,
+          imageSrc: reader.result,
+          targetType: 'banner'
+        });
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+  };
+
+  // Confirmar enquadramento após o ajuste interativo de zoom e posicionamento
+  const handleFramingConfirm = (framedDataUrl) => {
+    if (framingModalState.targetType === 'logo') {
+      setFormData(prev => ({ ...prev, customStoreLogoImage: framedDataUrl }));
+      if (showToast) {
+        showToast('🎯 Enquadramento da logo aplicado com sucesso!');
+      }
+    } else {
+      setFormData(prev => ({ ...prev, banner: framedDataUrl }));
+      if (showToast) {
+        showToast('🎯 Enquadramento da capa aplicado com sucesso!');
       }
     }
+    setFramingModalState(prev => ({ ...prev, isOpen: false }));
   };
 
   // Gerar código aleatório
@@ -642,15 +663,24 @@ export const AdminCouponsManager = ({ showToast }) => {
                         />
                         <button
                           type="button"
-                          onClick={() => logoInputRef.current?.click()}
-                          className="text-[11px] text-[#FF5F00] hover:underline font-bold"
+                          onClick={() => setFramingModalState({ isOpen: true, imageSrc: formData.customStoreLogoImage, targetType: 'logo' })}
+                          className="text-[11px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer"
+                          title="Ajustar zoom, enquadramento e posição da logo"
                         >
-                          Trocar Logo
+                          <ZoomIn size={12} className="text-amber-400" />
+                          Ajustar Zoom
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          className="text-[11px] text-[#FF5F00] hover:underline font-bold cursor-pointer"
+                        >
+                          Trocar
                         </button>
                         <button
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, customStoreLogoImage: '' }))}
-                          className="text-[10px] text-gray-400 hover:text-red-400 ml-auto p-1"
+                          className="text-[10px] text-gray-400 hover:text-red-400 ml-auto p-1 cursor-pointer"
                         >
                           Remover
                         </button>
@@ -872,6 +902,18 @@ export const AdminCouponsManager = ({ showToast }) => {
                     <Star size={12} fill="currentColor" />
                     <span>Destaque Ouro</span>
                   </div>
+                )}
+                {/* Botão para reajustar zoom e enquadramento da capa */}
+                {formData.banner && (
+                  <button
+                    type="button"
+                    onClick={() => setFramingModalState({ isOpen: true, imageSrc: formData.banner, targetType: 'banner' })}
+                    className="absolute bottom-3 right-3 bg-black/85 hover:bg-black text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-400/40 hover:border-amber-400 backdrop-blur-md flex items-center gap-1.5 transition-all shadow-xl cursor-pointer"
+                    title="Ajustar zoom, enquadramento e posição da foto de capa"
+                  >
+                    <ZoomIn size={13} className="text-amber-400" />
+                    <span>Ajustar Zoom & Enquadramento</span>
+                  </button>
                 )}
               </div>
 
@@ -1214,6 +1256,14 @@ export const AdminCouponsManager = ({ showToast }) => {
         )}
       </div>
 
+      {/* Modal Interativo de Ajuste de Zoom e Enquadramento */}
+      <ImageFramingModal
+        isOpen={framingModalState.isOpen}
+        imageSrc={framingModalState.imageSrc}
+        targetType={framingModalState.targetType}
+        onClose={() => setFramingModalState(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={handleFramingConfirm}
+      />
     </div>
   );
 };
