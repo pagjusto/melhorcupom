@@ -378,11 +378,11 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                   Economia de R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
                 </span>
               </div>
-            ) : (
+            ) : (coupon.estimatedSavings && Number(coupon.estimatedSavings) > 0) ? (
               <p className="text-xs text-emerald-400 font-bold mt-1">
-                Economia garantida de R$ {(coupon.estimatedSavings || 20).toFixed(2).replace('.', ',')}
+                Economia garantida de R$ {Number(coupon.estimatedSavings).toFixed(2).replace('.', ',')}
               </p>
-            )}
+            ) : null}
 
             {/* Tags de Regra por CPF e Validade */}
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">

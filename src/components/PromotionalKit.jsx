@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   Download, 
   Share2, 
@@ -840,16 +840,65 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     showToast(`🔄 "${postOrStore?.storeName || postOrStore?.name}" voltou para a fila de divulgação!`, 'info');
   };
 
+  // Consolidar lojas cadastradas + lojas e marcas de cupons avulsos para divulgação no Instagram
+  const allPromoStores = useMemo(() => {
+    const storeMap = new Map();
+    // 1. Inserir lojas oficiais
+    stores.forEach(s => storeMap.set(s.id, s));
+
+    // 2. Extrair marcas e ofertas de cupons avulsos (ex: Omens) para entrar diretamente na fila de postagens
+    coupons.forEach(c => {
+      const sId = c.storeId || `store_${c.id}`;
+      if (!storeMap.has(sId)) {
+        storeMap.set(sId, {
+          id: sId,
+          name: c.storeName || c.title,
+          legalName: c.storeName || c.title,
+          category: c.category || 'geral',
+          city: c.city || 'Brasil (Online)',
+          cities: c.cities || [c.city || 'Brasil (Online)'],
+          type: c.type || 'online',
+          isOnline: c.type === 'online' || (c.city && c.city.toLowerCase().includes('online')),
+          logo: c.storeLogo || '🏪',
+          logoImage: c.storeLogoImage || c.logoImage || (typeof c.storeLogo === 'string' && (c.storeLogo.startsWith('http') || c.storeLogo.startsWith('data:')) ? c.storeLogo : ''),
+          image: c.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
+          tier: 'api',
+          isAvulso: true,
+          instagram: c.instagram || `@${(c.storeName || 'cupom').toLowerCase().replace(/[^a-z0-9]/g, '')}`
+        });
+      } else {
+        if (c.isAvulso) {
+          const existing = storeMap.get(sId);
+          storeMap.set(sId, { 
+            ...existing, 
+            isAvulso: true,
+            hasAvulso: true,
+            logoImage: c.storeLogoImage || c.logoImage || existing.logoImage,
+            image: c.banner || existing.image
+          });
+        }
+      }
+    });
+
+    return Array.from(storeMap.values());
+  }, [stores, coupons]);
+
   // Filtrar lojas pendentes (que ainda não foram publicadas e não foram excluídas pelo X)
-  const pendingStores = stores
+  // Cupons avulsos possuem prioridade para divulgação rápida pelo ADM
+  const pendingStores = allPromoStores
     .filter(s => !isStoreAlreadyPublished(s, postHistory) && !dismissedStoreIds.includes(s.id))
     .sort((a, b) => {
+      const aAvulso = (a.isAvulso || a.hasAvulso || String(a.id).startsWith('store_avulsa_')) ? 0 : 1;
+      const bAvulso = (b.isAvulso || b.hasAvulso || String(b.id).startsWith('store_avulsa_')) ? 0 : 1;
+      if (aAvulso !== bAvulso) return aAvulso - bAvulso;
+
       const aPriority = (a.id === 'store_sephora' || a.id === 'store_petz') ? 0 : 1;
       const bPriority = (b.id === 'store_sephora' || b.id === 'store_petz') ? 0 : 1;
       return aPriority - bPriority;
     });
+
   const selectableStores = showAllStores 
-    ? stores.filter(s => !dismissedStoreIds.includes(s.id))
+    ? allPromoStores.filter(s => !dismissedStoreIds.includes(s.id))
     : (pendingStores.length > 0 ? pendingStores : []);
 
   const PROMO_CADASTRO_USUARIO_STORE = {
@@ -880,7 +929,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ? PROMO_CADASTRO_USUARIO_STORE
     : selectedStoreId === 'promo_seja_parceiro'
       ? PROMO_SEJA_PARCEIRO_STORE
-      : (stores.find(s => s.id === selectedStoreId) || selectableStores[0] || stores[0] || {});
+      : (allPromoStores.find(s => s.id === selectedStoreId) || selectableStores[0] || allPromoStores[0] || {});
   const locationText = getStoreLocationText(selectedStore);
 
   // Auto-selecionar primeira loja pendente
@@ -1872,9 +1921,16 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                               : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
                           }`}
                         >
-                          <span className="text-sm">{s.logo || '🏪'}</span>
+                          {s.logoImage ? (
+                            <img src={s.logoImage} alt="" className="w-4 h-4 rounded object-contain bg-white/20 p-0.5" />
+                          ) : (
+                            <span className="text-sm">{s.logo || '🏪'}</span>
+                          )}
                           <span className="truncate max-w-[130px]">{s.name}</span>
-                          {isApi && (
+                          {(s.isAvulso || s.hasAvulso) && (
+                            <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 py-0.2 rounded font-bold border border-amber-500/30">AVULSO</span>
+                          )}
+                          {isApi && !s.isAvulso && !s.hasAvulso && (
                             <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1 py-0.2 rounded font-bold">API</span>
                           )}
                           <button

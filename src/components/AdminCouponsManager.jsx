@@ -20,7 +20,8 @@ import {
   Eye,
   Calendar,
   Layers,
-  ChevronDown
+  ChevronDown,
+  Image as ImageIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
@@ -49,6 +50,7 @@ export const AdminCouponsManager = ({ showToast }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all' | 'physical' | 'online' | 'highlight'
   const fileInputRef = useRef(null);
+  const logoInputRef = useRef(null);
 
   // Modo de vínculo: 'existing' (loja cadastrada) ou 'custom' (loja/marca avulsa)
   const [storeLinkMode, setStoreLinkMode] = useState('existing');
@@ -57,7 +59,7 @@ export const AdminCouponsManager = ({ showToast }) => {
   const [formData, setFormData] = useState({
     selectedStoreId: stores[0]?.id || '',
     customStoreName: '',
-    customStoreLogo: '🏪',
+    customStoreLogoImage: '', // Upload da logo real que aparecerá no card
     title: '',
     description: '',
     originalPrice: '',
@@ -88,6 +90,24 @@ export const AdminCouponsManager = ({ showToast }) => {
       updated.discountBadge = `${pct}% OFF`;
     }
     setFormData(updated);
+  };
+
+  // Upload da Logo da Marca / Loja Avulsa com Compressão Automática
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const compressed = await compressImage(file, { maxWidth: 350, maxHeight: 350, quality: 0.8 });
+        setFormData(prev => ({ ...prev, customStoreLogoImage: compressed }));
+      } catch (err) {
+        console.warn('Erro ao comprimir logo:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, customStoreLogoImage: reader.result }));
+        };
+        reader.readAsDataURL(file);
+      }
+    }
   };
 
   // Upload de Banner Customizado com Compressão Automática (evita estouro de LocalStorage)
@@ -134,7 +154,7 @@ export const AdminCouponsManager = ({ showToast }) => {
     if (storeLinkMode === 'existing') {
       const matchedStore = stores.find(s => s.id === formData.selectedStoreId);
       finalStoreName = matchedStore?.name || 'Loja Parceira';
-      finalStoreLogo = matchedStore?.logo || '🏪';
+      finalStoreLogo = matchedStore?.logoImage || matchedStore?.logo || '🏪';
       finalMerchantId = matchedStore?.merchantId || `merchant_${Date.now()}`;
     } else {
       if (!formData.customStoreName.trim()) {
@@ -143,7 +163,7 @@ export const AdminCouponsManager = ({ showToast }) => {
       }
       finalStoreId = `store_avulsa_${Date.now()}`;
       finalStoreName = formData.customStoreName.trim();
-      finalStoreLogo = formData.customStoreLogo || '⭐';
+      finalStoreLogo = formData.customStoreLogoImage || '';
       finalMerchantId = `merchant_avulso_${Date.now()}`;
     }
 
@@ -151,7 +171,7 @@ export const AdminCouponsManager = ({ showToast }) => {
     const promo = formData.promoPrice ? parseFloat(formData.promoPrice) : null;
     const computedSavings = (orig && promo && orig > promo)
       ? Number((orig - promo).toFixed(2))
-      : 25.00;
+      : null;
 
     const isOnline = formData.type === 'online';
     const finalCity = isOnline ? 'Brasil (Todo o País / Online)' : formData.city;
@@ -193,6 +213,8 @@ export const AdminCouponsManager = ({ showToast }) => {
       merchantId: finalMerchantId,
       storeName: finalStoreName,
       storeLogo: finalStoreLogo,
+      storeLogoImage: formData.customStoreLogoImage || (typeof finalStoreLogo === 'string' && (finalStoreLogo.startsWith('data:') || finalStoreLogo.startsWith('http')) ? finalStoreLogo : ''),
+      logoImage: formData.customStoreLogoImage || (typeof finalStoreLogo === 'string' && (finalStoreLogo.startsWith('data:') || finalStoreLogo.startsWith('http')) ? finalStoreLogo : ''),
       title: formData.title.trim(),
       description: formData.description.trim() || `Oferta especial exclusiva de ${finalStoreName} para membros VIP.`,
       originalPrice: orig,
@@ -227,7 +249,7 @@ export const AdminCouponsManager = ({ showToast }) => {
     setFormData({
       selectedStoreId: stores[0]?.id || '',
       customStoreName: '',
-      customStoreLogo: '🏪',
+      customStoreLogoImage: '',
       title: '',
       description: '',
       originalPrice: '',
@@ -450,16 +472,49 @@ export const AdminCouponsManager = ({ showToast }) => {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-300 block mb-1.5">
-                      Emoji / Ícone
+                    <label className="text-xs font-bold text-gray-300 block mb-1.5 flex items-center gap-1.5">
+                      <ImageIcon size={13} className="text-[#FF5F00]" />
+                      <span>Logo da Marca (Card) *</span>
                     </label>
                     <input
-                      type="text"
-                      placeholder="Ex: 🍺, 🍔, ✂️, 🍕"
-                      value={formData.customStoreLogo}
-                      onChange={(e) => setFormData({ ...formData, customStoreLogo: e.target.value })}
-                      className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white text-center focus:outline-none"
+                      type="file"
+                      ref={logoInputRef}
+                      onChange={handleLogoUpload}
+                      accept="image/*"
+                      className="hidden"
                     />
+                    {formData.customStoreLogoImage ? (
+                      <div className="flex items-center gap-2 p-1.5 bg-[#101017] border border-white/10 rounded-xl">
+                        <img
+                          src={formData.customStoreLogoImage}
+                          alt="Logo"
+                          className="w-8 h-8 rounded-lg object-contain bg-white p-0.5"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          className="text-[11px] text-[#FF5F00] hover:underline font-bold"
+                        >
+                          Trocar Logo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, customStoreLogoImage: '' }))}
+                          className="text-[10px] text-gray-400 hover:text-red-400 ml-auto p-1"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        className="w-full bg-[#101017] border border-dashed border-white/20 hover:border-[#FF5F00] rounded-xl py-2 px-3 text-xs text-gray-300 hover:text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <Upload size={14} className="text-[#FF5F00]" />
+                        <span>Upload da Logo</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

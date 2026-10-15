@@ -48,7 +48,9 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   };
 
   const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-  const storeLogo = coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
+  const rawLogo = coupon.storeLogoImage || coupon.logoImage || coupon.storeLogo || store?.logoImage;
+  const isImageLogo = rawLogo && typeof rawLogo === 'string' && (rawLogo.startsWith('data:') || rawLogo.startsWith('http') || rawLogo.startsWith('/') || rawLogo.endsWith('.png') || rawLogo.endsWith('.jpg') || rawLogo.endsWith('.svg'));
+  const storeLogo = isImageLogo ? rawLogo : (getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage);
   const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
   const isLogoBanner = bannerImage && (bannerImage.includes('/logos/') || bannerImage.includes('/logo') || bannerImage.endsWith('.svg'));
 
@@ -270,7 +272,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           )}
 
           {/* Preços De / Por com Economia Real ou Economia Estimada */}
-          {coupon.originalPrice && coupon.promoPrice ? (
+          {coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice) ? (
             <div className="flex items-center justify-between py-1 px-2 bg-emerald-500/10 rounded-md text-[10px] border border-emerald-500/25">
               <div className="flex items-baseline gap-1">
                 <span className="text-gray-400 line-through text-[9px]">
@@ -284,14 +286,14 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                 -R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(0)}
               </span>
             </div>
-          ) : (
+          ) : (coupon.estimatedSavings && Number(coupon.estimatedSavings) > 0) ? (
             <div className="flex items-center justify-between text-[10px] py-1 px-2 bg-white/5 rounded-md text-gray-300 border border-white/5">
               <span className="text-gray-400 text-[9px]">Economia:</span>
               <span className="font-extrabold text-emerald-400 text-[10px]">
-                R$ {(coupon.estimatedSavings || 25).toFixed(2).replace('.', ',')}
+                R$ {Number(coupon.estimatedSavings).toFixed(2).replace('.', ',')}
               </span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
