@@ -41,11 +41,24 @@ export const ImageFramingModal = ({
 
     const img = new Image();
     img.onload = () => {
-      setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
-      // Resetar zoom e posição inicial
-      setZoom(1);
+      const natW = img.naturalWidth || (targetType === 'logo' ? 300 : 800);
+      const natH = img.naturalHeight || (targetType === 'logo' ? 300 : 450);
+      setNaturalSize({ width: natW, height: natH });
+
+      const bScale = Math.min(viewWidth / natW, viewHeight / natH);
+
+      if (targetType === 'banner') {
+        // Para banner: preencher o frame 16:9 por padrão para evitar faixas pretas
+        const fillScale = Math.max(viewWidth / natW, viewHeight / natH);
+        const autoZoom = Math.max(1, Number((fillScale / bScale).toFixed(2)));
+        setZoom(autoZoom);
+        setBgColor('#12121A');
+      } else {
+        // Para logo: ajustar para caber tudo centralizado
+        setZoom(1);
+        setBgColor('#FFFFFF');
+      }
       setPosition({ x: 0, y: 0 });
-      setBgColor(targetType === 'logo' ? '#FFFFFF' : '#12121A');
     };
     img.src = imageSrc;
   }, [isOpen, imageSrc, targetType]);
@@ -110,13 +123,6 @@ export const ImageFramingModal = ({
 
   // Renderizar e exportar imagem em alta resolução no Canvas
   const handleApply = () => {
-    if (!naturalSize.width || !naturalSize.height) {
-      onConfirm(imageSrc);
-      onClose();
-      return;
-    }
-
-    // Resoluções de exportação nítidas e otimizadas
     const exportWidth = isLogo ? 500 : 900;
     const exportHeight = isLogo ? 500 : 506;
 
@@ -148,19 +154,32 @@ export const ImageFramingModal = ({
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    const sourceImg = new Image();
-    sourceImg.onload = () => {
-      ctx.drawImage(sourceImg, drawX, drawY, drawW, drawH);
-
-      // Exportar como JPEG se houver fundo opaco, ou PNG se transparente
-      const format = bgColor === 'transparent' ? 'image/png' : 'image/jpeg';
-      const quality = bgColor === 'transparent' ? 0.9 : 0.85;
-      const resultDataUrl = canvas.toDataURL(format, quality);
-
-      onConfirm(resultDataUrl);
+    const saveAndClose = (imgEl) => {
+      try {
+        ctx.drawImage(imgEl, drawX, drawY, drawW, drawH);
+        const format = bgColor === 'transparent' ? 'image/png' : 'image/jpeg';
+        const quality = bgColor === 'transparent' ? 0.95 : 0.9;
+        const resultDataUrl = canvas.toDataURL(format, quality);
+        onConfirm(resultDataUrl);
+      } catch (err) {
+        console.error('Erro ao renderizar imagem no canvas:', err);
+        onConfirm(imageSrc);
+      }
       onClose();
     };
-    sourceImg.src = imageSrc;
+
+    if (imgRef.current && imgRef.current.complete) {
+      saveAndClose(imgRef.current);
+    } else {
+      const fallbackImg = new Image();
+      fallbackImg.crossOrigin = 'anonymous';
+      fallbackImg.onload = () => saveAndClose(fallbackImg);
+      fallbackImg.onerror = () => {
+        onConfirm(imageSrc);
+        onClose();
+      };
+      fallbackImg.src = imageSrc;
+    }
   };
 
   return (
@@ -255,6 +274,36 @@ export const ImageFramingModal = ({
               <span>Arraste para mover</span>
             </div>
           </div>
+
+          {/* Prévia do Resultado Real no Card */}
+          {isLogo && (
+            <div className="flex items-center justify-center gap-3 bg-[#101018] border border-white/10 rounded-xl px-4 py-2 mt-2 w-fit mx-auto shadow-md">
+              <span className="text-[11px] text-gray-400 font-bold">Prévia no Card:</span>
+              <div className="w-8 h-8 rounded-lg bg-white shadow-lg flex items-center justify-center overflow-hidden border border-amber-400 p-0.5">
+                <div 
+                  className="w-full h-full relative overflow-hidden rounded-md flex items-center justify-center"
+                  style={{ backgroundColor: bgColor === 'transparent' ? 'transparent' : bgColor }}
+                >
+                  <img
+                    src={imageSrc}
+                    alt="Preview"
+                    style={{
+                      width: `${(renderedWidth / viewWidth) * 28}px`,
+                      height: `${(renderedHeight / viewHeight) * 28}px`,
+                      maxWidth: 'none',
+                      maxHeight: 'none',
+                      position: 'absolute',
+                      left: '50%',
+                      top: '50%',
+                      transform: `translate(calc(-50% + ${(position.x / viewWidth) * 28}px), calc(-50% + ${(position.y / viewHeight) * 28}px))`
+                    }}
+                    draggable={false}
+                  />
+                </div>
+              </div>
+              <span className="text-xs font-bold text-white">Marca</span>
+            </div>
+          )}
         </div>
 
         {/* Controles de Zoom */}

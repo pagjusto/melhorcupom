@@ -295,7 +295,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
         {/* Header com Imagem e Fechar */}
         {(() => {
           const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700';
-          const isLogoBanner = bannerImage && (
+          const isLogoBanner = bannerImage && !bannerImage.startsWith('data:') && (
             bannerImage.includes('/logos/') || 
             bannerImage.includes('/logo') || 
             bannerImage.endsWith('.svg')

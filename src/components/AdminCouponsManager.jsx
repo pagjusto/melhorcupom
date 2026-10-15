@@ -1090,12 +1090,10 @@ export const AdminCouponsManager = ({ showToast }) => {
               const isOnline = coupon.type === 'online' || coupon.city?.toLowerCase().includes('online');
 
               const bannerImage = coupon.banner || coupon.image || BANNER_PRESETS[0].url;
-              const isLogoBanner = bannerImage && (
+              const isLogoBanner = bannerImage && !bannerImage.startsWith('data:') && (
                 bannerImage.includes('/logos/') || 
                 bannerImage.includes('/logo') || 
-                bannerImage.endsWith('.svg') ||
-                storeName.toLowerCase().includes('omens') ||
-                coupon.title?.toLowerCase().includes('omens')
+                bannerImage.endsWith('.svg')
               );
 
               return (
@@ -1135,7 +1133,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                     <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center gap-2 z-10">
                       <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
                         {storeLogo ? (
-                          <img src={storeLogo} alt={storeName} className="w-full h-full object-contain" />
+                          <img src={storeLogo} alt={storeName} className="w-full h-full object-contain p-0.5" />
                         ) : (
                           <span className="text-xs">{coupon.storeLogo || store?.logo || '🏪'}</span>
                         )}
