@@ -1152,7 +1152,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                     {/* Preços e Local */}
                     <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
                       <div>
-                        {coupon.originalPrice && coupon.promoPrice ? (
+                        {coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice) ? (
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-[10px] text-gray-500 line-through">
                               R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}
@@ -1161,11 +1161,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                               R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}
                             </span>
                           </div>
-                        ) : (
-                          <span className="text-[10px] text-emerald-400 font-bold">
-                            Economia ~R$ {Number(coupon.estimatedSavings || 20).toFixed(2).replace('.', ',')}
-                          </span>
-                        )}
+                        ) : null}
                       </div>
 
                       <div className="flex items-center gap-1 text-[10px] text-gray-400">

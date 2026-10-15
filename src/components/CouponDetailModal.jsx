@@ -368,8 +368,8 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               {coupon.title}
             </h2>
 
-            {/* Preços De / Por com Economia Real ou Economia Estimada */}
-            {coupon.originalPrice && coupon.promoPrice ? (
+            {/* Preços De / Por com Economia Real */}
+            {coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice) ? (
               <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-2xl">
                 <span className="text-gray-400 line-through text-xs sm:text-sm">
                   De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}
@@ -381,10 +381,6 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                   Economia de R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
                 </span>
               </div>
-            ) : (coupon.estimatedSavings && Number(coupon.estimatedSavings) > 0) ? (
-              <p className="text-xs text-emerald-400 font-bold mt-1">
-                Economia garantida de R$ {Number(coupon.estimatedSavings).toFixed(2).replace('.', ',')}
-              </p>
             ) : null}
 
             {/* Tags de Regra por CPF e Validade */}

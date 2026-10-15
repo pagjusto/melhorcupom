@@ -271,7 +271,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {/* Preços De / Por com Economia Real ou Economia Estimada */}
+          {/* Preços De / Por com Economia Real */}
           {coupon.originalPrice && coupon.promoPrice && Number(coupon.originalPrice) > Number(coupon.promoPrice) ? (
             <div className="flex items-center justify-between py-1 px-2 bg-emerald-500/10 rounded-md text-[10px] border border-emerald-500/25">
               <div className="flex items-baseline gap-1">
@@ -284,13 +284,6 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               </div>
               <span className="text-[8px] font-black text-emerald-300 bg-emerald-500/20 px-1 py-0.2 rounded border border-emerald-500/30">
                 -R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(0)}
-              </span>
-            </div>
-          ) : (coupon.estimatedSavings && Number(coupon.estimatedSavings) > 0) ? (
-            <div className="flex items-center justify-between text-[10px] py-1 px-2 bg-white/5 rounded-md text-gray-300 border border-white/5">
-              <span className="text-gray-400 text-[9px]">Economia:</span>
-              <span className="font-extrabold text-emerald-400 text-[10px]">
-                R$ {Number(coupon.estimatedSavings).toFixed(2).replace('.', ',')}
               </span>
             </div>
           ) : null}
