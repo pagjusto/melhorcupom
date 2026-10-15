@@ -1133,7 +1133,7 @@ export const AdminCouponsManager = ({ showToast }) => {
 
                     {/* Logo e Nome da Loja */}
                     <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center gap-2 z-10">
-                      <div className="min-w-[28px] max-w-[64px] h-7 px-1.5 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
+                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
                         {storeLogo ? (
                           <img src={storeLogo} alt={storeName} className="w-full h-full object-contain" />
                         ) : (

@@ -189,9 +189,9 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
           <div className="relative w-full max-w-md bg-[#161622] border-2 border-emerald-500/60 rounded-3xl p-6 sm:p-8 text-center shadow-2xl shadow-emerald-950/70 space-y-6">
             
             {/* Logo da Loja Pulsando */}
-            <div className="relative min-w-[84px] max-w-[160px] h-20 mx-auto">
+            <div className="relative w-20 h-20 mx-auto">
               <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping pointer-events-none" />
-              <div className="relative w-full h-full rounded-2xl bg-white border-2 border-emerald-400 px-4 py-2 flex items-center justify-center shadow-xl overflow-hidden">
+              <div className="relative w-full h-full rounded-2xl bg-white border-2 border-emerald-400 p-2 flex items-center justify-center shadow-xl overflow-hidden">
                 {storeLogo ? (
                   <>
                     <img 
@@ -298,9 +298,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
           const isLogoBanner = bannerImage && (
             bannerImage.includes('/logos/') || 
             bannerImage.includes('/logo') || 
-            bannerImage.endsWith('.svg') ||
-            storeName.toLowerCase().includes('omens') ||
-            coupon.title?.toLowerCase().includes('omens')
+            bannerImage.endsWith('.svg')
           );
 
           return (
@@ -320,7 +318,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               </button>
 
               <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
-                <div className="min-w-[60px] max-w-[130px] h-14 rounded-2xl bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-xl px-2.5 py-1.5 transition-all">
+                <div className="w-14 h-14 rounded-2xl bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-xl p-1.5">
                   {storeLogo ? (
                     <>
                       <img 
