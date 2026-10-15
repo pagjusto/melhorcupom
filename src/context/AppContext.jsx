@@ -18,6 +18,7 @@ import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
 import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
 import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
 import { validateStoreSafety, validateUserSafety, validateCouponSafety } from '../utils/contentModeration';
+import { getStoreDestinationUrl } from '../utils/storeUrls';
 
 const AppContext = createContext();
 
@@ -122,7 +123,7 @@ export const AppProvider = ({ children }) => {
             apiLastSync: init.apiLastSync || c.apiLastSync || null,
             cashbackRate: init.cashbackRate || c.cashbackRate || null,
             cashbackPercent: init.cashbackPercent || c.cashbackPercent || 0,
-            affiliateUrl: init.affiliateUrl || c.affiliateUrl || null,
+            affiliateUrl: init.affiliateUrl || (c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, { ...c, ...init })),
             discountType: init.discountType || c.discountType,
             discountValue: init.discountValue || c.discountValue,
             discountBadge: init.discountBadge || c.discountBadge,
@@ -133,7 +134,11 @@ export const AppProvider = ({ children }) => {
             cities: init.cities || c.cities || (init.city ? [init.city] : [])
           };
         }
-        return c;
+        const cleanAffiliate = c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, c);
+        return {
+          ...c,
+          affiliateUrl: cleanAffiliate
+        };
       });
     } catch {
       return [...customCoupons, ...INITIAL_COUPONS];
@@ -189,7 +194,8 @@ export const AppProvider = ({ children }) => {
           cashbackRate: init?.cashbackRate || s.cashbackRate || null,
           cashbackPercent: init?.cashbackPercent || s.cashbackPercent || 0,
           couponsCount: init?.couponsCount ?? s.couponsCount ?? 1,
-          affiliateUrl: init?.affiliateUrl || s.affiliateUrl || null,
+          website: init?.website || s.website || getStoreDestinationUrl({ ...s, ...init }, null),
+          affiliateUrl: init?.affiliateUrl || (s.affiliateUrl && !s.affiliateUrl.includes('google.com/search') ? s.affiliateUrl : getStoreDestinationUrl({ ...s, ...init }, null)),
           referralCode: storeRefCode,
           referralBalance: typeof s.referralBalance === 'number' ? s.referralBalance : 25.00,
           referrals: s.referrals || [

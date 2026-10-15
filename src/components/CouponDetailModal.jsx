@@ -23,6 +23,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
+import { getStoreDestinationUrl } from '../utils/storeUrls';
 
 export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerchant }) => {
   const { 
@@ -144,7 +145,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
 
   const isOnlineCoupon = isApiCompanyCoupon;
   const couponCode = coupon.codePrefix || activeRedemption?.code || 'MELHORVIP';
-  const affiliateDestinationUrl = coupon.affiliateUrl || store?.affiliateUrl || store?.website || `https://www.google.com/search?q=${encodeURIComponent((store?.name || '') + ' ' + (coupon.title || ''))}`;
+  const affiliateDestinationUrl = getStoreDestinationUrl(store, coupon);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(couponCode);

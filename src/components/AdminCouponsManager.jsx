@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
+import { getStoreDestinationUrl } from '../utils/storeUrls';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -76,7 +77,8 @@ export const AdminCouponsManager = ({ showToast }) => {
     validityType: 'days', // 'days' | 'unlimited'
     validityDays: 30,
     highlight: false, // Borda Dourada no Topo
-    rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.'
+    rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.',
+    affiliateUrl: ''
   });
 
   // Atualizar cálculo de preços e desconto
@@ -227,6 +229,10 @@ export const AdminCouponsManager = ({ showToast }) => {
       type: formData.type,
       banner: formData.banner,
       code: finalCode,
+      affiliateUrl: formData.affiliateUrl?.trim() || getStoreDestinationUrl(
+        storeLinkMode === 'existing' ? stores.find(s => s.id === finalStoreId) : { name: finalStoreName, id: finalStoreId },
+        { title: formData.title.trim() }
+      ),
       highlight: formData.highlight,
       vipOnly: true,
       maxUsesPerUser: maxUses,
@@ -266,7 +272,8 @@ export const AdminCouponsManager = ({ showToast }) => {
       validityType: 'days',
       validityDays: 30,
       highlight: false,
-      rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.'
+      rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.',
+      affiliateUrl: ''
     });
 
     setIsFormOpen(false);
@@ -668,6 +675,24 @@ export const AdminCouponsManager = ({ showToast }) => {
                   </select>
                 </div>
               )}
+
+              {/* Link de Destino Oficial / Afiliado */}
+              <div className="pt-2 border-t border-white/5">
+                <label className="text-xs font-bold text-gray-300 block mb-1.5 flex items-center gap-1.5">
+                  <Globe size={14} className="text-emerald-400" />
+                  <span>Link do Site Oficial ou de Afiliado (Opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  placeholder="Ex: https://www.omens.com.br ou https://www.tf.com.br"
+                  value={formData.affiliateUrl}
+                  onChange={(e) => setFormData({ ...formData, affiliateUrl: e.target.value })}
+                  className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none placeholder-gray-600"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Se deixado em branco, o sistema localiza automaticamente o site oficial direto da marca ou loja (sem pesquisas no Google).
+                </p>
+              </div>
             </div>
 
             {/* Banner da Oferta */}
