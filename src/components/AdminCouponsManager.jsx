@@ -1202,6 +1202,9 @@ export const AdminCouponsManager = ({ showToast }) => {
                           type="button"
                           onClick={() => {
                             toggleHighlightCoupon(coupon.id);
+                            if (editingCoupon?.id === coupon.id) {
+                              setFormData(prev => ({ ...prev, highlight: !coupon.highlight }));
+                            }
                             if (showToast) {
                               showToast(coupon.highlight ? '⭐ Destaque ouro removido.' : '⭐ Cupom promovido para Destaque Ouro!');
                             }

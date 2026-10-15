@@ -96,7 +96,10 @@ export const AppProvider = ({ children }) => {
       const initialWithCustom = [...customCoupons, ...INITIAL_COUPONS];
       const uniqueMap = new Map();
       initialWithCustom.forEach(c => uniqueMap.set(c.id, c));
-      return Array.from(uniqueMap.values());
+      return Array.from(uniqueMap.values()).map(c => {
+        const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
+        return isCustom ? { ...c, highlight: false } : c;
+      });
     }
 
     try {
@@ -105,7 +108,10 @@ export const AppProvider = ({ children }) => {
       const missingCustom = customCoupons.filter(c => !parsedIds.has(c.id));
       const missingInitial = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
       const combined = [...missingCustom, ...parsed, ...missingInitial];
-      return combined.map(c => {
+      
+      const needsHighlightReset = localStorage.getItem('melhor_cupom_custom_highlight_reset_v2') !== 'done';
+
+      const mapped = combined.map(c => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
         if (init) {
           return {
@@ -137,12 +143,23 @@ export const AppProvider = ({ children }) => {
         }
         const cleanAffiliate = c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, c);
         const resolvedLogo = c.logoImage || c.storeLogoImage || getBrandLogo(c.storeName) || '';
+        const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
         return {
           ...c,
           affiliateUrl: cleanAffiliate,
-          logoImage: resolvedLogo
+          logoImage: resolvedLogo,
+          highlight: (isCustom && needsHighlightReset) ? false : Boolean(c.highlight)
         };
       });
+
+      if (needsHighlightReset) {
+        try {
+          localStorage.setItem('melhor_cupom_custom_highlight_reset_v2', 'done');
+          safeSaveCoupons(mapped);
+        } catch {}
+      }
+
+      return mapped;
     } catch {
       return [...customCoupons, ...INITIAL_COUPONS];
     }
@@ -678,10 +695,37 @@ export const AppProvider = ({ children }) => {
         const cloudCoupons = await db.getCoupons();
         if (isMounted && Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
           setCoupons(prev => {
-            const prevIds = new Set(prev.map(c => c.id));
-            const newFromCloud = cloudCoupons.filter(cc => !prevIds.has(cc.id));
-            if (newFromCloud.length === 0) return prev;
-            const merged = [...newFromCloud, ...prev];
+            const needsCloudReset = localStorage.getItem('melhor_cupom_custom_highlight_cloud_reset_v2') !== 'done';
+
+            const sanitizedPrev = prev.map(c => {
+              const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
+              if (isCustom && needsCloudReset && c.highlight) {
+                const unhighlighted = { ...c, highlight: false };
+                if (isSupabaseConfigured && supabase) {
+                  db.createCoupon(unhighlighted).catch(() => {});
+                }
+                return unhighlighted;
+              }
+              return c;
+            });
+
+            const prevIds = new Set(sanitizedPrev.map(c => c.id));
+            const newFromCloud = cloudCoupons.filter(cc => !prevIds.has(cc.id)).map(c => {
+              const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
+              return (isCustom && needsCloudReset) ? { ...c, highlight: false } : c;
+            });
+
+            if (needsCloudReset) {
+              try {
+                localStorage.setItem('melhor_cupom_custom_highlight_cloud_reset_v2', 'done');
+              } catch {}
+            }
+
+            if (newFromCloud.length === 0) {
+              safeSaveCoupons(sanitizedPrev);
+              return sanitizedPrev;
+            }
+            const merged = [...newFromCloud, ...sanitizedPrev];
             safeSaveCoupons(merged);
             return merged;
           });

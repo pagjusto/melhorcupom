@@ -181,7 +181,7 @@ export const db = {
           originalPrice: row.original_price,
           promoPrice: row.promo_price,
           discountBadge: row.discount_badge || 'Oferta VIP',
-          estimatedSavings: meta.estimatedSavings || (row.original_price && row.promo_price ? Number((row.original_price - row.promo_price).toFixed(2)) : 25),
+          estimatedSavings: meta.estimatedSavings || (row.original_price && row.promo_price ? Number((row.original_price - row.promo_price).toFixed(2)) : null),
           category: row.category || meta.category || 'gastronomia',
           city: meta.city || 'São Paulo - SP',
           cities: meta.cities || [meta.city || 'São Paulo - SP'],
@@ -208,25 +208,29 @@ export const db = {
     if (!isSupabaseConfigured || !supabase) return coupon;
     try {
       // Metadados que não possuem coluna direta na tabela coupons
+      const safeBanner = (coupon.banner && typeof coupon.banner === 'string' && coupon.banner.startsWith('data:') && coupon.banner.length > 60000) ? '' : coupon.banner;
+      const safeStoreLogo = (coupon.storeLogo && typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') && coupon.storeLogo.length > 60000) ? '' : coupon.storeLogo;
+
       const meta = {
         storeId: coupon.storeId || coupon.store_id,
         merchantId: coupon.merchantId,
         storeName: coupon.storeName,
-        storeLogo: coupon.storeLogo,
+        storeLogo: safeStoreLogo,
         category: coupon.category,
         city: coupon.city,
         cities: coupon.cities,
         type: coupon.type,
-        banner: coupon.banner,
+        banner: safeBanner,
         highlight: Boolean(coupon.highlight),
         isAvulso: Boolean(coupon.isAvulso),
         estimatedSavings: coupon.estimatedSavings,
         expiresAt: coupon.expiresAt
       };
 
-      const originalRules = Array.isArray(coupon.rules) ? coupon.rules : (coupon.rules ? [coupon.rules] : []);
+      const rawRules = Array.isArray(coupon.rules) ? coupon.rules : (coupon.rules ? [coupon.rules] : []);
+      const cleanRules = rawRules.filter(r => typeof r !== 'string' || !r.startsWith('__META__:'));
       const enrichedRules = [
-        ...originalRules,
+        ...cleanRules,
         `__META__:${JSON.stringify(meta)}`
       ];
 
