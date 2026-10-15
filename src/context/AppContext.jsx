@@ -45,15 +45,64 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('melhor_cupom_role') || 'admin';
   });
 
-  // Estado de Cupons (com persistência no LocalStorage e auto-mesclagem de novos dados)
+  // Salvamento seguro de cupons com fallback contra estouro de cota (LocalStorage)
+  const safeSaveCoupons = (couponsList) => {
+    try {
+      localStorage.setItem('melhor_cupom_coupons', JSON.stringify(couponsList));
+      const customOnly = couponsList.filter(c => !INITIAL_COUPONS.some(init => init.id === c.id));
+      localStorage.setItem('melhor_cupom_custom_coupons', JSON.stringify(customOnly));
+    } catch (err) {
+      console.warn('[Storage] Cota excedida ao salvar cupons, tentando salvar sanitizado:', err);
+      try {
+        const sanitized = couponsList.map(c => {
+          if (c.banner && typeof c.banner === 'string' && c.banner.startsWith('data:image/') && c.banner.length > 80000) {
+            return { ...c, banner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80' };
+          }
+          return c;
+        });
+        localStorage.setItem('melhor_cupom_coupons', JSON.stringify(sanitized));
+        const customSanitized = sanitized.filter(c => !INITIAL_COUPONS.some(init => init.id === c.id));
+        localStorage.setItem('melhor_cupom_custom_coupons', JSON.stringify(customSanitized));
+      } catch (innerErr) {
+        console.error('[Storage] Falha crítica ao persistir cupons:', innerErr);
+      }
+    }
+  };
+
+  // Estado de Cupons (com persistência blindada no LocalStorage e auto-mesclagem de novos dados)
   const [coupons, setCoupons] = useState(() => {
-    const saved = localStorage.getItem('melhor_cupom_coupons');
-    if (!saved) return INITIAL_COUPONS;
+    let saved = null;
+    let customSaved = null;
+    try {
+      saved = localStorage.getItem('melhor_cupom_coupons');
+    } catch {}
+    try {
+      customSaved = localStorage.getItem('melhor_cupom_custom_coupons');
+    } catch {}
+
+    const customCoupons = [];
+    if (customSaved) {
+      try {
+        const parsedCustom = JSON.parse(customSaved);
+        if (Array.isArray(parsedCustom)) {
+          customCoupons.push(...parsedCustom);
+        }
+      } catch {}
+    }
+
+    if (!saved) {
+      const initialWithCustom = [...customCoupons, ...INITIAL_COUPONS];
+      const uniqueMap = new Map();
+      initialWithCustom.forEach(c => uniqueMap.set(c.id, c));
+      return Array.from(uniqueMap.values());
+    }
+
     try {
       const parsed = JSON.parse(saved);
       const parsedIds = new Set(parsed.map(c => c.id));
-      const missing = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
-      const combined = [...parsed, ...missing];
+      const missingCustom = customCoupons.filter(c => !parsedIds.has(c.id));
+      const missingInitial = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
+      const combined = [...missingCustom, ...parsed, ...missingInitial];
       return combined.map(c => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
         if (init) {
@@ -87,7 +136,7 @@ export const AppProvider = ({ children }) => {
         return c;
       });
     } catch {
-      return INITIAL_COUPONS;
+      return [...customCoupons, ...INITIAL_COUPONS];
     }
   });
 
@@ -508,7 +557,7 @@ export const AppProvider = ({ children }) => {
   }, [currentRole]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_coupons', JSON.stringify(coupons));
+    safeSaveCoupons(coupons);
   }, [coupons]);
 
   useEffect(() => {
@@ -613,6 +662,19 @@ export const AppProvider = ({ children }) => {
             const mappedIds = new Set(mapped.map(m => m.id));
             const remaining = prev.filter(u => !mappedIds.has(u.id));
             return [...mapped, ...remaining];
+          });
+        }
+
+        // 5. Carregar Cupons do Supabase Cloud (garante persistência e sincronização entre PC e Celular)
+        const cloudCoupons = await db.getCoupons();
+        if (isMounted && Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
+          setCoupons(prev => {
+            const prevIds = new Set(prev.map(c => c.id));
+            const newFromCloud = cloudCoupons.filter(cc => !prevIds.has(cc.id));
+            if (newFromCloud.length === 0) return prev;
+            const merged = [...newFromCloud, ...prev];
+            safeSaveCoupons(merged);
+            return merged;
           });
         }
       } catch (err) {
@@ -1122,33 +1184,63 @@ export const AppProvider = ({ children }) => {
       return { error: safety.reason };
     }
 
+    const couponId = couponData.id || `cupom_${Date.now()}`;
     const newCoupon = {
-      id: `cupom_${Date.now()}`,
+      id: couponId,
       viewsCount: 0,
       usesCount: 0,
-      highlight: false,
+      highlight: Boolean(couponData.highlight),
       vipOnly: true,
       rules: couponData.rules || ['Apresentar o cupom VIP no balcão.', 'Não cumulativo com outras promoções.'],
       ...couponData
     };
 
-    setCoupons(prev => [newCoupon, ...prev]);
+    // Se o cupom tiver uma loja avulsa (ou se a loja não constar na lista de lojas), cadastrar a loja automaticamente
+    if (newCoupon.storeId) {
+      setStores(prevStores => {
+        const storeExists = prevStores.some(s => s.id === newCoupon.storeId);
+        if (!storeExists) {
+          const isOnline = newCoupon.type === 'online' || (newCoupon.city && newCoupon.city.toLowerCase().includes('online'));
+          const createdStore = {
+            id: newCoupon.storeId,
+            merchantId: newCoupon.merchantId || `merchant_${Date.now()}`,
+            name: newCoupon.storeName || 'Loja Parceira',
+            legalName: newCoupon.storeName || 'Loja Parceira',
+            category: newCoupon.category || 'gastronomia',
+            city: isOnline ? 'Brasil (Todo o País / Online)' : (newCoupon.city || 'São Paulo - SP'),
+            cities: isOnline ? ['Todas as Cidades (Online / Brasil Todo)'] : (newCoupon.cities?.length ? newCoupon.cities : [newCoupon.city || 'São Paulo - SP']),
+            type: isOnline ? 'online' : 'physical',
+            isOnline,
+            logo: newCoupon.storeLogo || '🏪',
+            logoImage: typeof newCoupon.storeLogo === 'string' && newCoupon.storeLogo.startsWith('http') ? newCoupon.storeLogo : '',
+            image: newCoupon.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
+            tier: 'api',
+            adminPaidPlan: false,
+            address: isOnline ? 'Atendimento Online em Todo o Brasil' : (newCoupon.city || 'Brasil'),
+            phone: '(11) 98123-4567',
+            isNewPartner: true,
+            createdAt: new Date().toISOString()
+          };
+          const updatedStores = [createdStore, ...prevStores];
+          try {
+            localStorage.setItem('melhor_cupom_stores_v10', JSON.stringify(updatedStores));
+            localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(updatedStores));
+          } catch {}
+          return updatedStores;
+        }
+        return prevStores;
+      });
+    }
+
+    setCoupons(prev => {
+      const updated = [newCoupon, ...prev.filter(c => c.id !== newCoupon.id)];
+      safeSaveCoupons(updated);
+      return updated;
+    });
 
     // Persistência em Nuvem (Supabase)
     if (isSupabaseConfigured && supabase) {
-      db.createCoupon({
-        id: newCoupon.id,
-        store_id: newCoupon.storeId || currentRole,
-        title: newCoupon.title,
-        description: newCoupon.description,
-        discount_badge: newCoupon.discountBadge,
-        original_price: Number(newCoupon.originalPrice) || null,
-        promo_price: Number(newCoupon.promoPrice) || null,
-        category: newCoupon.category || 'gastronomia',
-        code: newCoupon.code,
-        rules: newCoupon.rules,
-        max_uses_per_user: newCoupon.maxUsesPerUser || 1
-      }).catch(err => console.warn('[Supabase CreateCoupon]', err));
+      db.createCoupon(newCoupon).catch(err => console.warn('[Supabase CreateCoupon]', err));
     }
 
     confetti({
@@ -1163,12 +1255,20 @@ export const AppProvider = ({ children }) => {
 
   // Registrar visualização de cupom por usuário
   const recordCouponView = (couponId) => {
-    setCoupons(prev => prev.map(c => c.id === couponId ? { ...c, viewsCount: (c.viewsCount || 0) + 1 } : c));
+    setCoupons(prev => {
+      const updated = prev.map(c => c.id === couponId ? { ...c, viewsCount: (c.viewsCount || 0) + 1 } : c);
+      safeSaveCoupons(updated);
+      return updated;
+    });
   };
 
   // Excluir Cupom (Admin ou Lojista)
   const deleteCoupon = (couponId) => {
-    setCoupons(prev => prev.filter(c => c.id !== couponId));
+    setCoupons(prev => {
+      const updated = prev.filter(c => c.id !== couponId);
+      safeSaveCoupons(updated);
+      return updated;
+    });
     if (isSupabaseConfigured && supabase) {
       db.deleteCoupon(couponId).catch(err => console.warn('[Supabase DeleteCoupon]', err));
     }
@@ -1176,7 +1276,15 @@ export const AppProvider = ({ children }) => {
 
   // Alternar Destaque Ouro do Cupom (Admin)
   const toggleHighlightCoupon = (couponId) => {
-    setCoupons(prev => prev.map(c => c.id === couponId ? { ...c, highlight: !c.highlight } : c));
+    setCoupons(prev => {
+      const updated = prev.map(c => c.id === couponId ? { ...c, highlight: !c.highlight } : c);
+      safeSaveCoupons(updated);
+      const target = updated.find(c => c.id === couponId);
+      if (target && isSupabaseConfigured && supabase) {
+        db.createCoupon(target).catch(err => console.warn('[Supabase UpdateHighlight]', err));
+      }
+      return updated;
+    });
   };
 
   // Alternar Favorito

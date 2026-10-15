@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { MerchantPromoKit } from './PromotionalKit';
 import { BrandMediaKitSection } from './BrandMediaKitSection';
+import { compressImage } from '../utils/imageCompressor';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -272,29 +273,43 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     setFormData(nextForm);
   };
 
-  // Upload da Logo da Empresa (Perfil do Lojista)
-  const handleLogoUpload = (e) => {
+  // Upload da Logo da Empresa (Perfil do Lojista) com Compressão Automática
+  const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setStoreForm(prev => ({ ...prev, logoImage: reader.result }));
-        updateStore(currentStore.id, { logoImage: reader.result });
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, { maxWidth: 350, maxHeight: 350, quality: 0.8 });
+        setStoreForm(prev => ({ ...prev, logoImage: compressed }));
+        updateStore(currentStore.id, { logoImage: compressed });
+      } catch (err) {
+        console.warn('Compressão de logo falhou, usando fallback direto:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setStoreForm(prev => ({ ...prev, logoImage: reader.result }));
+          updateStore(currentStore.id, { logoImage: reader.result });
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  // Upload da Foto de Capa da Loja
-  const handleCoverUpload = (e) => {
+  // Upload da Foto de Capa da Loja com Compressão Automática
+  const handleCoverUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setStoreForm(prev => ({ ...prev, coverImage: reader.result }));
-        updateStore(currentStore.id, { image: reader.result });
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, { maxWidth: 900, maxHeight: 550, quality: 0.75 });
+        setStoreForm(prev => ({ ...prev, coverImage: compressed }));
+        updateStore(currentStore.id, { image: compressed });
+      } catch (err) {
+        console.warn('Compressão de capa falhou, usando fallback direto:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setStoreForm(prev => ({ ...prev, coverImage: reader.result }));
+          updateStore(currentStore.id, { image: reader.result });
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -323,15 +338,21 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     setTimeout(() => setStoreSavedSuccess(false), 3500);
   };
 
-  // Upload do Banner da Oferta
-  const handleBannerUpload = (e) => {
+  // Upload do Banner da Oferta com Compressão Automática
+  const handleBannerUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, banner: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, { maxWidth: 900, maxHeight: 550, quality: 0.72 });
+        setFormData(prev => ({ ...prev, banner: compressed }));
+      } catch (err) {
+        console.warn('Compressão de banner falhou, usando fallback direto:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, banner: reader.result }));
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 

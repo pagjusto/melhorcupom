@@ -23,6 +23,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { compressImage } from '../utils/imageCompressor';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -89,15 +90,21 @@ export const AdminCouponsManager = ({ showToast }) => {
     setFormData(updated);
   };
 
-  // Upload de Banner Customizado
-  const handleBannerUpload = (e) => {
+  // Upload de Banner Customizado com Compressão Automática (evita estouro de LocalStorage)
+  const handleBannerUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, banner: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, { maxWidth: 900, maxHeight: 550, quality: 0.72 });
+        setFormData(prev => ({ ...prev, banner: compressed }));
+      } catch (err) {
+        console.warn('Compressão falhou, usando fallback direto:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, banner: reader.result }));
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -122,11 +129,13 @@ export const AdminCouponsManager = ({ showToast }) => {
     let finalStoreId = formData.selectedStoreId;
     let finalStoreName = '';
     let finalStoreLogo = '';
+    let finalMerchantId = null;
 
     if (storeLinkMode === 'existing') {
       const matchedStore = stores.find(s => s.id === formData.selectedStoreId);
       finalStoreName = matchedStore?.name || 'Loja Parceira';
       finalStoreLogo = matchedStore?.logo || '🏪';
+      finalMerchantId = matchedStore?.merchantId || `merchant_${Date.now()}`;
     } else {
       if (!formData.customStoreName.trim()) {
         alert('Por favor, digite o nome do estabelecimento ou marca da oferta avulsa.');
@@ -135,6 +144,7 @@ export const AdminCouponsManager = ({ showToast }) => {
       finalStoreId = `store_avulsa_${Date.now()}`;
       finalStoreName = formData.customStoreName.trim();
       finalStoreLogo = formData.customStoreLogo || '⭐';
+      finalMerchantId = `merchant_avulso_${Date.now()}`;
     }
 
     const orig = formData.originalPrice ? parseFloat(formData.originalPrice) : null;
@@ -180,6 +190,7 @@ export const AdminCouponsManager = ({ showToast }) => {
 
     const newCouponPayload = {
       storeId: finalStoreId,
+      merchantId: finalMerchantId,
       storeName: finalStoreName,
       storeLogo: finalStoreLogo,
       title: formData.title.trim(),
