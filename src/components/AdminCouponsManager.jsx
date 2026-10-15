@@ -30,6 +30,7 @@ import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
+import { getCouponBanner } from '../utils/bannerResolver';
 import { ImageFramingModal } from './ImageFramingModal';
 
 const BANNER_PRESETS = [
@@ -1089,12 +1090,7 @@ export const AdminCouponsManager = ({ showToast }) => {
               const storeLogo = rawLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
               const isOnline = coupon.type === 'online' || coupon.city?.toLowerCase().includes('online');
 
-              const bannerImage = coupon.banner || coupon.image || BANNER_PRESETS[0].url;
-              const isLogoBanner = bannerImage && !bannerImage.startsWith('data:') && (
-                bannerImage.includes('/logos/') || 
-                bannerImage.includes('/logo') || 
-                bannerImage.endsWith('.svg')
-              );
+              const bannerImage = getCouponBanner(coupon, store);
 
               return (
                 <div 
@@ -1107,14 +1103,14 @@ export const AdminCouponsManager = ({ showToast }) => {
                           : 'border-white/10 hover:border-white/20')
                   }`}
                 >
-                  {/* Banner */}
-                  <div className={`relative h-36 w-full overflow-hidden ${isLogoBanner ? 'bg-gradient-to-br from-[#1E1E2E] via-[#161624] to-[#101018] flex items-center justify-center p-4' : 'bg-black/60'}`}>
+                  {/* Banner da Oferta (Foto de Capa Real e Vibrante) */}
+                  <div className="relative h-36 w-full overflow-hidden bg-black">
                     <img 
                       src={bannerImage} 
                       alt={coupon.title}
-                      className={isLogoBanner ? "h-16 max-w-[70%] object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300" : "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
                     
                     {/* Badge de Desconto */}
                     <div className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white px-2.5 py-0.5 rounded-lg text-xs font-black shadow-md z-10">

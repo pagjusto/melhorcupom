@@ -19,6 +19,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
+import { getCouponBanner } from '../utils/bannerResolver';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen, recordCouponView } = useApp();
@@ -51,12 +52,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const rawLogo = coupon.storeLogoImage || coupon.logoImage || coupon.storeLogo || store?.logoImage;
   const isImageLogo = rawLogo && typeof rawLogo === 'string' && (rawLogo.startsWith('data:') || rawLogo.startsWith('http') || rawLogo.startsWith('/') || rawLogo.endsWith('.png') || rawLogo.endsWith('.jpg') || rawLogo.endsWith('.svg'));
   const storeLogo = isImageLogo ? rawLogo : (getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage);
-  const bannerImage = coupon.banner || store?.image || storeLogo || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
-  const isLogoBanner = bannerImage && !bannerImage.startsWith('data:') && (
-    bannerImage.includes('/logos/') || 
-    bannerImage.includes('/logo') || 
-    bannerImage.endsWith('.svg')
-  );
+  const bannerImage = getCouponBanner(coupon, store);
 
   // Configuração visual de acordo com o plano de assinatura do lojista:
   // - Borda da logo do lojista na cor da assinatura (branca para Free)
@@ -97,12 +93,12 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         <div className={`absolute inset-0 ${tierConfig.auraBg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10`} />
       )}
       
-      {/* 1. BANNER DA OFERTA (definido no card / upload do lojista) */}
-      <div className={`relative h-24 sm:h-28 w-full overflow-hidden ${isLogoBanner ? 'bg-gradient-to-br from-[#1E1E2E] via-[#161624] to-[#101018] flex items-center justify-center p-3' : 'bg-black/60'}`}>
+      {/* 1. BANNER DA OFERTA (Foto de Capa Real e Vibrante) */}
+      <div className="relative h-24 sm:h-28 w-full overflow-hidden bg-black">
         <img
           src={bannerImage}
           alt={coupon.title}
-          className={isLogoBanner ? "h-12 sm:h-14 max-w-[70%] object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300" : "w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#17171E] via-transparent to-black/40 pointer-events-none" />
