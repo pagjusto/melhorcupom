@@ -153,6 +153,43 @@ export const MERCHANT_PLANS = [
 ];
 
 export const INITIAL_STORES = [
+  // 0. LOJISTA PARCEIRO MODELO (PARA TESTES E SIMULAÇÃO COMPLETA)
+  {
+    id: 'store_parceiro_demo',
+    name: 'Smash Burger & Co. (Loja Parceira)',
+    legalName: 'Smash Burger & Co. Alimentos LTDA',
+    cnpj: '45.123.890/0001-12',
+    cep: '01310-100',
+    merchantId: 'merchant_parceiro_demo',
+    tier: 'gold', // Plano Ouro VIP
+    adminPaidPlan: true,
+    isNewPartner: true,
+    freeTrialActive: true,
+    freeTrialMonths: 3,
+    category: 'gastronomia',
+    city: 'São Paulo - SP',
+    cities: ['São Paulo - SP', 'Campinas - SP', 'Santos - SP'],
+    phone: '(11) 98765-4321',
+    email: 'contato@smashburger.com.br',
+    instagram: '@smashburger_oficial',
+    logo: '🍔',
+    logoImage: '',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80',
+    address: 'Rua Augusta, 1420 - Consolação, São Paulo - SP',
+    hours: 'Seg a Dom: 11h às 23h30',
+    rating: 4.9,
+    reviewsCount: 342,
+    badge: '👑 Parceiro Ouro VIP',
+    type: 'physical',
+    referralCode: 'SMASH5',
+    referralBalance: 85.00,
+    referrals: [
+      { id: 'ref_1', name: 'Carlos Eduardo', date: '2026-03-01', reward: 5.00 },
+      { id: 'ref_2', name: 'Mariana Silva', date: '2026-03-05', reward: 5.00 },
+      { id: 'ref_3', name: 'Felipe Alcantara', date: '2026-03-10', reward: 5.00 }
+    ],
+    maxCoupons: 10
+  },
   // 1. MARCAS FÍSICAS & FRANQUIAS NACIONAIS PRESTIGIADAS
   {
     id: 'store_1',
@@ -853,6 +890,38 @@ export const INITIAL_STORES = [
 ];
 
 export const INITIAL_COUPONS = [
+  {
+    id: 'cupom_parceiro_demo_1',
+    storeId: 'store_parceiro_demo',
+    merchantId: 'merchant_parceiro_demo',
+    storeName: 'Smash Burger & Co. (Loja Parceira)',
+    title: '50% OFF no 2º Smash Burger Artesanal Duplo com Batata Rústica',
+    description: 'Válido para consumo no local ou retirada. Apresente o QR Code no balcão da loja para validação instantânea.',
+    originalPrice: 56.00,
+    promoPrice: 28.00,
+    discountType: 'percentage',
+    discountValue: '50%',
+    discountBadge: '50% OFF',
+    estimatedSavings: 28.00,
+    category: 'gastronomia',
+    city: 'São Paulo - SP',
+    cities: ['São Paulo - SP', 'Campinas - SP', 'Santos - SP'],
+    banner: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80',
+    type: 'physical',
+    codePrefix: 'SMASH50',
+    validityType: 'days',
+    validityDays: 30,
+    expiresAt: '2026-12-31',
+    usesCount: 37,
+    maxUsesPerUser: 2,
+    highlight: true,
+    vipOnly: true,
+    rules: [
+      'Apresentar o cupom VIP no balcão da loja.',
+      'Válido para consumo no local ou retirada.',
+      'Não cumulativo com outras promoções vigentes.'
+    ]
+  },
   {
     id: 'cupom_1',
     storeId: 'store_1',

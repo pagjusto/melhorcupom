@@ -188,9 +188,9 @@ export const AppProvider = ({ children }) => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
-        const isPayingMerchant = Boolean(s.isNewPartner || s.adminPaidPlan);
+        const isPayingMerchant = Boolean(s.isNewPartner || s.adminPaidPlan || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
         const resolvedTier = isPayingMerchant
-          ? ((s.tier && s.tier !== 'free' && s.tier !== 'api') ? s.tier : 'bronze')
+          ? ((s.tier && s.tier !== 'free' && s.tier !== 'api') ? s.tier : (init?.tier || 'gold'))
           : 'api';
 
         return {
@@ -779,9 +779,9 @@ export const AppProvider = ({ children }) => {
   const startSimulation = (roleId) => {
     setIsSimulatingRole(true);
     switchRole(roleId);
-    if (roleId.startsWith('merchant_')) {
+    if (roleId.startsWith('merchant_') || roleId === 'partner_store' || roleId === 'merchant_parceiro_demo') {
       setActiveTab('merchant-dashboard');
-    } else if (roleId === 'user_free' || roleId === 'user') {
+    } else if (roleId === 'partner_affiliate' || roleId === 'partner' || roleId === 'user_free' || roleId === 'user') {
       setActiveTab('user-profile');
     } else if (roleId === 'admin') {
       setIsSimulatingRole(false);
@@ -867,6 +867,42 @@ export const AppProvider = ({ children }) => {
         referralCode: null,
         referralBalance: 0.00,
         referrals: []
+      }));
+    } else if (newRole.startsWith('merchant_') || newRole === 'partner_store' || newRole === 'merchant_parceiro_demo') {
+      const targetStore = stores.find(s => s.merchantId === newRole || s.id === newRole) || stores.find(s => s.merchantId === 'merchant_parceiro_demo') || stores[0];
+      setUserProfile(prev => ({
+        ...prev,
+        id: targetStore?.id || 'store_parceiro_demo',
+        name: targetStore?.name || 'Smash Burger & Co. (Loja Parceira)',
+        email: targetStore?.email || 'contato@smashburger.com.br',
+        phone: targetStore?.phone || '(11) 98765-4321',
+        isLoggedIn: true,
+        isRegistered: true,
+        isAdmin: false,
+        isVip: false,
+        vipPlan: null,
+        referralCode: targetStore?.referralCode || 'SMASH5',
+        referralBalance: targetStore?.referralBalance || 85.00
+      }));
+    } else if (newRole === 'partner_affiliate' || newRole === 'partner') {
+      setUserProfile(prev => ({
+        ...prev,
+        id: 'partner_affiliate_1',
+        name: 'Videira Mil Grau (@videiramilgrau_sc)',
+        email: 'parcerias@videiramilgrau.com.br',
+        phone: '(49) 99876-5432',
+        city: 'Videira - SC',
+        isLoggedIn: true,
+        isRegistered: true,
+        isAdmin: false,
+        isVip: true,
+        vipPlan: 'vip',
+        referralCode: 'VIDEIRAMG5',
+        referralBalance: 320.00,
+        storesReferred: 14,
+        usersReferred: 52,
+        isInstagramPartner: true,
+        partnerHandle: '@videiramilgrau_sc'
       }));
     }
   };

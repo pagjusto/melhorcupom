@@ -9,7 +9,8 @@ import {
   RotateCcw, 
   Check, 
   ArrowRight, 
-  Crown
+  Crown,
+  Instagram
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -25,7 +26,12 @@ export const RoleSwitcher = () => {
   const [confirmReset, setConfirmReset] = useState(false);
 
   const realStores = (stores || []).filter(
-    s => !s.isApiIntegrated && !s.apiSource && s.tier !== 'api' && (s.isNewPartner || s.adminPaidPlan || (s.tier && s.tier !== 'free'))
+    s => !s.isApiIntegrated && 
+         !s.apiSource && 
+         s.tier !== 'api' && 
+         s.id !== 'store_parceiro_demo' && 
+         s.merchantId !== 'merchant_parceiro_demo' &&
+         (s.isNewPartner || s.adminPaidPlan || (s.tier && s.tier !== 'free'))
   );
 
   const roles = [
@@ -76,6 +82,30 @@ export const RoleSwitcher = () => {
       iconBg: 'bg-gradient-to-r from-orange-500 to-amber-500 text-white',
       description: 'Todos os cupons desbloqueados com QR Code ativo, extrato detalhado de economia e prioridade máxima nas ofertas.',
       targetTab: 'explore'
+    },
+    {
+      id: 'merchant_parceiro_demo',
+      name: 'Lojista Parceiro (Smash Burger & Co.)',
+      roleType: 'Comércio Credenciado • Gastronomia',
+      icon: Store,
+      badge: 'Lojista Parceiro Ouro',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      accentColor: 'border-emerald-500/30 hover:border-emerald-400 shadow-emerald-950/20',
+      iconBg: 'bg-emerald-500/20 text-emerald-400',
+      description: 'Painel do comércio credenciado: crie novos cupons com foto/logo, valide QR Code de clientes no balcão (PDV), acompanhe indicações e gerencie seu plano.',
+      targetTab: 'merchant-dashboard'
+    },
+    {
+      id: 'partner_affiliate',
+      name: 'Parceiro Divulgador (@videiramilgrau_sc)',
+      roleType: 'Página Parceira • Instagram / Influencer',
+      icon: Instagram,
+      badge: 'Parceiro Divulgador',
+      badgeColor: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+      accentColor: 'border-pink-500/30 hover:border-pink-400 shadow-pink-950/20',
+      iconBg: 'bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white',
+      description: 'Painel de afiliado parceiro de divulgação: link exclusivo com cupom (?convite=VIDEIRAMG5), saldo acumulado de R$ 320,00 e solicitação de saque PIX.',
+      targetTab: 'user-profile'
     },
     ...realStores.slice(0, 6).map(store => ({
       id: store.merchantId || store.id,

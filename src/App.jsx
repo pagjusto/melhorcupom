@@ -243,6 +243,8 @@ const MainLayout = () => {
     if (role === 'visitor') return 'Visitante (Público Não-Logado)';
     if (role === 'user_free' || role === 'user') return 'Usuário Cadastrado (Sem VIP)';
     if (role === 'vip') return 'Assinante VIP (Membro Fidelidade)';
+    if (role === 'partner_affiliate' || role === 'partner') return 'Parceiro Divulgador (Instagram • @videiramilgrau_sc)';
+    if (role === 'merchant_parceiro_demo') return 'Lojista Parceiro (Smash Burger & Co.)';
     if (role.startsWith('merchant_')) {
       const st = stores.find(s => s.merchantId === role || s.id === role);
       return `Lojista Parceiro (${st?.name || 'Comércio'})`;
@@ -250,9 +252,10 @@ const MainLayout = () => {
     return role;
   };
 
-  // Identificação de visitante vs usuário logado/VIP/lojista
+  // Identificação de visitante vs usuário logado/VIP/lojista/parceiro
   const isMerchantRole = currentRole ? currentRole.startsWith('merchant_') : false;
-  const isUserLoggedIn = Boolean(currentRole !== 'visitor' && (isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user' || currentRole === 'admin'));
+  const isPartnerRole = currentRole === 'partner_affiliate' || currentRole === 'partner';
+  const isUserLoggedIn = Boolean(currentRole !== 'visitor' && (isVipUser || userProfile?.isLoggedIn || currentRole === 'user_free' || currentRole === 'user' || currentRole === 'admin' || isPartnerRole));
   const isVisitor = currentRole === 'visitor' || (!isUserLoggedIn && !isMerchantRole);
 
   return (
