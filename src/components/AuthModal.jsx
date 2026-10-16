@@ -618,37 +618,6 @@ export const AuthModal = () => {
           {/* ================= ABA 2: CADASTRO DE LOJISTA / FRANQUIA ================= */}
           {authModalMode === 'merchant_register' && (
             <form onSubmit={handleSubmitMerchant} className="space-y-4">
-              
-              {/* Oferta Especial: 3 Meses Grátis (1 Cupom Ativo • Sem Acesso VIP) */}
-              <div className="bg-gradient-to-r from-[#2D1405] via-[#1E140B] to-[#13221A] border-2 border-emerald-500/70 rounded-2xl p-3.5 sm:p-4 space-y-2 shadow-lg">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-black shadow-sm">
-                    <Sparkles size={11} />
-                    <span>🎁 3 Meses 100% Grátis • 1 Cupom Liberado</span>
-                  </span>
-                  <div className="text-right flex items-baseline gap-1.5">
-                    <span className="text-xs text-gray-400 line-through">R$ 19,90</span>
-                    <span className="text-base sm:text-lg font-black text-emerald-400">GRÁTIS</span>
-                    <span className="text-[10px] text-emerald-300 font-bold">por 3 meses</span>
-                  </div>
-                </div>
-                <div className="text-xs sm:text-sm font-black text-white">
-                  Cadastre sua Loja e Crie 1 Cupom Gratuito por 3 Meses! 🎟️
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-gray-200">
-                  <div className="flex items-center gap-1.5 bg-emerald-500/15 px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-300">
-                    <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0" />
-                    <span><strong>1 Cupom Ativo por 3 Meses</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-black/30 px-2.5 py-1.5 rounded-lg border border-white/5 text-gray-300">
-                    <CheckCircle2 size={13} className="text-amber-400 flex-shrink-0" />
-                    <span><strong>Painel do Lojista + QR Code</strong></span>
-                  </div>
-                </div>
-                <p className="text-[10px] text-gray-300 leading-relaxed">
-                  Você cadastra sua empresa agora <strong>sem pagar nada</strong> e ganha a criação de <strong>1 cupom ativo gratuito por 3 meses (90 dias)</strong> para atrair clientes! <em>(Nota: a degustação de 3 meses é restrita a 1 cupom ativo e não inclui acesso ao Clube VIP. Para ter Acesso VIP liberado e criar mais ofertas, assine Bronze [2 cupons + VIP], Prata [5 cupons + VIP] ou Ouro [Ilimitado + VIP]).</em>
-                </p>
-              </div>
 
               {/* Destaque Franquias & Cidades */}
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 sm:p-3.5 flex items-start gap-3">
@@ -1044,7 +1013,7 @@ export const AuthModal = () => {
                 className="w-full mt-2 bg-gradient-to-r from-emerald-500 via-[#FF5F00] to-amber-500 hover:from-emerald-400 hover:to-[#E04F00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01] cursor-pointer"
               >
                 <Store size={18} />
-                <span>Cadastrar Loja Grátis (3 Meses Grátis • 1 Cupom)</span>
+                <span>Cadastrar Minha Loja Gratuitamente</span>
                 <ArrowRight size={16} />
               </button>
 
