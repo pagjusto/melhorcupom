@@ -1088,8 +1088,20 @@ export const AdminCouponsManager = ({ showToast }) => {
             {filteredCoupons.map((coupon) => {
               const store = stores.find(s => s.id === coupon.storeId);
               const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-              const rawLogo = coupon.storeLogoImage || coupon.logoImage || store?.logoImage || (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('data:') || coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
-              const storeLogo = rawLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
+              const brandLogo = getBrandLogo(coupon.storeId) || 
+                                getBrandLogo(storeName) || 
+                                getBrandLogo(coupon.apiSource) || 
+                                getBrandLogo(store?.id) || 
+                                getBrandLogo(store?.name);
+
+              const customLogo = (coupon.customStoreLogoImage || 
+                                  (typeof coupon.logoImage === 'string' && coupon.logoImage.startsWith('data:') ? coupon.logoImage : null) || 
+                                  (typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') ? coupon.storeLogo : null));
+
+              const storeLogo = (coupon.isAvulso && customLogo)
+                ? customLogo
+                : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage || (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null));
+
               const isOnline = coupon.type === 'online' || coupon.city?.toLowerCase().includes('online');
 
               const bannerImage = getCouponBanner(coupon, store);
@@ -1135,15 +1147,29 @@ export const AdminCouponsManager = ({ showToast }) => {
                           : 'bg-white p-0.5'
                       }`}>
                         {storeLogo ? (
-                          <img 
-                            src={storeLogo} 
-                            alt={storeName} 
-                            className={`w-full h-full ${
-                              (storeLogo && typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || coupon.isAvulso || coupon.customStoreLogoImage || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
-                                ? 'object-cover'
-                                : 'object-contain'
-                            }`} 
-                          />
+                          <>
+                            <img 
+                              src={storeLogo} 
+                              alt={storeName} 
+                              className={`w-full h-full ${
+                                (storeLogo && typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || coupon.isAvulso || coupon.customStoreLogoImage || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+                                  ? 'object-cover'
+                                  : 'object-contain'
+                              }`} 
+                              onError={(e) => {
+                                if (brandLogo && e.currentTarget.src !== brandLogo) {
+                                  e.currentTarget.src = brandLogo;
+                                } else {
+                                  e.currentTarget.style.display = 'none';
+                                  const fallback = e.currentTarget.parentElement?.querySelector('.admin-logo-fallback');
+                                  if (fallback) fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                            <span className="admin-logo-fallback hidden w-full h-full items-center justify-center text-xs">
+                              {coupon.storeLogo || store?.logo || '🏪'}
+                            </span>
+                          </>
                         ) : (
                           <span className="text-xs">{coupon.storeLogo || store?.logo || '🏪'}</span>
                         )}

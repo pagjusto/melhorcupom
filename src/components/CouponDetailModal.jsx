@@ -149,8 +149,19 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const affiliateDestinationUrl = getStoreDestinationUrl(store, coupon);
 
   const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-  const rawLogo = coupon.storeLogoImage || coupon.logoImage || store?.logoImage || (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('data:') || coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
-  const storeLogo = rawLogo || getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage;
+  const brandLogo = getBrandLogo(coupon.storeId) || 
+                    getBrandLogo(storeName) || 
+                    getBrandLogo(coupon.apiSource) || 
+                    getBrandLogo(store?.id) || 
+                    getBrandLogo(store?.name);
+
+  const customLogo = (coupon.customStoreLogoImage || 
+                      (typeof coupon.logoImage === 'string' && coupon.logoImage.startsWith('data:') ? coupon.logoImage : null) || 
+                      (typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') ? coupon.storeLogo : null));
+
+  const storeLogo = (coupon.isAvulso && customLogo)
+    ? customLogo
+    : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(couponCode);

@@ -49,9 +49,19 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   };
 
   const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-  const rawLogo = coupon.storeLogoImage || coupon.logoImage || coupon.storeLogo || store?.logoImage;
-  const isImageLogo = rawLogo && typeof rawLogo === 'string' && (rawLogo.startsWith('data:') || rawLogo.startsWith('http') || rawLogo.startsWith('/') || rawLogo.endsWith('.png') || rawLogo.endsWith('.jpg') || rawLogo.endsWith('.svg'));
-  const storeLogo = isImageLogo ? rawLogo : (getBrandLogo(coupon.storeId || storeName || coupon.apiSource) || store?.logoImage);
+  const brandLogo = getBrandLogo(coupon.storeId) || 
+                    getBrandLogo(storeName) || 
+                    getBrandLogo(coupon.apiSource) || 
+                    getBrandLogo(store?.id) || 
+                    getBrandLogo(store?.name);
+
+  const customLogo = (coupon.customStoreLogoImage || 
+                      (typeof coupon.logoImage === 'string' && coupon.logoImage.startsWith('data:') ? coupon.logoImage : null) || 
+                      (typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') ? coupon.storeLogo : null));
+
+  const storeLogo = (coupon.isAvulso && customLogo)
+    ? customLogo
+    : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
   const bannerImage = getCouponBanner(coupon, store);
 
   // Configuração visual de acordo com o plano de assinatura do lojista:
@@ -176,9 +186,13 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                     alt={storeName} 
                     className={`w-full h-full ${isFramedOrCustom ? 'object-cover' : 'object-contain p-0.5 rounded-md'}`}
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.parentElement?.querySelector('.card-logo-fallback');
-                      if (fallback) fallback.style.display = 'flex';
+                      if (brandLogo && e.currentTarget.src !== brandLogo) {
+                        e.currentTarget.src = brandLogo;
+                      } else {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.querySelector('.card-logo-fallback');
+                        if (fallback) fallback.style.display = 'flex';
+                      }
                     }}
                   />
                   <span className="card-logo-fallback hidden w-full h-full items-center justify-center text-sm bg-white text-black">

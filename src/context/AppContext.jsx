@@ -123,7 +123,7 @@ export const AppProvider = ({ children }) => {
             banner: init.banner || c.banner,
             storeName: init.storeName || c.storeName,
             storeLogo: init.storeLogo || c.storeLogo,
-            logoImage: init.logoImage || c.logoImage || getBrandLogo(init.storeName || c.storeName) || '',
+            logoImage: getBrandLogo(init.storeId || c.storeId) || getBrandLogo(init.storeName || c.storeName) || init.logoImage || (c.logoImage && c.logoImage.startsWith('data:') ? c.logoImage : '') || '',
             viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
             isApiIntegrated: init.isApiIntegrated ?? c.isApiIntegrated ?? false,
             apiSource: init.apiSource || c.apiSource || null,
@@ -142,7 +142,7 @@ export const AppProvider = ({ children }) => {
           };
         }
         const cleanAffiliate = c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, c);
-        const resolvedLogo = c.logoImage || c.storeLogoImage || getBrandLogo(c.storeName) || '';
+        const resolvedLogo = (c.isAvulso && c.logoImage && c.logoImage.startsWith('data:')) ? c.logoImage : (getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || c.logoImage || c.storeLogoImage || '');
         const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
         return {
           ...c,
@@ -198,7 +198,7 @@ export const AppProvider = ({ children }) => {
           name: init?.name || s.name,
           instagram,
           logo: init?.logo || s.logo || '🏪',
-          logoImage: init?.logoImage || s.logoImage || getBrandLogo(init?.name || s.name) || '',
+          logoImage: getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || (s.logoImage && s.logoImage.startsWith('data:') ? s.logoImage : '') || '',
           image: init?.image || s.image || '',
           tier: resolvedTier,
           adminPaidPlan: Boolean(s.adminPaidPlan),
