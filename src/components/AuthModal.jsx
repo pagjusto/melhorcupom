@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { POPULAR_CITIES, CATEGORIES } from '../data/mockData';
 import { 
@@ -22,11 +22,31 @@ import {
   Globe,
   Tag,
   Percent,
-  RefreshCw
+  RefreshCw,
+  Upload,
+  Clock,
+  DollarSign,
+  Users,
+  AlertTriangle,
+  Trash2,
+  ZoomIn,
+  Star,
+  Image as ImageIcon
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { validateStoreSafety, validateUserSafety } from '../utils/contentModeration';
+import { ImageFramingModal } from './ImageFramingModal';
+
+const BANNER_PRESETS = [
+  { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
+  { name: 'Chopp & Petiscos', url: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=700&auto=format&fit=crop&q=80' },
+  { name: 'Corte & Barba', url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=700&auto=format&fit=crop&q=80' },
+  { name: 'Pizza Italiana', url: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=700&auto=format&fit=crop&q=80' },
+  { name: 'Steak & Carnes', url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=700&auto=format&fit=crop&q=80' },
+  { name: 'Crossfit & Fitness', url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=700&auto=format&fit=crop&q=80' },
+  { name: 'Moda & Sneakers', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=700&auto=format&fit=crop&q=80' }
+];
 
 export const AuthModal = () => {
   const { 
@@ -66,20 +86,83 @@ export const AuthModal = () => {
     phone: '',
     instagram: '',
     category: 'gastronomia',
+    logoImage: '',
     password: ''
   });
+
+  // Modal de Ajuste de Zoom & Enquadramento Interativo para Logo e Capa
+  const [framingModalState, setFramingModalState] = useState({
+    isOpen: false,
+    imageSrc: '',
+    targetType: 'banner' // 'banner' | 'logo'
+  });
+
+  const bannerInputRef = useRef(null);
+  const logoInputRef = useRef(null);
 
   // Primeiro Cupom Opcional no Próprio Cadastro
   const [includeCoupon, setIncludeCoupon] = useState(true);
   const [couponForm, setCouponForm] = useState({
     title: '',
+    category: 'gastronomia',
+    description: '',
     originalPrice: '',
     promoPrice: '',
-    discountBadge: '',
+    discountBadge: '30% OFF',
+    discountType: 'percentage',
+    type: 'physical', // 'physical' | 'online'
+    banner: BANNER_PRESETS[0].url,
+    logoImage: '',
     code: '',
-    description: '',
-    rules: 'Apresentar o cupom no balcão.\nNão cumulativo com outras promoções.'
+    limitType: 'one', // 'one' | 'custom' | 'unlimited'
+    customMaxUses: 2,
+    validityType: 'days', // 'days' | 'unlimited'
+    validityDays: 30,
+    affiliateUrl: '',
+    rules: 'Apresentar o cupom VIP no balcão.\nNão cumulativo com outras promoções.\nVálido para consumo no local.'
   });
+
+  const handleBannerUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFramingModalState({
+          isOpen: true,
+          imageSrc: reader.result,
+          targetType: 'banner'
+        });
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFramingModalState({
+          isOpen: true,
+          imageSrc: reader.result,
+          targetType: 'logo'
+        });
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+  };
+
+  const handleFramingConfirm = (framedDataUrl) => {
+    if (framingModalState.targetType === 'logo') {
+      setMerchantForm(prev => ({ ...prev, logoImage: framedDataUrl }));
+      setCouponForm(prev => ({ ...prev, logoImage: framedDataUrl }));
+    } else {
+      setCouponForm(prev => ({ ...prev, banner: framedDataUrl }));
+    }
+    setFramingModalState(prev => ({ ...prev, isOpen: false }));
+  };
 
   const handleCouponPriceChange = (field, val) => {
     const updated = { ...couponForm, [field]: val };
@@ -93,7 +176,7 @@ export const AuthModal = () => {
   };
 
   const handleGenerateCouponCode = () => {
-    const prefix = (merchantForm.name || 'CUPOM')
+    const prefix = (merchantForm.name || couponForm.title || 'CUPOM')
       .trim()
       .split(' ')[0]
       .replace(/[^a-zA-Z0-9]/g, '')
@@ -297,8 +380,10 @@ export const AuthModal = () => {
     }
 
     // Filtro Anti-Pornografia, Explícito e Trolls para Lojas
+    const logoImg = merchantForm.logoImage || couponForm.logoImage || '';
     const payload = {
       ...merchantForm,
+      logoImage: logoImg,
       cities: finalCities,
       storeType: isOnline ? 'online' : 'physical',
       isOnline
@@ -312,7 +397,7 @@ export const AuthModal = () => {
 
     const regResult = registerMerchant(payload);
 
-    // Se o lojista preencheu o 1º cupom, cadastrar automaticamente
+    // Se o lojista preencheu o 1º cupom, cadastrar automaticamente com todos os dados
     if (includeCoupon && couponForm.title.trim() && regResult?.store) {
       const orig = couponForm.originalPrice ? parseFloat(couponForm.originalPrice.replace(',', '.')) : null;
       const promo = couponForm.promoPrice ? parseFloat(couponForm.promoPrice.replace(',', '.')) : null;
@@ -320,7 +405,7 @@ export const AuthModal = () => {
         ? Number((orig - promo).toFixed(2))
         : 20;
 
-      let badge = couponForm.discountBadge.trim();
+      let badge = couponForm.discountBadge?.trim() || '';
       if (!badge) {
         if (orig && promo && orig > promo) {
           const pct = Math.round(((orig - promo) / orig) * 100);
@@ -334,18 +419,28 @@ export const AuthModal = () => {
       const storeCodePrefix = cleanStoreName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 5) || 'PROMO';
       const finalCode = couponForm.code.trim().toUpperCase() || `${storeCodePrefix}${Math.floor(10 + Math.random() * 90)}`;
 
-      const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() + 30);
-      const finalExpiresAt = targetDate.toISOString().split('T')[0];
+      let finalExpiresAt = null;
+      if (couponForm.validityType === 'days') {
+        const days = Math.max(1, parseInt(couponForm.validityDays) || 30);
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        finalExpiresAt = targetDate.toISOString().split('T')[0];
+      } else {
+        finalExpiresAt = 'unlimited';
+      }
+
+      const maxUses = couponForm.limitType === 'one' ? 1 : couponForm.limitType === 'custom' ? (parseInt(couponForm.customMaxUses) || 2) : null;
 
       const rulesArray = couponForm.rules.trim()
         ? couponForm.rules.split('\n').map(r => r.trim()).filter(Boolean)
-        : ['Apresentar o cupom no balcão.', 'Não cumulativo com outras promoções.'];
+        : ['Apresentar o cupom VIP no balcão.', 'Não cumulativo com outras promoções.', 'Válido para consumo no local.'];
 
       addCoupon({
         storeId: regResult.store.id,
         merchantId: regResult.store.merchantId,
         storeName: regResult.store.name,
+        storeLogoImage: logoImg,
+        logoImage: logoImg,
         title: couponForm.title.trim(),
         description: couponForm.description.trim() || 'Oferta especial de inauguração para clientes VIP.',
         code: finalCode,
@@ -353,15 +448,18 @@ export const AuthModal = () => {
         promoPrice: promo,
         discountBadge: badge,
         discountValue: badge,
+        discountType: couponForm.discountType || 'percentage',
         estimatedSavings: computedSavings,
-        category: regResult.store.category || merchantForm.category || 'gastronomia',
+        category: couponForm.category || regResult.store.category || merchantForm.category || 'gastronomia',
         city: regResult.store.city || 'São Paulo - SP',
         cities: regResult.store.cities || [regResult.store.city || 'São Paulo - SP'],
-        banner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
-        type: regResult.store.type || 'physical',
-        validityType: 'days',
-        validityDays: 30,
+        banner: couponForm.banner || BANNER_PRESETS[0].url,
+        type: couponForm.type || regResult.store.type || 'physical',
+        validityType: couponForm.validityType,
+        validityDays: couponForm.validityType === 'days' ? (parseInt(couponForm.validityDays) || 30) : null,
         expiresAt: finalExpiresAt,
+        maxUsesPerUser: maxUses,
+        affiliateUrl: couponForm.affiliateUrl || '',
         rules: rulesArray
       });
     }
@@ -1081,24 +1179,26 @@ export const AuthModal = () => {
               </div>
 
               {/* Seção: Criar 1º Cupom no Cadastro */}
-              <div className="bg-[#12121c] border border-amber-500/30 rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all shadow-lg">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="bg-[#12121c] border-2 border-amber-500/40 rounded-3xl p-4 sm:p-6 relative overflow-hidden transition-all shadow-2xl space-y-5">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
                 
-                {/* Cabeçalho do Card com Toggle */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0">
-                      <Tag size={18} />
+                {/* Cabeçalho com Toggle */}
+                <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-[#FF5F00] p-0.5 shadow-lg flex-shrink-0">
+                      <div className="w-full h-full bg-[#181824] rounded-[14px] flex items-center justify-center text-amber-400">
+                        <Tag size={20} />
+                      </div>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-black text-white">Criar Meu 1º Cupom Agora</h4>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <h4 className="text-base font-black text-white">Criar Meu 1º Cupom Agora</h4>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                           Recomendado
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        Lojas com cupons ativos recebem até 5x mais clientes logo após o cadastro.
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Configure seu primeiro cupom completo com capa, logo e regras para atrair clientes imediatamente.
                       </p>
                     </div>
                   </div>
@@ -1111,111 +1211,524 @@ export const AuthModal = () => {
                       onChange={(e) => setIncludeCoupon(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500 shadow-inner"></div>
                   </label>
                 </div>
 
                 {includeCoupon && (
-                  <div className="mt-4 pt-4 border-t border-white/10 space-y-3.5 animate-fade-in">
-                    {/* Título do Cupom */}
+                  <div className="space-y-6 animate-fade-in">
+                    
+                    {/* 1. UPLOAD E ENQUADRAMENTO DA CAPA / BANNER */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <span>📸 1. Capa / Banner da Oferta *</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => bannerInputRef.current?.click()}
+                          className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 font-bold cursor-pointer transition-colors"
+                        >
+                          <Upload size={13} />
+                          <span>Upload do Computador</span>
+                        </button>
+                        <input
+                          ref={bannerInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleBannerUpload}
+                          className="hidden"
+                        />
+                      </div>
+
+                      {/* Preview do Banner com Overlays */}
+                      <div className="relative h-44 sm:h-48 w-full rounded-2xl overflow-hidden border-2 border-dashed border-[#FF5F00]/50 group bg-black/60 shadow-lg">
+                        <img
+                          src={couponForm.banner}
+                          alt="Pré-visualização da Capa"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/35 pointer-events-none" />
+
+                        {/* Tag de Desconto Simulada */}
+                        <div className="absolute top-3 left-3 bg-[#FF5F00] text-white px-3 py-1 rounded-xl text-xs font-black shadow-lg">
+                          {couponForm.discountBadge || '30% OFF'}
+                        </div>
+
+                        {/* Tag de Validade Simulada */}
+                        <div className="absolute top-3 right-3 sm:right-64">
+                          <span className="inline-flex items-center gap-1 bg-black/75 backdrop-blur-md text-white px-2.5 py-1 rounded-xl text-xs font-bold border border-white/20 shadow-md">
+                            <Clock size={12} className="text-orange-400" />
+                            <span>
+                              {couponForm.validityType === 'unlimited' ? '♾️ Ilimitado' : `${couponForm.validityDays || 30} dias`}
+                            </span>
+                          </span>
+                        </div>
+
+                        {/* Logo da Empresa no Banner Simulado */}
+                        <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-xl bg-[#181822] overflow-hidden flex items-center justify-center shadow-lg border border-white/10">
+                            {(couponForm.logoImage || merchantForm.logoImage) ? (
+                              <img
+                                src={couponForm.logoImage || merchantForm.logoImage}
+                                alt="Logo Loja"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-xl">🏪</span>
+                            )}
+                          </div>
+                          <span className="text-xs font-bold text-white drop-shadow-md">
+                            {merchantForm.name || 'Sua Loja'}
+                          </span>
+                        </div>
+
+                        {/* Preços De / Por Simulados */}
+                        {couponForm.originalPrice && couponForm.promoPrice && (
+                          <div className="absolute bottom-3 right-3 bg-black/85 backdrop-blur-md border border-emerald-500/40 px-3 py-1 rounded-xl text-right shadow-xl">
+                            <span className="text-[10px] text-gray-400 line-through block">
+                              De R$ {parseFloat(couponForm.originalPrice.replace(',', '.')).toFixed(2).replace('.', ',')}
+                            </span>
+                            <span className="text-xs font-black text-emerald-400">
+                              Por R$ {parseFloat(couponForm.promoPrice.replace(',', '.')).toFixed(2).replace('.', ',')}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Botão de Ajustar Zoom & Enquadramento */}
+                        {couponForm.banner && (
+                          <button
+                            type="button"
+                            onClick={() => setFramingModalState({ isOpen: true, imageSrc: couponForm.banner, targetType: 'banner' })}
+                            className="absolute top-3 right-3 bg-black/80 hover:bg-black text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-400/40 hover:border-amber-400 backdrop-blur-md flex items-center gap-1.5 transition-all shadow-xl cursor-pointer"
+                            title="Ajustar zoom, enquadramento e corte da foto de capa"
+                          >
+                            <ZoomIn size={13} className="text-amber-400" />
+                            <span>Ajustar Zoom & Corte</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Presets Rápidos de Banner */}
+                      <div className="mt-2.5">
+                        <span className="text-[11px] text-gray-400 block mb-1.5">Ou escolha uma imagem de alta qualidade pronta:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {BANNER_PRESETS.map((preset, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setCouponForm({ ...couponForm, banner: preset.url })}
+                              className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                                couponForm.banner === preset.url
+                                  ? 'bg-[#FF5F00] text-white border-[#FF5F00] font-bold shadow-md'
+                                  : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
+                              }`}
+                            >
+                              {preset.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 2. LOGO DA MARCA COM AJUSTE DE ZOOM */}
+                    <div className="bg-[#101018] border border-white/10 rounded-2xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <ImageIcon size={14} className="text-amber-400" />
+                          <span>2. Logo da Marca / Estabelecimento (Badge e Card) *</span>
+                        </label>
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                        />
+                      </div>
+
+                      {(couponForm.logoImage || merchantForm.logoImage) ? (
+                        <div className="flex items-center gap-3 p-2 bg-[#141420] border border-white/10 rounded-xl">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#181824] border border-white/10 flex items-center justify-center flex-shrink-0 shadow-md">
+                            <img
+                              src={couponForm.logoImage || merchantForm.logoImage}
+                              alt="Logo"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-white block">Logo carregada</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <button
+                                type="button"
+                                onClick={() => setFramingModalState({ isOpen: true, imageSrc: couponForm.logoImage || merchantForm.logoImage, targetType: 'logo' })}
+                                className="text-[11px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 rounded-lg border border-amber-500/30 transition-colors"
+                              >
+                                <ZoomIn size={12} className="text-amber-400" />
+                                <span>Ajustar Zoom & Enquadramento</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => logoInputRef.current?.click()}
+                                className="text-[11px] text-[#FF5F00] hover:underline font-bold cursor-pointer"
+                              >
+                                Trocar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMerchantForm(prev => ({ ...prev, logoImage: '' }));
+                                  setCouponForm(prev => ({ ...prev, logoImage: '' }));
+                                }}
+                                className="text-[11px] text-gray-400 hover:text-red-400 cursor-pointer"
+                              >
+                                Remover
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          className="w-full bg-[#141420] border-2 border-dashed border-white/20 hover:border-amber-400 rounded-xl py-3 px-4 text-xs text-gray-300 hover:text-white flex items-center justify-center gap-2 transition-all cursor-pointer group"
+                        >
+                          <Upload size={16} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                          <span className="font-bold">Fazer Upload da Logo da Loja (Ajuste de Zoom automático)</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 3. TÍTULO E CATEGORIA */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-bold text-gray-300 block mb-1">
+                          Título Chamativo da Oferta *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Ex: 50% OFF no 2º Burger Especial ou Sobremesa Grátis"
+                          value={couponForm.title}
+                          onChange={(e) => setCouponForm({ ...couponForm, title: e.target.value })}
+                          className="w-full bg-[#101017] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-gray-300 block mb-1">
+                          Categoria da Oferta
+                        </label>
+                        <select
+                          value={couponForm.category}
+                          onChange={(e) => setCouponForm({ ...couponForm, category: e.target.value })}
+                          className="w-full bg-[#101017] border border-white/10 focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-white focus:outline-none"
+                        >
+                          {CATEGORIES.filter(c => c.id !== 'all').map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* 4. DESCRIÇÃO DETALHADA */}
                     <div>
                       <label className="text-xs font-bold text-gray-300 block mb-1">
-                        Título da Oferta / Cupom *
+                        Descrição Detalhada do Benefício
                       </label>
-                      <input
-                        type="text"
-                        placeholder="Ex: 30% OFF em Todo o Cardápio / Compre 1 e Ganhe Outro"
-                        value={couponForm.title}
-                        onChange={(e) => setCouponForm({ ...couponForm, title: e.target.value })}
-                        className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none"
+                      <textarea
+                        rows={2}
+                        placeholder="Explique exatamente o que o cliente ganha e quais produtos participam..."
+                        value={couponForm.description}
+                        onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })}
+                        className="w-full bg-[#101017] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white focus:outline-none resize-none leading-relaxed"
                       />
                     </div>
 
-                    {/* Preços De / Por */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-gray-300 block mb-1">
-                          Preço Normal (De: R$)
+                    {/* 5. PREÇOS DE / POR & DESCONTO CALCULADO */}
+                    <div className="bg-[#101018] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <DollarSign size={15} className="text-amber-400" />
+                          <span>Preços da Oferta: De (Normal) e Por (Promoção)</span>
                         </label>
-                        <input
-                          type="text"
-                          placeholder="Ex: 60,00"
-                          value={couponForm.originalPrice}
-                          onChange={(e) => handleCouponPriceChange('originalPrice', e.target.value)}
-                          className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none"
-                        />
                       </div>
-                      <div>
-                        <label className="text-xs font-bold text-gray-300 block mb-1">
-                          Preço com Cupom (Por: R$)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Ex: 42,00"
-                          value={couponForm.promoPrice}
-                          onChange={(e) => handleCouponPriceChange('promoPrice', e.target.value)}
-                          className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none"
-                        />
-                      </div>
-                    </div>
 
-                    {/* Selo e Código */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-gray-300 block mb-1 flex items-center justify-between">
-                          <span>Selo / Desconto</span>
-                          {couponForm.discountBadge && (
-                            <span className="text-[10px] text-amber-400 font-bold">Auto-calculado</span>
-                          )}
-                        </label>
-                        <div className="relative">
-                          <Percent size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                          <input
-                            type="text"
-                            placeholder="Ex: 30% OFF ou R$ 18 OFF"
-                            value={couponForm.discountBadge}
-                            onChange={(e) => setCouponForm({ ...couponForm, discountBadge: e.target.value })}
-                            className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm text-white focus:outline-none font-bold text-amber-400"
-                          />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* De */}
+                        <div>
+                          <label className="text-xs text-gray-400 block mb-1">De: Preço Normal (R$)</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-2 text-xs font-bold text-gray-400">R$</span>
+                            <input
+                              type="text"
+                              placeholder="Ex: 80,00"
+                              value={couponForm.originalPrice}
+                              onChange={(e) => handleCouponPriceChange('originalPrice', e.target.value)}
+                              className="w-full bg-[#141420] border border-white/10 focus:border-amber-400 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Por */}
+                        <div>
+                          <label className="text-xs text-emerald-400 font-bold block mb-1">Por: Preço Promocional (R$)</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-2 text-xs font-bold text-emerald-400">R$</span>
+                            <input
+                              type="text"
+                              placeholder="Ex: 48,00"
+                              value={couponForm.promoPrice}
+                              onChange={(e) => handleCouponPriceChange('promoPrice', e.target.value)}
+                              className="w-full bg-[#141420] border border-emerald-500/40 focus:border-emerald-400 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-emerald-300 font-bold focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Tag Selo */}
+                        <div>
+                          <label className="text-xs text-gray-300 block mb-1 flex items-center justify-between">
+                            <span>Selo de Desconto (Badge)</span>
+                            {couponForm.discountBadge && (
+                              <span className="text-[10px] text-amber-400 font-bold">Auto-calculado</span>
+                            )}
+                          </label>
+                          <div className="relative">
+                            <Percent size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                            <input
+                              type="text"
+                              placeholder="Ex: 40% OFF"
+                              value={couponForm.discountBadge}
+                              onChange={(e) => setCouponForm({ ...couponForm, discountBadge: e.target.value })}
+                              className="w-full bg-[#141420] border border-white/10 focus:border-amber-400 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm text-amber-300 font-bold focus:outline-none"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <div>
+                      {/* Feedback de Economia */}
+                      {couponForm.originalPrice && couponForm.promoPrice && (
+                        parseFloat(couponForm.originalPrice.replace(',', '.')) > parseFloat(couponForm.promoPrice.replace(',', '.')) ? (
+                          <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl animate-fade-in text-xs">
+                            <div className="flex items-center gap-1.5 text-emerald-300">
+                              <Sparkles size={14} className="text-emerald-400" />
+                              <span>Economia real calculada: <strong>R$ {(parseFloat(couponForm.originalPrice.replace(',', '.')) - parseFloat(couponForm.promoPrice.replace(',', '.'))).toFixed(2).replace('.', ',')}</strong> por cliente</span>
+                            </div>
+                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-lg border border-emerald-500/40">
+                              ⚡ {Math.round(((parseFloat(couponForm.originalPrice.replace(',', '.')) - parseFloat(couponForm.promoPrice.replace(',', '.'))) / parseFloat(couponForm.originalPrice.replace(',', '.'))) * 100)}% OFF
+                            </span>
+                          </div>
+                        ) : null
+                      )}
+                    </div>
+
+                    {/* 6. MODALIDADE DE ATENDIMENTO */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setCouponForm({ ...couponForm, type: 'physical' })}
+                        className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                          couponForm.type === 'physical'
+                            ? 'bg-[#FF5F00]/20 border-[#FF5F00] text-white ring-1 ring-[#FF5F00]'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        <Store size={18} className={couponForm.type === 'physical' ? 'text-[#FF5F00]' : 'text-gray-500'} />
+                        <div>
+                          <div className="text-xs font-black">Loja Física / Presencial</div>
+                          <div className="text-[10px] text-gray-400">Validação rápida por QR Code no balcão</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCouponForm({ ...couponForm, type: 'online' })}
+                        className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                          couponForm.type === 'online'
+                            ? 'bg-emerald-500/20 border-emerald-400 text-white ring-1 ring-emerald-400'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        <Globe size={18} className={couponForm.type === 'online' ? 'text-emerald-400' : 'text-gray-500'} />
+                        <div>
+                          <div className="text-xs font-black text-emerald-300">Loja Online / E-commerce</div>
+                          <div className="text-[10px] text-gray-400">Cupom de desconto com link direto</div>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Link Oficial / Afiliado se Loja Online */}
+                    {couponForm.type === 'online' && (
+                      <div className="animate-fade-in">
                         <label className="text-xs font-bold text-gray-300 block mb-1">
+                          Link do Site Oficial ou Afiliado (Opcional)
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="Ex: https://www.seusite.com.br"
+                          value={couponForm.affiliateUrl}
+                          onChange={(e) => setCouponForm({ ...couponForm, affiliateUrl: e.target.value })}
+                          className="w-full bg-[#101017] border border-white/10 focus:border-emerald-400 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {/* 7. LIMITE DE RESGATES POR CPF */}
+                    <div className="bg-[#101018] border border-white/10 rounded-2xl p-4 space-y-2.5">
+                      <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Users size={14} className="text-amber-400" />
+                        <span>Limite de Resgates por CPF</span>
+                      </label>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCouponForm({ ...couponForm, limitType: 'one' })}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            couponForm.limitType === 'one'
+                              ? 'bg-amber-500/15 border-amber-500 text-white font-bold ring-1 ring-amber-500'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="text-xs font-black text-white">1 por CPF</div>
+                          <div className="text-[10px] text-gray-400">Anti-fraude padrão</div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCouponForm({ ...couponForm, limitType: 'custom' })}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            couponForm.limitType === 'custom'
+                              ? 'bg-amber-500/15 border-amber-500 text-white font-bold ring-1 ring-amber-500'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="text-xs font-black text-white">Mais de 1 por CPF</div>
+                          <div className="text-[10px] text-gray-400">Defina quantidade</div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCouponForm({ ...couponForm, limitType: 'unlimited' })}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            couponForm.limitType === 'unlimited'
+                              ? 'bg-amber-500/15 border-amber-500 text-white font-bold ring-1 ring-amber-500'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="text-xs font-black text-white">Uso Ilimitado</div>
+                          <div className="text-[10px] text-gray-400">Sempre que visitar</div>
+                        </button>
+                      </div>
+
+                      {couponForm.limitType === 'custom' && (
+                        <div className="pt-2 flex items-center justify-between gap-3 bg-white/5 p-2.5 rounded-xl border border-white/10 animate-fade-in">
+                          <span className="text-xs text-gray-300">Quantidade máxima permitida por CPF:</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setCouponForm(prev => ({
+                                ...prev,
+                                customMaxUses: Math.max(2, (Number(prev.customMaxUses) || 2) - 1)
+                              }))}
+                              className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-xs"
+                            >
+                              -
+                            </button>
+                            <span className="w-8 text-center text-xs font-bold text-amber-300">
+                              {couponForm.customMaxUses}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setCouponForm(prev => ({
+                                ...prev,
+                                customMaxUses: (Number(prev.customMaxUses) || 2) + 1
+                              }))}
+                              className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center text-xs"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 8. VALIDADE DA OFERTA */}
+                    <div className="bg-[#101018] border border-white/10 rounded-2xl p-4 space-y-2.5">
+                      <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Clock size={14} className="text-amber-400" />
+                        <span>Validade da Oferta</span>
+                      </label>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCouponForm({ ...couponForm, validityType: 'days' })}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            couponForm.validityType === 'days'
+                              ? 'bg-amber-500/15 border-amber-500 text-white font-bold ring-1 ring-amber-500'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="text-xs font-black text-white">Tempo Determinado</div>
+                          <div className="text-[10px] text-gray-400">Válido por {couponForm.validityDays} dias</div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCouponForm({ ...couponForm, validityType: 'unlimited' })}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            couponForm.validityType === 'unlimited'
+                              ? 'bg-amber-500/15 border-amber-500 text-white font-bold ring-1 ring-amber-500'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="text-xs font-black text-white">Permanente</div>
+                          <div className="text-[10px] text-gray-400">Sem data limite de expiração</div>
+                        </button>
+                      </div>
+
+                      {couponForm.validityType === 'days' && (
+                        <div className="flex items-center gap-1.5 pt-1">
+                          <span className="text-[11px] text-gray-400">Duração:</span>
+                          {[15, 30, 60, 90].map((d) => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => setCouponForm({ ...couponForm, validityDays: d })}
+                              className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                                couponForm.validityDays === d
+                                  ? 'bg-[#FF5F00] text-white border-[#FF5F00] font-bold'
+                                  : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
+                              }`}
+                            >
+                              {d} dias
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 9. CÓDIGO DO CUPOM & REGRAS */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-gray-300">
                           Código do Cupom
                         </label>
-                        <div className="relative flex items-center">
-                          <input
-                            type="text"
-                            placeholder="Ex: PROMO30"
-                            value={couponForm.code}
-                            onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
-                            className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl pl-3 pr-20 py-2 text-xs sm:text-sm text-white focus:outline-none font-mono font-bold tracking-wider"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleGenerateCouponCode}
-                            className="absolute right-1 px-2.5 py-1 text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                            title="Gerar código baseado no nome da loja"
-                          >
-                            <RefreshCw size={11} />
-                            <span>Gerar</span>
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={handleGenerateCouponCode}
+                          className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw size={11} />
+                          <span>Gerar Código</span>
+                        </button>
                       </div>
-                    </div>
-
-                    {/* Descrição Curta */}
-                    <div>
-                      <label className="text-xs font-bold text-gray-300 block mb-1">
-                        Descrição Curta da Oferta (Opcional)
-                      </label>
                       <input
                         type="text"
-                        placeholder="Ex: Válido para consumo no local ou retirada nos pedidos acima de R$ 50"
-                        value={couponForm.description}
-                        onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })}
-                        className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white focus:outline-none"
+                        placeholder="Ex: PROMO30 ou BURGER50"
+                        value={couponForm.code}
+                        onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                        className="w-full bg-[#101017] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white focus:outline-none font-mono font-bold tracking-wider uppercase"
                       />
                     </div>
 
@@ -1228,10 +1741,11 @@ export const AuthModal = () => {
                         rows={2}
                         value={couponForm.rules}
                         onChange={(e) => setCouponForm({ ...couponForm, rules: e.target.value })}
-                        className="w-full bg-[#0d0d14] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none resize-none leading-relaxed"
-                        placeholder="Apresentar o cupom no balcão.&#10;Não cumulativo com outras promoções."
+                        className="w-full bg-[#101017] border border-white/10 focus:border-amber-400 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none resize-none leading-relaxed"
+                        placeholder="Apresentar o cupom no balcão.&#10;Não cumulativo com outras promoções.&#10;Válido para consumo no local."
                       />
                     </div>
+
                   </div>
                 )}
               </div>
@@ -1392,6 +1906,15 @@ export const AuthModal = () => {
         </div>
 
       </div>
+
+      {/* Modal Interativo de Ajuste de Zoom e Enquadramento da Logo e Capa */}
+      <ImageFramingModal
+        isOpen={framingModalState.isOpen}
+        imageSrc={framingModalState.imageSrc}
+        targetType={framingModalState.targetType}
+        onClose={() => setFramingModalState(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={handleFramingConfirm}
+      />
     </div>
   );
 };

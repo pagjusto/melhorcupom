@@ -1682,7 +1682,7 @@ export const AppProvider = ({ children }) => {
       return { success: false, error: safety.reason };
     }
 
-    const { name, legalName, cnpj, cep, cities, email, phone, category, instagram, storeType, isOnline } = merchantData;
+    const { name, legalName, cnpj, cep, cities, email, phone, category, instagram, storeType, isOnline, logoImage, image, banner } = merchantData;
     const storeId = `store_${Date.now()}`;
     const merchantId = `merchant_${Date.now()}`;
     const cleanName = name?.trim() || 'Nova Loja Parceira';
@@ -1728,11 +1728,11 @@ export const AppProvider = ({ children }) => {
       reviewsCount: 1,
       createdAt: new Date().toISOString(),
       isNewPartner: true,
-      image: isOnlineStore 
+      image: image || banner || (isOnlineStore 
         ? 'https://images.unsplash.com/photo-1556742049-0a67e557224f?w=700&auto=format&fit=crop&q=80'
-        : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
+        : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80'),
       logo: isOnlineStore ? '🌐' : '🏪',
-      logoImage: ''
+      logoImage: logoImage || ''
     };
 
     setStores(prev => [newStore, ...prev]);
@@ -1769,6 +1769,7 @@ export const AppProvider = ({ children }) => {
         free_trial_active: true,
         type: isOnlineStore ? 'online' : 'physical',
         is_online: isOnlineStore,
+        logo_image: logoImage || '',
         referral_code: storeRefCode
       }).catch(err => console.warn('[Supabase Store]', err));
     }
