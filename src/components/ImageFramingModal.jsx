@@ -35,7 +35,7 @@ export const ImageFramingModal = ({
   const viewWidth = isLogo ? 280 : 420;
   const viewHeight = isLogo ? 280 : 236;
 
-  // Carregar dimensões naturais da imagem ao abrir
+  // Carregar dimensões naturais da imagem ao abrir e detectar cor de fundo
   useEffect(() => {
     if (!isOpen || !imageSrc) return;
 
@@ -54,9 +54,51 @@ export const ImageFramingModal = ({
         setZoom(autoZoom);
         setBgColor('#12121A');
       } else {
-        // Para logo: ajustar para caber tudo centralizado
-        setZoom(1);
-        setBgColor('#FFFFFF');
+        // Para logo: detectar cor de fundo dos cantos para eliminar bordas brancas indesejadas
+        try {
+          const testCanvas = document.createElement('canvas');
+          testCanvas.width = 16;
+          testCanvas.height = 16;
+          const tCtx = testCanvas.getContext('2d');
+          if (tCtx) {
+            tCtx.drawImage(img, 0, 0, 16, 16);
+            const p1 = tCtx.getImageData(0, 0, 1, 1).data;
+            const p2 = tCtx.getImageData(15, 0, 1, 1).data;
+            const p3 = tCtx.getImageData(0, 15, 1, 1).data;
+            const p4 = tCtx.getImageData(15, 15, 1, 1).data;
+
+            const isAlpha = p1[3] < 30 || p2[3] < 30 || p3[3] < 30 || p4[3] < 30;
+            if (isAlpha) {
+              setBgColor('transparent');
+            } else {
+              const avgR = (p1[0] + p2[0] + p3[0] + p4[0]) / 4;
+              const avgG = (p1[1] + p2[1] + p3[1] + p4[1]) / 4;
+              const avgB = (p1[2] + p2[2] + p3[2] + p4[2]) / 4;
+              const brightness = (avgR * 299 + avgG * 587 + avgB * 114) / 1000;
+              if (brightness < 60) {
+                setBgColor('#000000');
+              } else if (brightness > 220) {
+                setBgColor('#FFFFFF');
+              } else {
+                setBgColor('#12121A');
+              }
+            }
+          } else {
+            setBgColor('#12121A');
+          }
+        } catch {
+          setBgColor('#12121A');
+        }
+
+        // Sugere zoom proporcional de preenchimento ou enquadramento
+        const fillScale = Math.max(viewWidth / natW, viewHeight / natH);
+        const ratioDiff = fillScale / bScale;
+        if (ratioDiff < 1.35) {
+          // Se a imagem for quase quadrada, já inicia preenchendo o badge perfeitamente
+          setZoom(Number(ratioDiff.toFixed(2)));
+        } else {
+          setZoom(1);
+        }
       }
       setPosition({ x: 0, y: 0 });
     };
@@ -157,8 +199,8 @@ export const ImageFramingModal = ({
     const saveAndClose = (imgEl) => {
       try {
         ctx.drawImage(imgEl, drawX, drawY, drawW, drawH);
-        const format = bgColor === 'transparent' ? 'image/png' : 'image/jpeg';
-        const quality = bgColor === 'transparent' ? 0.95 : 0.9;
+        const format = (isLogo || bgColor === 'transparent') ? 'image/png' : 'image/jpeg';
+        const quality = 0.95;
         const resultDataUrl = canvas.toDataURL(format, quality);
         onConfirm(resultDataUrl);
       } catch (err) {
@@ -279,23 +321,23 @@ export const ImageFramingModal = ({
           {isLogo && (
             <div className="flex items-center justify-center gap-3 bg-[#101018] border border-white/10 rounded-xl px-4 py-2 mt-2 w-fit mx-auto shadow-md">
               <span className="text-[11px] text-gray-400 font-bold">Prévia no Card:</span>
-              <div className="w-8 h-8 rounded-lg bg-white shadow-lg flex items-center justify-center overflow-hidden border border-amber-400 p-0.5">
+              <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg border border-white/20 bg-[#12121A] flex items-center justify-center relative">
                 <div 
-                  className="w-full h-full relative overflow-hidden rounded-md flex items-center justify-center"
+                  className="w-full h-full relative overflow-hidden flex items-center justify-center"
                   style={{ backgroundColor: bgColor === 'transparent' ? 'transparent' : bgColor }}
                 >
                   <img
                     src={imageSrc}
                     alt="Preview"
                     style={{
-                      width: `${(renderedWidth / viewWidth) * 28}px`,
-                      height: `${(renderedHeight / viewHeight) * 28}px`,
+                      width: `${(renderedWidth / viewWidth) * 32}px`,
+                      height: `${(renderedHeight / viewHeight) * 32}px`,
                       maxWidth: 'none',
                       maxHeight: 'none',
                       position: 'absolute',
                       left: '50%',
                       top: '50%',
-                      transform: `translate(calc(-50% + ${(position.x / viewWidth) * 28}px), calc(-50% + ${(position.y / viewHeight) * 28}px))`
+                      transform: `translate(calc(-50% + ${(position.x / viewWidth) * 32}px), calc(-50% + ${(position.y / viewHeight) * 32}px))`
                     }}
                     draggable={false}
                   />

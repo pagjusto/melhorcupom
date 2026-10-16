@@ -159,27 +159,38 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         </div>
 
         {/* 2. LOGO DA EMPRESA COM BORDA RESPECTIVA DA ASSINATURA */}
-        <div className={`absolute bottom-1.5 left-2 w-8 h-8 rounded-lg bg-white shadow-lg flex items-center justify-center overflow-hidden z-20 ${tierConfig.logoBorder}`}>
-          {storeLogo ? (
-            <>
-              <img 
-                src={storeLogo} 
-                alt={storeName} 
-                className="w-full h-full object-contain p-0.5 rounded-md" 
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.parentElement?.querySelector('.card-logo-fallback');
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-              <span className="card-logo-fallback hidden w-full h-full items-center justify-center text-sm bg-white text-black">
-                {store?.logo || '🏪'}
-              </span>
-            </>
-          ) : (
-            <span className="text-base">{store?.logo || '🏪'}</span>
-          )}
-        </div>
+        {(() => {
+          const isFramedOrCustom = Boolean(
+            coupon.isAvulso ||
+            coupon.customStoreLogoImage ||
+            (typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+          );
+          return (
+            <div className={`absolute bottom-1.5 left-2 w-8 h-8 rounded-lg shadow-lg flex items-center justify-center overflow-hidden z-20 ${tierConfig.logoBorder} ${
+              isFramedOrCustom ? 'bg-[#12121A] border border-white/15' : 'bg-white'
+            }`}>
+              {storeLogo ? (
+                <>
+                  <img 
+                    src={storeLogo} 
+                    alt={storeName} 
+                    className={`w-full h-full ${isFramedOrCustom ? 'object-cover' : 'object-contain p-0.5 rounded-md'}`}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.card-logo-fallback');
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <span className="card-logo-fallback hidden w-full h-full items-center justify-center text-sm bg-white text-black">
+                    {store?.logo || '🏪'}
+                  </span>
+                </>
+              ) : (
+                <span className="text-base">{store?.logo || '🏪'}</span>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Modalidade / Cidade badge no banner */}
         <div className="absolute bottom-1.5 right-1.5 z-10">

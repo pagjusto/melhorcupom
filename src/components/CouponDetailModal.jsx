@@ -192,27 +192,38 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
             {/* Logo da Loja Pulsando */}
             <div className="relative w-20 h-20 mx-auto">
               <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping pointer-events-none" />
-              <div className="relative w-full h-full rounded-2xl bg-white border-2 border-emerald-400 p-2 flex items-center justify-center shadow-xl overflow-hidden">
-                {storeLogo ? (
-                  <>
-                    <img 
-                      src={storeLogo} 
-                      alt={storeName} 
-                      className="w-full h-full object-contain rounded-xl" 
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.parentElement?.querySelector('.overlay-logo-fallback');
-                        if (fallback) fallback.style.display = 'flex';
-                      }}
-                    />
-                    <span className="overlay-logo-fallback hidden w-full h-full items-center justify-center text-3xl">
-                      {store?.logo || '🛍️'}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-3xl">{store?.logo || '🛍️'}</span>
-                )}
-              </div>
+              {(() => {
+                const isFramedOrCustom = Boolean(
+                  coupon.isAvulso ||
+                  coupon.customStoreLogoImage ||
+                  (typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+                );
+                return (
+                  <div className={`relative w-full h-full rounded-2xl border-2 border-emerald-400 flex items-center justify-center shadow-xl overflow-hidden ${
+                    isFramedOrCustom ? 'bg-[#12121A]' : 'bg-white p-2'
+                  }`}>
+                    {storeLogo ? (
+                      <>
+                        <img 
+                          src={storeLogo} 
+                          alt={storeName} 
+                          className={`w-full h-full rounded-xl ${isFramedOrCustom ? 'object-cover' : 'object-contain'}`}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.parentElement?.querySelector('.overlay-logo-fallback');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                        <span className="overlay-logo-fallback hidden w-full h-full items-center justify-center text-3xl">
+                          {store?.logo || '🛍️'}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl">{store?.logo || '🛍️'}</span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="space-y-2">
@@ -314,27 +325,38 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               </button>
 
               <div className="absolute bottom-3 left-6 flex items-center gap-3 z-10">
-                <div className="w-14 h-14 rounded-2xl bg-white border border-white/20 flex items-center justify-center overflow-hidden shadow-xl p-1.5">
-                  {storeLogo ? (
-                    <>
-                      <img 
-                        src={storeLogo} 
-                        alt={storeName} 
-                        className="w-full h-full object-contain" 
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.parentElement?.querySelector('.modal-hdr-logo-fallback');
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <span className="modal-hdr-logo-fallback hidden w-full h-full items-center justify-center text-2xl">
-                        {store?.logo || '🏪'}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-2xl">{store?.logo || '🏪'}</span>
-                  )}
-                </div>
+                {(() => {
+                  const isFramedOrCustom = Boolean(
+                    coupon.isAvulso ||
+                    coupon.customStoreLogoImage ||
+                    (typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+                  );
+                  return (
+                    <div className={`w-14 h-14 rounded-2xl border border-white/20 flex items-center justify-center overflow-hidden shadow-xl ${
+                      isFramedOrCustom ? 'bg-[#12121A]' : 'bg-white p-1.5'
+                    }`}>
+                      {storeLogo ? (
+                        <>
+                          <img 
+                            src={storeLogo} 
+                            alt={storeName} 
+                            className={`w-full h-full ${isFramedOrCustom ? 'object-cover' : 'object-contain'}`}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const fallback = e.currentTarget.parentElement?.querySelector('.modal-hdr-logo-fallback');
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                          <span className="modal-hdr-logo-fallback hidden w-full h-full items-center justify-center text-2xl">
+                            {store?.logo || '🏪'}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-2xl">{store?.logo || '🏪'}</span>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div>
                   <h3 className="text-lg font-black text-white leading-tight">{storeName}</h3>
               <p className="text-xs text-gray-300 flex items-center gap-1">

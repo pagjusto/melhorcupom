@@ -657,11 +657,13 @@ export const AdminCouponsManager = ({ showToast }) => {
                     />
                     {formData.customStoreLogoImage ? (
                       <div className="flex items-center gap-2 p-1.5 bg-[#101017] border border-white/10 rounded-xl">
-                        <img
-                          src={formData.customStoreLogoImage}
-                          alt="Logo"
-                          className="w-8 h-8 rounded-lg object-contain bg-white p-0.5"
-                        />
+                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#12121A] border border-white/10 flex items-center justify-center flex-shrink-0">
+                          <img
+                            src={formData.customStoreLogoImage}
+                            alt="Logo"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => setFramingModalState({ isOpen: true, imageSrc: formData.customStoreLogoImage, targetType: 'logo' })}
@@ -1127,9 +1129,21 @@ export const AdminCouponsManager = ({ showToast }) => {
 
                     {/* Logo e Nome da Loja */}
                     <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center gap-2 z-10">
-                      <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
+                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center overflow-hidden shadow-md ${
+                        (storeLogo && typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || coupon.isAvulso || coupon.customStoreLogoImage || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+                          ? 'bg-[#12121A] border border-white/15'
+                          : 'bg-white p-0.5'
+                      }`}>
                         {storeLogo ? (
-                          <img src={storeLogo} alt={storeName} className="w-full h-full object-contain p-0.5" />
+                          <img 
+                            src={storeLogo} 
+                            alt={storeName} 
+                            className={`w-full h-full ${
+                              (storeLogo && typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || coupon.isAvulso || coupon.customStoreLogoImage || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+                                ? 'object-cover'
+                                : 'object-contain'
+                            }`} 
+                          />
                         ) : (
                           <span className="text-xs">{coupon.storeLogo || store?.logo || '🏪'}</span>
                         )}
