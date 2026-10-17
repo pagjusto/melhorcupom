@@ -42,7 +42,9 @@ import {
   Copy,
   Coins,
   Share2,
-  Eye
+  Eye,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { MerchantPromoKit } from './PromotionalKit';
 import { BrandMediaKitSection } from './BrandMediaKitSection';
@@ -66,6 +68,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     redemptions, 
     validateRedemption, 
     addCoupon,
+    updateCoupon,
+    deleteCoupon,
     updateStore,
     upgradeStoreTier,
     merchantPlans,
@@ -75,6 +79,10 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     merchantDashboardTab,
     setMerchantDashboardTab
   } = useApp();
+
+  // Estado de Edição de Cupom do Lojista
+  const [editingCoupon, setEditingCoupon] = useState(null);
+  const [couponToast, setCouponToast] = useState('');
 
   // Identificar se o estabelecimento é parceiro via API (sem plano de lojista) ou Lojista Credenciado
   const isApiStore = (st) => Boolean(
@@ -88,7 +96,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const isCurrentStoreApi = isApiStore(currentStore);
 
   // Cupons desta loja e resgates presenciais (excluindo estritamente cupons de empresas de API)
-  const storeCoupons = coupons.filter(c => c.merchantId === currentStore.merchantId);
+  const storeCoupons = coupons.filter(c => c.merchantId === currentStore.merchantId || (c.storeId && c.storeId === currentStore.id));
   const storeRedemptions = isCurrentStoreApi ? [] : redemptions.filter(r => {
     if (r.merchantId !== currentStore.merchantId) return false;
     if (r.isApiRedemption) return false;
@@ -147,7 +155,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     period: '/mês',
     maxCoupons: 2
   });
-  const isLimitReached = storeCoupons.length >= currentPlan.maxCoupons;
+  const isLimitReached = !editingCoupon && storeCoupons.length >= currentPlan.maxCoupons;
   const [planUpgradeSuccess, setPlanUpgradeSuccess] = useState('');
 
   // Modal de Pagamento Mercado Pago para Upgrade de Loja
@@ -369,6 +377,84 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     handleValidateText(validationInput);
   };
 
+  // Iniciar Edição de Cupom Existente do Lojista
+  const handleStartEdit = (coupon) => {
+    setEditingCoupon(coupon);
+
+    let limitType = 'one';
+    let customMax = 2;
+    if (coupon.maxUsesPerUser === null || coupon.maxUsesPerUser === undefined || coupon.maxUsesPerUser === 0) {
+      limitType = 'unlimited';
+    } else if (coupon.maxUsesPerUser > 1) {
+      limitType = 'custom';
+      customMax = coupon.maxUsesPerUser;
+    }
+
+    const rulesText = Array.isArray(coupon.rules)
+      ? coupon.rules.filter(r => !String(r).toLowerCase().includes('limite de')).join('\n')
+      : (typeof coupon.rules === 'string' ? coupon.rules : '');
+
+    setFormData({
+      title: coupon.title || '',
+      description: coupon.description || '',
+      originalPrice: (coupon.originalPrice !== null && coupon.originalPrice !== undefined) ? String(coupon.originalPrice) : '',
+      promoPrice: (coupon.promoPrice !== null && coupon.promoPrice !== undefined) ? String(coupon.promoPrice) : '',
+      discountType: coupon.discountType || 'percentage',
+      discountValue: coupon.discountValue || '30%',
+      discountBadge: coupon.discountBadge || '30% OFF',
+      estimatedSavings: coupon.estimatedSavings || 30.00,
+      banner: coupon.banner || currentStore.image || BANNER_PRESETS[0].url,
+      type: coupon.type || 'physical',
+      validityType: coupon.validityType || (coupon.expiresAt === 'unlimited' ? 'unlimited' : 'days'),
+      validityDays: coupon.validityDays || 30,
+      expiresAt: coupon.expiresAt || '',
+      limitType,
+      customMaxUses: customMax,
+      rules: rulesText || 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
+    });
+
+    setActiveTab('new-coupon');
+    try {
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    } catch {}
+  };
+
+  // Cancelar Edição de Cupom
+  const handleCancelEdit = () => {
+    setEditingCoupon(null);
+    setFormData({
+      title: '',
+      description: '',
+      originalPrice: '',
+      promoPrice: '',
+      discountType: 'percentage',
+      discountValue: '30%',
+      discountBadge: '30% OFF',
+      estimatedSavings: 30.00,
+      banner: BANNER_PRESETS[0].url,
+      type: 'physical',
+      validityType: 'days',
+      validityDays: 30,
+      expiresAt: '',
+      limitType: 'one',
+      customMaxUses: 2,
+      rules: 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
+    });
+  };
+
+  // Excluir Cupom do Lojista
+  const handleDeleteCoupon = (coupon) => {
+    const confirmed = window.confirm(`Tem certeza que deseja excluir o cupom "${coupon.title}"?\n\nEsta ação removerá a oferta da vitrine do app para os clientes.`);
+    if (confirmed) {
+      deleteCoupon(coupon.id);
+      if (editingCoupon?.id === coupon.id) {
+        handleCancelEdit();
+      }
+      setCouponToast(`🗑️ Cupom "${coupon.title}" excluído com sucesso.`);
+      setTimeout(() => setCouponToast(''), 4000);
+    }
+  };
+
   const handleCreateCoupon = (e) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
@@ -404,6 +490,38 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       finalExpiresAt = 'unlimited';
     }
 
+    // Se estiver em modo de edição, atualizar o cupom existente
+    if (editingCoupon) {
+      const result = updateCoupon(editingCoupon.id, {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        originalPrice: orig,
+        promoPrice: promo,
+        discountType: formData.discountType,
+        discountValue: formData.discountValue,
+        discountBadge: formData.discountBadge,
+        estimatedSavings: computedSavings,
+        banner: formData.banner,
+        type: formData.type,
+        validityType: formData.validityType,
+        validityDays: formData.validityType === 'days' ? (parseInt(formData.validityDays) || 30) : null,
+        maxUsesPerUser: maxUses,
+        expiresAt: finalExpiresAt,
+        rules: rulesArray
+      });
+
+      if (result && result.error) {
+        return;
+      }
+
+      const updatedTitle = formData.title;
+      handleCancelEdit();
+      setCouponToast(`✏️ Cupom "${updatedTitle}" atualizado com sucesso!`);
+      setTimeout(() => setCouponToast(''), 4000);
+      setActiveTab('coupons');
+      return;
+    }
+
     const result = addCoupon({
       storeId: currentStore.id,
       merchantId: currentStore.merchantId,
@@ -433,24 +551,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     }
 
     // Resetar e voltar para lista
-    setFormData({
-      title: '',
-      description: '',
-      originalPrice: '',
-      promoPrice: '',
-      discountType: 'percentage',
-      discountValue: '30%',
-      discountBadge: '30% OFF',
-      estimatedSavings: 30.00,
-      banner: BANNER_PRESETS[0].url,
-      type: 'physical',
-      validityType: 'days',
-      validityDays: 30,
-      expiresAt: '',
-      limitType: 'one',
-      customMaxUses: 2,
-      rules: 'Apresentar o cupom VIP no balcão.\nVálido para consumo no local.\nNão cumulativo com outras promoções.'
-    });
+    handleCancelEdit();
+    setCouponToast(`🎉 Nova oferta cadastrada com sucesso!`);
+    setTimeout(() => setCouponToast(''), 4000);
     setActiveTab('coupons');
   };
 
@@ -675,17 +778,30 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         )}
 
         <button
-          onClick={() => setActiveTab('new-coupon')}
-          title="Criar Nova Oferta VIP"
-          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
+          onClick={() => {
+            if (!editingCoupon) {
+              handleCancelEdit();
+            }
+            setActiveTab('new-coupon');
+          }}
+          title={editingCoupon ? `Editando Oferta: ${editingCoupon.title}` : "Criar Nova Oferta VIP"}
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap cursor-pointer ${
             activeTab === 'new-coupon'
-              ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
+              ? (editingCoupon ? 'bg-amber-400 text-black shadow-md font-black' : 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30')
               : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
           }`}
         >
-          <PlusCircle size={14} className="flex-shrink-0" />
+          {editingCoupon ? (
+            <Pencil size={14} className="flex-shrink-0" />
+          ) : (
+            <PlusCircle size={14} className="flex-shrink-0" />
+          )}
           <span className="truncate">
-            <span className="hidden xl:inline">Criar </span>Nova Oferta VIP
+            {editingCoupon ? 'Editar Oferta' : (
+              <>
+                <span className="hidden xl:inline">Criar </span>Nova Oferta VIP
+              </>
+            )}
           </span>
         </button>
 
@@ -1053,168 +1169,260 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       {/* ABA 2: LISTAGEM DE CUPONS DA LOJA COM BANNER E LOGO */}
       {activeTab === 'coupons' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-black text-white">
-              Ofertas Ativas no Clube VIP
-            </h2>
+          {/* Banner de Feedback de Edição ou Exclusão */}
+          {couponToast && (
+            <div className="p-3.5 px-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center justify-between gap-3 shadow-lg shadow-emerald-950/30 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                <span>{couponToast}</span>
+              </div>
+              <button 
+                onClick={() => setCouponToast('')} 
+                className="text-emerald-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                <span>Ofertas Ativas no Clube VIP</span>
+                <span className="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded-full font-bold">
+                  {storeCoupons.length} {storeCoupons.length === 1 ? 'cupom' : 'cupons'}
+                </span>
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Gerencie, edite valores, altere imagens ou exclua os cupons da sua loja a qualquer momento.
+              </p>
+            </div>
             <button
-              onClick={() => setActiveTab('new-coupon')}
-              className="bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+              onClick={() => {
+                handleCancelEdit();
+                setActiveTab('new-coupon');
+              }}
+              className="bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-orange-600/30 transition-all cursor-pointer whitespace-nowrap"
             >
               <PlusCircle size={15} />
               <span>Criar Nova Oferta</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {storeCoupons.map((coupon) => {
-              const couponViews = coupon.viewsCount || Math.max(140, (coupon.usesCount || 8) * 11 + 35);
-              const couponValidatedUses = storeRedemptions.filter(r => {
-                if (r.couponId !== coupon.id) return false;
-                if (r.status === 'used') return true;
-                if (coupon.type === 'online' || currentStore.type === 'online') {
-                  return r.status === 'used' || r.status === 'valid';
-                }
-                return false;
-              }).length;
-              const effectiveCouponUses = couponValidatedUses > 0 ? couponValidatedUses : (coupon.usesCount || 0);
-              const conversionRate = ((effectiveCouponUses / Math.max(1, couponViews)) * 100).toFixed(1);
+          {storeCoupons.length === 0 ? (
+            <div className="bg-[#181824] border border-white/10 rounded-3xl p-8 sm:p-12 text-center space-y-4 shadow-xl">
+              <div className="w-16 h-16 rounded-2xl bg-orange-500/15 text-[#FF5F00] flex items-center justify-center mx-auto text-2xl shadow-lg">
+                🏷️
+              </div>
+              <h3 className="text-xl font-black text-white">Nenhuma oferta cadastrada no momento</h3>
+              <p className="text-xs sm:text-sm text-gray-400 max-w-md mx-auto leading-relaxed">
+                Cadastre a primeira oferta da sua loja com banner, logotipo e desconto para atrair centenas de assinantes VIP.
+              </p>
+              <button
+                onClick={() => {
+                  handleCancelEdit();
+                  setActiveTab('new-coupon');
+                }}
+                className="bg-[#FF5F00] hover:bg-[#E04F00] text-white font-bold px-5 py-2.5 rounded-xl text-xs inline-flex items-center gap-2 shadow-lg shadow-orange-600/30 cursor-pointer transition-all"
+              >
+                <PlusCircle size={15} />
+                <span>Criar Minha Primeira Oferta</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {storeCoupons.map((coupon) => {
+                const couponViews = coupon.viewsCount || Math.max(140, (coupon.usesCount || 8) * 11 + 35);
+                const couponValidatedUses = storeRedemptions.filter(r => {
+                  if (r.couponId !== coupon.id) return false;
+                  if (r.status === 'used') return true;
+                  if (coupon.type === 'online' || currentStore.type === 'online') {
+                    return r.status === 'used' || r.status === 'valid';
+                  }
+                  return false;
+                }).length;
+                const effectiveCouponUses = couponValidatedUses > 0 ? couponValidatedUses : (coupon.usesCount || 0);
+                const conversionRate = ((effectiveCouponUses / Math.max(1, couponViews)) * 100).toFixed(1);
 
-              return (
-                <div 
-                  key={coupon.id}
-                  className="bg-[#181824] border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-[#FF5F00]/50 transition-all group shadow-lg"
-                >
-                  {/* Banner do Cupom no Card do Lojista */}
-                  <div className="relative h-40 w-full bg-black/60 overflow-hidden">
-                    <img
-                      src={coupon.banner || currentStore.image}
-                      alt={coupon.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#181824] via-transparent to-black/40" />
-                    
-                    {/* Tag de Desconto */}
-                    <span className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white text-xs font-black px-2.5 py-0.5 rounded-lg shadow-md">
-                      {coupon.discountBadge}
-                    </span>
+                return (
+                  <div 
+                    key={coupon.id}
+                    className="bg-[#181824] border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-[#FF5F00]/50 transition-all group shadow-lg"
+                  >
+                    {/* Banner do Cupom no Card do Lojista */}
+                    <div className="relative h-40 w-full bg-black/60 overflow-hidden">
+                      <img
+                        src={coupon.banner || currentStore.image}
+                        alt={coupon.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#181824] via-transparent to-black/40" />
+                      
+                      {/* Tag de Desconto */}
+                      <span className="absolute top-2.5 left-2.5 bg-[#FF5F00] text-white text-xs font-black px-2.5 py-0.5 rounded-lg shadow-md">
+                        {coupon.discountBadge}
+                      </span>
 
-                    {/* Métrica de Visualizações do Cupom por Usuários no Banner */}
-                    <div 
-                      className="absolute top-2.5 right-2.5 bg-black/80 backdrop-blur-md border border-blue-400/40 text-blue-300 text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1.5 z-10"
-                      title="Total de vezes que usuários VIP visualizaram este cupom no catálogo"
-                    >
-                      <Eye size={13} className="text-blue-400 animate-pulse" />
-                      <span>{couponViews.toLocaleString('pt-BR')} views</span>
-                    </div>
-
-                    {/* Logo da Empresa no canto (sem borda) */}
-                    <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] overflow-hidden shadow-lg flex items-center justify-center z-10">
-                      {currentStore.logoImage ? (
-                        <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xl">{currentStore.logo}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-5 pt-4">
-                    <h3 className="text-base font-bold text-white mb-1.5 leading-snug">
-                      {coupon.title}
-                    </h3>
-                    <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                      {coupon.description}
-                    </p>
-
-                    {/* Preço De / Por */}
-                    {coupon.originalPrice && coupon.promoPrice ? (
-                      <div className="flex items-center justify-between py-1.5 px-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 font-semibold mb-2.5 border border-emerald-500/20">
-                        <span className="line-through text-gray-400 text-[11px]">De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}</span>
-                        <span className="font-bold text-xs text-white">Por <span className="text-emerald-400">R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span></span>
-                        <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300 font-bold">
-                          -R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
-                        </span>
+                      {/* Botões Rápidos no Banner (Editar e Excluir) */}
+                      <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(coupon)}
+                          className="bg-black/75 hover:bg-amber-500 text-white p-1.5 rounded-lg backdrop-blur-md border border-white/20 hover:border-amber-400 transition-all shadow-md cursor-pointer"
+                          title="Editar esta oferta"
+                        >
+                          <Pencil size={13} className="text-amber-300 hover:text-white" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCoupon(coupon)}
+                          className="bg-black/75 hover:bg-red-600 text-white p-1.5 rounded-lg backdrop-blur-md border border-white/20 hover:border-red-500 transition-all shadow-md cursor-pointer"
+                          title="Excluir esta oferta"
+                        >
+                          <Trash2 size={13} className="text-red-300 hover:text-white" />
+                        </button>
                       </div>
-                    ) : null}
 
-                    {/* Bloco em Destaque: Visualização do Cupom por Usuários */}
-                    <div className="bg-gradient-to-r from-blue-950/40 via-[#151928] to-indigo-950/30 border border-blue-500/30 rounded-xl p-2.5 mb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-blue-300 font-bold text-xs">
-                          <Eye size={14} className="text-blue-400" />
-                          <span>Visualizações por Usuários:</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-black text-white">
-                            {couponViews.toLocaleString('pt-BR')}
+                      {/* Métrica de Visualizações do Cupom por Usuários no Banner */}
+                      <div 
+                        className="absolute bottom-2.5 right-2.5 bg-black/80 backdrop-blur-md border border-blue-400/40 text-blue-300 text-[10px] font-extrabold px-2 py-0.5 rounded-lg shadow-md flex items-center gap-1 z-10"
+                        title="Total de vezes que usuários VIP visualizaram este cupom no catálogo"
+                      >
+                        <Eye size={12} className="text-blue-400 animate-pulse" />
+                        <span>{couponViews.toLocaleString('pt-BR')} views</span>
+                      </div>
+
+                      {/* Logo da Empresa no canto (sem borda) */}
+                      <div className="absolute bottom-2.5 left-3 w-10 h-10 rounded-xl bg-[#181824] overflow-hidden shadow-lg flex items-center justify-center z-10">
+                        {currentStore.logoImage ? (
+                          <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xl">{currentStore.logo}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-5 pt-4">
+                      <h3 className="text-base font-bold text-white mb-1.5 leading-snug">
+                        {coupon.title}
+                      </h3>
+                      <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                        {coupon.description}
+                      </p>
+
+                      {/* Preço De / Por */}
+                      {coupon.originalPrice && coupon.promoPrice ? (
+                        <div className="flex items-center justify-between py-1.5 px-2.5 bg-emerald-500/10 rounded-lg text-emerald-400 font-semibold mb-2.5 border border-emerald-500/20">
+                          <span className="line-through text-gray-400 text-[11px]">De R$ {Number(coupon.originalPrice).toFixed(2).replace('.', ',')}</span>
+                          <span className="font-bold text-xs text-white">Por <span className="text-emerald-400">R$ {Number(coupon.promoPrice).toFixed(2).replace('.', ',')}</span></span>
+                          <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300 font-bold">
+                            -R$ {(Number(coupon.originalPrice) - Number(coupon.promoPrice)).toFixed(2).replace('.', ',')}
                           </span>
-                          <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.5 rounded border border-blue-500/30">
-                            Assinantes
+                        </div>
+                      ) : null}
+
+                      {/* Bloco em Destaque: Visualização do Cupom por Usuários */}
+                      <div className="bg-gradient-to-r from-blue-950/40 via-[#151928] to-indigo-950/30 border border-blue-500/30 rounded-xl p-2.5 mb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-blue-300 font-bold text-xs">
+                            <Eye size={14} className="text-blue-400" />
+                            <span>Visualizações por Usuários:</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-black text-white">
+                              {couponViews.toLocaleString('pt-BR')}
+                            </span>
+                            <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.5 rounded border border-blue-500/30">
+                              Assinantes
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-gray-400 mt-1.5 pt-1.5 border-t border-white/5">
+                          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                            <TrendingUp size={12} />
+                            <span>Conversão em Vendas:</span>
+                            <strong className="text-white">{conversionRate}%</strong>
+                          </span>
+                          <span className="text-orange-400 font-bold">
+                            {effectiveCouponUses} {coupon.type === 'online' ? 'usados' : 'validados'}
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-gray-400 mt-1.5 pt-1.5 border-t border-white/5">
-                        <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                          <TrendingUp size={12} />
-                          <span>Conversão em Vendas:</span>
-                          <strong className="text-white">{conversionRate}%</strong>
-                        </span>
-                        <span className="text-orange-400 font-bold">
-                          {effectiveCouponUses} {coupon.type === 'online' ? 'usados' : 'validados'}
-                        </span>
+
+                      <div className="text-xs text-gray-500 space-y-1.5 py-2 border-t border-white/5">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <Clock size={11} className={coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'text-emerald-400' : 'text-gray-400'} />
+                            {coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? (
+                              <strong className="text-emerald-400">Validade Ilimitada</strong>
+                            ) : coupon.validityDays ? (
+                              <span>Válido {coupon.validityDays} dias</span>
+                            ) : (
+                              <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
+                            )}
+                          </span>
+                          <span className="text-gray-400 font-semibold">{coupon.city || 'São Paulo - SP'}</span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1 text-[11px]">
+                          <span className="text-gray-400">Limite de uso:</span>
+                          <span className="text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                            {coupon.maxUsesPerUser === 1
+                              ? '1 uso por CPF'
+                              : coupon.maxUsesPerUser > 1
+                              ? `${coupon.maxUsesPerUser} por CPF`
+                              : 'Ilimitado por CPF'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-xs text-gray-500 space-y-1.5 py-2 border-t border-white/5">
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-1">
-                          <Clock size={11} className={coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? 'text-emerald-400' : 'text-gray-400'} />
-                          {coupon.validityType === 'unlimited' || coupon.expiresAt === 'unlimited' || !coupon.expiresAt ? (
-                            <strong className="text-emerald-400">Validade Ilimitada</strong>
-                          ) : coupon.validityDays ? (
-                            <span>Válido {coupon.validityDays} dias</span>
-                          ) : (
-                            <span>Até {new Date(coupon.expiresAt).toLocaleDateString('pt-BR')}</span>
-                          )}
-                        </span>
-                        <span className="text-gray-400 font-semibold">{coupon.city || 'São Paulo - SP'}</span>
+                    <div className="p-5 pt-0 space-y-2">
+                      {/* BOTÕES DE EDIÇÃO E EXCLUSÃO DO CUPOM */}
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(coupon)}
+                          className="w-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 border border-amber-500/40 hover:border-amber-400 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                          title="Editar dados desta oferta (preço, descrição, foto, validade, regras)"
+                        >
+                          <Pencil size={13} className="text-amber-400" />
+                          <span>Editar Oferta</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCoupon(coupon)}
+                          className="w-full bg-red-500/15 hover:bg-red-500/25 text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/50 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                          title="Excluir este cupom do aplicativo"
+                        >
+                          <Trash2 size={13} className="text-red-400" />
+                          <span>Excluir</span>
+                        </button>
                       </div>
-                      <div className="flex items-center justify-between pt-1 text-[11px]">
-                        <span className="text-gray-400">Limite de uso:</span>
-                        <span className="text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                          {coupon.maxUsesPerUser === 1
-                            ? '1 uso por CPF'
-                            : coupon.maxUsesPerUser > 1
-                            ? `${coupon.maxUsesPerUser} por CPF`
-                            : 'Ilimitado por CPF'}
-                        </span>
-                      </div>
+
+                      {/* Botão para abrir visualização do cupom como o usuário vê */}
+                      <button
+                        onClick={() => setPreviewingCoupon(coupon)}
+                        className="w-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm group/btn cursor-pointer"
+                        title="Ver exatamente como os usuários VIP visualizam e ativam este cupom"
+                      >
+                        <Eye size={15} className="text-blue-400 group-hover/btn:scale-110 transition-transform" />
+                        <span>Visualização do Cupom por Usuários</span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveTab('validator')}
+                        className="w-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-semibold py-2 rounded-xl text-xs text-center transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <QrCode size={13} />
+                        <span>Ver Validações no Balcão</span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className="p-5 pt-0 space-y-2">
-                    {/* Botão para abrir visualização do cupom como o usuário vê */}
-                    <button
-                      onClick={() => setPreviewingCoupon(coupon)}
-                      className="w-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm group/btn cursor-pointer"
-                      title="Ver exatamente como os usuários VIP visualizam e ativam este cupom"
-                    >
-                      <Eye size={15} className="text-blue-400 group-hover/btn:scale-110 transition-transform" />
-                      <span>Visualização do Cupom por Usuários</span>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab('validator')}
-                      className="w-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-semibold py-2 rounded-xl text-xs text-center transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <QrCode size={13} />
-                      <span>Ver Validações no Balcão</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -1222,16 +1430,44 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       {activeTab === 'new-coupon' && (
         <div className="max-w-3xl mx-auto bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-[#FF5F00] flex items-center justify-center">
-              <PlusCircle size={22} />
+            <div className={`w-10 h-10 rounded-xl ${editingCoupon ? 'bg-amber-500/20 text-amber-400' : 'bg-orange-500/20 text-[#FF5F00]'} flex items-center justify-center`}>
+              {editingCoupon ? <Pencil size={22} /> : <PlusCircle size={22} />}
             </div>
             <div>
-              <h2 className="text-xl font-black text-white">Criar Nova Oferta com Banner e Logo</h2>
+              <h2 className="text-xl font-black text-white">
+                {editingCoupon ? `Editar Oferta: ${editingCoupon.title}` : 'Criar Nova Oferta com Banner e Logo'}
+              </h2>
               <p className="text-xs text-gray-400">
-                Faça o upload do banner que chamará a atenção dos clientes VIP e aparecerá no card do cupom.
+                {editingCoupon 
+                  ? 'Atualize os dados, preços, regras ou foto da sua oferta cadastrada.'
+                  : 'Faça o upload do banner que chamará a atenção dos clientes VIP e aparecerá no card do cupom.'}
               </p>
             </div>
           </div>
+
+          {editingCoupon && (
+            <div className="mb-6 p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between gap-3 animate-fade-in">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0">
+                  <Pencil size={15} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">Modo de Edição Ativo</div>
+                  <div className="text-xs text-gray-300 truncate">Você está editando a oferta: <strong className="text-white">{editingCoupon.title}</strong></div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  handleCancelEdit();
+                  setActiveTab('coupons');
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex-shrink-0"
+              >
+                Cancelar Edição
+              </button>
+            </div>
+          )}
 
           {isLimitReached ? (
             <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border-2 border-amber-500/40 rounded-3xl p-8 text-center space-y-4 animate-fade-in">
@@ -1776,17 +2012,24 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
               <button
                 type="button"
-                onClick={() => setActiveTab('coupons')}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white"
+                onClick={() => {
+                  handleCancelEdit();
+                  setActiveTab('coupons');
+                }}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white cursor-pointer transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-extrabold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-orange-600/30 flex items-center gap-2"
+                className={`text-white font-extrabold px-6 py-2.5 rounded-xl text-sm shadow-lg flex items-center gap-2 cursor-pointer transition-all ${
+                  editingCoupon
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-950/40'
+                    : 'bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7700] shadow-orange-600/30'
+                }`}
               >
-                <PlusCircle size={16} />
-                <span>Publicar Cupom com Banner & Logo</span>
+                {editingCoupon ? <Check size={16} /> : <PlusCircle size={16} />}
+                <span>{editingCoupon ? 'Salvar Alterações da Oferta' : 'Publicar Cupom com Banner & Logo'}</span>
               </button>
             </div>
           </form>
