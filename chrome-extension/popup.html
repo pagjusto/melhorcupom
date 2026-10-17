@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Melhor Cupom</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    
+    <!-- Top Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-logo">M</div>
+        <div class="brand-info">
+          <h1 class="brand-name">Melhor<span>Cupom</span></h1>
+          <span class="brand-sub">Desconto Garantido no Caixa</span>
+        </div>
+      </div>
+      <a href="https://www.omelhorcupom.com.br" target="_blank" class="site-link" title="Visitar site oficial">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    </header>
+
+    <!-- ESTADO 1: Loja Parceira Detectada nesta aba -->
+    <section id="partner-store-section" class="section hidden">
+      <div class="store-badge-card">
+        <div class="store-badge-icon" id="store-logo">🏪</div>
+        <div class="store-badge-details">
+          <span class="badge-tag">Parceiro Oficial</span>
+          <h2 class="store-title" id="store-name">Carregando...</h2>
+          <span class="store-coupons-count" id="store-count">0 cupons disponíveis</span>
+        </div>
+      </div>
+
+      <div class="coupons-list" id="coupons-list">
+        <!-- Cupons gerados via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ESTADO 2: Nenhuma loja parceira na aba atual (Exibir Lojas Populares) -->
+    <section id="explore-section" class="section hidden">
+      <div class="explore-banner">
+        <div class="explore-icon">🛍️</div>
+        <div>
+          <h3>Economize nas Maiores Lojas</h3>
+          <p>Visite qualquer loja abaixo e o Melhor Cupom ativará os descontos automaticamente!</p>
+        </div>
+      </div>
+
+      <!-- Barra de Busca -->
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Buscar loja (Shopee, Magalu, SHEIN...)" />
+      </div>
+
+      <div class="section-subtitle">Lojas em Destaque</div>
+      <div class="popular-grid" id="popular-stores-grid">
+        <!-- Lojas Populares via JS -->
+      </div>
+    </section>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+      <div class="stats-row">
+        <span>Economia com a Extensão:</span>
+        <strong id="savings-amount">R$ 50,00</strong>
+      </div>
+      <a href="https://www.omelhorcupom.com.br" target="_blank" class="full-site-btn">
+        <span>Explorar Clube VIP Completo</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+    </footer>
+
+  </div>
+
+  <script src="data/catalog.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

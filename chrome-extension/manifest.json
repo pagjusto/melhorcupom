@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Melhor Cupom — Alerta Automático de Cupons & Descontos",
+  "short_name": "Melhor Cupom",
+  "version": "1.0.0",
+  "description": "Avisa automaticamente quando a loja que você visita possui cupons de desconto, cashback e ofertas ativas no Melhor Cupom.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Melhor Cupom — Ver Cupons Desta Loja"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["data/catalog.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/icon16.png",
+        "icons/icon48.png",
+        "icons/icon128.png",
+        "icons/logo.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
