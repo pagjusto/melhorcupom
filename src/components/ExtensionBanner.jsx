@@ -119,7 +119,7 @@ export const ExtensionBanner = () => {
                 <span>Avisa cupons enquanto você navega!</span>
               </div>
               <p className="text-xs text-gray-300 leading-relaxed">
-                Nossa extensão acende na tela ao entrar na <strong className="text-white">Shopee</strong>, <strong className="text-white">Mercado Livre</strong>, <strong className="text-white">Magalu</strong> e +50 lojas para aplicar descontos no checkout!
+                Nossa extensão acende na tela ao entrar em qualquer <strong className="text-white">site credenciado</strong> para aplicar descontos no checkout!
               </p>
             </div>
 
@@ -234,7 +234,7 @@ export const ExtensionBanner = () => {
                 </div>
 
                 <div className="bg-orange-500/10 border border-orange-500/25 rounded-xl p-2.5 text-xs text-gray-200 leading-relaxed">
-                  🎉 <strong className="text-white">Alerta em Tempo Real:</strong> Quando você entra na <strong>Shopee</strong>, <strong>Mercado Livre</strong>, <strong>Magalu</strong> ou <strong>SHEIN</strong>, a extensão abre automaticamente mostrando os melhores cupons testados!
+                  🎉 <strong className="text-white">Alerta em Tempo Real:</strong> Quando você entra em um <strong>site credenciado</strong> a extensão abre automaticamente mostrando os melhores cupons testados!
                 </div>
               </div>
 
