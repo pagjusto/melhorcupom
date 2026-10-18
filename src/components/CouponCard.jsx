@@ -64,17 +64,16 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
     : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
   const bannerImage = getCouponBanner(coupon, store);
 
-  const isHighlighted = Boolean(coupon.highlight || store?.highlight || store?.isFeatured || storeTier === 'gold');
-  const effectiveTier = isHighlighted ? 'gold' : storeTier;
+  const isHighlighted = Boolean(coupon.highlight || store?.highlight || store?.isFeatured);
 
-  // Configuração visual de acordo com o plano de assinatura do lojista:
+  // Configuração visual de acordo estritamente com o plano de assinatura do lojista (Gold, Silver, Bronze, Free):
   // - Borda da logo do lojista na cor da assinatura (branca para Free)
   // - Aura luminosa ao passar pelo card (Gold = dourada, Silver = prateada, Bronze = acobreada, Free = sem aura)
   const tierConfig = {
     gold: {
-      cardClass: 'ticket-card-gold ring-2 ring-amber-400/70 shadow-[0_4px_25px_rgba(245,158,11,0.25)]',
+      cardClass: 'ticket-card-gold ring-1 ring-amber-400/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)]',
       logoBorder: 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]',
-      auraBg: 'bg-gradient-to-b from-amber-400/20 via-transparent to-amber-500/20',
+      auraBg: 'bg-gradient-to-b from-amber-400/15 via-transparent to-amber-500/15',
     },
     silver: {
       cardClass: 'ticket-card-silver ring-1 ring-slate-300/35 shadow-[0_4px_20px_rgba(203,213,225,0.12)]',
@@ -92,7 +91,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       logoBorder: 'border-2 border-white shadow-md',
       auraBg: null, // Menos free: sem aura no hover
     }
-  }[effectiveTier] || {
+  }[storeTier] || {
     cardClass: 'ticket-card-free border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
     logoBorder: 'border-2 border-white shadow-md',
     auraBg: null,
@@ -133,16 +132,16 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão de Favoritar */}
         <div className="absolute top-1.5 right-1.5 z-20 flex items-center gap-1">
           {/* Ícone da Medalha na cor da assinatura da loja parceira */}
-          {effectiveTier === 'gold' && (
+          {storeTier === 'gold' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-sm text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
-              title="Loja Parceira Ouro • Destaque VIP"
+              title="Loja Parceira Ouro"
             >
               <Crown size={12} className="text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]" />
             </div>
           )}
 
-          {effectiveTier === 'silver' && (
+          {storeTier === 'silver' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-slate-300/50 shadow-sm text-slate-300 flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Prata"
@@ -151,7 +150,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {effectiveTier === 'bronze' && (
+          {storeTier === 'bronze' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-[#CD7F32]/60 shadow-sm text-[#CD7F32] flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Bronze (3º Nível)"
@@ -238,41 +237,42 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         <div>
           {/* Identificação da Loja com Nome Branco Original */}
           <div className="flex items-center justify-between mb-1">
-            {effectiveTier === 'gold' ? (
-              <div className="flex items-center gap-1 line-clamp-1">
-                <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+            <div className="flex items-center gap-1.5 line-clamp-1">
+              {storeTier === 'gold' ? (
+                <>
                   <Crown size={10} fill="currentColor" className="text-amber-400 flex-shrink-0" />
-                  <span className="truncate">{storeName}</span>
-                </span>
-                <span className="text-[7px] bg-amber-400/20 text-amber-300 font-extrabold px-1 py-0.2 rounded border border-amber-400/40">
-                  {isHighlighted ? 'DESTAQUE VIP' : 'OURO'}
-                </span>
-              </div>
-            ) : effectiveTier === 'silver' ? (
-              <div className="flex items-center gap-1 line-clamp-1">
-                <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider truncate">{storeName}</span>
+                  <span className="text-[7px] bg-amber-400/20 text-amber-300 font-extrabold px-1 py-0.2 rounded border border-amber-400/40">
+                    OURO
+                  </span>
+                </>
+              ) : storeTier === 'silver' ? (
+                <>
                   <Award size={10} className="text-slate-300 flex-shrink-0" />
-                  <span className="truncate">{storeName}</span>
-                </span>
-                <span className="text-[7px] bg-slate-400/20 text-slate-200 font-extrabold px-1 py-0.2 rounded border border-slate-400/40">
-                  PRATA
-                </span>
-              </div>
-            ) : effectiveTier === 'bronze' ? (
-              <div className="flex items-center gap-1 line-clamp-1">
-                <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider truncate">{storeName}</span>
+                  <span className="text-[7px] bg-slate-400/20 text-slate-200 font-extrabold px-1 py-0.2 rounded border border-slate-400/40">
+                    PRATA
+                  </span>
+                </>
+              ) : storeTier === 'bronze' ? (
+                <>
                   <Medal size={10} className="text-[#CD7F32] flex-shrink-0" />
-                  <span className="truncate">{storeName}</span>
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider truncate">{storeName}</span>
+                  <span className="text-[7px] bg-[#CD7F32]/20 text-[#E09858] font-extrabold px-1 py-0.2 rounded border border-[#CD7F32]/50">
+                    BRONZE
+                  </span>
+                </>
+              ) : (
+                <span className="text-[11px] font-bold text-white uppercase tracking-wider line-clamp-1 truncate">
+                  {storeName}
                 </span>
-                <span className="text-[7px] bg-[#CD7F32]/20 text-[#E09858] font-extrabold px-1 py-0.2 rounded border border-[#CD7F32]/50">
-                  BRONZE
+              )}
+              {isHighlighted && (
+                <span className="text-[7px] bg-gradient-to-r from-amber-400 to-orange-500 text-black font-extrabold px-1 py-0.2 rounded shadow-sm">
+                  ⭐ DESTAQUE
                 </span>
-              </div>
-            ) : (
-              <span className="text-[11px] font-bold text-white uppercase tracking-wider line-clamp-1 truncate">
-                {storeName}
-              </span>
-            )}
+              )}
+            </div>
             {store?.rating && (
               <span className="text-[9px] text-amber-400 font-bold flex items-center gap-0.5 ml-1 flex-shrink-0">
                 ★ {store.rating}

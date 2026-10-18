@@ -210,11 +210,11 @@ const MainLayout = () => {
     const storeA = stores.find(s => s.id === a.storeId);
     const storeB = stores.find(s => s.id === b.storeId);
 
-    const isAHighlighted = Boolean(a.highlight || storeA?.highlight || storeA?.isFeatured || storeA?.tier === 'gold');
-    const isBHighlighted = Boolean(b.highlight || storeB?.highlight || storeB?.isFeatured || storeB?.tier === 'gold');
+    const isAHighlighted = Boolean(a.highlight || storeA?.highlight || storeA?.isFeatured);
+    const isBHighlighted = Boolean(b.highlight || storeB?.highlight || storeB?.isFeatured);
 
     if (isBHighlighted !== isAHighlighted) {
-      return isBHighlighted ? 1 : -1; // Destaque VIP primeiro
+      return isBHighlighted ? 1 : -1; // Cupons e lojas explicitamente em Destaque primeiro
     }
 
     const TIER_WEIGHTS = { gold: 10, silver: 5, bronze: 3, api: 1, free: 1 };

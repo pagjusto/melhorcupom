@@ -1533,10 +1533,10 @@ export const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-gray-300">
                   {filteredStoresList.map(store => {
-                    const isHighlighted = Boolean(store.highlight || store.tier === 'gold' || store.isFeatured);
+                    const isHighlighted = Boolean(store.highlight || store.isFeatured);
                     const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
                       ? store.tier
-                      : (store.isNewPartner ? 'bronze' : (isHighlighted ? 'gold' : 'api'));
+                      : (store.isNewPartner ? 'bronze' : 'api');
                     const activeOffers = coupons.filter(c => c.storeId === store.id).length;
 
                     return (
@@ -1544,7 +1544,7 @@ export const AdminDashboard = () => {
                         key={store.id} 
                         className={`transition-colors ${
                           isHighlighted 
-                            ? 'bg-amber-500/[0.06] hover:bg-amber-500/[0.12] border-l-2 border-l-amber-400' 
+                            ? 'bg-amber-500/[0.08] hover:bg-amber-500/[0.14] border-l-2 border-l-amber-400' 
                             : 'hover:bg-white/[0.03]'
                         }`}
                       >
@@ -1552,7 +1552,13 @@ export const AdminDashboard = () => {
                         <td className="py-3.5 px-4 font-bold text-white">
                           <div className="flex items-center gap-3">
                             <div className={`w-9 h-9 rounded-xl bg-[#12121A] flex items-center justify-center text-xl overflow-hidden flex-shrink-0 ${
-                              isHighlighted ? 'border-2 border-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'border border-white/10'
+                              tier === 'gold' 
+                                ? 'border-2 border-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.5)]' 
+                                : tier === 'silver'
+                                ? 'border-2 border-slate-300 shadow-[0_0_8px_rgba(203,213,225,0.4)]'
+                                : tier === 'bronze'
+                                ? 'border-2 border-[#CD7F32] shadow-[0_0_8px_rgba(205,127,50,0.4)]'
+                                : 'border border-white/10'
                             }`}>
                               {store.logoImage ? (
                                 <img src={store.logoImage} alt={store.name} className="w-full h-full object-cover" />
@@ -1565,7 +1571,7 @@ export const AdminDashboard = () => {
                                 <span>{store.name}</span>
                                 {isHighlighted && (
                                   <span className="px-1.5 py-0.2 rounded bg-amber-400 text-black text-[9px] font-black tracking-tight">
-                                    VIP
+                                    ⭐ DESTAQUE
                                   </span>
                                 )}
                               </div>

@@ -235,12 +235,12 @@ export const AppProvider = ({ children }) => {
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
         const isCustomStore = Boolean(s.isAvulsa || s.isAvulso || s.isCustom || s.noSimulator || s.id?.startsWith('store_avulsa_') || s.merchantId?.startsWith('merchant_avulso_'));
-        const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze' || s.highlight || s.isFeatured);
+        const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze');
         const isPayingMerchant = !isCustomStore && Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
-        const isHighlighted = Boolean(s.highlight || s.isFeatured || s.tier === 'gold' || init?.highlight || init?.isFeatured || init?.tier === 'gold');
+        const isHighlighted = Boolean(s.highlight || s.isFeatured);
         const resolvedTier = (s.tier && s.tier !== 'free')
           ? s.tier
-          : (isPayingMerchant ? (init?.tier || (isHighlighted ? 'gold' : 'bronze')) : 'api');
+          : (isPayingMerchant ? (init?.tier || 'bronze') : 'api');
 
         return {
           ...s,
@@ -1000,13 +1000,10 @@ export const AppProvider = ({ children }) => {
     setStores(prev => {
       const updated = prev.map(s => {
         if (s.id === storeId || s.merchantId === storeId) {
-          const isGold = newTier === 'gold';
           return { 
             ...s, 
             tier: newTier, 
-            adminPaidPlan: newTier !== 'api',
-            highlight: isGold ? true : (newTier === 'api' ? false : s.highlight),
-            isFeatured: isGold ? true : (newTier === 'api' ? false : s.isFeatured)
+            adminPaidPlan: newTier !== 'api'
           };
         }
         return s;
@@ -1025,8 +1022,7 @@ export const AppProvider = ({ children }) => {
           return { 
             ...s, 
             highlight: nextHighlight,
-            isFeatured: nextHighlight,
-            tier: nextHighlight && (!s.tier || s.tier === 'api' || s.tier === 'free') ? 'gold' : s.tier
+            isFeatured: nextHighlight
           };
         }
         return s;
@@ -1565,7 +1561,6 @@ export const AppProvider = ({ children }) => {
   // Alterar / Fazer Upgrade de Plano de Lojista (Free, Bronze, Prata, Ouro)
   const upgradeStoreTier = (storeId, newTier, discountAmount = 0) => {
     setStores(prev => {
-      const isGold = newTier === 'gold';
       const updated = prev.map(s => {
         if (s.id === storeId || s.merchantId === storeId) {
           const remainingBalance = discountAmount > 0 
@@ -1577,8 +1572,6 @@ export const AppProvider = ({ children }) => {
             freeTrialActive: false,
             firstMonthFree: false,
             adminPaidPlan: newTier !== 'api',
-            highlight: isGold ? true : s.highlight,
-            isFeatured: isGold ? true : s.isFeatured,
             referralBalance: remainingBalance
           };
         }
