@@ -205,17 +205,24 @@ const MainLayout = () => {
 
     return true;
   }).sort((a, b) => {
-    // ALGORITMO DE DESTAQUE POR ASSINATURA:
-    // Quanto mais o lojista paga (Ouro=4, Prata=3, Bronze=2, Free=1), mais no topo fica seu cupom!
+    // ALGORITMO DE DESTAQUE VIP & ASSINATURA:
+    // Lojas e cupons marcados como Destaque / Ouro ficam no topo absoluto da vitrine!
     const storeA = stores.find(s => s.id === a.storeId);
     const storeB = stores.find(s => s.id === b.storeId);
 
-    const TIER_WEIGHTS = { gold: 4, silver: 3, bronze: 2, free: 1 };
-    const weightA = TIER_WEIGHTS[storeA?.tier || 'free'] || 1;
-    const weightB = TIER_WEIGHTS[storeB?.tier || 'free'] || 1;
+    const isAHighlighted = Boolean(a.highlight || storeA?.highlight || storeA?.isFeatured || storeA?.tier === 'gold');
+    const isBHighlighted = Boolean(b.highlight || storeB?.highlight || storeB?.isFeatured || storeB?.tier === 'gold');
+
+    if (isBHighlighted !== isAHighlighted) {
+      return isBHighlighted ? 1 : -1; // Destaque VIP primeiro
+    }
+
+    const TIER_WEIGHTS = { gold: 10, silver: 5, bronze: 3, api: 1, free: 1 };
+    const weightA = TIER_WEIGHTS[storeA?.tier || 'api'] || 1;
+    const weightB = TIER_WEIGHTS[storeB?.tier || 'api'] || 1;
 
     if (weightB !== weightA) {
-      return weightB - weightA; // Maior peso primeiro
+      return weightB - weightA; // Maior peso de plano primeiro
     }
 
     // Critério secundário: maior quantidade de resgates

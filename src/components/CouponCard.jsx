@@ -64,14 +64,17 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
     : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
   const bannerImage = getCouponBanner(coupon, store);
 
+  const isHighlighted = Boolean(coupon.highlight || store?.highlight || store?.isFeatured || storeTier === 'gold');
+  const effectiveTier = isHighlighted ? 'gold' : storeTier;
+
   // Configuração visual de acordo com o plano de assinatura do lojista:
   // - Borda da logo do lojista na cor da assinatura (branca para Free)
   // - Aura luminosa ao passar pelo card (Gold = dourada, Silver = prateada, Bronze = acobreada, Free = sem aura)
   const tierConfig = {
     gold: {
-      cardClass: 'ticket-card-gold ring-1 ring-amber-400/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)]',
+      cardClass: 'ticket-card-gold ring-2 ring-amber-400/70 shadow-[0_4px_25px_rgba(245,158,11,0.25)]',
       logoBorder: 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]',
-      auraBg: 'bg-gradient-to-b from-amber-400/15 via-transparent to-amber-500/15',
+      auraBg: 'bg-gradient-to-b from-amber-400/20 via-transparent to-amber-500/20',
     },
     silver: {
       cardClass: 'ticket-card-silver ring-1 ring-slate-300/35 shadow-[0_4px_20px_rgba(203,213,225,0.12)]',
@@ -89,7 +92,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       logoBorder: 'border-2 border-white shadow-md',
       auraBg: null, // Menos free: sem aura no hover
     }
-  }[storeTier] || {
+  }[effectiveTier] || {
     cardClass: 'ticket-card-free border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
     logoBorder: 'border-2 border-white shadow-md',
     auraBg: null,
@@ -114,7 +117,13 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-[#17171E] via-transparent to-black/40 pointer-events-none" />
 
         {/* Tag de Desconto no Topo do Banner */}
-        <div className="absolute top-1.5 left-1.5 z-10">
+        <div className="absolute top-1.5 left-1.5 z-10 flex flex-col gap-1 items-start">
+          {isHighlighted && (
+            <div className="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-black px-1.5 py-0.5 rounded-md font-black text-[9px] tracking-tight shadow-md flex items-center gap-1 animate-pulse">
+              <Crown size={9} />
+              <span>DESTAQUE</span>
+            </div>
+          )}
           <div className="bg-gradient-to-r from-[#FF5F00] to-[#FF8400] text-white px-2 py-0.5 rounded-md font-black text-[10px] sm:text-[11px] tracking-tight shadow-md flex items-center gap-1">
             <Tag size={10} />
             <span>{coupon.discountBadge}</span>
@@ -124,16 +133,16 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão de Favoritar */}
         <div className="absolute top-1.5 right-1.5 z-20 flex items-center gap-1">
           {/* Ícone da Medalha na cor da assinatura da loja parceira */}
-          {storeTier === 'gold' && (
+          {effectiveTier === 'gold' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-sm text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
-              title="Loja Parceira Ouro"
+              title="Loja Parceira Ouro • Destaque VIP"
             >
-              <Medal size={12} className="text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]" />
+              <Crown size={12} className="text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]" />
             </div>
           )}
 
-          {storeTier === 'silver' && (
+          {effectiveTier === 'silver' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-slate-300/50 shadow-sm text-slate-300 flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Prata"
@@ -142,7 +151,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {storeTier === 'bronze' && (
+          {effectiveTier === 'bronze' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-[#CD7F32]/60 shadow-sm text-[#CD7F32] flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Bronze (3º Nível)"
@@ -229,17 +238,17 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         <div>
           {/* Identificação da Loja com Nome Branco Original */}
           <div className="flex items-center justify-between mb-1">
-            {storeTier === 'gold' ? (
+            {effectiveTier === 'gold' ? (
               <div className="flex items-center gap-1 line-clamp-1">
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                   <Crown size={10} fill="currentColor" className="text-amber-400 flex-shrink-0" />
                   <span className="truncate">{storeName}</span>
                 </span>
                 <span className="text-[7px] bg-amber-400/20 text-amber-300 font-extrabold px-1 py-0.2 rounded border border-amber-400/40">
-                  OURO
+                  {isHighlighted ? 'DESTAQUE VIP' : 'OURO'}
                 </span>
               </div>
-            ) : storeTier === 'silver' ? (
+            ) : effectiveTier === 'silver' ? (
               <div className="flex items-center gap-1 line-clamp-1">
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                   <Award size={10} className="text-slate-300 flex-shrink-0" />
@@ -249,7 +258,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                   PRATA
                 </span>
               </div>
-            ) : storeTier === 'bronze' ? (
+            ) : effectiveTier === 'bronze' ? (
               <div className="flex items-center gap-1 line-clamp-1">
                 <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                   <Medal size={10} className="text-[#CD7F32] flex-shrink-0" />

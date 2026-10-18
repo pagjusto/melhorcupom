@@ -234,10 +234,12 @@ export const AppProvider = ({ children }) => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
-        const isPayingMerchant = Boolean(s.isNewPartner || s.adminPaidPlan || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
-        const resolvedTier = isPayingMerchant
-          ? ((s.tier && s.tier !== 'free' && s.tier !== 'api') ? s.tier : (init?.tier || 'gold'))
-          : 'api';
+        const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze' || s.highlight || s.isFeatured);
+        const isPayingMerchant = Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
+        const isHighlighted = Boolean(s.highlight || s.isFeatured || s.tier === 'gold' || init?.highlight || init?.isFeatured || init?.tier === 'gold');
+        const resolvedTier = (s.tier && s.tier !== 'free')
+          ? s.tier
+          : (isPayingMerchant ? (init?.tier || (isHighlighted ? 'gold' : 'bronze')) : 'api');
 
         return {
           ...s,
@@ -247,7 +249,9 @@ export const AppProvider = ({ children }) => {
           logoImage: getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || (s.logoImage && s.logoImage.startsWith('data:') ? s.logoImage : '') || '',
           image: init?.image || s.image || '',
           tier: resolvedTier,
-          adminPaidPlan: Boolean(s.adminPaidPlan),
+          highlight: isHighlighted,
+          isFeatured: isHighlighted,
+          adminPaidPlan: Boolean(s.adminPaidPlan || isExplicitPaid || resolvedTier !== 'api'),
           category: init?.category || s.category || 'gastronomia',
           city: init?.city || s.city || 'Todo o Brasil (Online)',
           cities: init?.cities || s.cities || (init?.city ? [init.city] : []),
@@ -988,12 +992,43 @@ export const AppProvider = ({ children }) => {
   };
 
   const adminUpdateStoreTier = (storeId, newTier) => {
-    setStores(prev => prev.map(s => {
-      if (s.id === storeId) {
-        return { ...s, tier: newTier, adminPaidPlan: newTier !== 'api' };
-      }
-      return s;
-    }));
+    setStores(prev => {
+      const updated = prev.map(s => {
+        if (s.id === storeId || s.merchantId === storeId) {
+          const isGold = newTier === 'gold';
+          return { 
+            ...s, 
+            tier: newTier, 
+            adminPaidPlan: newTier !== 'api',
+            highlight: isGold ? true : (newTier === 'api' ? false : s.highlight),
+            isFeatured: isGold ? true : (newTier === 'api' ? false : s.isFeatured)
+          };
+        }
+        return s;
+      });
+      safeSetItem('melhor_cupom_stores_v10', updated);
+      return updated;
+    });
+  };
+
+  // Alternar Destaque de Loja Parceira no Topo
+  const toggleHighlightStore = (storeId) => {
+    setStores(prev => {
+      const updated = prev.map(s => {
+        if (s.id === storeId || s.merchantId === storeId) {
+          const nextHighlight = !s.highlight;
+          return { 
+            ...s, 
+            highlight: nextHighlight,
+            isFeatured: nextHighlight,
+            tier: nextHighlight && (!s.tier || s.tier === 'api' || s.tier === 'free') ? 'gold' : s.tier
+          };
+        }
+        return s;
+      });
+      safeSetItem('melhor_cupom_stores_v10', updated);
+      return updated;
+    });
   };
 
   const adminAdjustUserReferral = (userId, amount) => {
@@ -1519,22 +1554,29 @@ export const AppProvider = ({ children }) => {
 
   // Alterar / Fazer Upgrade de Plano de Lojista (Free, Bronze, Prata, Ouro)
   const upgradeStoreTier = (storeId, newTier, discountAmount = 0) => {
-    setStores(prev => prev.map(s => {
-      if (s.id === storeId || s.merchantId === storeId) {
-        const remainingBalance = discountAmount > 0 
-          ? Math.max(0, (s.referralBalance || 0) - discountAmount)
-          : (s.referralBalance || 0);
-        return { 
-          ...s, 
-          tier: newTier,
-          freeTrialActive: false,
-          firstMonthFree: false,
-          adminPaidPlan: newTier !== 'api',
-          referralBalance: remainingBalance
-        };
-      }
-      return s;
-    }));
+    setStores(prev => {
+      const isGold = newTier === 'gold';
+      const updated = prev.map(s => {
+        if (s.id === storeId || s.merchantId === storeId) {
+          const remainingBalance = discountAmount > 0 
+            ? Math.max(0, (s.referralBalance || 0) - discountAmount)
+            : (s.referralBalance || 0);
+          return { 
+            ...s, 
+            tier: newTier,
+            freeTrialActive: false,
+            firstMonthFree: false,
+            adminPaidPlan: newTier !== 'api',
+            highlight: isGold ? true : s.highlight,
+            isFeatured: isGold ? true : s.isFeatured,
+            referralBalance: remainingBalance
+          };
+        }
+        return s;
+      });
+      safeSetItem('melhor_cupom_stores_v10', updated);
+      return updated;
+    });
 
     if (newTier === 'gold') {
       confetti({
@@ -2411,6 +2453,7 @@ export const AppProvider = ({ children }) => {
       registeredUsers,
       adminToggleUserVip,
       adminUpdateStoreTier,
+      toggleHighlightStore,
       adminAdjustUserReferral,
       monthlyFinancialHistory: MONTHLY_FINANCIAL_HISTORY,
       // Hub de Integrações de APIs

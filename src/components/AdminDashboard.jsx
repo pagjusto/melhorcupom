@@ -51,7 +51,8 @@ import {
   X,
   MessageCircle,
   Flame,
-  Instagram
+  Instagram,
+  Star
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AdminPromoManager } from './PromotionalKit';
@@ -69,6 +70,7 @@ export const AdminDashboard = () => {
     registeredUsers, 
     adminToggleUserVip, 
     adminUpdateStoreTier, 
+    toggleHighlightStore,
     adminAdjustUserReferral,
     monthlyFinancialHistory,
     merchantPlans,
@@ -332,6 +334,23 @@ export const AdminDashboard = () => {
     adminUpdateStoreTier(storeId, newTier);
     const tierName = newTier === 'gold' ? 'Ouro VIP Top (R$ 109,90)' : newTier === 'silver' ? 'Prata Pro (R$ 79,90)' : newTier === 'bronze' ? 'Bronze + VIP (R$ 19,90)' : 'Parceiro API / Sem Mensalidade (R$ 0,00)';
     showToast(`Configuração da loja "${storeName}" atualizada para: ${tierName}!`);
+  };
+
+  const handleToggleHighlight = (storeId, storeName, currentHighlight) => {
+    if (toggleHighlightStore) {
+      toggleHighlightStore(storeId);
+      if (!currentHighlight) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#FF5F00', '#FFD700', '#F59E0B']
+        });
+        showToast(`Loja "${storeName}" fixada em DESTAQUE VIP no Topo do site!`);
+      } else {
+        showToast(`Destaque da loja "${storeName}" desativado.`);
+      }
+    }
   };
 
   const handleToggleVip = (userId, userName, currentVip) => {
@@ -1506,6 +1525,7 @@ export const AdminDashboard = () => {
                     <th className="py-3 px-4">Estabelecimento</th>
                     <th className="py-3 px-4">Cidade</th>
                     <th className="py-3 px-4">Contato / Endereço</th>
+                    <th className="py-3 px-4 text-center">⭐ Destaque VIP</th>
                     <th className="py-3 px-4 text-center">Plano Atual</th>
                     <th className="py-3 px-4 text-center">Alterar Plano (Ação ADM)</th>
                     <th className="py-3 px-4 text-right">Faturamento /mês</th>
@@ -1513,17 +1533,27 @@ export const AdminDashboard = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-gray-300">
                   {filteredStoresList.map(store => {
+                    const isHighlighted = Boolean(store.highlight || store.tier === 'gold' || store.isFeatured);
                     const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
                       ? store.tier
-                      : (store.isNewPartner ? 'bronze' : 'api');
+                      : (store.isNewPartner ? 'bronze' : (isHighlighted ? 'gold' : 'api'));
                     const activeOffers = coupons.filter(c => c.storeId === store.id).length;
 
                     return (
-                      <tr key={store.id} className="hover:bg-white/[0.03] transition-colors">
+                      <tr 
+                        key={store.id} 
+                        className={`transition-colors ${
+                          isHighlighted 
+                            ? 'bg-amber-500/[0.06] hover:bg-amber-500/[0.12] border-l-2 border-l-amber-400' 
+                            : 'hover:bg-white/[0.03]'
+                        }`}
+                      >
                         {/* Loja */}
                         <td className="py-3.5 px-4 font-bold text-white">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-[#12121A] border border-white/10 flex items-center justify-center text-xl overflow-hidden flex-shrink-0">
+                            <div className={`w-9 h-9 rounded-xl bg-[#12121A] flex items-center justify-center text-xl overflow-hidden flex-shrink-0 ${
+                              isHighlighted ? 'border-2 border-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'border border-white/10'
+                            }`}>
                               {store.logoImage ? (
                                 <img src={store.logoImage} alt={store.name} className="w-full h-full object-cover" />
                               ) : (
@@ -1531,7 +1561,14 @@ export const AdminDashboard = () => {
                               )}
                             </div>
                             <div>
-                              <div className="font-bold text-white text-xs">{store.name}</div>
+                              <div className="font-bold text-white text-xs flex items-center gap-1.5">
+                                <span>{store.name}</span>
+                                {isHighlighted && (
+                                  <span className="px-1.5 py-0.2 rounded bg-amber-400 text-black text-[9px] font-black tracking-tight">
+                                    VIP
+                                  </span>
+                                )}
+                              </div>
                               <div className="text-[10px] text-gray-400 capitalize">{store.category} • {activeOffers} cupons</div>
                             </div>
                           </div>
@@ -1549,6 +1586,22 @@ export const AdminDashboard = () => {
                         <td className="py-3.5 px-4 text-gray-400 text-[11px]">
                           <div>{store.phone || '(11) 99999-0000'}</div>
                           <div className="text-[10px] text-gray-500 truncate max-w-xs">{store.address}</div>
+                        </td>
+
+                        {/* Botão Ação ADM: Destaque VIP 1-Clique */}
+                        <td className="py-3.5 px-4 text-center">
+                          <button
+                            onClick={() => handleToggleHighlight(store.id, store.name, isHighlighted)}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm ${
+                              isHighlighted
+                                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/30 border border-amber-300 ring-1 ring-amber-400 hover:brightness-110'
+                                : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-amber-300 border border-white/10'
+                            }`}
+                            title={isHighlighted ? "Clique para remover esta loja do destaque" : "Clique para fixar esta loja em Destaque VIP no Topo do site"}
+                          >
+                            <Star size={13} fill={isHighlighted ? "currentColor" : "none"} className={isHighlighted ? "text-white" : "text-amber-400"} />
+                            <span>{isHighlighted ? "⭐ Destaque Ativo" : "☆ Destacar"}</span>
+                          </button>
                         </td>
 
                         {/* Badge Plano Atual */}

@@ -42,12 +42,17 @@ export const StoresView = ({ onSelectStore }) => {
 
   const isSimulationOrAdmin = currentRole === 'admin' || currentRole === 'merchant_parceiro_demo' || isSimulatingRole;
 
-  // Ordenar lojas priorizando as que contratam planos superiores (Ouro > Prata > Bronze > Free)
+  // Ordenar lojas priorizando as que estão em DESTAQUE VIP e planos superiores (Destaque/Ouro > Prata > Bronze > Free)
   const sortedStores = useMemo(() => {
     return [...stores].sort((a, b) => {
-      const weights = { gold: 4, silver: 3, bronze: 2, free: 1 };
-      const wA = weights[a.tier || 'free'] || 1;
-      const wB = weights[b.tier || 'free'] || 1;
+      const isAHighlighted = Boolean(a.highlight || a.isFeatured || a.tier === 'gold');
+      const isBHighlighted = Boolean(b.highlight || b.isFeatured || b.tier === 'gold');
+      if (isBHighlighted !== isAHighlighted) {
+        return isBHighlighted ? 1 : -1; // Lojas em destaque vêm sempre no topo
+      }
+      const weights = { gold: 10, silver: 5, bronze: 3, api: 1, free: 1 };
+      const wA = weights[a.tier || 'api'] || 1;
+      const wB = weights[b.tier || 'api'] || 1;
       if (wB !== wA) return wB - wA;
       return (b.rating || 0) - (a.rating || 0);
     });
@@ -348,6 +353,7 @@ export const StoresView = ({ onSelectStore }) => {
 
           {/* Cards das Lojas Cadastradas */}
           {filteredStores.map((store) => {
+            const isHighlighted = Boolean(store.highlight || store.isFeatured || store.tier === 'gold');
             const storeLogo = getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || store.logoImage;
             const isOnlineStore = store.isApiIntegrated || store.type === 'online';
 
@@ -355,19 +361,21 @@ export const StoresView = ({ onSelectStore }) => {
               <div
                 key={store.id}
                 onClick={() => onSelectStore?.(store)}
-                className={`bg-gradient-to-b from-[#181824] via-[#14141E] to-[#12121A] hover:from-[#202030] hover:to-[#181824] rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-300 group cursor-pointer shadow-lg hover:-translate-y-1 relative overflow-hidden select-none ${
-                  store.tier === 'gold'
-                    ? 'border border-amber-400/50 hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.35)]'
+                className={`rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-300 group cursor-pointer shadow-lg hover:-translate-y-1 relative overflow-hidden select-none ${
+                  isHighlighted
+                    ? 'bg-gradient-to-b from-amber-950/40 via-[#181824] to-[#12121A] border-2 border-amber-400 shadow-[0_0_35px_rgba(245,158,11,0.35)] ring-1 ring-amber-400/40 hover:border-amber-300 hover:shadow-[0_0_45px_rgba(245,158,11,0.5)]'
                     : store.tier === 'silver'
-                    ? 'border border-slate-300/40 hover:border-slate-300 hover:shadow-[0_0_25px_rgba(203,213,225,0.3)]'
+                    ? 'bg-gradient-to-b from-[#181824] via-[#14141E] to-[#12121A] border border-slate-300/40 hover:border-slate-300 hover:shadow-[0_0_25px_rgba(203,213,225,0.3)]'
                     : store.tier === 'bronze'
-                    ? 'border border-[#CD7F32]/40 hover:border-[#CD7F32] hover:shadow-[0_0_25px_rgba(205,127,50,0.35)]'
-                    : 'border border-white/10 hover:border-[#FF5F00]/60 hover:shadow-xl hover:shadow-orange-950/30'
+                    ? 'bg-gradient-to-b from-[#181824] via-[#14141E] to-[#12121A] border border-[#CD7F32]/40 hover:border-[#CD7F32] hover:shadow-[0_0_25px_rgba(205,127,50,0.35)]'
+                    : 'bg-gradient-to-b from-[#181824] via-[#14141E] to-[#12121A] border border-white/10 hover:border-[#FF5F00]/60 hover:shadow-xl hover:shadow-orange-950/30'
                 }`}
                 title={`Ver cupons e ofertas oficiais de ${store.name}`}
               >
                 {/* Glow sutil de fundo ao passar mouse */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF5F00]/10 rounded-full blur-xl group-hover:bg-[#FF5F00]/25 transition-all pointer-events-none" />
+                <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-xl transition-all pointer-events-none ${
+                  isHighlighted ? 'bg-amber-400/20 group-hover:bg-amber-400/35' : 'bg-[#FF5F00]/10 group-hover:bg-[#FF5F00]/25'
+                }`} />
 
                 {/* Badges superiores: Modalidade no topo esquerdo e Tier no topo direito */}
                 <div className="w-full flex items-center justify-between gap-1 mb-2 relative z-10">
@@ -381,9 +389,9 @@ export const StoresView = ({ onSelectStore }) => {
                     </span>
                   )}
 
-                  {store.tier === 'gold' ? (
-                    <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm">
-                      👑 OURO
+                  {isHighlighted ? (
+                    <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-black text-[9px] font-black px-2 py-0.5 rounded-md shadow-md flex items-center gap-1 animate-pulse">
+                      👑 DESTAQUE VIP
                     </span>
                   ) : store.tier === 'silver' ? (
                     <span className="bg-gray-300 text-black text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm">
@@ -401,7 +409,9 @@ export const StoresView = ({ onSelectStore }) => {
                 </div>
 
                 {/* Logo da Marca Oficial com tratamento e fundo nítido em branco */}
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-2 flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:shadow-orange-500/20 relative z-10">
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-2 flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
+                  isHighlighted ? 'border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'group-hover:shadow-orange-500/20'
+                }`}>
                   {storeLogo ? (
                     <>
                       <img
