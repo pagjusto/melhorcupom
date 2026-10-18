@@ -185,8 +185,13 @@ export const AppProvider = ({ children }) => {
         const cleanAffiliate = normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, c);
         const resolvedLogo = (c.isAvulso && c.logoImage && c.logoImage.startsWith('data:')) ? c.logoImage : (getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || c.logoImage || c.storeLogoImage || '');
         const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
+        const isExplicitLink = Boolean(c.isLinkOnly || (!c.code && !c.codePrefix) || c.title?.toLowerCase().includes('pelo link') || c.title?.toLowerCase().includes('pelo site'));
+        const cleanCode = (isExplicitLink || c.code === 'MELHORVIP' || c.codePrefix === 'MELHORVIP') ? (isExplicitLink ? '' : c.code) : (c.code || c.codePrefix || '');
         return {
           ...c,
+          code: cleanCode,
+          codePrefix: cleanCode,
+          isLinkOnly: isExplicitLink,
           affiliateUrl: cleanAffiliate,
           logoImage: resolvedLogo,
           highlight: (isCustom && needsHighlightReset) ? false : Boolean(c.highlight)

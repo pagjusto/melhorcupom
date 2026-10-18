@@ -145,7 +145,17 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
   const isOnlineCoupon = isApiCompanyCoupon;
-  const couponCode = coupon.codePrefix || activeRedemption?.code || 'MELHORVIP';
+  // Identifica se o cupom possui de fato um código definido para digitação no checkout
+  const rawProvidedCode = (coupon.code?.trim() || coupon.codePrefix?.trim() || '');
+  const isExplicitLinkOffer = Boolean(
+    coupon.isLinkOnly || 
+    !rawProvidedCode || 
+    rawProvidedCode === 'MELHORVIP' ||
+    coupon.title?.toLowerCase().includes('pelo link') ||
+    coupon.title?.toLowerCase().includes('pelo site')
+  );
+  const hasCouponCode = !isExplicitLinkOffer && Boolean(rawProvidedCode);
+  const couponCode = hasCouponCode ? rawProvidedCode : (activeRedemption?.code || '');
   const affiliateDestinationUrl = getStoreDestinationUrl(store, coupon);
 
   const storeName = coupon.storeName || store?.name || 'Loja Parceira';
@@ -164,6 +174,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
 
   const handleCopy = () => {
+    if (!couponCode) return;
     try {
       navigator.clipboard.writeText(couponCode);
       setCopied(true);
@@ -174,11 +185,13 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   };
 
   const handleStartRedirect = () => {
-    try {
-      navigator.clipboard.writeText(couponCode);
-      setCopied(true);
-    } catch {
-      // ignore
+    if (couponCode) {
+      try {
+        navigator.clipboard.writeText(couponCode);
+        setCopied(true);
+      } catch {
+        // ignore
+      }
     }
 
     setIsRedirecting(true);
@@ -239,19 +252,28 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 Loja Oficial Aberta!
               </h3>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Seu cupom foi copiado e a página oficial de <strong>{storeName}</strong> foi aberta em uma nova aba para você finalizar sua compra.
+                {hasCouponCode 
+                  ? `Seu cupom foi copiado e a página oficial de ${storeName} foi aberta em uma nova aba para você finalizar sua compra.`
+                  : `A página oficial de ${storeName} foi aberta em uma nova aba com seu desconto ativado diretamente pelo link.`}
               </p>
             </div>
 
             {/* Checklist de Validação em Tempo Real */}
             <div className="bg-black/40 rounded-2xl p-4 text-left space-y-2.5 text-xs text-gray-300 border border-white/5">
+              {hasCouponCode ? (
+                <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                  <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                  <span>Cupom <strong className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">{couponCode}</strong> copiado!</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                  <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                  <span>Desconto aplicado automaticamente pelo link oficial</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-emerald-300 font-bold">
                 <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
-                <span>Cupom <strong className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">{couponCode}</strong> copiado!</span>
-              </div>
-              <div className="flex items-center gap-2 text-emerald-300 font-bold">
-                <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
-                <span>Desconto e benefícios ativados para sua compra</span>
+                <span>Benefícios e rastreamento ativados para sua compra</span>
               </div>
               <div className="flex items-center gap-2 text-emerald-300 font-bold">
                 <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
@@ -287,7 +309,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 }}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 transition-all cursor-pointer"
               >
-                <span>Ir para a Loja Oficial Agora</span>
+                <span>{hasCouponCode ? 'Acessar Loja Novamente' : 'Seguir para a Loja Oficial'}</span>
                 <ExternalLink size={16} />
               </a>
 
@@ -549,38 +571,56 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 </div>
               )}
 
-              {/* Caixa de Código com Cópia Rápida */}
-              <div className="p-5 bg-gradient-to-b from-white/10 via-black/40 to-white/5 border-2 border-dashed border-[#FF5F00] rounded-2xl text-center space-y-3">
-                <div className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
-                  <Zap size={14} className="text-[#FF5F00]" />
-                  <span>Código Promocional Exclusivo:</span>
-                </div>
-                
-                <div className="flex items-center justify-center gap-2">
-                  <div className="font-mono text-2xl sm:text-3xl font-black text-orange-400 bg-black/70 px-6 py-2.5 rounded-xl border border-orange-500/40 tracking-widest select-all shadow-inner">
-                    {couponCode}
+              {hasCouponCode ? (
+                /* Caixa de Código com Cópia Rápida */
+                <div className="p-5 bg-gradient-to-b from-white/10 via-black/40 to-white/5 border-2 border-dashed border-[#FF5F00] rounded-2xl text-center space-y-3">
+                  <div className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                    <Zap size={14} className="text-[#FF5F00]" />
+                    <span>Código Promocional Exclusivo:</span>
                   </div>
-                  <button
-                    onClick={handleCopy}
-                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-3 rounded-xl transition-all shadow-lg flex items-center justify-center hover:scale-105 cursor-pointer"
-                    title="Copiar código promocional"
-                  >
-                    {copied ? <Check size={22} className="text-emerald-300" /> : <Copy size={22} />}
-                  </button>
+                  
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="font-mono text-2xl sm:text-3xl font-black text-orange-400 bg-black/70 px-6 py-2.5 rounded-xl border border-orange-500/40 tracking-widest select-all shadow-inner">
+                      {couponCode}
+                    </div>
+                    <button
+                      onClick={handleCopy}
+                      className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-3 rounded-xl transition-all shadow-lg flex items-center justify-center hover:scale-105 cursor-pointer"
+                      title="Copiar código promocional"
+                    >
+                      {copied ? <Check size={22} className="text-emerald-300" /> : <Copy size={22} />}
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-300">
+                    {copied ? (
+                      <strong className="text-emerald-400 font-bold flex items-center justify-center gap-1">
+                        <CheckCircle2 size={14} /> Código copiado! Agora clique no botão abaixo para ir à loja oficial.
+                      </strong>
+                    ) : (
+                      'Copie o código promocional acima e cole na tela de pagamento da loja oficial.'
+                    )}
+                  </p>
                 </div>
+              ) : (
+                /* Oferta Ativada por Link (Sem Código) */
+                <div className="p-5 bg-gradient-to-b from-emerald-500/15 via-[#101F18] to-emerald-500/10 border-2 border-emerald-500/40 rounded-2xl text-center space-y-3 shadow-lg">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider">
+                    <Sparkles size={14} className="text-emerald-400" />
+                    <span>Desconto Ativado pelo Link Oficial</span>
+                  </div>
+                  
+                  <h4 className="text-base font-black text-white">
+                    Não é necessário digitar código de cupom!
+                  </h4>
+                  
+                  <p className="text-xs text-gray-300 max-w-sm mx-auto leading-relaxed">
+                    As condições e descontos de <strong>{storeName}</strong> já estão aplicados diretamente no link oficial. Basta clicar no botão abaixo para seguir até o site oficial com a promoção garantida.
+                  </p>
+                </div>
+              )}
 
-                <p className="text-xs text-gray-300">
-                  {copied ? (
-                    <strong className="text-emerald-400 font-bold flex items-center justify-center gap-1">
-                      <CheckCircle2 size={14} /> Código copiado! Agora clique no botão abaixo para ir à loja oficial.
-                    </strong>
-                  ) : (
-                    'Copie o código promocional acima e cole na tela de pagamento da loja oficial.'
-                  )}
-                </p>
-              </div>
-
-              {/* Botão Master: Copiar e Ir para Loja Oficial (Link direto nativo - zero bloqueio de popup) */}
+              {/* Botão Master: Seguir para a Loja Oficial (Link direto nativo - zero bloqueio de popup) */}
               <a
                 href={affiliateDestinationUrl}
                 target="_blank"
@@ -589,7 +629,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 className="w-full bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2.5 shadow-xl shadow-orange-950/60 transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <Sparkles size={18} className="text-amber-200" />
-                <span>Copiar Cupom & Ir para a Loja Oficial</span>
+                <span>{hasCouponCode ? 'Copiar Cupom & Ir para a Loja Oficial' : 'Seguir para a Loja Oficial com Desconto'}</span>
                 <ExternalLink size={18} />
               </a>
 

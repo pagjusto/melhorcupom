@@ -322,9 +322,9 @@ export const AdminCouponsManager = ({ showToast }) => {
       finalExpiresAt = 'unlimited';
     }
 
-    const finalCode = formData.code.trim() 
+    const finalCode = formData.code?.trim() 
       ? formData.code.trim().toUpperCase() 
-      : `${finalStoreName.substring(0, 4).toUpperCase().replace(/\s+/g, '')}${Math.floor(10 + Math.random() * 90)}`;
+      : (isOnline ? '' : `${finalStoreName.substring(0, 4).toUpperCase().replace(/\s+/g, '')}${Math.floor(10 + Math.random() * 90)}`);
 
     const rawAffiliate = formData.affiliateUrl?.trim() || '';
     const normalizedInputUrl = normalizeUrl(rawAffiliate);
@@ -355,6 +355,7 @@ export const AdminCouponsManager = ({ showToast }) => {
         banner: formData.banner,
         code: finalCode,
         codePrefix: finalCode,
+        isLinkOnly: !finalCode,
         affiliateUrl: resolvedAffiliateUrl,
         highlight: formData.highlight,
         maxUsesPerUser: maxUses,
@@ -395,6 +396,8 @@ export const AdminCouponsManager = ({ showToast }) => {
       type: formData.type,
       banner: formData.banner,
       code: finalCode,
+      codePrefix: finalCode,
+      isLinkOnly: !finalCode,
       affiliateUrl: resolvedAffiliateUrl,
       highlight: formData.highlight,
       vipOnly: true,
@@ -963,7 +966,9 @@ export const AdminCouponsManager = ({ showToast }) => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-gray-300">Código do Cupom</label>
+                  <label className="text-xs font-bold text-gray-300">
+                    Código do Cupom <span className="text-[10px] text-gray-400 font-normal">(Opcional)</span>
+                  </label>
                   <button
                     type="button"
                     onClick={handleGenerateCode}
@@ -974,11 +979,14 @@ export const AdminCouponsManager = ({ showToast }) => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Ex: VIP40, CHOPP2X1"
+                  placeholder="Vazio = oferta por link direto"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2 text-sm text-white font-mono font-bold focus:outline-none"
                 />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  {formData.code.trim() ? '✓ Código ativo para checkout.' : '🔗 Sem código: o usuário terá botão para seguir direto com desconto.'}
+                </p>
               </div>
 
               <div>

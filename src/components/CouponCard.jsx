@@ -364,7 +364,16 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
               onClick={handleAction}
               className="w-full bg-[#FF5F00] hover:bg-[#E55400] text-white py-1.5 px-2 rounded-lg font-bold text-[10px] sm:text-[11px] flex items-center justify-center gap-1 shadow-md shadow-orange-600/30 transition-all hover:scale-[1.01] cursor-pointer"
             >
-              <span className="truncate">{coupon.type === 'online' || coupon.isApiIntegrated || coupon.apiSource || store?.isApiIntegrated || store?.apiSource || storeTier === 'api' ? '🎟️ Pegar Cupom' : '🎟️ Resgatar Cupom VIP'}</span>
+              <span className="truncate">
+                {(() => {
+                  const isLinkOnly = coupon.isLinkOnly || (!coupon.code && (!coupon.codePrefix || coupon.codePrefix === 'MELHORVIP') && (coupon.type === 'online' || coupon.title?.toLowerCase().includes('pelo link')));
+                  if (isLinkOnly) return '🔗 Seguir para Loja';
+                  if (coupon.type === 'online' || coupon.isApiIntegrated || coupon.apiSource || store?.isApiIntegrated || store?.apiSource || storeTier === 'api') {
+                    return '🎟️ Pegar Cupom';
+                  }
+                  return '🎟️ Resgatar Cupom VIP';
+                })()}
+              </span>
               <ArrowUpRight size={11} className="flex-shrink-0" />
             </button>
           )
