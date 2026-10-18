@@ -164,31 +164,86 @@ export const STORE_OFFICIAL_URLS = {
 };
 
 /**
+ * Normaliza e sanitiza qualquer URL informada pelo usuário ou lojista.
+ * Se o usuário digitou 'anycar.com.br' ou 'www.loja.com.br', prefixa automaticamente 'https://'.
+ * Rejeita explicitamente pesquisas do Google ou strings inválidas.
+ */
+export const normalizeUrl = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  let clean = rawUrl.trim();
+  if (!clean) return '';
+
+  const lower = clean.toLowerCase();
+  // NUNCA aceitar links de pesquisa do Google
+  if (lower.includes('google.com/search') || lower.includes('google.com.br/search')) {
+    return '';
+  }
+
+  // Se não começa com http:// ou https://
+  if (!/^https?:\/\//i.test(clean)) {
+    if (clean.startsWith('//')) {
+      clean = `https:${clean}`;
+    } else {
+      clean = `https://${clean}`;
+    }
+  }
+
+  try {
+    const parsed = new URL(clean);
+    // Deve ter um domínio válido (com ponto ou localhost)
+    if (!parsed.hostname || (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost')) {
+      return '';
+    }
+    return parsed.href;
+  } catch {
+    return '';
+  }
+};
+
+/**
  * Validador que rejeita links vazios, fictícios ou URLs de busca do Google
  */
-const isValidUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  const clean = url.trim().toLowerCase();
-  if (!clean.startsWith('http://') && !clean.startsWith('https://')) return false;
-  if (clean.includes('google.com/search') || clean.includes('google.com.br/search')) return false;
-  return true;
+export const isValidUrl = (url) => {
+  return Boolean(normalizeUrl(url));
 };
 
 /**
  * Obtém a URL de destino oficial e direta para qualquer loja ou cupom.
  * NUNCA retorna link de pesquisa do Google.
+ * Prioriza sempre o link cadastrado no cupom ou na loja (normalizando se faltar https://).
  */
 export const getStoreDestinationUrl = (store, coupon = {}) => {
-  // 1. Link direto do cupom (se preenchido e válido)
-  if (isValidUrl(coupon?.affiliateUrl)) return coupon.affiliateUrl.trim();
-  if (isValidUrl(coupon?.link)) return coupon.link.trim();
-  if (isValidUrl(coupon?.url)) return coupon.url.trim();
+  // 1. Link direto do cupom (prioridade máxima configurada pelo criador do cupom)
+  const couponCandidates = [
+    coupon?.affiliateUrl,
+    coupon?.destinationUrl,
+    coupon?.externalUrl,
+    coupon?.storeUrl,
+    coupon?.link,
+    coupon?.url,
+    coupon?.website,
+    coupon?.site
+  ];
+  for (const candidate of couponCandidates) {
+    const normalized = normalizeUrl(candidate);
+    if (normalized) return normalized;
+  }
 
-  // 2. Link direto da loja (afiliado ou website)
-  if (isValidUrl(store?.affiliateUrl)) return store.affiliateUrl.trim();
-  if (isValidUrl(store?.website)) return store.website.trim();
+  // 2. Link direto da loja (afiliado ou website oficial cadastrado na loja)
+  const storeCandidates = [
+    store?.affiliateUrl,
+    store?.destinationUrl,
+    store?.website,
+    store?.site,
+    store?.url,
+    store?.link
+  ];
+  for (const candidate of storeCandidates) {
+    const normalized = normalizeUrl(candidate);
+    if (normalized) return normalized;
+  }
 
-  // 3. Busca por identificadores no dicionário oficial
+  // 3. Busca por identificadores no dicionário oficial de parceiros
   const identifiers = [
     coupon?.id,
     coupon?.storeId,
@@ -221,7 +276,7 @@ export const getStoreDestinationUrl = (store, coupon = {}) => {
     }
   }
 
-  // 4. Se for uma marca avulsa com nome limpo (ex: "Omens Saúde Masculina" -> "https://www.omens.com.br")
+  // 4. Se for uma marca avulsa com nome limpo (ex: "AnyCar Consultas Veiculares" -> "https://www.anycar.com.br")
   const rawBrandName = store?.name || coupon?.storeName || '';
   if (rawBrandName) {
     const firstWord = rawBrandName
@@ -232,7 +287,6 @@ export const getStoreDestinationUrl = (store, coupon = {}) => {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]/g, '');
     if (firstWord.length >= 3) {
-      // Se for Omens especificamente
       if (firstWord === 'omens') return 'https://www.omens.com.br';
       if (firstWord === 'trackfield' || firstWord === 'track') return 'https://www.tf.com.br';
       if (firstWord === 'iplace') return 'https://www.iplace.com.br';

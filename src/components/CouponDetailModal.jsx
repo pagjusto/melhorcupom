@@ -164,9 +164,13 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(couponCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      navigator.clipboard.writeText(couponCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // ignore
+    }
   };
 
   const handleStartRedirect = () => {
@@ -178,18 +182,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     }
 
     setIsRedirecting(true);
-    setRedirectProgress(20);
-
-    setTimeout(() => setRedirectProgress(55), 300);
-    setTimeout(() => setRedirectProgress(85), 700);
-    setTimeout(() => {
-      setRedirectProgress(100);
-      try {
-        window.open(affiliateDestinationUrl, '_blank');
-      } catch {
-        // ignore
-      }
-    }, 1100);
+    setRedirectProgress(100);
   };
 
   return (
@@ -243,10 +236,10 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 <span>Ativação Automática VIP</span>
               </div>
               <h3 className="text-xl font-black text-white">
-                Redirecionando para {store?.name || 'a Loja Oficial'}...
+                Loja Oficial Aberta!
               </h3>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Estamos registrando seu SubID exclusivo para garantir seu desconto e rastreamento de Cashback.
+                Seu cupom foi copiado e a página oficial de <strong>{storeName}</strong> foi aberta em uma nova aba para você finalizar sua compra.
               </p>
             </div>
 
@@ -260,9 +253,9 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
                 <span>Desconto e benefícios ativados para sua compra</span>
               </div>
-              <div className="flex items-center gap-2 text-blue-300">
-                <span className="w-4 h-4 rounded-full border-2 border-blue-400 border-t-transparent animate-spin flex-shrink-0" />
-                <span>Redirecionando para a página oficial da loja...</span>
+              <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+                <span>Site oficial aberto em nova aba</span>
               </div>
             </div>
 
@@ -587,15 +580,18 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                 </p>
               </div>
 
-              {/* Botão Master: Copiar e Ir para Loja Oficial */}
-              <button
+              {/* Botão Master: Copiar e Ir para Loja Oficial (Link direto nativo - zero bloqueio de popup) */}
+              <a
+                href={affiliateDestinationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={handleStartRedirect}
                 className="w-full bg-gradient-to-r from-[#FF5F00] via-[#FF7824] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2.5 shadow-xl shadow-orange-950/60 transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <Sparkles size={18} className="text-amber-200" />
                 <span>Copiar Cupom & Ir para a Loja Oficial</span>
                 <ExternalLink size={18} />
-              </button>
+              </a>
 
               {/* Regras e Condições de Uso Online */}
               <div className="bg-white/5 rounded-2xl p-4 text-xs space-y-2 text-gray-300 border border-white/5">

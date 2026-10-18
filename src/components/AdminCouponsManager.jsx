@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImage } from '../utils/imageCompressor';
-import { getStoreDestinationUrl } from '../utils/storeUrls';
+import { getStoreDestinationUrl, normalizeUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
 import { getCouponBanner } from '../utils/bannerResolver';
 import { ImageFramingModal } from './ImageFramingModal';
@@ -326,7 +326,9 @@ export const AdminCouponsManager = ({ showToast }) => {
       ? formData.code.trim().toUpperCase() 
       : `${finalStoreName.substring(0, 4).toUpperCase().replace(/\s+/g, '')}${Math.floor(10 + Math.random() * 90)}`;
 
-    const resolvedAffiliateUrl = formData.affiliateUrl?.trim() || getStoreDestinationUrl(
+    const rawAffiliate = formData.affiliateUrl?.trim() || '';
+    const normalizedInputUrl = normalizeUrl(rawAffiliate);
+    const resolvedAffiliateUrl = normalizedInputUrl || rawAffiliate || getStoreDestinationUrl(
       storeLinkMode === 'existing' ? stores.find(s => s.id === finalStoreId) : { name: finalStoreName, id: finalStoreId },
       { title: formData.title.trim() }
     );
@@ -872,10 +874,14 @@ export const AdminCouponsManager = ({ showToast }) => {
                   <span>Link do Site Oficial ou de Afiliado (Opcional)</span>
                 </label>
                 <input
-                  type="url"
-                  placeholder="Ex: https://www.omens.com.br ou https://www.tf.com.br"
+                  type="text"
+                  placeholder="Ex: anycar.com.br, omens.com.br ou https://www.tf.com.br"
                   value={formData.affiliateUrl}
                   onChange={(e) => setFormData({ ...formData, affiliateUrl: e.target.value })}
+                  onBlur={(e) => {
+                    const norm = normalizeUrl(e.target.value);
+                    if (norm) setFormData(prev => ({ ...prev, affiliateUrl: norm }));
+                  }}
                   className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none placeholder-gray-600"
                 />
                 <p className="text-[11px] text-gray-400 mt-1">

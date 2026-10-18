@@ -49,6 +49,7 @@ import {
 import { MerchantPromoKit } from './PromotionalKit';
 import { BrandMediaKitSection } from './BrandMediaKitSection';
 import { compressImage } from '../utils/imageCompressor';
+import { normalizeUrl } from '../utils/storeUrls';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -258,6 +259,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
     estimatedSavings: 30.00,
     banner: BANNER_PRESETS[0].url,
     type: 'physical', // 'physical' | 'online'
+    affiliateUrl: '',
     validityType: 'days', // 'days' | 'unlimited'
     validityDays: 30, // dias padrão
     expiresAt: '',
@@ -336,7 +338,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       address: storeForm.address,
       phone: storeForm.phone,
       hours: storeForm.hours,
-      website: storeForm.website,
+      website: normalizeUrl(storeForm.website) || storeForm.website,
+      affiliateUrl: normalizeUrl(storeForm.website) || storeForm.website,
       instagram: storeForm.instagram,
       description: storeForm.description,
       cashierPin: storeForm.cashierPin,
@@ -406,6 +409,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       estimatedSavings: coupon.estimatedSavings || 30.00,
       banner: coupon.banner || currentStore.image || BANNER_PRESETS[0].url,
       type: coupon.type || 'physical',
+      affiliateUrl: coupon.affiliateUrl || currentStore.website || '',
       validityType: coupon.validityType || (coupon.expiresAt === 'unlimited' ? 'unlimited' : 'days'),
       validityDays: coupon.validityDays || 30,
       expiresAt: coupon.expiresAt || '',
@@ -434,6 +438,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       estimatedSavings: 30.00,
       banner: BANNER_PRESETS[0].url,
       type: 'physical',
+      affiliateUrl: '',
       validityType: 'days',
       validityDays: 30,
       expiresAt: '',
@@ -504,6 +509,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         estimatedSavings: computedSavings,
         banner: formData.banner,
         type: formData.type,
+        affiliateUrl: normalizeUrl(formData.affiliateUrl || currentStore.website || ''),
         validityType: formData.validityType,
         validityDays: formData.validityType === 'days' ? (parseInt(formData.validityDays) || 30) : null,
         maxUsesPerUser: maxUses,
@@ -539,6 +545,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
       cities: currentStore.cities || [currentStore.city || 'São Paulo - SP'],
       banner: formData.banner,
       type: formData.type,
+      affiliateUrl: normalizeUrl(formData.affiliateUrl || currentStore.website || ''),
       validityType: formData.validityType,
       validityDays: formData.validityType === 'days' ? (parseInt(formData.validityDays) || 30) : null,
       maxUsesPerUser: maxUses,
@@ -1726,6 +1733,29 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </select>
                 </div>
               </div>
+
+              {formData.type === 'online' && (
+                <div className="pt-2 border-t border-white/5 animate-fade-in">
+                  <label className="text-xs font-bold text-gray-300 block mb-1 flex items-center gap-1.5">
+                    <Globe size={14} className="text-emerald-400" />
+                    <span>Link do Site Oficial / Loja Online *</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: anycar.com.br, sualoja.com.br ou https://wa.me/..."
+                    value={formData.affiliateUrl}
+                    onChange={(e) => setFormData({ ...formData, affiliateUrl: e.target.value })}
+                    onBlur={(e) => {
+                      const norm = normalizeUrl(e.target.value);
+                      if (norm) setFormData(prev => ({ ...prev, affiliateUrl: norm }));
+                    }}
+                    className="w-full bg-[#101017] border border-white/10 focus:border-[#FF5F00] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none placeholder-gray-600"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Link exato para onde o usuário será direcionado ao resgatar o cupom online no site.
+                  </p>
+                </div>
+              )}
 
               {/* Feedback de Economia e Sugestão em Tempo Real */}
               {formData.originalPrice && formData.promoPrice && (

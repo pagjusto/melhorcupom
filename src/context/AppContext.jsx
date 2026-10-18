@@ -18,7 +18,7 @@ import { MAGALU_RADAR_TOP10 } from '../data/magaluRadarData';
 import { SHEIN_VIRAL_TOP18 } from '../data/sheinViralData';
 import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
 import { validateStoreSafety, validateUserSafety, validateCouponSafety } from '../utils/contentModeration';
-import { getStoreDestinationUrl } from '../utils/storeUrls';
+import { getStoreDestinationUrl, normalizeUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
 
 const AppContext = createContext();
@@ -171,7 +171,7 @@ export const AppProvider = ({ children }) => {
             apiLastSync: init.apiLastSync || c.apiLastSync || null,
             cashbackRate: init.cashbackRate || c.cashbackRate || null,
             cashbackPercent: init.cashbackPercent || c.cashbackPercent || 0,
-            affiliateUrl: init.affiliateUrl || (c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, { ...c, ...init })),
+            affiliateUrl: normalizeUrl(init.affiliateUrl) || normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, { ...c, ...init }),
             discountType: init.discountType || c.discountType,
             discountValue: init.discountValue || c.discountValue,
             discountBadge: init.discountBadge || c.discountBadge,
@@ -182,7 +182,7 @@ export const AppProvider = ({ children }) => {
             cities: init.cities || c.cities || (init.city ? [init.city] : [])
           };
         }
-        const cleanAffiliate = c.affiliateUrl && !c.affiliateUrl.includes('google.com/search') ? c.affiliateUrl : getStoreDestinationUrl(null, c);
+        const cleanAffiliate = normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, c);
         const resolvedLogo = (c.isAvulso && c.logoImage && c.logoImage.startsWith('data:')) ? c.logoImage : (getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || c.logoImage || c.storeLogoImage || '');
         const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
         return {
@@ -1366,6 +1366,8 @@ export const AppProvider = ({ children }) => {
             adminPaidPlan: false,
             address: isOnline ? 'Atendimento Online em Todo o Brasil' : (newCoupon.city || 'Brasil'),
             phone: '(11) 98123-4567',
+            website: newCoupon.affiliateUrl || newCoupon.website || '',
+            affiliateUrl: newCoupon.affiliateUrl || '',
             isNewPartner: true,
             createdAt: new Date().toISOString()
           };
@@ -1433,8 +1435,8 @@ export const AppProvider = ({ children }) => {
       return updated;
     });
 
-    // Se houver loja associada e atualizou dados de marca/logo, manter sincronizado
-    if (updatedCoupon?.storeId && (updatedFields.storeName || updatedFields.storeLogoImage || updatedFields.logoImage)) {
+    // Se houver loja associada e atualizou dados de marca/logo ou links, manter sincronizado
+    if (updatedCoupon?.storeId && (updatedFields.storeName || updatedFields.storeLogoImage || updatedFields.logoImage || updatedFields.affiliateUrl)) {
       setStores(prevStores => {
         const updatedStores = prevStores.map(s => {
           if (s.id === updatedCoupon.storeId) {
@@ -1442,7 +1444,9 @@ export const AppProvider = ({ children }) => {
               ...s,
               name: updatedCoupon.storeName || s.name,
               logo: updatedCoupon.storeLogo || s.logo,
-              logoImage: updatedCoupon.logoImage || updatedCoupon.storeLogoImage || s.logoImage
+              logoImage: updatedCoupon.logoImage || updatedCoupon.storeLogoImage || s.logoImage,
+              website: updatedCoupon.affiliateUrl || s.website,
+              affiliateUrl: updatedCoupon.affiliateUrl || s.affiliateUrl
             };
           }
           return s;
