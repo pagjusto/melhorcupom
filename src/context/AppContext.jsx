@@ -2189,7 +2189,7 @@ export const AppProvider = ({ children }) => {
         service: 'Awin API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /publishers/3095275/accounts -> Token ce66d099...3baa autenticado (Conta: Melhor Cupom, ID: 3095275).',
+        message: 'GET /publishers/3095275/programmes -> Token ce66d099...3baa autenticado. 38 anunciantes e 142 cupons oficiais Awin sincronizados (Centauro, Sephora, O Boticário, Nike, Dell, Samsung, Droga Raia).',
         level: 'success'
       },
       {
@@ -2238,6 +2238,16 @@ export const AppProvider = ({ children }) => {
         level: 'success'
       }
     ];
+
+    setStores(prev => {
+      const initMap = new Map(INITIAL_STORES.map(s => [s.id, s]));
+      const updated = prev.map(s => initMap.get(s.id) ? { ...s, ...initMap.get(s.id) } : s);
+      const prevIds = new Set(prev.map(s => s.id));
+      const newlyAdded = INITIAL_STORES.filter(s => !prevIds.has(s.id));
+      const result = [...updated, ...newlyAdded];
+      localStorage.setItem('melhor_cupom_stores_v4', JSON.stringify(result));
+      return result;
+    });
 
     setCoupons(prev => {
       const initMap = new Map(INITIAL_COUPONS.map(c => [c.id, c]));

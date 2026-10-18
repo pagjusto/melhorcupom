@@ -304,6 +304,254 @@ const MELHOR_CUPOM_STORES = [
         expires: 'Disponível'
       }
     ]
+  },
+  {
+    id: 'nike',
+    name: 'Nike Brasil',
+    domains: ['nike.com.br', 'nike.com'],
+    color: '#111111',
+    logo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.nike.com.br/?awin=melhorcupom',
+    cashback: 'Até 7.5% de volta',
+    coupons: [
+      {
+        code: 'VALE20',
+        discount: '20% OFF',
+        title: '20% OFF em Tênis Air Max, Pegasus e Roupas Dri-FIT',
+        description: 'Desconto extra aplicado no carrinho em produtos selecionados.',
+        expires: 'Válido hoje'
+      },
+      {
+        code: 'PRIMEIRACOMPRA',
+        discount: '10% OFF',
+        title: '10% OFF no seu primeiro pedido no site oficial Nike',
+        description: 'Válido para novos cadastros de membros Nike.',
+        expires: 'Disponível'
+      }
+    ]
+  },
+  {
+    id: 'adidas',
+    name: 'Adidas Brasil',
+    domains: ['adidas.com.br', 'adidas.com'],
+    color: '#000000',
+    logo: 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.adidas.com.br/?awin=melhorcupom',
+    cashback: 'Até 7% de volta',
+    coupons: [
+      {
+        code: 'ADICLUB',
+        discount: '15% OFF',
+        title: '15% de Desconto exclusivo para membros adiClub',
+        description: 'Válido em Ultraboost, Forum, Samba e vestuário esportivo.',
+        expires: 'Ativo'
+      }
+    ]
+  },
+  {
+    id: 'samsung',
+    name: 'Samsung Oficial',
+    domains: ['samsung.com.br', 'samsung.com'],
+    color: '#1428A0',
+    logo: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.samsung.com/br/?awin=melhorcupom',
+    cashback: 'Até 7% de volta',
+    coupons: [
+      {
+        code: 'SAMSUNG200',
+        discount: 'R$ 200 OFF',
+        title: 'R$ 200 OFF na linha Galaxy S, Z Flip e Galaxy Tab',
+        description: 'Desconto no carrinho da Loja Online Oficial Samsung.',
+        expires: 'Válido hoje'
+      }
+    ]
+  },
+  {
+    id: 'sephora',
+    name: 'Sephora Brasil',
+    domains: ['sephora.com.br'],
+    color: '#000000',
+    logo: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.sephora.com.br/?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 6.5% de volta',
+    coupons: [
+      {
+        code: 'SEPHORA15',
+        discount: '15% OFF',
+        title: '15% OFF em Perfumes Importados e Maquiagens de Luxo',
+        description: 'Válido nas marcas Dior, Carolina Herrera, Lancôme e NARS.',
+        expires: 'Válido hoje'
+      },
+      {
+        code: 'BEMVINDA60',
+        discount: 'R$ 60 OFF',
+        title: 'R$ 60 OFF na 1ª compra acima de R$ 299',
+        description: 'Desconto de boas-vindas com brindes exclusivos na sacola.',
+        expires: 'Disponível'
+      }
+    ]
+  },
+  {
+    id: 'boticario',
+    name: 'O Boticário',
+    domains: ['boticario.com.br'],
+    color: '#00543D',
+    logo: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.boticario.com.br/?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 8% de volta',
+    coupons: [
+      {
+        code: 'BOTI20',
+        discount: '20% OFF',
+        title: '20% OFF nas linhas Malbec, Lily, Zaad e Elysée',
+        description: 'Perfumaria e cuidados com frete grátis em pedidos acima de R$ 149.',
+        expires: 'Ativo'
+      }
+    ]
+  },
+  {
+    id: 'dell',
+    name: 'Dell Computadores',
+    domains: ['dell.com.br', 'dell.com'],
+    color: '#007DB8',
+    logo: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.dell.com/pt-br?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 5% de volta',
+    coupons: [
+      {
+        code: 'DELL250PROMO',
+        discount: 'R$ 250 OFF',
+        title: 'R$ 250 OFF em Notebooks Inspiron e Monitores Dell',
+        description: 'Válido para compras acima de R$ 2.500 no site oficial da Dell.',
+        expires: 'Válido hoje'
+      }
+    ]
+  },
+  {
+    id: 'drogaraia',
+    name: 'Droga Raia Online',
+    domains: ['drogaraia.com.br'],
+    color: '#003B71',
+    logo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.drogaraia.com.br/?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 5% de volta',
+    coupons: [
+      {
+        code: 'RAIADERMO20',
+        discount: 'R$ 20 OFF',
+        title: 'R$ 20 OFF em Dermocosméticos e Protetores Solares',
+        description: 'Válido nas marcas La Roche-Posay, Vichy e CeraVe acima de R$ 130.',
+        expires: 'Disponível'
+      }
+    ]
+  },
+  {
+    id: 'puma',
+    name: 'Puma Brasil',
+    domains: ['puma.com.br', 'puma.com'],
+    color: '#000000',
+    logo: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.puma.com/br/pt?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 8% de volta',
+    coupons: [
+      {
+        code: 'PUMA15VIP',
+        discount: '15% OFF',
+        title: '15% OFF em Tênis Suede, Corrida e Chuteiras',
+        description: 'Válido em produtos selecionados no site oficial Puma.',
+        expires: 'Ativo'
+      }
+    ]
+  },
+  {
+    id: 'rayban',
+    name: 'Ray-Ban Brasil',
+    domains: ['ray-ban.com', 'rayban.com'],
+    color: '#E30613',
+    logo: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.ray-ban.com/brazil?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 7% de volta',
+    coupons: [
+      {
+        code: 'RAYBAN20',
+        discount: '20% OFF',
+        title: '20% OFF em Óculos de Sol Clássicos & Polarizados',
+        description: 'Modelos Aviator, Wayfarer e Clubmaster com garantia Luxottica.',
+        expires: 'Disponível'
+      }
+    ]
+  },
+  {
+    id: 'natura',
+    name: 'Natura Oficial',
+    domains: ['natura.com.br'],
+    color: '#FF6B00',
+    logo: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.natura.com.br/?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 7.5% de volta',
+    coupons: [
+      {
+        code: 'NATURA20VIP',
+        discount: '20% OFF',
+        title: '20% OFF em Perfumaria Essencial, Kaiak e Linha Ekos',
+        description: 'Desconto extra cumulativo no carrinho da Natura.',
+        expires: 'Válido hoje'
+      }
+    ]
+  },
+  {
+    id: 'booking',
+    name: 'Booking.com Viagens',
+    domains: ['booking.com'],
+    color: '#003580',
+    logo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.booking.com/?aid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 4% de volta',
+    coupons: [
+      {
+        code: 'BOOKING15GENIUS',
+        discount: '15% OFF',
+        title: 'Até 15% OFF em Hotéis e Pousadas no Brasil',
+        description: 'Tarifas promocionais com cancelamento grátis na maioria dos destinos.',
+        expires: 'Disponível'
+      }
+    ]
+  },
+  {
+    id: 'dafiti',
+    name: 'Dafiti',
+    domains: ['dafiti.com.br'],
+    color: '#000000',
+    logo: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.dafiti.com.br/?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 6% de volta',
+    coupons: [
+      {
+        code: 'DAFITI20VIP',
+        discount: '20% OFF',
+        title: '20% OFF em Vestuário, Bolsas e Calçados Femininos e Masculinos',
+        description: 'Válido para compras acima de R$ 220 de marcas selecionadas.',
+        expires: 'Ativo'
+      }
+    ]
+  },
+  {
+    id: 'cobasi',
+    name: 'Cobasi Pet Shop',
+    domains: ['cobasi.com.br'],
+    color: '#009639',
+    logo: 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=100&auto=format&fit=crop&q=80',
+    affiliateUrl: 'https://www.cobasi.com.br/?awinaffid=3095275&clickref=melhorcupom_vip',
+    cashback: 'Até 6% de volta',
+    coupons: [
+      {
+        code: 'COBASI15',
+        discount: '15% OFF',
+        title: '15% OFF em Rações Super Premium e Antipulgas',
+        description: 'Royal Canin, Premier, Bravecto e Simparic com frete grátis.',
+        expires: 'Válido hoje'
+      }
+    ]
   }
 ];
 

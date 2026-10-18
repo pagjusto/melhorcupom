@@ -1,5 +1,6 @@
 import liveAffiliateCoupons from './liveAffiliateCoupons.json';
 import lomadeeStoresData from './lomadeeStores.json';
+import { AWIN_STORES, AWIN_COUPONS } from './awinData';
 import { BRAND_LOGOS } from '../assets/brands';
 
 export const NATIONAL_CHAIN_CITIES = [
@@ -886,7 +887,10 @@ export const INITIAL_STORES = [
   },
 
   // 3. REDE DE MARCAS OFICIAIS LOMADEE (TODAS AS MARCAS REAIS DA PLATAFORMA)
-  ...lomadeeStoresData
+  ...lomadeeStoresData,
+
+  // 4. REDE DE PARCEIROS OFICIAIS AWIN BRASIL & GLOBAL (PUBLISHER ID: 3095275)
+  ...AWIN_STORES
 ];
 
 export const INITIAL_COUPONS = [
@@ -2064,7 +2068,8 @@ export const INITIAL_COUPONS = [
     highlight: true,
     vipOnly: true
   },
-  ...(Array.isArray(liveAffiliateCoupons) ? liveAffiliateCoupons : [])
+  ...(Array.isArray(liveAffiliateCoupons) ? liveAffiliateCoupons : []),
+  ...AWIN_COUPONS
 ];
 
 export const SUBSCRIPTION_PLANS = [
