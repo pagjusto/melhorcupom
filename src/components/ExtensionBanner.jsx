@@ -88,7 +88,7 @@ export const ExtensionBanner = () => {
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-[#FF5F00] via-amber-500 to-orange-600 opacity-40 blur-lg group-hover:opacity-75 transition duration-500 pointer-events-none" />
 
           {/* Cartão do Popup */}
-          <div className="relative bg-[#13131F]/95 border-2 border-[#FF5F00]/60 rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl text-left space-y-3.5">
+          <div className="relative bg-[#13131F]/95 border-2 border-[#FF5F00]/60 rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl text-left space-y-3.5 overflow-hidden">
             
             {/* Topo: Logo Oficial + Badge + Botão Fechar */}
             <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
@@ -179,128 +179,146 @@ export const ExtensionBanner = () => {
         </button>
       )}
 
-      {/* 3. MODAL COMPLETO COM TUTORIAL DE INSTALAÇÃO PASSO A PASSO & PRÉVIA */}
+      {/* 3. MODAL COMPLETO COM TUTORIAL DE INSTALAÇÃO (BLINDADO CONTRA OVERFLOW E CORTE DE TOPO) */}
       {isExtensionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-2xl bg-[#14141E] border border-orange-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fade-in"
+          onClick={closeExtensionModal}
+        >
+          <div 
+            className="relative w-full max-w-2xl bg-[#14141E] border-2 border-orange-500/50 rounded-3xl shadow-2xl shadow-orange-950/70 max-h-[92vh] flex flex-col overflow-hidden text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
             
-            {/* Botão Fechar Modal */}
-            <button
-              onClick={closeExtensionModal}
-              className="absolute top-5 right-5 text-gray-400 hover:text-white p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            {/* Cabeçalho do Modal */}
-            <div className="flex items-center gap-3.5 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF5F00] to-amber-500 text-white flex items-center justify-center shadow-lg flex-shrink-0">
-                <Puzzle size={24} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl sm:text-2xl font-black text-white">
+            {/* CABEÇALHO FIXO DO MODAL (NUNCA ROLA PRA FORA DA TELA) */}
+            <div className="p-5 sm:p-6 pb-4 border-b border-white/10 flex items-center justify-between gap-3 bg-[#181826] flex-shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#FF5F00] to-amber-500 text-white flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Puzzle size={22} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-lg sm:text-xl font-black text-white truncate">
                     Extensão Melhor Cupom para Chrome
                   </h3>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-400">
-                  Descontos automáticos aplicados no carrinho enquanto você navega nas lojas parceiras!
-                </p>
-              </div>
-            </div>
-
-            {/* Prévia Visual da Extensão em Ação */}
-            <div className="mb-6 bg-[#161626] border border-orange-500/40 rounded-2xl p-4 shadow-xl space-y-3">
-              <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <div className="flex items-center gap-2">
-                  <img src={logoMelhorCupom} alt="Melhor Cupom" className="h-6 w-auto object-contain" />
-                  <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                    Extensão Ativa no Navegador
-                  </span>
-                </div>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  Ao Vivo no Site
-                </span>
-              </div>
-
-              <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-2.5 text-xs text-gray-200">
-                🎉 <strong className="text-white">Alerta em Tempo Real:</strong> Quando você entra na <strong>Shopee</strong>, <strong>Mercado Livre</strong>, <strong>Magalu</strong> ou <strong>SHEIN</strong>, a extensão abre automaticamente mostrando os melhores cupons testados!
-              </div>
-            </div>
-
-            {/* 3 Passos Ilustrados de Instalação */}
-            <div className="space-y-4 mb-6">
-              
-              {/* Passo 1 */}
-              <div className="bg-[#1A1A28] border border-white/10 rounded-2xl p-4 flex items-start gap-3.5">
-                <div className="w-7 h-7 rounded-full bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                  1
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-black text-white">Abra a página de Extensões do Google Chrome</h4>
-                  <p className="text-xs text-gray-300">
-                    No seu Chrome, digite na barra de endereços: <code className="bg-black/60 text-amber-300 px-2 py-0.5 rounded font-mono text-xs select-all">chrome://extensions</code> e aperte Enter.
+                  <p className="text-xs text-gray-400 truncate">
+                    Ativação em 3 passos para avisar descontos no checkout
                   </p>
                 </div>
               </div>
 
-              {/* Passo 2 */}
-              <div className="bg-[#1A1A28] border border-white/10 rounded-2xl p-4 flex items-start gap-3.5">
-                <div className="w-7 h-7 rounded-full bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                  2
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-black text-white">Ative a chave "Modo do Desenvolvedor"</h4>
-                  <p className="text-xs text-gray-300">
-                    No canto superior direito da página do Chrome, ative a chavinha <strong>"Modo do desenvolvedor"</strong>.
-                  </p>
-                </div>
-              </div>
-
-              {/* Passo 3 */}
-              <div className="bg-[#1A1A28] border border-white/10 rounded-2xl p-4 flex items-start gap-3.5">
-                <div className="w-7 h-7 rounded-full bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                  3
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h4 className="text-sm font-black text-white">Clique em "Carregar sem compactação"</h4>
-                  <p className="text-xs text-gray-300">
-                    Clique no botão no canto superior esquerdo e selecione a pasta da extensão no seu computador:
-                  </p>
-                  
-                  {/* Caixa de Cópia do Caminho da Pasta */}
-                  <div className="flex items-center justify-between gap-2 bg-black/60 border border-orange-500/30 rounded-xl p-2.5 px-3">
-                    <span className="font-mono text-xs text-amber-300 truncate select-all">
-                      {extensionPath}
-                    </span>
-                    <button
-                      onClick={handleCopyPath}
-                      className="bg-[#FF5F00] hover:bg-[#E04F00] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all flex-shrink-0 cursor-pointer shadow-md"
-                    >
-                      {copiedPath ? <Check size={13} /> : <Copy size={13} />}
-                      <span>{copiedPath ? 'Copiado!' : 'Copiar Caminho'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Como Testar */}
-            <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 rounded-2xl p-4 space-y-1.5">
-              <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 size={15} />
-                <span>Como Testar Após Instalar:</span>
-              </div>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Abra uma nova aba e acesse <strong className="text-white">shopee.com.br</strong> ou <strong className="text-white">mercadolivre.com.br</strong>. O balão com a logo do Melhor Cupom surgirá no canto superior com os cupons ativos prontos para copiar!
-              </p>
-            </div>
-
-            <div className="mt-6 flex justify-end">
+              {/* Botão Fechar Modal */}
               <button
                 onClick={closeExtensionModal}
-                className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
+                title="Fechar"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* CORPO ROLÁVEL (SEM SCROLL HORIZONTAL, COM AUTO-CONTAINMENT) */}
+            <div className="p-5 sm:p-6 overflow-y-auto overflow-x-hidden space-y-4 flex-1">
+              
+              {/* Prévia Visual da Extensão em Ação */}
+              <div className="bg-[#161626] border border-orange-500/30 rounded-2xl p-4 shadow-lg space-y-2.5">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <img src={logoMelhorCupom} alt="Melhor Cupom" className="h-6 w-auto object-contain" />
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                      Extensão Ativa no Navegador
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    Ao Vivo no Site
+                  </span>
+                </div>
+
+                <div className="bg-orange-500/10 border border-orange-500/25 rounded-xl p-2.5 text-xs text-gray-200 leading-relaxed">
+                  🎉 <strong className="text-white">Alerta em Tempo Real:</strong> Quando você entra na <strong>Shopee</strong>, <strong>Mercado Livre</strong>, <strong>Magalu</strong> ou <strong>SHEIN</strong>, a extensão abre automaticamente mostrando os melhores cupons testados!
+                </div>
+              </div>
+
+              {/* 3 Passos Ilustrados de Instalação */}
+              <div className="space-y-3">
+                
+                {/* Passo 1 */}
+                <div className="bg-[#1A1A28] border border-white/10 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                    1
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h4 className="text-sm font-black text-white">Abra a página de Extensões do Google Chrome</h4>
+                    <p className="text-xs text-gray-300 leading-relaxed">
+                      No seu Chrome, digite na barra de endereços: <code className="bg-black/60 text-amber-300 px-2 py-0.5 rounded font-mono text-xs select-all">chrome://extensions</code> e aperte Enter.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Passo 2 */}
+                <div className="bg-[#1A1A28] border border-white/10 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h4 className="text-sm font-black text-white">Ative a chave "Modo do Desenvolvedor"</h4>
+                    <p className="text-xs text-gray-300 leading-relaxed">
+                      No canto superior direito da página do Chrome, ative a chavinha <strong>"Modo do desenvolvedor"</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Passo 3 com caixa de cópia blindada */}
+                <div className="bg-[#1A1A28] border border-white/10 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <div className="space-y-2.5 min-w-0 flex-1">
+                    <h4 className="text-sm font-black text-white">Clique em "Carregar sem compactação"</h4>
+                    <p className="text-xs text-gray-300 leading-relaxed">
+                      Clique no botão no canto superior esquerdo e selecione a pasta da extensão no seu computador:
+                    </p>
+                    
+                    {/* Caixa de Cópia Responsiva (min-w-0 evita estouro horizontal) */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-black/70 border border-orange-500/40 rounded-xl p-2 sm:p-2.5 px-3 min-w-0">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <span 
+                          className="font-mono text-[11px] sm:text-xs text-amber-300 block truncate select-all" 
+                          title={extensionPath}
+                        >
+                          {extensionPath}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleCopyPath}
+                        className="bg-[#FF5F00] hover:bg-[#E04F00] text-white text-xs font-black px-3.5 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer shadow-md"
+                      >
+                        {copiedPath ? <Check size={14} className="text-emerald-300" /> : <Copy size={14} />}
+                        <span>{copiedPath ? 'Copiado!' : 'Copiar Caminho'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Como Testar */}
+              <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 rounded-2xl p-3.5 sm:p-4 space-y-1">
+                <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 size={15} />
+                  <span>Como Testar Após Instalar:</span>
+                </div>
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  Abra uma nova aba e acesse <strong className="text-white">shopee.com.br</strong> ou <strong className="text-white">mercadolivre.com.br</strong>. O balão com a logo do Melhor Cupom surgirá no canto superior direito com os cupons ativos prontos para copiar!
+                </p>
+              </div>
+
+            </div>
+
+            {/* RODAPÉ FIXO DO MODAL COM BOTÕES DE AÇÃO */}
+            <div className="p-4 sm:p-5 border-t border-white/10 bg-[#181826] flex items-center justify-end gap-3 flex-shrink-0">
+              <button
+                onClick={closeExtensionModal}
+                className="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
               >
                 Entendi, Fechar
               </button>
