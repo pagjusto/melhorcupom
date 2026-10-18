@@ -165,8 +165,8 @@ export const ImageFramingModal = ({
 
   // Renderizar e exportar imagem em alta resolução no Canvas
   const handleApply = () => {
-    const exportWidth = isLogo ? 280 : 640;
-    const exportHeight = isLogo ? 280 : 360;
+    const exportWidth = isLogo ? 240 : 540;
+    const exportHeight = isLogo ? 240 : 280;
 
     const ratio = exportWidth / viewWidth;
 
@@ -200,7 +200,7 @@ export const ImageFramingModal = ({
       try {
         ctx.drawImage(imgEl, drawX, drawY, drawW, drawH);
         const format = (isLogo && bgColor === 'transparent') ? 'image/png' : 'image/jpeg';
-        const quality = isLogo ? 0.82 : 0.75;
+        const quality = isLogo ? 0.82 : 0.7;
         const resultDataUrl = canvas.toDataURL(format, quality);
         onConfirm(resultDataUrl);
       } catch (err) {

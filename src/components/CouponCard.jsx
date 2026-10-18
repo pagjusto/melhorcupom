@@ -66,12 +66,14 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
 
   const isHighlighted = Boolean(coupon.highlight || store?.highlight || store?.isFeatured);
 
-  // Configuração visual de acordo estritamente com o plano de assinatura do lojista (Gold, Silver, Bronze, Free):
-  // - Borda da logo do lojista na cor da assinatura (branca para Free)
-  // - Aura luminosa ao passar pelo card (Gold = dourada, Silver = prateada, Bronze = acobreada, Free = sem aura)
+  // Efeito Visual de Destaque:
+  // Se estiver em DESTAQUE (o cupom ou a loja parceira), recebe a aura e borda luminosa Ouro de Destaque VIP.
+  // Caso não esteja em destaque, segue estritamente o plano do parceiro (Gold, Silver, Bronze, Free).
+  const visualTier = (isHighlighted || storeTier === 'gold') ? 'gold' : storeTier;
+
   const tierConfig = {
     gold: {
-      cardClass: 'ticket-card-gold ring-1 ring-amber-400/50 shadow-[0_4px_20px_rgba(245,158,11,0.15)]',
+      cardClass: 'ticket-card-gold ring-1 ring-amber-400/60 shadow-[0_4px_20px_rgba(245,158,11,0.2)]',
       logoBorder: 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]',
       auraBg: 'bg-gradient-to-b from-amber-400/15 via-transparent to-amber-500/15',
     },
@@ -91,7 +93,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
       logoBorder: 'border-2 border-white shadow-md',
       auraBg: null, // Menos free: sem aura no hover
     }
-  }[storeTier] || {
+  }[visualTier] || {
     cardClass: 'ticket-card-free border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
     logoBorder: 'border-2 border-white shadow-md',
     auraBg: null,
@@ -131,11 +133,11 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
 
         {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão de Favoritar */}
         <div className="absolute top-1.5 right-1.5 z-20 flex items-center gap-1">
-          {/* Ícone da Medalha na cor da assinatura da loja parceira */}
-          {storeTier === 'gold' && (
+          {/* Ícone da Medalha na cor da assinatura da loja parceira ou Coroa de Destaque */}
+          {(storeTier === 'gold' || isHighlighted) && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-sm text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
-              title="Loja Parceira Ouro"
+              title={storeTier === 'gold' ? "Loja Parceira Ouro" : "Oferta em Destaque"}
             >
               <Crown size={12} className="text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]" />
             </div>

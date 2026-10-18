@@ -73,22 +73,15 @@ function getHashIndex(str, arrayLength) {
 export function getCouponBanner(coupon, store) {
   if (!coupon) return CATEGORY_THEMATIC_BANNERS.eletronicos[0];
 
-  const textCorpus = `${coupon.title || ''} ${coupon.storeName || store?.name || ''} ${coupon.description || ''} ${coupon.category || ''}`.toLowerCase();
-
-  // Manual Brasil (Tratamento Capilar)
-  if (textCorpus.includes('manual') && (textCorpus.includes('queda') || textCorpus.includes('capilar') || textCorpus.includes('tratamento') || textCorpus.includes('cabelo') || textCorpus.includes('saude') || textCorpus.includes('saúde'))) {
-    return manualBanner;
-  }
-
   const rawBanner = coupon.banner || coupon.image;
   const storeLogo = coupon.storeLogoImage || coupon.logoImage || coupon.storeLogo || store?.logoImage;
 
-  // 1. Se for uma imagem personalizada carregada pelo usuário (dataURL base64 ou upload direto):
-  if (rawBanner && typeof rawBanner === 'string' && rawBanner.startsWith('data:')) {
+  // 1. Se o usuário carregou uma foto/capa personalizada (Base64, Blob ou URL externa):
+  if (rawBanner && typeof rawBanner === 'string' && (rawBanner.startsWith('data:') || rawBanner.startsWith('blob:'))) {
     return rawBanner;
   }
 
-  // 2. Se for uma URL real de foto que NÃO é logo (Unsplash, imagens de produtos, fotos externas):
+  // 2. Se for uma URL externa real que NÃO é a logo
   const isLogoUrl = rawBanner && typeof rawBanner === 'string' && (
     rawBanner.includes('/logos/') ||
     rawBanner.includes('cdn.lomadee.com.br/logos') ||
@@ -98,8 +91,18 @@ export function getCouponBanner(coupon, store) {
     rawBanner === storeLogo
   );
 
-  if (rawBanner && !isLogoUrl && (rawBanner.includes('unsplash.com') || rawBanner.includes('images') || rawBanner.includes('cloudinary') || rawBanner.includes('img'))) {
+  const isGenericPlaceholder = rawBanner && typeof rawBanner === 'string' && rawBanner.includes('photo-1555396273-367ea4eb4db5');
+
+  if (rawBanner && !isLogoUrl && !isGenericPlaceholder && (rawBanner.includes('unsplash.com') || rawBanner.includes('images') || rawBanner.includes('cloudinary') || rawBanner.includes('img') || rawBanner.startsWith('http'))) {
     return rawBanner;
+  }
+
+  // 3. Fallbacks temáticos de alta qualidade quando não houver capa customizada do usuário:
+  const textCorpus = `${coupon.title || ''} ${coupon.storeName || store?.name || ''} ${coupon.description || ''} ${coupon.category || ''}`.toLowerCase();
+
+  // Manual Brasil (Tratamento Capilar) - fallback elegante
+  if (textCorpus.includes('manual') && (textCorpus.includes('queda') || textCorpus.includes('capilar') || textCorpus.includes('tratamento') || textCorpus.includes('cabelo') || textCorpus.includes('saude') || textCorpus.includes('saúde'))) {
+    return manualBanner;
   }
 
   // 3. Se não tiver banner ou o banner for apenas a logo da loja:

@@ -85,10 +85,10 @@ export const AppProvider = ({ children }) => {
           const sanitized = value.map(item => {
             if (item && typeof item === 'object') {
               const clean = { ...item };
-              if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 50000) {
-                clean.banner = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
+              if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 180000) {
+                clean.banner = '';
               }
-              if (clean.logoImage && typeof clean.logoImage === 'string' && clean.logoImage.startsWith('data:image/') && clean.logoImage.length > 50000) {
+              if (clean.logoImage && typeof clean.logoImage === 'string' && clean.logoImage.startsWith('data:image/') && clean.logoImage.length > 120000) {
                 clean.logoImage = '';
               }
               return clean;

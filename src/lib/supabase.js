@@ -208,8 +208,8 @@ export const db = {
     if (!isSupabaseConfigured || !supabase) return coupon;
     try {
       // Metadados que não possuem coluna direta na tabela coupons
-      const safeBanner = (coupon.banner && typeof coupon.banner === 'string' && coupon.banner.startsWith('data:') && coupon.banner.length > 60000) ? '' : coupon.banner;
-      const safeStoreLogo = (coupon.storeLogo && typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') && coupon.storeLogo.length > 60000) ? '' : coupon.storeLogo;
+      const safeBanner = (coupon.banner && typeof coupon.banner === 'string' && coupon.banner.startsWith('data:') && coupon.banner.length > 180000) ? '' : coupon.banner;
+      const safeStoreLogo = (coupon.storeLogo && typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') && coupon.storeLogo.length > 120000) ? '' : coupon.storeLogo;
 
       const meta = {
         storeId: coupon.storeId || coupon.store_id,
