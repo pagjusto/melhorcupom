@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051711"/>
+      <stop offset="50%" stop-color="#0B2F24"/>
+      <stop offset="100%" stop-color="#124334"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1D6B53" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#051711" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EBE3D7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="350" fill="url(#bgGrad)"/>
+  <circle cx="350" cy="160" r="220" fill="url(#glow)"/>
+
+  <!-- Subtle Decorative Hair/Health Wave Lines -->
+  <path d="M 0 280 C 180 230 280 320 500 250 C 600 220 660 270 700 260 L 700 350 L 0 350 Z" fill="#04120D" opacity="0.4"/>
+  <path d="M -50 120 C 150 70 300 170 500 100 C 620 60 670 120 750 90" stroke="#1D6B53" stroke-width="2" fill="none" opacity="0.25"/>
+  <path d="M -50 150 C 150 100 300 200 500 130 C 620 90 670 150 750 120" stroke="#1D6B53" stroke-width="1.5" fill="none" opacity="0.18"/>
+
+  <!-- Center Monogram Circle -->
+  <circle cx="350" cy="115" r="42" fill="#134737" stroke="#25755D" stroke-width="2.5"/>
+  <path d="M 333 130 C 329 130 327 126 328 121 C 329 115 333 106 339 96 C 343 89 348 85 352 85 C 356 85 358 88 357 93 C 361 87 366 85 370 85 C 375 85 378 88 377 94 C 382 87 387 85 391 85 C 396 85 399 89 397 97 C 395 106 390 119 388 126 C 387 129 385 130 382 130 C 379 130 377 127 378 123 L 381 108 C 383 101 381 97 378 97 C 374 97 370 102 367 111 L 362 126 C 361 129 359 130 356 130 C 353 130 351 127 352 123 L 355 108 C 357 101 355 97 352 97 C 348 97 344 102 341 111 L 337 125 C 336 128 335 130 333 130 Z" fill="#F4EFEA"/>
+
+  <!-- Brand Wordmark -->
+  <text x="350" y="215" font-family="'Montserrat', sans-serif" font-weight="900" font-size="44" fill="url(#textGrad)" text-anchor="middle" letter-spacing="8">MANUAL</text>
+
+  <!-- Tagline / Subtitle -->
+  <text x="350" y="250" font-family="'Montserrat', sans-serif" font-weight="700" font-size="13" fill="#6EE7B7" text-anchor="middle" letter-spacing="3" opacity="0.9">SAÚDE &amp; TRATAMENTO CAPILAR</text>
+
+  <!-- Bottom vignette -->
+  <rect y="290" width="700" height="60" fill="url(#bgGrad)" opacity="0.6"/>
+</svg>

@@ -33,8 +33,14 @@ import belmonteLogo from './botecobelmonte.jpg';
 import corleoneLogo from './corleone.jpg';
 import trackfieldLogo from './trackfield.jpg';
 import omensLogo from './omens.svg';
+import manualLogo from './manual.svg';
 
 export const BRAND_LOGOS = {
+  manual: manualLogo,
+  'manual tratamento contra queda capilar': manualLogo,
+  manualtratamentocontraquedacapilar: manualLogo,
+  'manual brasil': manualLogo,
+  manualbrasil: manualLogo,
   omens: omensLogo,
   'omens saúde masculina': omensLogo,
   omenssaudemasculina: omensLogo,

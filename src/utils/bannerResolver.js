@@ -2,6 +2,8 @@
 // Garante que todo cupom tenha uma foto de capa real, atraente e vibrante,
 // eliminando fundos pretos vazios ou logos duplicadas na capa.
 
+import manualBanner from '../assets/brands/manual-banner.svg';
+
 const CATEGORY_THEMATIC_BANNERS = {
   // Hardware, Games, Setup, Informática
   hardware: [
@@ -71,6 +73,13 @@ function getHashIndex(str, arrayLength) {
 export function getCouponBanner(coupon, store) {
   if (!coupon) return CATEGORY_THEMATIC_BANNERS.eletronicos[0];
 
+  const textCorpus = `${coupon.title || ''} ${coupon.storeName || store?.name || ''} ${coupon.description || ''} ${coupon.category || ''}`.toLowerCase();
+
+  // Manual Brasil (Tratamento Capilar)
+  if (textCorpus.includes('manual') && (textCorpus.includes('queda') || textCorpus.includes('capilar') || textCorpus.includes('tratamento') || textCorpus.includes('cabelo') || textCorpus.includes('saude') || textCorpus.includes('saúde'))) {
+    return manualBanner;
+  }
+
   const rawBanner = coupon.banner || coupon.image;
   const storeLogo = coupon.storeLogoImage || coupon.logoImage || coupon.storeLogo || store?.logoImage;
 
@@ -95,7 +104,6 @@ export function getCouponBanner(coupon, store) {
 
   // 3. Se não tiver banner ou o banner for apenas a logo da loja:
   // Resolver uma foto temática profissional com base na loja, título e categoria
-  const textCorpus = `${coupon.title || ''} ${coupon.storeName || store?.name || ''} ${coupon.description || ''} ${coupon.category || ''}`.toLowerCase();
   const seed = coupon.id || coupon.title || 'banner';
 
   // Hardware / Games / Informática (TeraByte, Pichau, Kabum, Gamer, Placa, etc.)

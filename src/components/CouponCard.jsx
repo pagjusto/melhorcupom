@@ -178,21 +178,19 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
 
         {/* 2. LOGO DA EMPRESA COM BORDA RESPECTIVA DA ASSINATURA */}
         {(() => {
-          const isFramedOrCustom = Boolean(
-            coupon.isAvulso ||
-            coupon.customStoreLogoImage ||
-            (typeof storeLogo === 'string' && (storeLogo.startsWith('data:') || storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield')))
+          const isDarkLogo = Boolean(
+            typeof storeLogo === 'string' && (storeLogo.includes('omens') || storeLogo.includes('boteco') || storeLogo.includes('corleone') || storeLogo.includes('trackfield'))
           );
           return (
             <div className={`absolute bottom-1.5 left-2 w-8 h-8 rounded-lg shadow-lg flex items-center justify-center overflow-hidden z-20 ${tierConfig.logoBorder} ${
-              isFramedOrCustom ? 'bg-[#12121A] border border-white/15' : 'bg-white'
+              isDarkLogo ? 'bg-[#12121A]' : 'bg-white'
             }`}>
               {storeLogo ? (
                 <>
                   <img 
                     src={storeLogo} 
                     alt={storeName} 
-                    className={`w-full h-full ${isFramedOrCustom ? 'object-cover' : 'object-contain p-0.5 rounded-md'}`}
+                    className="w-full h-full object-contain p-0.5 rounded-md"
                     onError={(e) => {
                       if (brandLogo && e.currentTarget.src !== brandLogo) {
                         e.currentTarget.src = brandLogo;
