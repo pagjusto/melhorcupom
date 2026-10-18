@@ -14,6 +14,7 @@ import {
   Puzzle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 
 export const ExtensionBanner = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -168,13 +169,10 @@ export const ExtensionBanner = () => {
                 {/* Topo do Alerta */}
                 <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#FF5F00] text-white font-black text-xs flex items-center justify-center shadow-md">
-                      M
-                    </div>
-                    <div>
-                      <div className="text-xs font-black text-white">Melhor<span className="text-[#FF5F00]">Cupom</span></div>
-                      <div className="text-[10px] text-emerald-400 font-bold">Extensão Ativa no Navegador</div>
-                    </div>
+                    <img src={logoMelhorCupom} alt="Melhor Cupom" className="h-7 w-auto object-contain" />
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                      Extensão Ativa
+                    </span>
                   </div>
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
                     Ao Vivo

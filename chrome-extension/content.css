@@ -68,32 +68,15 @@
 .mc-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
-.mc-logo-badge {
-  width: 28px;
+.mc-brand-logo-img {
   height: 28px;
-  border-radius: 8px;
-  background: #FF5F00;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 14px;
-  color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(255, 95, 0, 0.4);
-}
-
-.mc-brand-name {
-  font-weight: 800;
-  font-size: 13px;
-  color: #FFFFFF;
-  letter-spacing: -0.2px;
-}
-
-.mc-brand-name span {
-  color: #FF5F00;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 .mc-close-btn {
@@ -283,7 +266,16 @@
 .mc-drawer-title-box {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.mc-drawer-logo-img {
+  height: 32px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 .mc-drawer-title {

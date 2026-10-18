@@ -47,8 +47,7 @@
         <div class="mc-glow-bar"></div>
         <div class="mc-header">
           <div class="mc-brand">
-            <div class="mc-logo-badge">M</div>
-            <div class="mc-brand-name">Melhor<span>Cupom</span></div>
+            <img src="${chrome.runtime.getURL('icons/logo.png')}" alt="Melhor Cupom" class="mc-brand-logo-img" />
           </div>
           <button class="mc-close-btn" id="mc-btn-close" title="Fechar por enquanto">✕</button>
         </div>
@@ -132,7 +131,7 @@
       <div class="mc-drawer">
         <div class="mc-drawer-header">
           <div class="mc-drawer-title-box">
-            <div class="mc-logo-badge" style="background: ${storeData.color || '#FF5F00'}">M</div>
+            <img src="${chrome.runtime.getURL('icons/logo.png')}" alt="Melhor Cupom" class="mc-drawer-logo-img" />
             <div>
               <div class="mc-drawer-title">${storeData.name}</div>
               <div class="mc-drawer-sub">${storeData.coupons.length} cupons e ofertas oficiais</div>
