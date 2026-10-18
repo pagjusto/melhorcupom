@@ -44,7 +44,7 @@ export const AppProvider = ({ children }) => {
   // Estado de Perfil Atual (Role)
   // 'visitor' | 'vip' | 'merchant_burger' | 'merchant_barber' | 'admin'
   const [currentRole, setCurrentRole] = useState(() => {
-    return localStorage.getItem('melhor_cupom_role') || 'admin';
+    return localStorage.getItem('melhor_cupom_role') || 'visitor';
   });
 
   // Salvamento seguro de cupons com fallback contra estouro de cota (LocalStorage)
@@ -295,25 +295,39 @@ export const AppProvider = ({ children }) => {
       referrals: []
     };
 
+    const visitorDefaultUser = {
+      name: 'Visitante',
+      email: '',
+      phone: '',
+      cpf: '',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      city: 'Todas as Cidades',
+      favoriteCategories: [],
+      notifications: { email: true, whatsapp: true, newDeals: true, expiringSoon: true },
+      isLoggedIn: false,
+      isRegistered: false,
+      isAdmin: false,
+      isVip: false,
+      vipPlan: null,
+      vipSince: null,
+      monthlySavings: 0,
+      savedCouponIds: [],
+      referralCode: null,
+      referralBalance: 0.00,
+      referrals: []
+    };
+
     const savedRole = localStorage.getItem('melhor_cupom_role');
-    if (savedRole === 'visitor') {
-      return {
-        ...adminDefaultUser,
-        isLoggedIn: false,
-        isRegistered: false,
-        isAdmin: false,
-        isVip: false,
-        vipPlan: null,
-        vipSince: null,
-        monthlySavings: 0,
-        referralCode: null,
-        referralBalance: 0.00,
-        referrals: []
-      };
+    if (savedRole === 'visitor' || !savedRole) {
+      return visitorDefaultUser;
+    }
+
+    if (savedRole === 'admin') {
+      return adminDefaultUser;
     }
 
     const saved = localStorage.getItem('melhor_cupom_user_v3') || localStorage.getItem('melhor_cupom_user');
-    if (!saved) return adminDefaultUser;
+    if (!saved) return visitorDefaultUser;
     try {
       const parsed = JSON.parse(saved);
       // Descartar cadastro simulado legado de Lucas Silva ou qualquer variação
@@ -328,19 +342,18 @@ export const AppProvider = ({ children }) => {
         !parsed.email
       ) {
         localStorage.removeItem('melhor_cupom_user');
-        localStorage.setItem('melhor_cupom_user_v3', JSON.stringify(adminDefaultUser));
-        return adminDefaultUser;
+        return visitorDefaultUser;
       }
       const resolvedRefCode = (parsed.referralCode && parsed.referralCode !== 'CUPOM5' && parsed.referralCode !== 'LUCAS5')
         ? parsed.referralCode
-        : (((parsed.name || 'RENAN').trim().split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6) || 'RENAN') + '5');
+        : (((parsed.name || 'CLIENTE').trim().split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6) || 'CLIENTE') + '5');
       return {
-        ...adminDefaultUser,
+        ...visitorDefaultUser,
         ...parsed,
         referralCode: resolvedRefCode
       };
     } catch {
-      return adminDefaultUser;
+      return visitorDefaultUser;
     }
   });
 

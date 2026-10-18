@@ -35,10 +35,12 @@ const CATEGORY_CHIPS = [
 ];
 
 export const StoresView = ({ onSelectStore }) => {
-  const { stores, openAuthModal, userProfile, currentRole, setIsReferralModalOpen } = useApp();
+  const { stores, openAuthModal, userProfile, currentRole, isSimulatingRole, setIsReferralModalOpen } = useApp();
   const [search, setSearch] = useState('');
   const [storeTypeFilter, setStoreTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const isSimulationOrAdmin = currentRole === 'admin' || currentRole === 'merchant_parceiro_demo' || isSimulatingRole;
 
   // Ordenar lojas priorizando as que contratam planos superiores (Ouro > Prata > Bronze > Free)
   const sortedStores = useMemo(() => {
@@ -51,11 +53,21 @@ export const StoresView = ({ onSelectStore }) => {
     });
   }, [stores]);
 
-  const physicalStoresCount = useMemo(() => stores.filter(s => s.type === 'physical' && !s.isApiIntegrated).length, [stores]);
+  const physicalStoresCount = useMemo(() => stores.filter(s => 
+    s.type === 'physical' && 
+    !s.isApiIntegrated && 
+    (isSimulationOrAdmin || (s.id !== 'store_parceiro_demo' && s.merchantId !== 'merchant_parceiro_demo'))
+  ).length, [stores, isSimulationOrAdmin]);
   const onlineStoresCount = useMemo(() => stores.filter(s => s.isApiIntegrated || s.type === 'online').length, [stores]);
 
   const filteredStores = useMemo(() => {
     return sortedStores.filter(store => {
+      // Ocultar perfis de lojas de teste/simulação para usuários comuns
+      const isTestStore = store.id === 'store_parceiro_demo' || store.merchantId === 'merchant_parceiro_demo';
+      if (isTestStore && !isSimulationOrAdmin) {
+        return false;
+      }
+
       const q = search.toLowerCase().trim();
       const matchesSearch = !q || 
         store.name.toLowerCase().includes(q) ||

@@ -110,6 +110,12 @@ const MainLayout = () => {
 
   // Filtrar Cupons por Cidade, Categoria e Tipo
   const filteredCoupons = coupons.filter(coupon => {
+    // 0. Ocultar cupons e lojas de testes/simulação para usuários comuns
+    const isTestCoupon = coupon.storeId === 'store_parceiro_demo' || coupon.id === 'cupom_parceiro_demo_1';
+    if (isTestCoupon && currentRole !== 'admin' && currentRole !== 'merchant_parceiro_demo' && !isSimulatingRole) {
+      return false;
+    }
+
     const store = stores.find(s => s.id === coupon.storeId);
     const couponCity = (coupon.city || store?.city || '').toLowerCase();
     const isOnline = coupon.type === 'online' || couponCity.includes('online') || store?.type === 'online' || store?.isOnline;
@@ -640,7 +646,7 @@ const MainLayout = () => {
         )}
 
         {/* ABA: PAINEL DE ADMINISTRAÇÃO MASTER */}
-        {activeTab === 'admin-dashboard' && (
+        {activeTab === 'admin-dashboard' && currentRole === 'admin' && (
           <AdminDashboard />
         )}
 

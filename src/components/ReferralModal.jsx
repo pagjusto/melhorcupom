@@ -28,6 +28,7 @@ export const ReferralModal = () => {
     isReferralModalOpen, 
     setIsReferralModalOpen, 
     currentRole, 
+    isSimulatingRole,
     userProfile, 
     stores, 
     addReferral,
@@ -358,33 +359,35 @@ export const ReferralModal = () => {
           {/* 2.5 MEDIA KIT OFICIAL: LOGOS VETORIZADAS (.SVG E .PNG TRANSPARENTE) */}
           <BrandMediaKitSection compact />
 
-          {/* 3. SIMULADOR DE TESTE RÁPIDO */}
-          <div className="bg-[#12121A] rounded-2xl p-4 sm:p-5 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-white">Quer ver funcionando na prática?</span>
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full">
-                  Teste Imediato
-                </span>
+          {/* 3. SIMULADOR DE TESTE RÁPIDO (EXCLUSIVO ADMINISTRADOR / SIMULAÇÃO) */}
+          {(currentRole === 'admin' || isSimulatingRole) && (
+            <div className="bg-[#12121A] rounded-2xl p-4 sm:p-5 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white">Quer ver funcionando na prática?</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full">
+                    Teste Imediato
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {isStoreView
+                    ? 'Simule um cliente se cadastrando pelo link da sua loja para receber +R$ 5,00 no caixa.'
+                    : 'Simule um amigo assinando pelo seu link para receber +R$ 3,00 em créditos no seu caixa.'}
+                </p>
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {isStoreView
-                  ? 'Simule um cliente se cadastrando pelo link da sua loja para receber +R$ 5,00 no caixa.'
-                  : 'Simule um amigo assinando pelo seu link para receber +R$ 3,00 em créditos no seu caixa.'}
-              </p>
-            </div>
 
-            <button
-              type="button"
-              onClick={handleSimulateInvite}
-              className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all flex-shrink-0"
-            >
-              <Zap size={16} />
-              <span>
-                {isStoreView ? 'Simular Indicação de Cliente (+R$ 5,00)' : 'Simular Assinatura pelo Link (+R$ 3,00)'}
-              </span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={handleSimulateInvite}
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all flex-shrink-0 cursor-pointer"
+              >
+                <Zap size={16} />
+                <span>
+                  {isStoreView ? 'Simular Indicação de Cliente (+R$ 5,00)' : 'Simular Assinatura pelo Link (+R$ 3,00)'}
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* 4. PASSO A PASSO COMO FUNCIONA */}
           <div>

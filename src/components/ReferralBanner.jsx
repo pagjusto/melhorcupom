@@ -17,6 +17,7 @@ import {
 export const ReferralBanner = () => {
   const { 
     currentRole, 
+    isSimulatingRole,
     userProfile, 
     stores, 
     setIsReferralModalOpen,
@@ -181,15 +182,17 @@ export const ReferralBanner = () => {
               <ArrowRight size={14} />
             </button>
 
-            <button
-              type="button"
-              onClick={handleQuickSimulate}
-              className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
-              title={isMerchantRole ? "Simular cliente se cadastrando pelo link da sua loja" : "Simular amigo assinando pelo seu link"}
-            >
-              <Zap size={14} className="text-emerald-400" />
-              <span>{isMerchantRole ? 'Simular Indicação (+R$ 5,00)' : 'Simular Assinatura (+R$ 3,00)'}</span>
-            </button>
+            {(currentRole === 'admin' || isSimulatingRole) && (
+              <button
+                type="button"
+                onClick={handleQuickSimulate}
+                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                title={isMerchantRole ? "Simular cliente se cadastrando pelo link da sua loja" : "Simular amigo assinando pelo seu link"}
+              >
+                <Zap size={14} className="text-emerald-400" />
+                <span>{isMerchantRole ? 'Simular Indicação (+R$ 5,00)' : 'Simular Assinatura (+R$ 3,00)'}</span>
+              </button>
+            )}
           </div>
 
         </div>

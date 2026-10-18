@@ -32,6 +32,8 @@ export const UserProfileSettings = () => {
     userProfile, 
     updateUserProfile, 
     isVipUser, 
+    currentRole,
+    isSimulatingRole,
     setIsSubscriptionModalOpen,
     setIsSavingsModalOpen,
     cancelSubscription,
@@ -471,9 +473,9 @@ export const UserProfileSettings = () => {
                   <button
                     type="button"
                     onClick={() => cancelSubscription()}
-                    className="text-xs text-red-400 hover:text-red-300 font-semibold underline"
+                    className="text-xs text-red-400 hover:text-red-300 font-semibold underline cursor-pointer"
                   >
-                    Simular cancelamento de assinatura
+                    Cancelar assinatura
                   </button>
 
                   <button
@@ -544,18 +546,20 @@ export const UserProfileSettings = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2.5 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const res = addReferral('user');
-                      setUserJustEarned(res);
-                      setTimeout(() => setUserJustEarned(null), 4000);
-                    }}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-4 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all cursor-pointer"
-                  >
-                    <Zap size={16} />
-                    <span>Simular Indicação</span>
-                  </button>
+                  {(currentRole === 'admin' || isSimulatingRole) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const res = addReferral('user');
+                        setUserJustEarned(res);
+                        setTimeout(() => setUserJustEarned(null), 4000);
+                      }}
+                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-4 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all cursor-pointer"
+                    >
+                      <Zap size={16} />
+                      <span>Simular Indicação</span>
+                    </button>
+                  )}
 
                   <button
                     type="button"

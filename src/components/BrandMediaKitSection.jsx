@@ -887,7 +887,7 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
               className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                 bgPreview === 'dark' ? 'bg-[#FF5F00] text-white' : 'text-gray-400 hover:text-white'
               }`}
-              title="Simular aplicação sobre fundo escuro"
+              title="Visualizar aplicação sobre fundo escuro"
             >
               Escuro
             </button>
@@ -897,7 +897,7 @@ Quer atrair novos clientes da cidade todos os dias e destacar sua empresa na mai
               className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                 bgPreview === 'light' ? 'bg-[#FF5F00] text-white' : 'text-gray-400 hover:text-white'
               }`}
-              title="Simular aplicação sobre fundo claro"
+              title="Visualizar aplicação sobre fundo claro"
             >
               Claro
             </button>

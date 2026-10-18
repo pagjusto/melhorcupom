@@ -63,6 +63,7 @@ const BANNER_PRESETS = [
 export const MerchantDashboard = ({ prefilledCode }) => {
   const { 
     currentRole, 
+    isSimulatingRole,
     stores, 
     coupons, 
     redemptions, 
@@ -904,7 +905,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <span>{isScannerOpen ? 'Fechar Câmera' : '📷 Escanear com Câmera'}</span>
                 </button>
 
-                {storeRedemptions.some(r => r.status === 'valid') && (
+                {(currentRole === 'admin' || isSimulatingRole) && storeRedemptions.some(r => r.status === 'valid') && (
                   <button
                     type="button"
                     onClick={() => {
@@ -913,7 +914,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                         handleValidateText(nextValid.qrPayload || nextValid.passCode || nextValid.code);
                       }
                     }}
-                    className="px-3 py-2.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 flex items-center gap-1.5 transition-all shadow-md"
+                    className="px-3 py-2.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
                     title="Simular leitura automática instantânea de QR Code"
                   >
                     <Sparkles size={14} />
@@ -2848,18 +2849,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const res = addReferral('merchant');
-                    setMerchantJustEarned(res);
-                    setTimeout(() => setMerchantJustEarned(null), 4000);
-                  }}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all"
-                >
-                  <Zap size={16} />
-                  <span>Simular Indicação (+R$ 5,00)</span>
-                </button>
+                {(currentRole === 'admin' || isSimulatingRole) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const res = addReferral('merchant');
+                      setMerchantJustEarned(res);
+                      setTimeout(() => setMerchantJustEarned(null), 4000);
+                    }}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-700/30 transition-all cursor-pointer"
+                  >
+                    <Zap size={16} />
+                    <span>Simular Indicação (+R$ 5,00)</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
