@@ -86,9 +86,18 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [couponToast, setCouponToast] = useState('');
 
-  // Identificar se o estabelecimento é parceiro via API (sem plano de lojista) ou Lojista Credenciado
+  // Identificar se o estabelecimento é parceiro via API ou Oferta Avulsa (sem painel de lojista PDV) ou Lojista Credenciado
   const isApiStore = (st) => Boolean(
-    st?.isApiIntegrated || st?.apiSource || st?.tier === 'api' || (!st?.isNewPartner && !st?.adminPaidPlan && (!st?.tier || st?.tier === 'api' || st?.tier === 'free'))
+    st?.isApiIntegrated || 
+    st?.apiSource || 
+    st?.tier === 'api' || 
+    st?.isAvulsa ||
+    st?.isAvulso ||
+    st?.isCustom ||
+    st?.noSimulator ||
+    st?.id?.startsWith('store_avulsa_') ||
+    st?.merchantId?.startsWith('merchant_avulso_') ||
+    (!st?.isNewPartner && !st?.adminPaidPlan && (!st?.tier || st?.tier === 'api' || st?.tier === 'free'))
   );
   const lojistaStores = stores.filter(s => !isApiStore(s));
 

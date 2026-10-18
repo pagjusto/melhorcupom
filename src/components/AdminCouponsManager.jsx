@@ -405,6 +405,8 @@ export const AdminCouponsManager = ({ showToast }) => {
       expiresAt: finalExpiresAt,
       rules: rulesArray,
       isAvulso: true,
+      isCustom: true,
+      noSimulator: true,
       createdAt: new Date().toISOString()
     };
 

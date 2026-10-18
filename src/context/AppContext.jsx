@@ -234,8 +234,9 @@ export const AppProvider = ({ children }) => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
+        const isCustomStore = Boolean(s.isAvulsa || s.isAvulso || s.isCustom || s.noSimulator || s.id?.startsWith('store_avulsa_') || s.merchantId?.startsWith('merchant_avulso_'));
         const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze' || s.highlight || s.isFeatured);
-        const isPayingMerchant = Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
+        const isPayingMerchant = !isCustomStore && Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
         const isHighlighted = Boolean(s.highlight || s.isFeatured || s.tier === 'gold' || init?.highlight || init?.isFeatured || init?.tier === 'gold');
         const resolvedTier = (s.tier && s.tier !== 'free')
           ? s.tier
@@ -251,6 +252,10 @@ export const AppProvider = ({ children }) => {
           tier: resolvedTier,
           highlight: isHighlighted,
           isFeatured: isHighlighted,
+          isAvulsa: isCustomStore,
+          isAvulso: isCustomStore,
+          isCustom: isCustomStore,
+          noSimulator: isCustomStore,
           adminPaidPlan: Boolean(s.adminPaidPlan || isExplicitPaid || resolvedTier !== 'api'),
           category: init?.category || s.category || 'gastronomia',
           city: init?.city || s.city || 'Todo o Brasil (Online)',
@@ -1389,6 +1394,7 @@ export const AppProvider = ({ children }) => {
         const storeExists = prevStores.some(s => s.id === newCoupon.storeId);
         if (!storeExists) {
           const isOnline = newCoupon.type === 'online' || (newCoupon.city && newCoupon.city.toLowerCase().includes('online'));
+          const isAvulso = Boolean(newCoupon.isAvulso || newCoupon.storeId?.startsWith('store_avulsa_') || newCoupon.merchantId?.startsWith('merchant_avulso_'));
           const createdStore = {
             id: newCoupon.storeId,
             merchantId: newCoupon.merchantId || `merchant_${Date.now()}`,
@@ -1408,7 +1414,11 @@ export const AppProvider = ({ children }) => {
             phone: '(11) 98123-4567',
             website: newCoupon.affiliateUrl || newCoupon.website || '',
             affiliateUrl: newCoupon.affiliateUrl || '',
-            isNewPartner: true,
+            isNewPartner: !isAvulso,
+            isAvulsa: isAvulso,
+            isAvulso: isAvulso,
+            isCustom: isAvulso,
+            noSimulator: true, // NUNCA criar perfis no simulador para cupons avulsos
             createdAt: new Date().toISOString()
           };
           const updatedStores = [createdStore, ...prevStores];

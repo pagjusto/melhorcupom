@@ -20,17 +20,32 @@ export const RoleSwitcher = () => {
     startSimulation, 
     exitSimulation, 
     resetToFactoryDefaults, 
-    stores 
+    stores,
+    coupons
   } = useApp();
 
   const [confirmReset, setConfirmReset] = useState(false);
 
+  // Estabelecimentos reais para simulação (NUNCA incluir cupons ou lojas avulsas, testes ou demonstrações)
   const realStores = (stores || []).filter(
     s => !s.isApiIntegrated && 
          !s.apiSource && 
          s.tier !== 'api' && 
          s.id !== 'store_parceiro_demo' && 
          s.merchantId !== 'merchant_parceiro_demo' &&
+         !s.isAvulsa &&
+         !s.isAvulso &&
+         !s.isCustom &&
+         !s.noSimulator &&
+         !s.id?.startsWith('store_avulsa_') &&
+         !s.merchantId?.startsWith('merchant_avulso_') &&
+         !s.id?.startsWith('cupom_avulso_') &&
+         !s.id?.includes('demo') &&
+         !s.merchantId?.includes('demo') &&
+         !s.name?.toLowerCase().includes('avulso') &&
+         !s.name?.toLowerCase().includes('avulsa') &&
+         !s.name?.toLowerCase().includes('loja parceira') &&
+         !coupons?.some(c => c.isAvulso && (c.storeId === s.id || c.merchantId === s.merchantId)) &&
          (s.isNewPartner || s.adminPaidPlan || (s.tier && s.tier !== 'free'))
   );
 
