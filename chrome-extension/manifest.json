@@ -43,7 +43,8 @@
         "icons/icon16.png",
         "icons/icon48.png",
         "icons/icon128.png",
-        "icons/logo.png"
+        "icons/logo.png",
+        "content.css"
       ],
       "matches": ["<all_urls>"]
     }

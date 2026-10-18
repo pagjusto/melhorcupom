@@ -3,39 +3,55 @@
    Z-index máximo para sobrepor qualquer site com elegância
    ======================================================== */
 
+:host,
 #melhor-cupom-root {
-  all: initial;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  z-index: 2147483647;
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  color: #FFFFFF;
-  box-sizing: border-box;
+  all: initial !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  color: #FFFFFF !important;
+  box-sizing: border-box !important;
+  pointer-events: auto !important;
 }
 
 #melhor-cupom-root *, 
 #melhor-cupom-root *::before, 
-#melhor-cupom-root *::after {
-  box-sizing: border-box;
-  font-family: inherit;
-  margin: 0;
-  padding: 0;
+#melhor-cupom-root *::after,
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: border-box !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: normal !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
 }
 
 /* Card Flutuante de Alerta */
 .mc-alert-bubble {
-  width: 360px;
-  background: rgba(18, 18, 28, 0.97);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(255, 95, 0, 0.45);
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 95, 0, 0.25);
-  animation: mcSlideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  position: relative;
-  overflow: hidden;
+  width: 390px !important;
+  max-width: calc(100vw - 32px) !important;
+  background: #141422 !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 2px solid #FF5F00 !important;
+  border-radius: 20px !important;
+  padding: 16px 18px !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 95, 0, 0.35) !important;
+  animation: mcSlideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  z-index: 2147483647 !important;
 }
 
 @keyframes mcSlideInRight {
@@ -50,388 +66,420 @@
 }
 
 .mc-glow-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #FF5F00, #FFB703, #10B981);
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, #FF5F00, #FFB703, #10B981) !important;
 }
 
+/* Topo: Logo + Botão Fechar */
 .mc-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding-bottom: 8px !important;
 }
 
 .mc-brand {
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
 .mc-brand-logo-img {
-  height: 28px;
-  width: auto;
-  max-width: 170px;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  height: 30px !important;
+  max-height: 30px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  object-fit: contain !important;
+  display: block !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)) !important;
 }
 
 .mc-close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #9CA3AF;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: none !important;
+  color: #9CA3AF !important;
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
 }
 
 .mc-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
 }
 
+/* Conteúdo */
 .mc-content {
-  margin-bottom: 14px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
 }
 
 .mc-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #FFFFFF;
-  line-height: 1.35;
-  margin-bottom: 4px;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: #FFFFFF !important;
+  line-height: 1.4 !important;
 }
 
 .mc-store-name {
-  color: #FFB703;
+  color: #FFB703 !important;
+  font-weight: 900 !important;
 }
 
+/* Caixa do Melhor Cupom em Destaque */
 .mc-best-deal {
-  background: rgba(255, 95, 0, 0.12);
-  border: 1px dashed rgba(255, 95, 0, 0.4);
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background: rgba(255, 95, 0, 0.12) !important;
+  border: 1px dashed rgba(255, 95, 0, 0.45) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  width: 100% !important;
 }
 
 .mc-deal-left {
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
 }
 
 .mc-deal-badge {
-  background: #FF5F00;
-  color: #FFFFFF;
-  font-weight: 900;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  display: inline-block;
-  width: fit-content;
-  margin-bottom: 2px;
+  background: #FF5F00 !important;
+  color: #FFFFFF !important;
+  font-weight: 900 !important;
+  font-size: 11px !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+  display: inline-block !important;
+  width: fit-content !important;
 }
 
 .mc-deal-desc {
-  font-size: 11px;
-  color: #D1D5DB;
-  font-weight: 500;
-  max-width: 210px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 11px !important;
+  color: #D1D5DB !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
 }
 
 .mc-copy-quick-btn {
-  background: #FFFFFF;
-  color: #12121A;
-  font-weight: 800;
-  font-size: 11px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  background: #FFFFFF !important;
+  color: #12121A !important;
+  font-weight: 900 !important;
+  font-size: 11.5px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
 }
 
 .mc-copy-quick-btn:hover {
-  background: #FFB703;
-  transform: scale(1.03);
+  background: #FFB703 !important;
+  transform: scale(1.03) !important;
 }
 
+/* Botões de Ação */
 .mc-actions {
-  display: flex;
-  gap: 8px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
 }
 
 .mc-btn-primary {
-  flex: 1;
-  background: linear-gradient(135deg, #FF5F00, #E04F00);
-  color: #FFFFFF;
-  font-weight: 800;
-  font-size: 12px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: 0 4px 12px rgba(255, 95, 0, 0.35);
-  transition: all 0.2s ease;
+  flex: 1 1 auto !important;
+  background: linear-gradient(135deg, #FF5F00, #E04F00) !important;
+  color: #FFFFFF !important;
+  font-weight: 900 !important;
+  font-size: 12px !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-shadow: 0 4px 14px rgba(255, 95, 0, 0.4) !important;
+  transition: all 0.2s ease !important;
+  height: 38px !important;
+  white-space: nowrap !important;
 }
 
 .mc-btn-primary:hover {
-  background: linear-gradient(135deg, #FF7700, #FF5F00);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #FF7700, #FF5F00) !important;
+  transform: translateY(-1px) !important;
 }
 
 .mc-btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #E5E7EB;
-  font-weight: 700;
-  font-size: 12px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  flex-shrink: 0 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #E5E7EB !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
 }
 
 .mc-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
 }
 
 /* ========================================================
    GAVETA LATERAL COMPLETA (DRAWER DE CUPONS)
    ======================================================== */
 .mc-drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 2147483646;
-  opacity: 0;
-  animation: mcFadeIn 0.3s forwards;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  z-index: 2147483646 !important;
+  opacity: 0 !important;
+  animation: mcFadeIn 0.3s forwards !important;
+  pointer-events: auto !important;
 }
 
 @keyframes mcFadeIn {
-  to { opacity: 1; }
+  to { opacity: 1 !important; }
 }
 
 .mc-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 420px;
-  max-width: 90vw;
-  background: #11111A;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.8);
-  z-index: 2147483647;
-  display: flex;
-  flex-direction: column;
-  animation: mcDrawerSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 420px !important;
+  max-width: 90vw !important;
+  background: #11111A !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: -12px 0 45px rgba(0, 0, 0, 0.85) !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  animation: mcDrawerSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  pointer-events: auto !important;
 }
 
 @keyframes mcDrawerSlide {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from { transform: translateX(100%) !important; }
+  to { transform: translateX(0) !important; }
 }
 
 .mc-drawer-header {
-  padding: 20px;
-  background: #181824;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: 18px 20px !important;
+  background: #181824 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
 
 .mc-drawer-title-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
 
 .mc-drawer-logo-img {
-  height: 32px;
-  width: auto;
-  max-width: 150px;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  height: 32px !important;
+  width: auto !important;
+  max-width: 150px !important;
+  object-fit: contain !important;
+  display: block !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)) !important;
 }
 
 .mc-drawer-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: #FFFFFF;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #FFFFFF !important;
 }
 
 .mc-drawer-sub {
-  font-size: 11px;
-  color: #9CA3AF;
+  font-size: 11px !important;
+  color: #9CA3AF !important;
 }
 
 .mc-drawer-body {
-  padding: 20px;
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  padding: 20px !important;
+  overflow-y: auto !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
 }
 
 .mc-coupon-card {
-  background: #181826;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
+  background: #181826 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 .mc-coupon-card:hover {
-  border-color: rgba(255, 95, 0, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 95, 0, 0.5) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
 .mc-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
 }
 
 .mc-card-discount {
-  background: #FF5F00;
-  color: #FFFFFF;
-  font-size: 12px;
-  font-weight: 900;
-  padding: 3px 8px;
-  border-radius: 8px;
+  background: #FF5F00 !important;
+  color: #FFFFFF !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  padding: 3px 8px !important;
+  border-radius: 8px !important;
 }
 
 .mc-card-expires {
-  font-size: 10px;
-  color: #10B981;
-  font-weight: 700;
+  font-size: 10px !important;
+  color: #10B981 !important;
+  font-weight: 700 !important;
 }
 
 .mc-card-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 6px;
-  line-height: 1.35;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #FFFFFF !important;
+  margin-bottom: 6px !important;
+  line-height: 1.35 !important;
 }
 
 .mc-card-desc {
-  font-size: 11px;
-  color: #9CA3AF;
-  line-height: 1.4;
-  margin-bottom: 12px;
+  font-size: 11px !important;
+  color: #9CA3AF !important;
+  line-height: 1.4 !important;
+  margin-bottom: 12px !important;
 }
 
 .mc-coupon-code-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 6px 12px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  padding: 6px 12px !important;
 }
 
 .mc-code-text {
-  font-family: monospace;
-  font-size: 13px;
-  font-weight: 800;
-  color: #FFB703;
-  letter-spacing: 0.5px;
+  font-family: monospace !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #FFB703 !important;
+  letter-spacing: 0.5px !important;
 }
 
 .mc-copy-btn {
-  background: #FF5F00;
-  color: #FFFFFF;
-  font-weight: 800;
-  font-size: 11px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  background: #FF5F00 !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
 }
 
 .mc-copy-btn:hover {
-  background: #E04F00;
+  background: #E04F00 !important;
 }
 
 .mc-copy-btn.mc-copied {
-  background: #10B981;
+  background: #10B981 !important;
 }
 
 .mc-drawer-footer {
-  padding: 16px 20px;
-  background: #181824;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  text-align: center;
+  padding: 16px 20px !important;
+  background: #181824 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  text-align: center !important;
 }
 
 .mc-footer-link {
-  color: #FF5F00;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 700;
+  color: #FF5F00 !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
 }
 
 .mc-footer-link:hover {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 /* Toast de confirmação ao copiar */
 #melhor-cupom-toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #10B981;
-  color: #FFFFFF;
-  font-weight: 800;
-  font-size: 13px;
-  padding: 10px 20px;
-  border-radius: 30px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-  z-index: 2147483647;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  animation: mcToastIn 0.3s ease forwards;
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  padding: 10px 20px !important;
+  border-radius: 30px !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  animation: mcToastIn 0.3s ease forwards !important;
+  pointer-events: auto !important;
 }
 
 @keyframes mcToastIn {
-  from { opacity: 0; transform: translate(-50%, 20px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0 !important; transform: translate(-50%, 20px) !important; }
+  to { opacity: 1 !important; transform: translate(-50%, 0) !important; }
 }

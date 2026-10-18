@@ -32,84 +32,114 @@
     }
   }, 1500);
 
-  // Exibe o Card Flutuante Discreto no Canto Superior Direito
-  function showFloatingAlert(storeData) {
-    if (document.getElementById('melhor-cupom-root')) return;
+  // Gerenciador central do Shadow Root (garante 100% de isolamento contra CSS da Shopee, Mercado Livre, etc.)
+  function getShadowRoot() {
+    let host = document.getElementById('melhor-cupom-extension-host');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'melhor-cupom-extension-host';
+      host.style.all = 'initial';
+      host.style.position = 'fixed';
+      host.style.top = '0';
+      host.style.left = '0';
+      host.style.width = '100%';
+      host.style.height = '0';
+      host.style.zIndex = '2147483647';
+      host.style.pointerEvents = 'none';
 
-    const root = document.createElement('div');
-    root.id = 'melhor-cupom-root';
+      (document.documentElement || document.body).appendChild(host);
+    }
+
+    let shadow = host.shadowRoot;
+    if (!shadow) {
+      shadow = host.attachShadow({ mode: 'open' });
+      
+      // Carregar a folha de estilos oficial da extensão dentro do Shadow DOM
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = chrome.runtime.getURL('content.css');
+      shadow.appendChild(link);
+    }
+
+    return shadow;
+  }
+
+  // Exibe o Card Flutuante Discreto no Canto Superior Direito dentro do Shadow DOM
+  function showFloatingAlert(storeData) {
+    const shadow = getShadowRoot();
+    if (shadow.getElementById('mc-alert-bubble-root')) return;
 
     const bestCoupon = storeData.coupons[0];
     const totalCount = storeData.coupons.length;
 
-    root.innerHTML = `
-      <div class="mc-alert-bubble">
-        <div class="mc-glow-bar"></div>
-        <div class="mc-header">
-          <div class="mc-brand">
-            <img src="${chrome.runtime.getURL('icons/logo.png')}" alt="Melhor Cupom" class="mc-brand-logo-img" />
-          </div>
-          <button class="mc-close-btn" id="mc-btn-close" title="Fechar por enquanto">✕</button>
+    const alertWrapper = document.createElement('div');
+    alertWrapper.id = 'mc-alert-bubble-root';
+    alertWrapper.className = 'mc-alert-bubble';
+
+    alertWrapper.innerHTML = `
+      <div class="mc-glow-bar"></div>
+      <div class="mc-header">
+        <div class="mc-brand">
+          <img src="${chrome.runtime.getURL('icons/logo.png')}" alt="Melhor Cupom" class="mc-brand-logo-img" />
+        </div>
+        <button class="mc-close-btn" id="mc-btn-close" title="Fechar por enquanto">✕</button>
+      </div>
+
+      <div class="mc-content">
+        <div class="mc-title">
+          🎉 Encontramos <strong>${totalCount} ${totalCount === 1 ? 'cupom' : 'cupons'}</strong> para a <span class="mc-store-name">${storeData.name}</span>!
         </div>
 
-        <div class="mc-content">
-          <div class="mc-title">
-            🎉 Encontramos <strong>${totalCount} ${totalCount === 1 ? 'cupom' : 'cupons'}</strong> para a <span class="mc-store-name">${storeData.name}</span>!
+        <div class="mc-best-deal">
+          <div class="mc-deal-left">
+            <span class="mc-deal-badge">${bestCoupon.discount}</span>
+            <span class="mc-deal-desc" title="${bestCoupon.title}">${bestCoupon.title}</span>
           </div>
-
-          <div class="mc-best-deal">
-            <div class="mc-deal-left">
-              <span class="mc-deal-badge">${bestCoupon.discount}</span>
-              <span class="mc-deal-desc">${bestCoupon.title}</span>
-            </div>
-            <button class="mc-copy-quick-btn" id="mc-quick-copy" data-code="${bestCoupon.code}">
-              Copiar: ${bestCoupon.code}
-            </button>
-          </div>
-        </div>
-
-        <div class="mc-actions">
-          <button class="mc-btn-primary" id="mc-btn-see-all">
-            🏷️ Ver Todos os ${totalCount} Cupons
-          </button>
-          <button class="mc-btn-secondary" id="mc-btn-site">
-            Visitar Site
+          <button class="mc-copy-quick-btn" id="mc-quick-copy" data-code="${bestCoupon.code}">
+            Copiar: ${bestCoupon.code}
           </button>
         </div>
       </div>
+
+      <div class="mc-actions">
+        <button class="mc-btn-primary" id="mc-btn-see-all">
+          🏷️ Ver Todos os ${totalCount} Cupons
+        </button>
+        <button class="mc-btn-secondary" id="mc-btn-site">
+          Visitar Site
+        </button>
+      </div>
     `;
 
-    document.body.appendChild(root);
+    shadow.appendChild(alertWrapper);
 
     // Eventos
-    document.getElementById('mc-btn-close').addEventListener('click', () => {
+    alertWrapper.querySelector('#mc-btn-close').addEventListener('click', () => {
       sessionStorage.setItem('mc_dismissed_' + storeData.id, 'true');
-      root.remove();
+      alertWrapper.remove();
     });
 
-    document.getElementById('mc-quick-copy').addEventListener('click', (e) => {
+    alertWrapper.querySelector('#mc-quick-copy').addEventListener('click', (e) => {
       const code = e.currentTarget.getAttribute('data-code');
       copyToClipboard(code, bestCoupon.discount);
     });
 
-    document.getElementById('mc-btn-see-all').addEventListener('click', () => {
-      root.remove();
+    alertWrapper.querySelector('#mc-btn-see-all').addEventListener('click', () => {
+      alertWrapper.remove();
       openCouponDrawer(storeData);
     });
 
-    document.getElementById('mc-btn-site').addEventListener('click', () => {
+    alertWrapper.querySelector('#mc-btn-site').addEventListener('click', () => {
       window.open('https://www.omelhorcupom.com.br', '_blank');
     });
   }
 
-  // Abre a Gaveta Lateral com Todos os Cupons da Loja
+  // Abre a Gaveta Lateral com Todos os Cupons da Loja (também dentro do Shadow DOM)
   function openCouponDrawer(storeData) {
-    if (document.getElementById('melhor-cupom-drawer-root')) return;
+    const shadow = getShadowRoot();
+    if (shadow.getElementById('mc-drawer-root')) return;
 
-    const drawerWrapper = document.createElement('div');
-    drawerWrapper.id = 'melhor-cupom-drawer-root';
-
-    const couponsHtml = storeData.coupons.map((c, idx) => `
+    const couponsHtml = storeData.coupons.map((c) => `
       <div class="mc-coupon-card">
         <div class="mc-card-top">
           <span class="mc-card-discount">${c.discount}</span>
@@ -125,6 +155,9 @@
         </div>
       </div>
     `).join('');
+
+    const drawerWrapper = document.createElement('div');
+    drawerWrapper.id = 'mc-drawer-root';
 
     drawerWrapper.innerHTML = `
       <div class="mc-drawer-overlay" id="mc-drawer-overlay"></div>
@@ -152,12 +185,11 @@
       </div>
     `;
 
-    document.body.appendChild(drawerWrapper);
+    shadow.appendChild(drawerWrapper);
 
-    // Fechar drawer
     const closeDrawer = () => drawerWrapper.remove();
-    document.getElementById('mc-drawer-close').addEventListener('click', closeDrawer);
-    document.getElementById('mc-drawer-overlay').addEventListener('click', closeDrawer);
+    drawerWrapper.querySelector('#mc-drawer-close').addEventListener('click', closeDrawer);
+    drawerWrapper.querySelector('#mc-drawer-overlay').addEventListener('click', closeDrawer);
 
     // Botões de copiar cada cupom
     drawerWrapper.querySelectorAll('.mc-copy-btn').forEach(btn => {
@@ -188,7 +220,6 @@
         });
       } catch (e) {}
     }).catch(() => {
-      // Fallback
       const textarea = document.createElement('textarea');
       textarea.value = text;
       document.body.appendChild(textarea);
@@ -199,18 +230,19 @@
     });
   }
 
-  // Toast flutuante de sucesso
+  // Toast flutuante de sucesso no Shadow DOM
   function showToast(message) {
-    const existing = document.getElementById('melhor-cupom-toast');
+    const shadow = getShadowRoot();
+    const existing = shadow.getElementById('melhor-cupom-toast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
     toast.id = 'melhor-cupom-toast';
     toast.innerHTML = `<span>✓</span> <span>${message}</span>`;
-    document.body.appendChild(toast);
+    shadow.appendChild(toast);
 
     setTimeout(() => {
-      if (toast) toast.remove();
+      if (toast && toast.parentNode) toast.remove();
     }, 3500);
   }
 
