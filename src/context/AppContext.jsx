@@ -137,10 +137,7 @@ export const AppProvider = ({ children }) => {
       const initialWithCustom = [...customCoupons, ...INITIAL_COUPONS];
       const uniqueMap = new Map();
       initialWithCustom.forEach(c => uniqueMap.set(c.id, c));
-      return Array.from(uniqueMap.values()).map(c => {
-        const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
-        return isCustom ? { ...c, highlight: false } : c;
-      });
+      return Array.from(uniqueMap.values());
     }
 
     try {
@@ -149,8 +146,6 @@ export const AppProvider = ({ children }) => {
       const missingCustom = customCoupons.filter(c => !parsedIds.has(c.id));
       const missingInitial = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
       const combined = [...missingCustom, ...parsed, ...missingInitial];
-      
-      const needsHighlightReset = localStorage.getItem('melhor_cupom_highlight_clean_v7') !== 'done';
 
       const mapped = combined.map(c => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
@@ -180,7 +175,7 @@ export const AppProvider = ({ children }) => {
             promoPrice: init.promoPrice ?? c.promoPrice,
             city: init.city || c.city,
             cities: init.cities || c.cities || (init.city ? [init.city] : []),
-            highlight: Boolean(init.highlight)
+            highlight: c.highlight !== undefined ? Boolean(c.highlight) : Boolean(init.highlight)
           };
         }
         const cleanAffiliate = normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, c);
@@ -195,15 +190,9 @@ export const AppProvider = ({ children }) => {
           isLinkOnly: isExplicitLink,
           affiliateUrl: cleanAffiliate,
           logoImage: resolvedLogo,
-          highlight: (isCustom && needsHighlightReset) ? false : Boolean(c.highlight)
+          highlight: Boolean(c.highlight)
         };
       });
-
-      if (needsHighlightReset) {
-        try {
-          safeSaveCoupons(mapped);
-        } catch {}
-      }
 
       return mapped;
     } catch {
@@ -222,7 +211,6 @@ export const AppProvider = ({ children }) => {
       manualHighlight: false
     });
 
-    const needsStoreHighlightSanitize = localStorage.getItem('melhor_cupom_stores_highlight_clean_v7') !== 'done';
     const saved = localStorage.getItem('melhor_cupom_stores_v10') || localStorage.getItem('melhor_cupom_stores_v9');
     if (!saved) {
       const normalized = INITIAL_STORES.map(normalizeInitialStore);
@@ -242,10 +230,8 @@ export const AppProvider = ({ children }) => {
         const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze');
         const isPayingMerchant = !isCustomStore && Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
         
-        // Destaque deve ser estritamente acionado pelo administrador (manualHighlight), nunca automático
-        const isHighlighted = needsStoreHighlightSanitize
-          ? Boolean(s.manualHighlight)
-          : Boolean(s.manualHighlight ?? s.highlight ?? s.isFeatured ?? false);
+        // Destaque persistido de forma permanente
+        const isHighlighted = Boolean(s.highlight || s.isFeatured || s.manualHighlight);
 
         const resolvedTier = (s.tier && s.tier !== 'free')
           ? s.tier
@@ -292,13 +278,6 @@ export const AppProvider = ({ children }) => {
           ]
         };
       });
-
-      if (needsStoreHighlightSanitize) {
-        try {
-          localStorage.setItem('melhor_cupom_stores_highlight_clean_v7', 'done');
-          safeSetItem('melhor_cupom_stores_v10', mapped);
-        } catch {}
-      }
 
       return mapped;
     } catch {
@@ -744,9 +723,26 @@ export const AppProvider = ({ children }) => {
         const cloudStores = await db.getStores();
         if (isMounted && Array.isArray(cloudStores) && cloudStores.length > 0) {
           setStores(prev => {
-            const cloudIds = new Set(cloudStores.map(s => s.id));
-            const existingNonCloud = prev.filter(s => !cloudIds.has(s.id));
-            return [...cloudStores, ...existingNonCloud];
+            const cloudMap = new Map(cloudStores.map(s => [s.id, s]));
+            const updatedPrev = prev.map(s => {
+              const fromCloud = cloudMap.get(s.id);
+              if (fromCloud) {
+                const cloudHighlight = fromCloud.highlight ?? fromCloud.isFeatured ?? fromCloud.manualHighlight;
+                return {
+                  ...s,
+                  ...fromCloud,
+                  highlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.highlight),
+                  isFeatured: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.isFeatured),
+                  manualHighlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.manualHighlight)
+                };
+              }
+              return s;
+            });
+            const prevIds = new Set(prev.map(s => s.id));
+            const newFromCloud = cloudStores.filter(cs => !prevIds.has(cs.id));
+            const mergedStores = [...newFromCloud, ...updatedPrev];
+            safeSetItem('melhor_cupom_stores_v10', mergedStores);
+            return mergedStores;
           });
         }
 
@@ -787,37 +783,25 @@ export const AppProvider = ({ children }) => {
         const cloudCoupons = await db.getCoupons();
         if (isMounted && Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
           setCoupons(prev => {
-            const needsCloudReset = localStorage.getItem('melhor_cupom_custom_highlight_cloud_reset_v2') !== 'done';
+            const cloudMap = new Map(cloudCoupons.map(c => [c.id, c]));
 
-            const sanitizedPrev = prev.map(c => {
-              const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
-              if (isCustom && needsCloudReset && c.highlight) {
-                const unhighlighted = { ...c, highlight: false };
-                if (isSupabaseConfigured && supabase) {
-                  db.createCoupon(unhighlighted).catch(() => {});
-                }
-                return unhighlighted;
+            const updatedPrev = prev.map(c => {
+              const fromCloud = cloudMap.get(c.id);
+              if (fromCloud) {
+                return {
+                  ...c,
+                  ...fromCloud,
+                  banner: (c.banner && c.banner.startsWith('data:')) ? c.banner : (fromCloud.banner || c.banner),
+                  logoImage: (c.logoImage && c.logoImage.startsWith('data:')) ? c.logoImage : (fromCloud.logoImage || c.logoImage),
+                  highlight: fromCloud.highlight !== undefined ? Boolean(fromCloud.highlight) : Boolean(c.highlight)
+                };
               }
               return c;
             });
 
-            const prevIds = new Set(sanitizedPrev.map(c => c.id));
-            const newFromCloud = cloudCoupons.filter(cc => !prevIds.has(cc.id)).map(c => {
-              const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
-              return (isCustom && needsCloudReset) ? { ...c, highlight: false } : c;
-            });
-
-            if (needsCloudReset) {
-              try {
-                localStorage.setItem('melhor_cupom_custom_highlight_cloud_reset_v2', 'done');
-              } catch {}
-            }
-
-            if (newFromCloud.length === 0) {
-              safeSaveCoupons(sanitizedPrev);
-              return sanitizedPrev;
-            }
-            const merged = [...newFromCloud, ...sanitizedPrev];
+            const prevIds = new Set(prev.map(c => c.id));
+            const newFromCloud = cloudCoupons.filter(cc => !prevIds.has(cc.id));
+            const merged = [...newFromCloud, ...updatedPrev];
             safeSaveCoupons(merged);
             return merged;
           });
@@ -1032,23 +1016,52 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  // Alternar Destaque de Loja Parceira no Topo
+  // Alternar Destaque de Loja Parceira no Topo (sincroniza loja e cupons com persistência definitiva)
   const toggleHighlightStore = (storeId) => {
+    let nextHighlight = false;
+    let targetStoreName = '';
+
     setStores(prev => {
+      const target = prev.find(s => s.id === storeId || s.merchantId === storeId);
+      nextHighlight = target ? !target.highlight : true;
+      targetStoreName = target?.name || '';
+
       const updated = prev.map(s => {
         if (s.id === storeId || s.merchantId === storeId) {
-          const nextHighlight = !s.highlight;
-          return { 
+          const updatedStore = { 
             ...s, 
             highlight: nextHighlight,
             isFeatured: nextHighlight,
             manualHighlight: nextHighlight
           };
+          if (isSupabaseConfigured && supabase) {
+            db.updateStore(s.id, { highlight: nextHighlight }).catch(() => {});
+          }
+          return updatedStore;
         }
         return s;
       });
       safeSetItem('melhor_cupom_stores_v10', updated);
       return updated;
+    });
+
+    // Sincroniza também o destaque com todos os cupons vinculados a esta loja (ex: Omens, Manual, etc.)
+    setCoupons(prev => {
+      const updatedCoupons = prev.map(c => {
+        const matchesStore = c.storeId === storeId || 
+                             c.merchantId === storeId || 
+                             (targetStoreName && c.storeName && c.storeName.trim().toLowerCase() === targetStoreName.trim().toLowerCase());
+        if (matchesStore) {
+          const updatedC = { ...c, highlight: nextHighlight };
+          if (isSupabaseConfigured && supabase) {
+            db.createCoupon(updatedC).catch(err => console.warn('[Supabase Sync Store Coupon Highlight]', err));
+          }
+          return updatedC;
+        }
+        return c;
+      });
+      safeSaveCoupons(updatedCoupons);
+      return updatedCoupons;
     });
   };
 
@@ -1398,10 +1411,10 @@ export const AppProvider = ({ children }) => {
       id: couponId,
       viewsCount: 0,
       usesCount: 0,
-      highlight: Boolean(couponData.highlight),
       vipOnly: true,
       rules: couponData.rules || ['Apresentar o cupom VIP no balcão.', 'Não cumulativo com outras promoções.'],
-      ...couponData
+      ...couponData,
+      highlight: Boolean(couponData.highlight)
     };
 
     // Se o cupom tiver uma loja avulsa (ou se a loja não constar na lista de lojas), cadastrar a loja automaticamente
