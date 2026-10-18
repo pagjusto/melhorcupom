@@ -47,28 +47,69 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('melhor_cupom_role') || 'visitor';
   });
 
-  // Salvamento seguro de cupons com fallback contra estouro de cota (LocalStorage)
-  const safeSaveCoupons = (couponsList) => {
+  // Limpeza proativa de chaves legadas e duplicadas para liberar espaço no LocalStorage
+  const cleanObsoleteStorage = () => {
+    const obsoleteKeys = [
+      'melhor_cupom_stores_v8',
+      'melhor_cupom_stores_v7',
+      'melhor_cupom_stores_v6',
+      'melhor_cupom_stores_v5',
+      'melhor_cupom_stores_v4',
+      'melhor_cupom_stores',
+      'melhor_cupom_user',
+      'melhor_cupom_redemptions',
+      'melhor_cupom_admin_users',
+      'melhor_cupom_hot_deals_v8',
+      'melhor_cupom_hot_deals_v7'
+    ];
+    obsoleteKeys.forEach(key => {
+      try { localStorage.removeItem(key); } catch {}
+    });
+  };
+
+  // Executar limpeza proativa de chaves legadas imediatamente ao carregar
+  useEffect(() => {
+    cleanObsoleteStorage();
+  }, []);
+
+  // Gravador universal seguro protegido contra QuotaExceededError
+  const safeSetItem = (key, value) => {
     try {
-      localStorage.setItem('melhor_cupom_coupons', JSON.stringify(couponsList));
-      const customOnly = couponsList.filter(c => !INITIAL_COUPONS.some(init => init.id === c.id));
-      localStorage.setItem('melhor_cupom_custom_coupons', JSON.stringify(customOnly));
+      const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+      localStorage.setItem(key, serialized);
     } catch (err) {
-      console.warn('[Storage] Cota excedida ao salvar cupons, tentando salvar sanitizado:', err);
+      console.warn(`[Storage] Cota excedida ao gravar "${key}". Executando limpeza e sanitizacao...`, err);
+      cleanObsoleteStorage();
       try {
-        const sanitized = couponsList.map(c => {
-          if (c.banner && typeof c.banner === 'string' && c.banner.startsWith('data:image/') && c.banner.length > 80000) {
-            return { ...c, banner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80' };
-          }
-          return c;
-        });
-        localStorage.setItem('melhor_cupom_coupons', JSON.stringify(sanitized));
-        const customSanitized = sanitized.filter(c => !INITIAL_COUPONS.some(init => init.id === c.id));
-        localStorage.setItem('melhor_cupom_custom_coupons', JSON.stringify(customSanitized));
+        if (typeof value === 'object' && Array.isArray(value)) {
+          const sanitized = value.map(item => {
+            if (item && typeof item === 'object') {
+              const clean = { ...item };
+              if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 50000) {
+                clean.banner = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80';
+              }
+              if (clean.logoImage && typeof clean.logoImage === 'string' && clean.logoImage.startsWith('data:image/') && clean.logoImage.length > 50000) {
+                clean.logoImage = '';
+              }
+              return clean;
+            }
+            return item;
+          });
+          localStorage.setItem(key, JSON.stringify(sanitized));
+        } else {
+          localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        }
       } catch (innerErr) {
-        console.error('[Storage] Falha crítica ao persistir cupons:', innerErr);
+        console.warn(`[Storage] Nao foi possivel persistir "${key}" no LocalStorage (mantido em memoria):`, innerErr);
       }
     }
+  };
+
+  // Salvamento seguro de cupons com fallback contra estouro de cota (LocalStorage)
+  const safeSaveCoupons = (couponsList) => {
+    safeSetItem('melhor_cupom_coupons', couponsList);
+    const customOnly = couponsList.filter(c => !INITIAL_COUPONS.some(init => init.id === c.id));
+    safeSetItem('melhor_cupom_custom_coupons', customOnly);
   };
 
   // Estado de Cupons (com persistência blindada no LocalStorage e auto-mesclagem de novos dados)
@@ -363,7 +404,7 @@ export const AppProvider = ({ children }) => {
   const [hotDeals, setHotDeals] = useState(() => {
     const saved = localStorage.getItem('melhor_cupom_hot_deals_v9') || localStorage.getItem('melhor_cupom_hot_deals_v8');
     if (!saved) {
-      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(ALL_BASE_HOT_DEALS));
+      safeSetItem('melhor_cupom_hot_deals_v9', ALL_BASE_HOT_DEALS);
       return ALL_BASE_HOT_DEALS;
     }
     try {
@@ -379,7 +420,7 @@ export const AppProvider = ({ children }) => {
         const missingBaseDeals = ALL_BASE_HOT_DEALS.filter(d => !existingIds.has(d.id));
         const finalDeals = [...missingBaseDeals, ...updated];
 
-        localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(finalDeals));
+        safeSetItem('melhor_cupom_hot_deals_v9', finalDeals);
         return finalDeals;
       }
       return ALL_BASE_HOT_DEALS;
@@ -437,7 +478,7 @@ export const AppProvider = ({ children }) => {
     };
     setHotDeals(prev => {
       const updated = [newDeal, ...prev];
-      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+      safeSetItem('melhor_cupom_hot_deals_v9', updated);
       return updated;
     });
 
@@ -454,7 +495,7 @@ export const AppProvider = ({ children }) => {
   const deleteHotDeal = (id) => {
     setHotDeals(prev => {
       const updated = prev.filter(d => d.id !== id);
-      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+      safeSetItem('melhor_cupom_hot_deals_v9', updated);
       return updated;
     });
   };
@@ -480,7 +521,7 @@ export const AppProvider = ({ children }) => {
         ...nonShopee,
         ...syncedShopee
       ];
-      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+      safeSetItem('melhor_cupom_hot_deals_v9', updated);
       return updated;
     });
     return { count: syncedShopee.length };
@@ -494,7 +535,7 @@ export const AppProvider = ({ children }) => {
     setHotDeals(prev => {
       const withoutShein = prev.filter(p => !p.id.startsWith('deal_shein_') && !(p.store || '').toLowerCase().includes('shein'));
       const updated = [...syncedShein, ...withoutShein];
-      localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+      safeSetItem('melhor_cupom_hot_deals_v9', updated);
       return updated;
     });
     confetti({
@@ -523,7 +564,7 @@ export const AppProvider = ({ children }) => {
           ...(hasShein ? [] : SHEIN_VIRAL_TOP18),
           ...currentWithoutMagalu
         ];
-        localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+        safeSetItem('melhor_cupom_hot_deals_v9', updated);
         return updated;
       });
 
@@ -545,7 +586,7 @@ export const AppProvider = ({ children }) => {
           ...(hasShein ? [] : SHEIN_VIRAL_TOP18),
           ...currentWithoutMagalu
         ];
-        localStorage.setItem('melhor_cupom_hot_deals_v9', JSON.stringify(updated));
+        safeSetItem('melhor_cupom_hot_deals_v9', updated);
         return updated;
       });
 
@@ -599,9 +640,9 @@ export const AppProvider = ({ children }) => {
     setIsExtensionModalOpen(false);
   };
 
-  // Salvar no LocalStorage sempre que houver alteração
+  // Salvar no LocalStorage sempre que houver alteração (Blindado contra QuotaExceededError)
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_role', currentRole);
+    safeSetItem('melhor_cupom_role', currentRole);
   }, [currentRole]);
 
   useEffect(() => {
@@ -609,23 +650,19 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(stores));
-    localStorage.setItem('melhor_cupom_stores_v8', JSON.stringify(stores));
+    safeSetItem('melhor_cupom_stores_v10', stores);
   }, [stores]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_redemptions_v3', JSON.stringify(redemptions));
-    localStorage.setItem('melhor_cupom_redemptions', JSON.stringify(redemptions));
+    safeSetItem('melhor_cupom_redemptions_v3', redemptions);
   }, [redemptions]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_user_v3', JSON.stringify(userProfile));
-    localStorage.setItem('melhor_cupom_user', JSON.stringify(userProfile));
+    safeSetItem('melhor_cupom_user_v3', userProfile);
   }, [userProfile]);
 
   useEffect(() => {
-    localStorage.setItem('melhor_cupom_admin_users_v3', JSON.stringify(registeredUsers));
-    localStorage.setItem('melhor_cupom_admin_users', JSON.stringify(registeredUsers));
+    safeSetItem('melhor_cupom_admin_users_v3', registeredUsers);
   }, [registeredUsers]);
 
   // Sincronização inicial e em tempo real com o Supabase Cloud
@@ -1333,10 +1370,7 @@ export const AppProvider = ({ children }) => {
             createdAt: new Date().toISOString()
           };
           const updatedStores = [createdStore, ...prevStores];
-          try {
-            localStorage.setItem('melhor_cupom_stores_v10', JSON.stringify(updatedStores));
-            localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(updatedStores));
-          } catch {}
+          safeSetItem('melhor_cupom_stores_v10', updatedStores);
           return updatedStores;
         }
         return prevStores;
@@ -1413,10 +1447,7 @@ export const AppProvider = ({ children }) => {
           }
           return s;
         });
-        try {
-          localStorage.setItem('melhor_cupom_stores_v10', JSON.stringify(updatedStores));
-          localStorage.setItem('melhor_cupom_stores_v9', JSON.stringify(updatedStores));
-        } catch {}
+        safeSetItem('melhor_cupom_stores_v10', updatedStores);
         return updatedStores;
       });
     }

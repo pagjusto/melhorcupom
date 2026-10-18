@@ -17,6 +17,22 @@ export class ErrorBoundary extends React.Component {
   }
 
   handleReset = () => {
+    try {
+      const obsoleteKeys = [
+        'melhor_cupom_stores_v8',
+        'melhor_cupom_stores_v7',
+        'melhor_cupom_stores_v6',
+        'melhor_cupom_stores_v5',
+        'melhor_cupom_stores_v4',
+        'melhor_cupom_stores',
+        'melhor_cupom_user',
+        'melhor_cupom_redemptions',
+        'melhor_cupom_admin_users'
+      ];
+      obsoleteKeys.forEach(k => {
+        try { localStorage.removeItem(k); } catch {}
+      });
+    } catch {}
     this.setState({ hasError: false, error: null, errorInfo: null });
     window.location.reload();
   };
