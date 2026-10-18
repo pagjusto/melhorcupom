@@ -312,9 +312,6 @@ const MainLayout = () => {
               {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
               <ReferralBanner />
 
-              {/* BANNER DA EXTENSÃO PARA GOOGLE CHROME (AVISA CUPONS EM QUALQUER SITE) */}
-              <ExtensionBanner />
-
               {/* ORDENAÇÃO DINÂMICA BASEADA NO PERFIL: */}
               {/* Para Visitantes: Cupons das Grandes Lojas aparecem ACIMA dos locais */}
               {/* Para Usuários Logados / VIP / Lojistas / ADM: Cupons Locais aparecem ACIMA */}
@@ -762,6 +759,9 @@ const MainLayout = () => {
         onClose={closeLegalModal} 
         initialTab={legalModalTab} 
       />
+
+      {/* 6. Popup e Modal Global da Extensão do Chrome (Aparece enquanto o usuário navega) */}
+      <ExtensionBanner />
 
     </div>
   );

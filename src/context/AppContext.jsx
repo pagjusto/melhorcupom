@@ -577,6 +577,15 @@ export const AppProvider = ({ children }) => {
     setIsLegalModalOpen(false);
   };
 
+  // Modal / Apresentação da Extensão Oficial para Chrome
+  const [isExtensionModalOpen, setIsExtensionModalOpen] = useState(false);
+  const openExtensionModal = () => {
+    setIsExtensionModalOpen(true);
+  };
+  const closeExtensionModal = () => {
+    setIsExtensionModalOpen(false);
+  };
+
   // Salvar no LocalStorage sempre que houver alteração
   useEffect(() => {
     localStorage.setItem('melhor_cupom_role', currentRole);
@@ -2363,7 +2372,12 @@ export const AppProvider = ({ children }) => {
       setImperdiveisStoreFilter,
       navigateToImperdiveis,
       merchantDashboardTab,
-      setMerchantDashboardTab
+      setMerchantDashboardTab,
+      // Modal da Extensão Chrome
+      isExtensionModalOpen,
+      setIsExtensionModalOpen,
+      openExtensionModal,
+      closeExtensionModal
     }}>
       {children}
     </AppContext.Provider>

@@ -22,7 +22,8 @@ import {
   Settings,
   Gift,
   Flame,
-  Crown
+  Crown,
+  Puzzle
 } from 'lucide-react';
 
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
@@ -40,7 +41,8 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
     switchRole,
     logoutAccount,
     merchantDashboardTab,
-    setMerchantDashboardTab
+    setMerchantDashboardTab,
+    openExtensionModal
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -120,6 +122,19 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
                 }`}
               >
                 Como Funciona
+              </button>
+
+              {/* Botão de Destaque: Extensão do Chrome */}
+              <button
+                onClick={openExtensionModal}
+                className="px-3.5 py-1.5 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all text-amber-400 hover:text-white bg-gradient-to-r from-orange-500/15 to-amber-500/15 hover:from-orange-500/25 hover:to-amber-500/25 border border-orange-500/30 hover:border-orange-500/60 shadow-sm cursor-pointer group"
+                title="Extensão oficial que avisa cupons em qualquer site enquanto você navega"
+              >
+                <Puzzle size={15} className="text-[#FF5F00] group-hover:rotate-12 transition-transform" />
+                <span>Extensão</span>
+                <span className="text-[10px] bg-gradient-to-r from-[#FF5F00] to-amber-500 text-white font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Chrome
+                </span>
               </button>
             </div>
           </div>
@@ -541,6 +556,23 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/5"
           >
             Como Funciona
+          </button>
+
+          {/* Extensão Chrome no Menu Mobile */}
+          <button
+            onClick={() => { 
+              openExtensionModal(); 
+              setMobileMenuOpen(false); 
+            }}
+            className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold text-orange-300 bg-gradient-to-r from-orange-500/15 to-amber-500/15 border border-orange-500/30 hover:border-orange-500/60 flex items-center justify-between shadow-sm my-1 cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Puzzle size={16} className="text-[#FF5F00]" />
+              <span>Extensão para Chrome</span>
+            </div>
+            <span className="text-[10px] bg-[#FF5F00] text-white px-2 py-0.5 rounded-full font-black uppercase">
+              Avisa Cupons
+            </span>
           </button>
 
           {/* Painel ADM: No menu mobile */}
