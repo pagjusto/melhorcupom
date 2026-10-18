@@ -12,6 +12,7 @@ import { StoresView } from './components/StoresView';
 import { HowItWorksView } from './components/HowItWorksView';
 import { UserProfileSettings } from './components/UserProfileSettings';
 import { ReferralBanner } from './components/ReferralBanner';
+import { ExtensionBanner } from './components/ExtensionBanner';
 import { ReferralModal } from './components/ReferralModal';
 import { AuthModal } from './components/AuthModal';
 import { SavingsModal } from './components/SavingsModal';
@@ -310,6 +311,9 @@ const MainLayout = () => {
               
               {/* BANNER EM DESTAQUE: DIVULGUE & GANHE */}
               <ReferralBanner />
+
+              {/* BANNER DA EXTENSÃO PARA GOOGLE CHROME (AVISA CUPONS EM QUALQUER SITE) */}
+              <ExtensionBanner />
 
               {/* ORDENAÇÃO DINÂMICA BASEADA NO PERFIL: */}
               {/* Para Visitantes: Cupons das Grandes Lojas aparecem ACIMA dos locais */}
