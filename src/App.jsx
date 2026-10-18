@@ -110,9 +110,19 @@ const MainLayout = () => {
 
   // Filtrar Cupons por Cidade, Categoria e Tipo
   const filteredCoupons = coupons.filter(coupon => {
-    // 0. Ocultar cupons e lojas de testes/simulação para usuários comuns
-    const isTestCoupon = coupon.storeId === 'store_parceiro_demo' || coupon.id === 'cupom_parceiro_demo_1';
-    if (isTestCoupon && currentRole !== 'admin' && currentRole !== 'merchant_parceiro_demo' && !isSimulatingRole) {
+    // 0. REGRA INVIOLÁVEL: Cupons de teste/simulação (Smash Burger, etc.) NUNCA devem aparecer no catálogo público
+    const isTestCoupon = 
+      coupon.isSimulationOnly ||
+      coupon.storeId === 'store_parceiro_demo' || 
+      coupon.merchantId === 'merchant_parceiro_demo' ||
+      coupon.id === 'cupom_parceiro_demo_1' ||
+      coupon.id?.includes('demo') ||
+      (coupon.code && coupon.code.toUpperCase().includes('SMASH')) ||
+      (coupon.title && coupon.title.toLowerCase().includes('smash burger')) ||
+      (coupon.storeName && coupon.storeName.toLowerCase().includes('smash burger')) ||
+      (coupon.storeName && coupon.storeName.toLowerCase().includes('loja parceira'));
+
+    if (isTestCoupon) {
       return false;
     }
 

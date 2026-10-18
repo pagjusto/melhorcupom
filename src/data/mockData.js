@@ -162,6 +162,7 @@ export const INITIAL_STORES = [
     cnpj: '45.123.890/0001-12',
     cep: '01310-100',
     merchantId: 'merchant_parceiro_demo',
+    isSimulationOnly: true,
     tier: 'gold', // Plano Ouro VIP
     adminPaidPlan: true,
     isNewPartner: true,
@@ -896,6 +897,7 @@ export const INITIAL_STORES = [
 export const INITIAL_COUPONS = [
   {
     id: 'cupom_parceiro_demo_1',
+    isSimulationOnly: true,
     storeId: 'store_parceiro_demo',
     merchantId: 'merchant_parceiro_demo',
     storeName: 'Smash Burger & Co. (Loja Parceira)',

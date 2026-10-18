@@ -120,6 +120,15 @@ export const AdminDashboard = () => {
     let apiCount = 0;
 
     stores.forEach(s => {
+      if (
+        s.id === 'store_parceiro_demo' || 
+        s.merchantId === 'merchant_parceiro_demo' || 
+        s.id?.includes('demo') ||
+        s.name?.toLowerCase().includes('smash burger') ||
+        s.name?.toLowerCase().includes('loja parceira')
+      ) {
+        return;
+      }
       const tier = (s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze')
         ? s.tier
         : (s.isNewPartner ? 'bronze' : 'api');
@@ -282,6 +291,15 @@ export const AdminDashboard = () => {
   // Filtragem de Lojas para a Tabela de Gestão
   const filteredStoresList = useMemo(() => {
     return stores.filter(store => {
+      if (
+        store.id === 'store_parceiro_demo' || 
+        store.merchantId === 'merchant_parceiro_demo' || 
+        store.id?.includes('demo') ||
+        store.name?.toLowerCase().includes('smash burger') ||
+        store.name?.toLowerCase().includes('loja parceira')
+      ) {
+        return false;
+      }
       const matchesSearch = store.name.toLowerCase().includes(storeSearch.toLowerCase()) ||
                             (store.category && store.category.toLowerCase().includes(storeSearch.toLowerCase())) ||
                             (store.address && store.address.toLowerCase().includes(storeSearch.toLowerCase()));

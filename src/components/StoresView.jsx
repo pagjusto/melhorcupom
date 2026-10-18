@@ -56,15 +56,29 @@ export const StoresView = ({ onSelectStore }) => {
   const physicalStoresCount = useMemo(() => stores.filter(s => 
     s.type === 'physical' && 
     !s.isApiIntegrated && 
-    (isSimulationOrAdmin || (s.id !== 'store_parceiro_demo' && s.merchantId !== 'merchant_parceiro_demo'))
-  ).length, [stores, isSimulationOrAdmin]);
+    !s.isSimulationOnly &&
+    s.id !== 'store_parceiro_demo' && 
+    s.merchantId !== 'merchant_parceiro_demo' &&
+    !s.id?.includes('demo') &&
+    !s.merchantId?.includes('demo') &&
+    !s.name?.toLowerCase().includes('smash burger') &&
+    !s.name?.toLowerCase().includes('loja parceira')
+  ).length, [stores]);
   const onlineStoresCount = useMemo(() => stores.filter(s => s.isApiIntegrated || s.type === 'online').length, [stores]);
 
   const filteredStores = useMemo(() => {
     return sortedStores.filter(store => {
-      // Ocultar perfis de lojas de teste/simulação para usuários comuns
-      const isTestStore = store.id === 'store_parceiro_demo' || store.merchantId === 'merchant_parceiro_demo';
-      if (isTestStore && !isSimulationOrAdmin) {
+      // REGRA INVIOLÁVEL: Perfis de testes e simulação (Smash Burger, etc.) NUNCA devem aparecer no catálogo de lojas
+      const isTestStore = 
+        store.isSimulationOnly ||
+        store.id === 'store_parceiro_demo' || 
+        store.merchantId === 'merchant_parceiro_demo' ||
+        store.id?.includes('demo') ||
+        (store.merchantId && store.merchantId.includes('demo')) ||
+        (store.name && store.name.toLowerCase().includes('smash burger')) ||
+        (store.name && store.name.toLowerCase().includes('loja parceira'));
+
+      if (isTestStore) {
         return false;
       }
 

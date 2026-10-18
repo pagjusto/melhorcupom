@@ -417,6 +417,19 @@ export const AdminCouponsManager = ({ showToast }) => {
 
   // Filtragem da Lista de Cupons
   const filteredCoupons = coupons.filter(c => {
+    if (
+      c.storeId === 'store_parceiro_demo' || 
+      c.merchantId === 'merchant_parceiro_demo' ||
+      c.id === 'cupom_parceiro_demo_1' || 
+      c.id?.includes('demo') ||
+      c.code?.toUpperCase().includes('SMASH') ||
+      c.title?.toLowerCase().includes('smash burger') ||
+      c.storeName?.toLowerCase().includes('smash burger') ||
+      c.storeName?.toLowerCase().includes('loja parceira')
+    ) {
+      return false;
+    }
+
     const q = searchQuery.toLowerCase().trim();
     const st = stores.find(s => s.id === c.storeId);
     const storeName = (c.storeName || st?.name || '').toLowerCase();
