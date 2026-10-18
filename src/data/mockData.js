@@ -920,7 +920,7 @@ export const INITIAL_COUPONS = [
     expiresAt: '2026-12-31',
     usesCount: 37,
     maxUsesPerUser: 2,
-    highlight: true,
+    highlight: false,
     vipOnly: true,
     rules: [
       'Apresentar o cupom VIP no balcão da loja.',
@@ -956,7 +956,7 @@ export const INITIAL_COUPONS = [
       'Não cumulativo com outras promoções vigentes',
       'Desconto aplicado na 2ª oferta de menor ou igual valor'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -985,7 +985,7 @@ export const INITIAL_COUPONS = [
       'Apresentar cupom ao atendente ao fazer o pedido',
       'Consumo exclusivo no estabelecimento'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1015,7 +1015,7 @@ export const INITIAL_COUPONS = [
       'Apresentar QR Code no caixa das lojas Track & Field',
       'Não cumulativo com liquidações vigentes'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1044,7 +1044,7 @@ export const INITIAL_COUPONS = [
       'Válido de quarta a domingo',
       'Apresentar QR Code ao garçom'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1073,7 +1073,7 @@ export const INITIAL_COUPONS = [
       'Consumo exclusivo no restaurante Fogo de Chão no jantar',
       'Apresente ao garçom antes de solicitar a conta'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1103,7 +1103,7 @@ export const INITIAL_COUPONS = [
       'Válido de segunda a quinta-feira na Barbearia Corleone',
       'Apresentar o código ou QR Code no momento do pagamento'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1160,7 +1160,7 @@ export const INITIAL_COUPONS = [
       'Válido para novas adesões ao Plano Black Smart Fit',
       'Apresentar na recepção da academia ou ativar online'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1189,7 +1189,7 @@ export const INITIAL_COUPONS = [
       'Copie o código promocional exclusivo e cole no checkout',
       'Frete grátis para compras acima de R$ 199'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1276,7 +1276,7 @@ export const INITIAL_COUPONS = [
       'Válido de segunda a quinta-feira na rede Cinemark',
       'Apresente o cupom na bilheteria VIP ou totem de autoatendimento'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1312,7 +1312,7 @@ export const INITIAL_COUPONS = [
       'Cashback creditado na sua conta Melhor Cupom após confirmação da loja',
       'Frete Grátis com entrega expressa para assinantes Prime'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1347,7 +1347,7 @@ export const INITIAL_COUPONS = [
       'Insira o cupom promocional no campo "Cupom de Desconto" da sacola',
       'Cashback calculado sobre o valor líquido dos produtos elegíveis'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1382,7 +1382,7 @@ export const INITIAL_COUPONS = [
       'Cole o código do voucher na tela de fechamento de pedido',
       'Cumulativo com moedas Shopee e frete grátis do aplicativo'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1417,7 +1417,7 @@ export const INITIAL_COUPONS = [
       'Aplicável em lojas com selo de Frete Grátis Extra',
       'Sem valor mínimo de compra no carrinho'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: false
   },
   {
@@ -1485,7 +1485,7 @@ export const INITIAL_COUPONS = [
       'Exclusivo para produtos vendidos em lojas com o selo Shopee Mall',
       'Garantia de produto 100% autêntico e devolução grátis'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1588,7 +1588,7 @@ export const INITIAL_COUPONS = [
       'Cumulativo com pontos SHEIN e ofertas relâmpago',
       'Desconto aplicado diretamente no checkout'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: false
   },
   {
@@ -1623,7 +1623,7 @@ export const INITIAL_COUPONS = [
       'Aplicável em envios locais e internacionais',
       'Sem taxa de entrega'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: false
   },
   {
@@ -1691,7 +1691,7 @@ export const INITIAL_COUPONS = [
       'Exclusivo para primeira compra de novos usuários no App (código SHEINNEW)',
       'Válido para todo o catálogo nacional e internacional'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1794,7 +1794,7 @@ export const INITIAL_COUPONS = [
       'Código promocional testado e aprovado pela equipe de curadoria',
       'Cashback ativado via rastreamento oficial Awin'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1828,7 +1828,7 @@ export const INITIAL_COUPONS = [
       'Válido para produtos elegíveis com selo Full ou lojas oficiais Mercado Livre (cupom MELI40)',
       'Insira o cupom na etapa final de confirmação de pagamento'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1862,7 +1862,7 @@ export const INITIAL_COUPONS = [
       'Válido para compras no KaBuM! com código KABUM10 ativado',
       'Desconto acumulável com 15% à vista no PIX em itens selecionados'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1896,7 +1896,7 @@ export const INITIAL_COUPONS = [
       'Válido para compras no site ou app Drogasil (cupom DROGASIL10)',
       'Retirada grátis na loja em até 1 hora ou frete expresso'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1931,7 +1931,7 @@ export const INITIAL_COUPONS = [
       'Acumulável com descontos de pagamento à vista no PIX',
       'Cashback ativado via API oficial Awin'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1965,7 +1965,7 @@ export const INITIAL_COUPONS = [
       'Válido para produtos selecionados do catálogo Choice AliExpress (cupom oficial de afiliado BRAFF20)',
       'Cupom adicionado no carrinho antes da finalização'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -1999,7 +1999,7 @@ export const INITIAL_COUPONS = [
       'Válido no aplicativo e site Casas Bahia (código BAHIA10)',
       'Desconto aplicado na tela de pagamento'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -2033,7 +2033,7 @@ export const INITIAL_COUPONS = [
       'Exclusivo para o e-commerce oficial adidas.com.br (código ADICLUB)',
       'Rastreamento de cashback Awin ativado'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   {
@@ -2067,7 +2067,7 @@ export const INITIAL_COUPONS = [
       'Válido no site oficial Netshoes',
       'Desconto instantâneo ao inserir o código na sacola'
     ],
-    highlight: true,
+    highlight: false,
     vipOnly: true
   },
   ...(Array.isArray(liveAffiliateCoupons) ? liveAffiliateCoupons : []),

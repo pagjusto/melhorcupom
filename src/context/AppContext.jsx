@@ -150,7 +150,7 @@ export const AppProvider = ({ children }) => {
       const missingInitial = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
       const combined = [...missingCustom, ...parsed, ...missingInitial];
       
-      const needsHighlightReset = localStorage.getItem('melhor_cupom_custom_highlight_reset_v2') !== 'done';
+      const needsHighlightReset = localStorage.getItem('melhor_cupom_highlight_clean_v7') !== 'done';
 
       const mapped = combined.map(c => {
         const init = INITIAL_COUPONS.find(i => i.id === c.id);
@@ -179,7 +179,8 @@ export const AppProvider = ({ children }) => {
             originalPrice: init.originalPrice ?? c.originalPrice,
             promoPrice: init.promoPrice ?? c.promoPrice,
             city: init.city || c.city,
-            cities: init.cities || c.cities || (init.city ? [init.city] : [])
+            cities: init.cities || c.cities || (init.city ? [init.city] : []),
+            highlight: Boolean(init.highlight)
           };
         }
         const cleanAffiliate = normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, c);
@@ -200,7 +201,6 @@ export const AppProvider = ({ children }) => {
 
       if (needsHighlightReset) {
         try {
-          localStorage.setItem('melhor_cupom_custom_highlight_reset_v2', 'done');
           safeSaveCoupons(mapped);
         } catch {}
       }
@@ -216,9 +216,13 @@ export const AppProvider = ({ children }) => {
   const [stores, setStores] = useState(() => {
     const normalizeInitialStore = (st) => ({
       ...st,
-      tier: st.adminPaidPlan ? st.tier : 'api'
+      tier: st.adminPaidPlan ? st.tier : 'api',
+      highlight: false,
+      isFeatured: false,
+      manualHighlight: false
     });
 
+    const needsStoreHighlightSanitize = localStorage.getItem('melhor_cupom_stores_highlight_clean_v7') !== 'done';
     const saved = localStorage.getItem('melhor_cupom_stores_v10') || localStorage.getItem('melhor_cupom_stores_v9');
     if (!saved) {
       const normalized = INITIAL_STORES.map(normalizeInitialStore);
@@ -230,14 +234,19 @@ export const AppProvider = ({ children }) => {
       const parsedIds = new Set(parsed.map(s => s.id));
       const missing = INITIAL_STORES.filter(s => !parsedIds.has(s.id));
       const combined = [...parsed, ...missing];
-      return combined.map(s => {
+      const mapped = combined.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
         const isCustomStore = Boolean(s.isAvulsa || s.isAvulso || s.isCustom || s.noSimulator || s.id?.startsWith('store_avulsa_') || s.merchantId?.startsWith('merchant_avulso_'));
         const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze');
         const isPayingMerchant = !isCustomStore && Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
-        const isHighlighted = Boolean(s.highlight || s.isFeatured);
+        
+        // Destaque deve ser estritamente acionado pelo administrador (manualHighlight), nunca automático
+        const isHighlighted = needsStoreHighlightSanitize
+          ? Boolean(s.manualHighlight)
+          : Boolean(s.manualHighlight ?? s.highlight ?? s.isFeatured ?? false);
+
         const resolvedTier = (s.tier && s.tier !== 'free')
           ? s.tier
           : (isPayingMerchant ? (init?.tier || 'bronze') : 'api');
@@ -252,6 +261,7 @@ export const AppProvider = ({ children }) => {
           tier: resolvedTier,
           highlight: isHighlighted,
           isFeatured: isHighlighted,
+          manualHighlight: isHighlighted,
           isAvulsa: isCustomStore,
           isAvulso: isCustomStore,
           isCustom: isCustomStore,
@@ -282,6 +292,15 @@ export const AppProvider = ({ children }) => {
           ]
         };
       });
+
+      if (needsStoreHighlightSanitize) {
+        try {
+          localStorage.setItem('melhor_cupom_stores_highlight_clean_v7', 'done');
+          safeSetItem('melhor_cupom_stores_v10', mapped);
+        } catch {}
+      }
+
+      return mapped;
     } catch {
       return INITIAL_STORES.map(normalizeInitialStore);
     }
@@ -1022,7 +1041,8 @@ export const AppProvider = ({ children }) => {
           return { 
             ...s, 
             highlight: nextHighlight,
-            isFeatured: nextHighlight
+            isFeatured: nextHighlight,
+            manualHighlight: nextHighlight
           };
         }
         return s;

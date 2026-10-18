@@ -267,11 +267,6 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                   {storeName}
                 </span>
               )}
-              {isHighlighted && (
-                <span className="text-[7px] bg-gradient-to-r from-amber-400 to-orange-500 text-black font-extrabold px-1 py-0.2 rounded shadow-sm">
-                  ⭐ DESTAQUE
-                </span>
-              )}
             </div>
             {store?.rating && (
               <span className="text-[9px] text-amber-400 font-bold flex items-center gap-0.5 ml-1 flex-shrink-0">
