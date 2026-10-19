@@ -214,10 +214,10 @@ export const AppProvider = ({ children }) => {
       manualHighlight: false
     });
 
-    const saved = localStorage.getItem('melhor_cupom_stores_v10') || localStorage.getItem('melhor_cupom_stores_v9');
+    const saved = localStorage.getItem('melhor_cupom_stores_v11') || localStorage.getItem('melhor_cupom_stores_v10') || localStorage.getItem('melhor_cupom_stores_v9');
     if (!saved) {
       const normalized = INITIAL_STORES.map(normalizeInitialStore);
-      localStorage.setItem('melhor_cupom_stores_v10', JSON.stringify(normalized));
+      localStorage.setItem('melhor_cupom_stores_v11', JSON.stringify(normalized));
       return normalized;
     }
     try {
@@ -231,17 +231,11 @@ export const AppProvider = ({ children }) => {
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
         const isCustomStore = Boolean(s.isAvulsa || s.isAvulso || s.isCustom || s.noSimulator || s.id?.startsWith('store_avulsa_') || s.merchantId?.startsWith('merchant_avulso_'));
 
-        // Regra de Negócio: Lojas parceiras atuais NÃO são pagantes (sem planos Ouro, Prata ou Bronze)
-        // Apenas parceiros que forem explicitamente configurados pelo Admin como pagantes recebem plano
-        let cleanTier = s.adminPaidPlan ? s.tier : 'api';
-        if (cleanTier === 'gold' || cleanTier === 'silver' || cleanTier === 'bronze') {
-          if (!s.adminPaidPlan) {
-            cleanTier = 'api';
-          }
-        }
-
-        const isExplicitPaid = Boolean(s.adminPaidPlan && (cleanTier === 'gold' || cleanTier === 'silver' || cleanTier === 'bronze'));
-        const resolvedTier = isExplicitPaid ? cleanTier : 'api';
+        // Regra de Negócio Absoluta: Atualmente NENHUMA loja possui plano pago ativo (nenhuma é pagante).
+        // Qualquer loja com plano Bronze, Prata ou Ouro remanescente de versões antigas do localStorage é normalizada para 'api' (sem plano).
+        // Apenas se houver adminExplicitPaidUpgrade: true explícito de ação do admin nesta sessão o plano é mantido.
+        const isExplicitPaid = Boolean(s.adminExplicitPaidUpgrade && (s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze'));
+        const resolvedTier = isExplicitPaid ? s.tier : 'api';
         
         // Destaque persistido de forma permanente
         const isHighlighted = Boolean(s.highlight || s.isFeatured || s.manualHighlight);
@@ -270,7 +264,7 @@ export const AppProvider = ({ children }) => {
           cities: init?.cities || s.cities || (init?.city ? [init.city] : []),
           phone: init?.phone || s.phone || '(11) 98123-4567',
           address: init?.address || s.address || '',
-          badge: init?.badge || s.badge || '',
+          badge: (s.badge?.includes('Bronze') || s.badge?.includes('Prata') || s.badge?.includes('Ouro')) ? (init?.badge || '') : (init?.badge || s.badge || ''),
           isApiIntegrated: init?.isApiIntegrated ?? s.isApiIntegrated ?? false,
           apiSource: init?.apiSource || s.apiSource || null,
           apiStatus: init?.apiStatus || s.apiStatus || null,
@@ -291,7 +285,7 @@ export const AppProvider = ({ children }) => {
         };
       });
 
-      safeSetItem('melhor_cupom_stores_v10', mapped);
+      safeSetItem('melhor_cupom_stores_v11', mapped);
       return mapped;
     } catch {
       return INITIAL_STORES.map(normalizeInitialStore);
@@ -675,7 +669,7 @@ export const AppProvider = ({ children }) => {
   }, [coupons]);
 
   useEffect(() => {
-    safeSetItem('melhor_cupom_stores_v10', stores);
+    safeSetItem('melhor_cupom_stores_v11', stores);
   }, [stores]);
 
   useEffect(() => {
@@ -758,7 +752,7 @@ export const AppProvider = ({ children }) => {
             const prevIds = new Set(prev.map(s => s.id));
             const newFromCloud = cloudStores.filter(cs => !prevIds.has(cs.id));
             const mergedStores = [...newFromCloud, ...updatedPrev];
-            safeSetItem('melhor_cupom_stores_v10', mergedStores);
+            safeSetItem('melhor_cupom_stores_v11', mergedStores);
             return mergedStores;
           });
         }
@@ -1020,15 +1014,17 @@ export const AppProvider = ({ children }) => {
     setStores(prev => {
       const updated = prev.map(s => {
         if (s.id === storeId || s.merchantId === storeId) {
+          const isPaid = newTier === 'gold' || newTier === 'silver' || newTier === 'bronze';
           return { 
             ...s, 
             tier: newTier, 
-            adminPaidPlan: newTier !== 'api'
+            adminPaidPlan: isPaid,
+            adminExplicitPaidUpgrade: isPaid
           };
         }
         return s;
       });
-      safeSetItem('melhor_cupom_stores_v10', updated);
+      safeSetItem('melhor_cupom_stores_v11', updated);
       return updated;
     });
   };
@@ -1468,7 +1464,7 @@ export const AppProvider = ({ children }) => {
             createdAt: new Date().toISOString()
           };
           const updatedStores = [createdStore, ...prevStores];
-          safeSetItem('melhor_cupom_stores_v10', updatedStores);
+          safeSetItem('melhor_cupom_stores_v11', updatedStores);
           return updatedStores;
         }
         return prevStores;
@@ -1616,12 +1612,14 @@ export const AppProvider = ({ children }) => {
           const remainingBalance = discountAmount > 0 
             ? Math.max(0, (s.referralBalance || 0) - discountAmount)
             : (s.referralBalance || 0);
+          const isPaid = newTier === 'gold' || newTier === 'silver' || newTier === 'bronze';
           return { 
             ...s, 
             tier: newTier,
             freeTrialActive: false,
             firstMonthFree: false,
-            adminPaidPlan: newTier !== 'api',
+            adminPaidPlan: isPaid,
+            adminExplicitPaidUpgrade: isPaid,
             referralBalance: remainingBalance
           };
         }

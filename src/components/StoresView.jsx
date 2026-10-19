@@ -356,7 +356,8 @@ export const StoresView = ({ onSelectStore }) => {
             const isHighlighted = Boolean(store.highlight || store.isFeatured);
             const storeLogo = getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || store.logoImage;
             const isOnlineStore = store.isApiIntegrated || store.type === 'online';
-            const tier = store.tier || 'api';
+            const isPaidStore = Boolean(store.adminPaidPlan && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
+            const tier = isPaidStore ? store.tier : 'api';
 
             return (
               <div

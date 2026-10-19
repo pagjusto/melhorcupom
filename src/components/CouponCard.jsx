@@ -25,7 +25,13 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen, recordCouponView } = useApp();
 
   const isFavorite = userProfile.savedCouponIds.includes(coupon.id);
-  const storeTier = store?.tier || 'free';
+  // Regra de Negócio: Apenas parceiros com adminPaidPlan ativo possuem plano (Bronze, Prata, Ouro).
+  // Sem plano pago explicitamente aprovado, o cupom não exibe badge ou medalha de plano.
+  const isExplicitPaid = Boolean(
+    store?.adminPaidPlan && 
+    (store?.tier === 'gold' || store?.tier === 'silver' || store?.tier === 'bronze')
+  );
+  const storeTier = isExplicitPaid ? store.tier : 'free';
 
   // Verificar histórico de resgates deste cupom pelo usuário logado
   const userUsesCount = redemptions?.filter(r => 
@@ -143,7 +149,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {!isHighlighted && storeTier === 'gold' && (
+          {!isHighlighted && isExplicitPaid && storeTier === 'gold' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-sm text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Ouro"
@@ -152,7 +158,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {!isHighlighted && storeTier === 'silver' && (
+          {!isHighlighted && isExplicitPaid && storeTier === 'silver' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-slate-300/50 shadow-sm text-slate-300 flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Prata"
@@ -161,7 +167,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {!isHighlighted && storeTier === 'bronze' && (
+          {!isHighlighted && isExplicitPaid && storeTier === 'bronze' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-[#CD7F32]/60 shadow-sm text-[#CD7F32] flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Bronze"
@@ -247,7 +253,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           {/* Identificação da Loja com Nome Branco Original */}
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1.5 line-clamp-1">
-              {storeTier === 'gold' ? (
+              {isExplicitPaid && storeTier === 'gold' ? (
                 <>
                   <Crown size={10} fill="currentColor" className="text-amber-400 flex-shrink-0" />
                   <span className="text-[11px] font-bold text-white uppercase tracking-wider truncate">{storeName}</span>
@@ -255,7 +261,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                     OURO
                   </span>
                 </>
-              ) : storeTier === 'silver' ? (
+              ) : isExplicitPaid && storeTier === 'silver' ? (
                 <>
                   <Award size={10} className="text-slate-300 flex-shrink-0" />
                   <span className="text-[11px] font-bold text-white uppercase tracking-wider truncate">{storeName}</span>
@@ -263,7 +269,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                     PRATA
                   </span>
                 </>
-              ) : storeTier === 'bronze' ? (
+              ) : isExplicitPaid && storeTier === 'bronze' ? (
                 <>
                   <Medal size={10} className="text-[#CD7F32] flex-shrink-0" />
                   <span className="text-[11px] font-bold text-white uppercase tracking-wider truncate">{storeName}</span>

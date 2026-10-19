@@ -131,9 +131,8 @@ export const AdminDashboard = () => {
       ) {
         return;
       }
-      const tier = (s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze')
-        ? s.tier
-        : (s.isNewPartner ? 'bronze' : 'api');
+      const isPaid = Boolean((s.adminPaidPlan || s.adminExplicitPaidUpgrade) && (s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze'));
+      const tier = isPaid ? s.tier : 'api';
       if (tier === 'gold') goldCount++;
       else if (tier === 'silver') silverCount++;
       else if (tier === 'bronze') bronzeCount++;
@@ -222,9 +221,8 @@ export const AdminDashboard = () => {
         };
       }
       cityMap[city].storesCount += 1;
-      const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
-        ? store.tier
-        : (store.isNewPartner ? 'bronze' : 'api');
+      const isPaid = Boolean((store.adminPaidPlan || store.adminExplicitPaidUpgrade) && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
+      const tier = isPaid ? store.tier : 'api';
       if (tier === 'gold') {
         cityMap[city].goldStores += 1;
         cityMap[city].merchantRevenue += 109.90;
@@ -306,9 +304,8 @@ export const AdminDashboard = () => {
                             (store.category && store.category.toLowerCase().includes(storeSearch.toLowerCase())) ||
                             (store.address && store.address.toLowerCase().includes(storeSearch.toLowerCase()));
       const matchesCity = selectedCityFilter === 'all' || store.city === selectedCityFilter;
-      const effectiveTier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
-        ? store.tier
-        : (store.isNewPartner ? 'bronze' : 'api');
+      const isPaid = Boolean((store.adminPaidPlan || store.adminExplicitPaidUpgrade) && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
+      const effectiveTier = isPaid ? store.tier : 'api';
       const matchesTier = storeTierFilter === 'all' || effectiveTier === storeTierFilter;
       return matchesSearch && matchesCity && matchesTier;
     });
@@ -1149,9 +1146,8 @@ export const AdminDashboard = () => {
                   </div>
                 ) : (
                   filteredStoresList.map(store => {
-                    const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
-                      ? store.tier
-                      : (store.isNewPartner ? 'bronze' : 'api');
+                    const isPaid = Boolean((store.adminPaidPlan || store.adminExplicitPaidUpgrade) && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
+      const tier = isPaid ? store.tier : 'api';
                     return (
                       <div key={store.id} className="bg-[#1A1A28] border border-white/5 rounded-xl p-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
@@ -1534,9 +1530,8 @@ export const AdminDashboard = () => {
                 <tbody className="divide-y divide-white/5 text-gray-300">
                   {filteredStoresList.map(store => {
                     const isHighlighted = Boolean(store.highlight || store.isFeatured);
-                    const tier = (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze')
-                      ? store.tier
-                      : (store.isNewPartner ? 'bronze' : 'api');
+                    const isPaid = Boolean((store.adminPaidPlan || store.adminExplicitPaidUpgrade) && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
+      const tier = isPaid ? store.tier : 'api';
                     const activeOffers = coupons.filter(c => c.storeId === store.id).length;
 
                     return (
