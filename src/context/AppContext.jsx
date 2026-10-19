@@ -228,21 +228,20 @@ export const AppProvider = ({ children }) => {
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
         const isCustomStore = Boolean(s.isAvulsa || s.isAvulso || s.isCustom || s.noSimulator || s.id?.startsWith('store_avulsa_') || s.merchantId?.startsWith('merchant_avulso_'));
 
-        // Regra de Negócio: Não há lojas parceiras nos planos Ouro ou Prata no momento
-        let cleanTier = s.tier;
-        if (cleanTier === 'gold' || cleanTier === 'silver') {
-          cleanTier = init?.tier || ((s.type === 'online' || s.isApiIntegrated) ? 'api' : 'bronze');
+        // Regra de Negócio: Lojas parceiras atuais NÃO são pagantes (sem planos Ouro, Prata ou Bronze)
+        // Apenas parceiros que forem explicitamente configurados pelo Admin como pagantes recebem plano
+        let cleanTier = s.adminPaidPlan ? s.tier : 'api';
+        if (cleanTier === 'gold' || cleanTier === 'silver' || cleanTier === 'bronze') {
+          if (!s.adminPaidPlan) {
+            cleanTier = 'api';
+          }
         }
 
-        const isExplicitPaid = Boolean(s.adminPaidPlan || cleanTier === 'bronze');
-        const isPayingMerchant = !isCustomStore && Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
+        const isExplicitPaid = Boolean(s.adminPaidPlan && (cleanTier === 'gold' || cleanTier === 'silver' || cleanTier === 'bronze'));
+        const resolvedTier = isExplicitPaid ? cleanTier : 'api';
         
         // Destaque persistido de forma permanente
         const isHighlighted = Boolean(s.highlight || s.isFeatured || s.manualHighlight);
-
-        const resolvedTier = (cleanTier && cleanTier !== 'free')
-          ? cleanTier
-          : (isPayingMerchant ? (init?.tier || 'bronze') : 'api');
 
         return {
           ...s,
@@ -259,7 +258,7 @@ export const AppProvider = ({ children }) => {
           isAvulso: isCustomStore,
           isCustom: isCustomStore,
           noSimulator: isCustomStore,
-          adminPaidPlan: Boolean(s.adminPaidPlan || isExplicitPaid || resolvedTier !== 'api'),
+          adminPaidPlan: isExplicitPaid,
           category: init?.category || s.category || 'gastronomia',
           city: init?.city || s.city || 'Todo o Brasil (Online)',
           cities: init?.cities || s.cities || (init?.city ? [init.city] : []),
@@ -736,14 +735,13 @@ export const AppProvider = ({ children }) => {
               const fromCloud = cloudMap.get(s.id);
               if (fromCloud) {
                 const cloudHighlight = fromCloud.highlight ?? fromCloud.isFeatured ?? fromCloud.manualHighlight;
-                let cleanCloudTier = fromCloud.tier || s.tier;
-                if (cleanCloudTier === 'gold' || cleanCloudTier === 'silver') {
-                  cleanCloudTier = (s.type === 'online' || s.isApiIntegrated) ? 'api' : 'bronze';
-                }
+                const isPaid = Boolean(fromCloud.adminPaidPlan && (fromCloud.tier === 'gold' || fromCloud.tier === 'silver' || fromCloud.tier === 'bronze'));
+                const cleanCloudTier = isPaid ? fromCloud.tier : 'api';
                 return {
                   ...s,
                   ...fromCloud,
                   tier: cleanCloudTier,
+                  adminPaidPlan: isPaid,
                   highlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.highlight),
                   isFeatured: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.isFeatured),
                   manualHighlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.manualHighlight)
