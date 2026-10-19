@@ -61,10 +61,10 @@ ${referralLink}
 Tem uma loja física, restaurante, cafeteria, barbearia ou franquia?
 Cadastre sua empresa no Melhor Cupom e coloque suas ofertas na vitrine para milhares de clientes da sua cidade!
 
-🎁 *3 MESES 100% GRÁTIS!*
-✅ Crie já o primeiro cupom ativo da sua loja sem pagar nada
+🎁 *CADASTRO 100% GRÁTIS PARA SEMPRE!*
+✅ Crie já o cupom ativo da sua loja sem pagar nada
 ✅ Validador no balcão via QR Code no caixa (PDV)
-✅ Sem mensalidade durante o período de degustação
+✅ Sem mensalidade e sem taxas ocultas
 ✅ Mais clientes e aumento no faturamento!
 
 👉 *Cadastre sua loja agora pelo meu link exclusivo:*
@@ -160,7 +160,7 @@ ${referralLink}
                 : 'Folder Oficial: Seja um Parceiro'}
             </span>
             <span className="text-amber-400 font-normal text-xs sm:text-sm">
-              {activeCampaign === 'user' ? '(Economize Todos os Dias)' : '(3 Meses Grátis)'}
+              {activeCampaign === 'user' ? '(Economize Todos os Dias)' : '(100% Grátis Sempre)'}
             </span>
           </h3>
           <p className="text-xs text-gray-300 mt-1 max-w-xl leading-relaxed">

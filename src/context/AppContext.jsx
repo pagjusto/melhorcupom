@@ -206,6 +206,9 @@ export const AppProvider = ({ children }) => {
     const normalizeInitialStore = (st) => ({
       ...st,
       tier: st.adminPaidPlan ? st.tier : 'api',
+      freeTrialActive: false,
+      freeTrialMonths: 0,
+      freeTrialEndsAt: null,
       highlight: false,
       isFeatured: false,
       manualHighlight: false
@@ -251,6 +254,9 @@ export const AppProvider = ({ children }) => {
           logoImage: getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || (s.logoImage && s.logoImage.startsWith('data:') ? s.logoImage : '') || '',
           image: init?.image || s.image || '',
           tier: resolvedTier,
+          freeTrialActive: false,
+          freeTrialMonths: 0,
+          freeTrialEndsAt: null,
           highlight: isHighlighted,
           isFeatured: isHighlighted,
           manualHighlight: isHighlighted,
@@ -1902,10 +1908,10 @@ export const AppProvider = ({ children }) => {
       type: isOnlineStore ? 'online' : 'physical',
       isOnline: isOnlineStore,
       hours: isOnlineStore ? 'Online 24 horas por dia' : 'Seg a Sáb: 10h às 22h',
-      tier: 'free_trial',
-      freeTrialActive: true,
-      freeTrialMonths: 3,
-      freeTrialEndsAt: new Date(Date.now() + 90 * 86400000).toISOString(),
+      tier: 'free',
+      freeTrialActive: false,
+      freeTrialMonths: 0,
+      freeTrialEndsAt: null,
       maxCoupons: 1,
       adminPaidPlan: false,
       referralCode: storeRefCode,
@@ -1952,8 +1958,8 @@ export const AppProvider = ({ children }) => {
         email: email || '',
         instagram: (instagram || '').trim(),
         address: isOnlineStore ? 'Atendimento Online em Todo o Brasil' : `${selectedCities[0] || 'Brasil'}`,
-        tier: 'free_trial',
-        free_trial_active: true,
+        tier: 'free',
+        free_trial_active: false,
         type: isOnlineStore ? 'online' : 'physical',
         is_online: isOnlineStore,
         logo_image: logoImage || '',
@@ -2424,6 +2430,7 @@ export const AppProvider = ({ children }) => {
   const isPaidMerchantVip = Boolean(
     activeMerchantStore &&
     activeMerchantStore.tier !== 'api' &&
+    activeMerchantStore.tier !== 'free' &&
     activeMerchantStore.tier !== 'free_trial' &&
     !activeMerchantStore.freeTrialActive &&
     (activeMerchantStore.adminPaidPlan || activeMerchantStore.tier === 'bronze' || activeMerchantStore.tier === 'silver' || activeMerchantStore.tier === 'gold')

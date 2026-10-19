@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS public.stores (
   instagram TEXT,
   address TEXT,
   hours TEXT DEFAULT 'Seg a Sáb: 10h às 22h',
-  tier TEXT DEFAULT 'free_trial', -- 'free_trial' | 'bronze' | 'silver' | 'gold' | 'api'
-  free_trial_active BOOLEAN DEFAULT TRUE,
-  free_trial_months INT DEFAULT 3,
-  free_trial_ends_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '90 days'),
+  tier TEXT DEFAULT 'free', -- 'free' | 'bronze' | 'silver' | 'gold' | 'api'
+  free_trial_active BOOLEAN DEFAULT FALSE,
+  free_trial_months INT DEFAULT 0,
+  free_trial_ends_at TIMESTAMPTZ DEFAULT NULL,
   max_coupons INT DEFAULT 1,
   admin_paid_plan BOOLEAN DEFAULT FALSE,
   referral_code TEXT,

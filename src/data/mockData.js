@@ -51,20 +51,22 @@ export const CATEGORIES = [
   { id: 'lazer', name: 'Lazer & Experiências', icon: 'Ticket', color: 'from-amber-500 to-yellow-500' }
 ];
 
-export const MERCHANT_FREE_TRIAL = {
-  id: 'free_trial',
-  name: 'Degustação (3 Meses Grátis)',
-  shortName: '3 Meses Grátis',
-  badge: '🎁 3 Meses Grátis (1 Cupom)',
-  durationMonths: 3,
-  durationDays: 90,
+export const MERCHANT_FREE_PLAN = {
+  id: 'free',
+  name: 'Parceiro Gratuito (100% Grátis)',
+  shortName: 'Parceiro Gratuito',
+  badge: '🤝 Parceiro Gratuito (1 Cupom)',
+  durationMonths: null,
+  durationDays: null,
   price: 0,
-  priceLabel: 'Grátis por 3 Meses',
-  period: 'por 90 dias',
-  tagline: 'Período gratuito de 3 meses restrito a 1 cupom ativo (sem acesso VIP ao site).',
+  priceLabel: 'Grátis para Sempre',
+  period: 'sem mensalidade',
+  tagline: 'Cadastro 100% gratuito e permanente com 1 cupom ativo da sua loja na vitrine (sem mensalidade).',
   maxCoupons: 1,
   includesVip: false
 };
+
+export const MERCHANT_FREE_TRIAL = MERCHANT_FREE_PLAN;
 
 export const MERCHANT_PLANS = [
   {
@@ -166,8 +168,8 @@ export const INITIAL_STORES = [
     tier: 'api', // Plano Bronze VIP
     adminPaidPlan: true,
     isNewPartner: true,
-    freeTrialActive: true,
-    freeTrialMonths: 3,
+    freeTrialActive: false,
+    freeTrialMonths: 0,
     category: 'gastronomia',
     city: 'São Paulo - SP',
     cities: ['São Paulo - SP', 'Campinas - SP', 'Santos - SP'],

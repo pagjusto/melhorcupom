@@ -915,7 +915,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
   const PROMO_SEJA_PARCEIRO_STORE = {
     id: 'promo_seja_parceiro',
-    name: '⭐ ARTE OFICIAL: Seja um Parceiro (3 Meses Grátis)',
+    name: '⭐ ARTE OFICIAL: Seja um Parceiro (100% Grátis Sempre)',
     city: 'Brasil',
     address: 'Brasil',
     type: 'institutional',
@@ -1030,7 +1030,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     if (selectedStoreId === 'promo_seja_parceiro') {
       const activeHandle = instagramSession?.username || '@omelhorcupom.com.br';
       setCustomCaption(
-        `🚀 SEJA UM PARCEIRO OFICIAL NO MELHOR CUPOM! 🏪✨\n\nTem uma loja física, restaurante, cafeteria, barbearia ou franquia?\nColoque seu negócio na vitrine para milhares de assinantes VIP com alto poder de compra da sua região!\n\n🎁 3 MESES 100% GRÁTIS PARA NOVOS PARCEIROS!\n🎟️ Crie já a oferta de cupom da sua loja sem pagar nada\n📱 Validador de balcão via QR Code direto no caixa (PDV)\n⭐ Aumente o fluxo de clientes e turbine suas vendas\n\n👉 Cadastre sua empresa agora pelo link da nossa bio ${activeHandle} ou acesse:\nhttps://www.omelhorcupom.com.br\n\n#MelhorCupom #SejaUmParceiro #ComercioLocal #CuponsDeDesconto #LojasParceiras #Empreendedorismo #Promocoes #Descontos`
+        `🚀 SEJA UM PARCEIRO OFICIAL NO MELHOR CUPOM! 🏪✨\n\nTem uma loja física, restaurante, cafeteria, barbearia ou franquia?\nColoque seu negócio na vitrine para milhares de assinantes VIP com alto poder de compra da sua região!\n\n🎁 CADASTRO 100% GRÁTIS PARA SEMPRE!\n🎟️ Crie já a oferta de cupom da sua loja sem pagar nada\n📱 Validador de balcão via QR Code direto no caixa (PDV)\n⭐ Aumente o fluxo de clientes e turbine suas vendas\n\n👉 Cadastre sua empresa agora pelo link da nossa bio ${activeHandle} ou acesse:\nhttps://www.omelhorcupom.com.br\n\n#MelhorCupom #SejaUmParceiro #ComercioLocal #CuponsDeDesconto #LojasParceiras #Empreendedorismo #Promocoes #Descontos`
       );
       return;
     }
@@ -1861,7 +1861,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
                     👥 ARTE OFICIAL: Cadastro de Usuários (Clientes & Economia) ✨
                   </option>
                   <option value="promo_seja_parceiro" className="bg-[#241508] text-amber-300 font-bold">
-                    ⭐ ARTE OFICIAL: Seja um Parceiro (Lojas & Comércio • 3 Meses Grátis) 🏪
+                    ⭐ ARTE OFICIAL: Seja um Parceiro (Lojas & Comércio • 100% Grátis Sempre) 🏪
                   </option>
                 </optgroup>
                 <optgroup label="🏪 FORNECEDORES E LOJAS CADASTRADAS" className="bg-[#161622] text-gray-300 font-bold">

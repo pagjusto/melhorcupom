@@ -137,27 +137,29 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [merchantJustEarned, setMerchantJustEarned] = useState(null);
   const [previewingCoupon, setPreviewingCoupon] = useState(null);
   
-  // Identificar se a loja está no período de degustação gratuita de 3 meses (1 cupom ativo, sem acesso VIP)
+  // Identificar se a loja está no Plano Parceiro Gratuito (1 cupom ativo gratuito para sempre, sem mensalidade, sem acesso VIP)
   const isTrialStore = Boolean(
+    currentStore?.tier === 'free' ||
+    currentStore?.tier === 'free_trial' ||
+    currentStore?.tier === 'api' ||
     currentStore?.freeTrialActive ||
     currentStore?.firstMonthFree ||
-    currentStore?.tier === 'free_trial' ||
-    currentStore?.tier === 'free' ||
-    (!currentStore?.adminPaidPlan && (!currentStore?.tier || currentStore?.tier === 'free' || currentStore?.tier === 'free_trial'))
+    (!currentStore?.adminPaidPlan && (!currentStore?.tier || currentStore?.tier === 'free' || currentStore?.tier === 'free_trial' || currentStore?.tier === 'api'))
   );
 
-  const effectiveTier = isTrialStore ? 'free_trial' : (currentStore.tier || 'bronze');
+  const effectiveTier = isTrialStore ? 'free' : (currentStore.tier || 'bronze');
   const currentPlan = isTrialStore ? {
-    id: 'free_trial',
-    name: 'Degustação (3 Meses Grátis)',
-    shortName: '3 Meses Grátis',
-    badge: '🎁 3 Meses Grátis (1 Cupom)',
+    id: 'free',
+    name: 'Parceiro Gratuito (100% Grátis)',
+    shortName: 'Parceiro Gratuito',
+    badge: '🤝 Parceiro Gratuito (1 Cupom)',
     price: 0,
-    priceLabel: 'Grátis por 3 Meses',
-    period: 'por 90 dias',
-    tagline: 'Período gratuito de 3 meses restrito a 1 cupom ativo da sua loja (sem acesso ao Clube VIP).',
+    priceLabel: 'Grátis para Sempre',
+    period: 'sem mensalidade',
+    tagline: 'Plano permanente gratuito com 1 cupom ativo da sua loja na vitrine (sem mensalidade).',
     maxCoupons: 1,
-    isTrial: true
+    isTrial: false,
+    isFreePlan: true
   } : (merchantPlans?.find(p => p.id === effectiveTier) || {
     id: 'bronze',
     name: 'Plano Bronze (2 Cupons + VIP)',
@@ -625,7 +627,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 {isTrialStore ? (
                   <span className="text-xs uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/20 px-3 py-0.5 rounded-full border border-emerald-500/40 flex items-center gap-1.5 shadow-sm">
                     <Sparkles size={13} className="text-emerald-300" />
-                    <span>Degustação (3 Meses Grátis • 1 Cupom)</span>
+                    <span>Parceiro Gratuito (1 Cupom • Sem Mensalidade)</span>
                   </span>
                 ) : effectiveTier === 'gold' ? (
                   <span className="text-xs uppercase font-black tracking-wider text-amber-300 bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1.5 shadow-md shadow-amber-950/40">
@@ -1493,15 +1495,15 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </div>
               <h3 className="text-xl font-black text-white">
                 {isTrialStore
-                  ? 'Limite da Degustação Atingido (1 Cupom Ativo nos 3 Meses Grátis)'
+                  ? 'Limite do Plano Gratuito Atingido (1 Cupom Ativo Grátis)'
                   : `Limite de Ofertas Atingido (${currentPlan.maxCoupons} ${currentPlan.maxCoupons === 1 ? 'oferta' : 'ofertas'} no ${currentPlan.name})`
                 }
               </h3>
               <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto leading-relaxed">
                 {isTrialStore ? (
                   <>
-                    Sua loja está aproveitando a <strong>Degustação de 3 Meses Grátis</strong>, restrita a <strong>1 cupom ativo</strong> (sem acesso VIP).<br /><br />
-                    Para cadastrar mais cupons e <strong>liberar seu Acesso VIP</strong> para resgatar cupons em todo o site, faça upgrade para <strong>Bronze (2 cupons + VIP)</strong>, <strong>Prata (5 cupons + VIP)</strong> ou <strong>Ouro (Ilimitado + VIP)</strong>!
+                    Sua loja é <strong>Parceira Gratuita (100% Grátis para Sempre)</strong>, com direito a <strong>1 cupom ativo</strong> na vitrine sem nenhuma mensalidade.<br /><br />
+                    Para cadastrar mais cupons simultâneos e <strong>liberar seu Acesso VIP</strong> para resgatar cupons em todo o site, faça upgrade para <strong>Bronze (2 cupons + VIP)</strong>, <strong>Prata (5 cupons + VIP)</strong> ou <strong>Ouro (Ilimitado + VIP)</strong>!
                   </>
                 ) : (
                   <>
@@ -2427,13 +2429,13 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full border ${
                       isTrialStore 
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                         : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                     }`}>
-                      {isTrialStore ? 'Degustação (3 Meses Grátis)' : 'Assinatura Ativa'}
+                      {isTrialStore ? 'Parceiro Gratuito (Sempre Grátis)' : 'Assinatura Ativa'}
                     </span>
                     <span className="text-xs text-gray-400">
-                      {isTrialStore ? '1 cupom ativo • Sem VIP' : 'Renovação mensal'}
+                      {isTrialStore ? '1 cupom ativo • Sem mensalidade' : 'Renovação mensal'}
                     </span>
                   </div>
                   <h3 className="text-xl font-black text-white mt-1 flex items-center gap-2">
@@ -2517,20 +2519,20 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             </div>
           )}
 
-          {/* Banner de Aviso de Degustação Gratuita (3 Meses Grátis) */}
+          {/* Banner de Parceiro Oficial Gratuito (100% Grátis Sempre) */}
           {isTrialStore && (
             <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-[#181824] border-2 border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-2xl flex-shrink-0">
-                  🎁
+                  🤝
                 </div>
                 <div>
                   <div className="text-sm font-black text-white flex items-center gap-2">
-                    <span>Sua loja está na Degustação Gratuita (3 Meses Grátis)</span>
-                    <span className="text-[10px] bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full font-bold">1 Cupom • Sem VIP</span>
+                    <span>Sua loja é Parceira Oficial (100% Gratuita para Sempre)</span>
+                    <span className="text-[10px] bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full font-bold">1 Cupom • Sem Mensalidade</span>
                   </div>
                   <p className="text-xs text-gray-300 mt-1 max-w-2xl leading-relaxed">
-                    Você pode manter <strong>1 cupom ativo gratuitamente por 90 dias</strong>. Para ter <strong>Acesso VIP liberado</strong> (resgatar cupons em todo o site) e criar mais cupons, assine um dos planos abaixo:
+                    Você pode manter <strong>1 cupom ativo gratuitamente para sempre</strong>. Para cadastrar mais ofertas simultâneas e ter <strong>Acesso VIP liberado</strong> (resgatar cupons em todo o site), conheça os planos de destaque abaixo:
                   </p>
                 </div>
               </div>
