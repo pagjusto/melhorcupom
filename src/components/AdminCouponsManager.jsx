@@ -532,12 +532,12 @@ export const AdminCouponsManager = ({ showToast }) => {
         <div className="bg-[#181824] border border-white/5 rounded-2xl p-4">
           <div className="text-xs text-gray-400 mb-1 flex items-center gap-1.5">
             <Star size={13} className="text-amber-400" />
-            <span>Destaques Ouro</span>
+            <span>Destaques VIP</span>
           </div>
           <div className="text-2xl font-black text-amber-400">
             {coupons.filter(c => c.highlight).length}
           </div>
-          <div className="text-[10px] text-amber-400/80 mt-0.5">Topo do Feed com Borda Dourada</div>
+          <div className="text-[10px] text-amber-400/80 mt-0.5">Topo do Feed com Destaque Especial</div>
         </div>
       </div>
 
@@ -927,7 +927,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                 {formData.highlight && (
                   <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-[#FF5F00] text-black px-2.5 py-1 rounded-xl text-xs font-black shadow-lg flex items-center gap-1">
                     <Star size={12} fill="currentColor" />
-                    <span>Destaque Ouro</span>
+                    <span>Destaque VIP</span>
                   </div>
                 )}
                 {/* Botão para reajustar zoom e enquadramento da capa */}
@@ -1017,7 +1017,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                   }`}
                 >
                   <Star size={14} fill={formData.highlight ? 'currentColor' : 'none'} />
-                  <span>{formData.highlight ? '⭐ Destaque Ouro Ativado' : 'Normal (Sem Destaque)'}</span>
+                  <span>{formData.highlight ? '⭐ Destaque VIP Ativado' : 'Normal (Sem Destaque)'}</span>
                 </button>
               </div>
             </div>
@@ -1101,7 +1101,7 @@ export const AdminCouponsManager = ({ showToast }) => {
               <option value="all">Todos os Tipos</option>
               <option value="physical">Apenas Físicos</option>
               <option value="online">Apenas Online (Nacional)</option>
-              <option value="highlight">Apenas Destaques Ouro ⭐</option>
+              <option value="highlight">Apenas Destaques VIP ⭐</option>
             </select>
           </div>
         </div>
@@ -1266,7 +1266,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                           <span>{editingCoupon?.id === coupon.id ? 'Editando...' : 'Editar'}</span>
                         </button>
 
-                        {/* Botão Destaque Ouro */}
+                        {/* Botão Destaque VIP */}
                         <button
                           type="button"
                           onClick={() => {
@@ -1275,7 +1275,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                               setFormData(prev => ({ ...prev, highlight: !coupon.highlight }));
                             }
                             if (showToast) {
-                              showToast(coupon.highlight ? '⭐ Destaque ouro removido.' : '⭐ Cupom promovido para Destaque Ouro!');
+                              showToast(coupon.highlight ? '⭐ Destaque VIP removido.' : '⭐ Cupom promovido para Destaque VIP!');
                             }
                           }}
                           className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
@@ -1283,7 +1283,7 @@ export const AdminCouponsManager = ({ showToast }) => {
                               ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 hover:bg-amber-400/30'
                               : 'bg-white/5 text-gray-400 hover:text-amber-300 hover:bg-white/10 border border-white/5'
                           }`}
-                          title="Alternar Destaque Ouro"
+                          title="Alternar Destaque VIP"
                         >
                           <Star size={12} fill={coupon.highlight ? 'currentColor' : 'none'} />
                           <span>{coupon.highlight ? 'Destaque' : 'Destacar'}</span>

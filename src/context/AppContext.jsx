@@ -227,14 +227,21 @@ export const AppProvider = ({ children }) => {
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
         const instagram = s.instagram || init?.instagram || getPartnerInstagramHandle(s);
         const isCustomStore = Boolean(s.isAvulsa || s.isAvulso || s.isCustom || s.noSimulator || s.id?.startsWith('store_avulsa_') || s.merchantId?.startsWith('merchant_avulso_'));
-        const isExplicitPaid = Boolean(s.adminPaidPlan || s.tier === 'gold' || s.tier === 'silver' || s.tier === 'bronze');
+
+        // Regra de Negócio: Não há lojas parceiras nos planos Ouro ou Prata no momento
+        let cleanTier = s.tier;
+        if (cleanTier === 'gold' || cleanTier === 'silver') {
+          cleanTier = init?.tier || ((s.type === 'online' || s.isApiIntegrated) ? 'api' : 'bronze');
+        }
+
+        const isExplicitPaid = Boolean(s.adminPaidPlan || cleanTier === 'bronze');
         const isPayingMerchant = !isCustomStore && Boolean(isExplicitPaid || s.isNewPartner || init?.isNewPartner || init?.adminPaidPlan || s.id === 'store_parceiro_demo' || s.merchantId === 'merchant_parceiro_demo');
         
         // Destaque persistido de forma permanente
         const isHighlighted = Boolean(s.highlight || s.isFeatured || s.manualHighlight);
 
-        const resolvedTier = (s.tier && s.tier !== 'free')
-          ? s.tier
+        const resolvedTier = (cleanTier && cleanTier !== 'free')
+          ? cleanTier
           : (isPayingMerchant ? (init?.tier || 'bronze') : 'api');
 
         return {
@@ -279,6 +286,7 @@ export const AppProvider = ({ children }) => {
         };
       });
 
+      safeSetItem('melhor_cupom_stores_v10', mapped);
       return mapped;
     } catch {
       return INITIAL_STORES.map(normalizeInitialStore);
@@ -728,9 +736,14 @@ export const AppProvider = ({ children }) => {
               const fromCloud = cloudMap.get(s.id);
               if (fromCloud) {
                 const cloudHighlight = fromCloud.highlight ?? fromCloud.isFeatured ?? fromCloud.manualHighlight;
+                let cleanCloudTier = fromCloud.tier || s.tier;
+                if (cleanCloudTier === 'gold' || cleanCloudTier === 'silver') {
+                  cleanCloudTier = (s.type === 'online' || s.isApiIntegrated) ? 'api' : 'bronze';
+                }
                 return {
                   ...s,
                   ...fromCloud,
+                  tier: cleanCloudTier,
                   highlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.highlight),
                   isFeatured: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.isFeatured),
                   manualHighlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.manualHighlight)

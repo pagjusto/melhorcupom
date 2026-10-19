@@ -134,16 +134,25 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão de Favoritar */}
         <div className="absolute top-1.5 right-1.5 z-20 flex items-center gap-1">
           {/* Ícone da Medalha na cor da assinatura da loja parceira ou Coroa de Destaque */}
-          {(storeTier === 'gold' || isHighlighted) && (
+          {isHighlighted && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-sm text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
-              title={storeTier === 'gold' ? "Loja Parceira Ouro" : "Oferta em Destaque"}
+              title="Oferta em Destaque"
             >
               <Crown size={12} className="text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]" />
             </div>
           )}
 
-          {storeTier === 'silver' && (
+          {!isHighlighted && storeTier === 'gold' && (
+            <div 
+              className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-amber-400/60 shadow-sm text-amber-400 flex items-center justify-center transition-transform hover:scale-105"
+              title="Loja Parceira Ouro"
+            >
+              <Crown size={12} className="text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]" />
+            </div>
+          )}
+
+          {!isHighlighted && storeTier === 'silver' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-slate-300/50 shadow-sm text-slate-300 flex items-center justify-center transition-transform hover:scale-105"
               title="Loja Parceira Prata"
@@ -152,10 +161,10 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
             </div>
           )}
 
-          {storeTier === 'bronze' && (
+          {!isHighlighted && storeTier === 'bronze' && (
             <div 
               className="p-1 rounded-md backdrop-blur-md bg-black/60 border border-[#CD7F32]/60 shadow-sm text-[#CD7F32] flex items-center justify-center transition-transform hover:scale-105"
-              title="Loja Parceira Bronze (3º Nível)"
+              title="Loja Parceira Bronze"
             >
               <Medal size={12} className="text-[#CD7F32] drop-shadow-[0_0_4px_rgba(205,127,50,0.7)]" />
             </div>
