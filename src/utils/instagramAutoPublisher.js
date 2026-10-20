@@ -2,6 +2,7 @@
 // Utilitário de Publicação Automática no Instagram para Novos Parceiros Credenciados
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { validateStoreSafety, validateCouponSafety } from './contentModeration';
+import { getBrandLogo } from '../assets/brands';
 
 export const getStoreLocationText = (store) => {
   if (!store) return 'Brasil';
@@ -209,14 +210,20 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, width, height);
 
-  // 4. Logo do Lojista
+  // 4. Logo do Lojista em Destaque com Expansão Harmônica
   const logoY = targetFormat === 'feed' ? 195 : 360;
   const logoRadius = targetFormat === 'feed' ? 125 : 170;
+  const clipRadius = logoRadius - 4;
+  const circleDiameter = clipRadius * 2;
+
+  const activeFit = store?.logoFit || 'contain';
+  const activeScale = (store?.logoScale !== undefined ? store.logoScale : 115) / 100;
+  const activeBg = store?.logoBg || '#FFFFFF';
 
   ctx.save();
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = activeBg;
   ctx.beginPath();
-  ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+  ctx.arc(width / 2, logoY, clipRadius, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
@@ -232,19 +239,25 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+  ctx.arc(width / 2, logoY, clipRadius, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
 
   let logoDrawn = false;
-  if (store.logoImage || store.image) {
+  const storeLogoSrc = store?.logoImage || 
+    getBrandLogo(store?.name) || 
+    getBrandLogo(store?.id) || 
+    getBrandLogo(store?.apiSource) || 
+    store?.image;
+
+  if (storeLogoSrc) {
     try {
       const logoImg = new Image();
       logoImg.crossOrigin = 'anonymous';
       await new Promise((resolve) => {
         logoImg.onload = resolve;
         logoImg.onerror = resolve;
-        logoImg.src = store.logoImage || store.image;
+        logoImg.src = storeLogoSrc;
       });
 
       const naturalW = logoImg.naturalWidth || logoImg.width;
@@ -252,26 +265,34 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
 
       if (naturalW > 0 && naturalH > 0) {
         const aspect = naturalW / naturalH;
-        const innerR = logoRadius - 8;
-        // Preenchimento imersivo da logo no badge oficial
-        const maxBoxW = innerR * 1.95;
-        const maxBoxH = innerR * 1.85;
 
         let drawW, drawH;
-        if (aspect >= 1) {
-          drawW = maxBoxW;
-          drawH = drawW / aspect;
-          if (drawH > maxBoxH) {
-            drawH = maxBoxH;
-            drawW = drawH * aspect;
-          }
+        if (activeFit === 'cover') {
+          const scale = Math.max(circleDiameter / naturalW, circleDiameter / naturalH) * activeScale;
+          drawW = naturalW * scale;
+          drawH = naturalH * scale;
         } else {
-          drawH = maxBoxH;
-          drawW = drawH * aspect;
-          if (drawW > maxBoxW) {
-            drawW = maxBoxW;
-            drawW = maxBoxW / aspect;
+          let baseW, baseH;
+          if (aspect >= 1.4) {
+            baseW = circleDiameter * 0.94;
+            baseH = baseW / aspect;
+            const maxSafeH = circleDiameter * 0.78;
+            if (baseH > maxSafeH) {
+              baseH = maxSafeH;
+              baseW = baseH * aspect;
+            }
+          } else if (aspect >= 1.1) {
+            baseW = circleDiameter * 0.90;
+            baseH = baseW / aspect;
+          } else if (aspect >= 0.9) {
+            baseW = circleDiameter * 0.92;
+            baseH = circleDiameter * 0.92;
+          } else {
+            baseH = circleDiameter * 0.90;
+            baseW = baseH * aspect;
           }
+          drawW = baseW * activeScale;
+          drawH = baseH * activeScale;
         }
 
         const drawX = (width / 2) - (drawW / 2);
@@ -279,7 +300,7 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+        ctx.arc(width / 2, logoY, clipRadius, 0, Math.PI * 2);
         ctx.clip();
         ctx.drawImage(logoImg, drawX, drawY, drawW, drawH);
         ctx.restore();

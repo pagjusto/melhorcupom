@@ -22,12 +22,15 @@ import {
   X,
   Key,
   Users,
-  Store
+  Store,
+  Sliders,
+  Maximize2
 } from 'lucide-react';
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { InstagramLoginModal } from './InstagramLoginModal';
 import { BrandMediaKitSection } from './BrandMediaKitSection';
 import { useApp } from '../context/AppContext';
+import { getBrandLogo } from '../assets/brands';
 import { 
   isStoreAlreadyPublished, 
   markStoreAsPublished,
@@ -154,12 +157,18 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     // 3. Container Circular com Logo do Lojista (Borda Padronizada Oficial em Destaque Maior)
     const logoCenterY = format === 'feed' ? 195 : 360;
     const logoRadius = format === 'feed' ? 125 : 170;
+    const clipRadius = logoRadius - 4;
+    const circleDiameter = clipRadius * 2;
 
-    // 1. Fundo Branco Sólido no Interior do Círculo
+    const activeFit = store?.logoFit || 'contain';
+    const activeScale = (store?.logoScale !== undefined ? store.logoScale : 115) / 100;
+    const activeBg = store?.logoBg || '#FFFFFF';
+
+    // 1. Fundo do Interior do Círculo
     ctx.save();
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = activeBg;
     ctx.beginPath();
-    ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
+    ctx.arc(width / 2, logoCenterY, clipRadius, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -176,20 +185,26 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
+    ctx.arc(width / 2, logoCenterY, clipRadius, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    // 3. Desenhar imagem real da logo da loja proporcionalmente (Sem distorção)
+    // 3. Desenhar imagem real da logo da loja proporcionalmente com expansão harmônica
     let logoDrawn = false;
-    if (store?.logoImage || store?.image) {
+    const storeLogoSrc = store?.logoImage || 
+      getBrandLogo(store?.name) || 
+      getBrandLogo(store?.id) || 
+      getBrandLogo(store?.apiSource) || 
+      store?.image;
+
+    if (storeLogoSrc) {
       try {
         const storeImg = new Image();
         storeImg.crossOrigin = 'anonymous';
         await new Promise((resolve) => {
           storeImg.onload = resolve;
           storeImg.onerror = resolve;
-          storeImg.src = store.logoImage || store.image;
+          storeImg.src = storeLogoSrc;
         });
 
         const naturalW = storeImg.naturalWidth || storeImg.width;
@@ -197,25 +212,34 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
         if (naturalW > 0 && naturalH > 0) {
           const aspect = naturalW / naturalH;
-          const innerR = logoRadius - 16;
-          const maxBoxW = innerR * 1.55;
-          const maxBoxH = innerR * 1.35;
 
           let drawW, drawH;
-          if (aspect >= 1) {
-            drawW = maxBoxW;
-            drawH = drawW / aspect;
-            if (drawH > maxBoxH) {
-              drawH = maxBoxH;
-              drawW = drawH * aspect;
-            }
+          if (activeFit === 'cover') {
+            const scale = Math.max(circleDiameter / naturalW, circleDiameter / naturalH) * activeScale;
+            drawW = naturalW * scale;
+            drawH = naturalH * scale;
           } else {
-            drawH = maxBoxH;
-            drawW = drawH * aspect;
-            if (drawW > maxBoxW) {
-              drawW = maxBoxW;
-              drawW = maxBoxW / aspect;
+            let baseW, baseH;
+            if (aspect >= 1.4) {
+              baseW = circleDiameter * 0.94;
+              baseH = baseW / aspect;
+              const maxSafeH = circleDiameter * 0.78;
+              if (baseH > maxSafeH) {
+                baseH = maxSafeH;
+                baseW = baseH * aspect;
+              }
+            } else if (aspect >= 1.1) {
+              baseW = circleDiameter * 0.90;
+              baseH = baseW / aspect;
+            } else if (aspect >= 0.9) {
+              baseW = circleDiameter * 0.92;
+              baseH = circleDiameter * 0.92;
+            } else {
+              baseH = circleDiameter * 0.90;
+              baseW = baseH * aspect;
             }
+            drawW = baseW * activeScale;
+            drawH = baseH * activeScale;
           }
 
           const drawX = (width / 2) - (drawW / 2);
@@ -223,7 +247,7 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 
           ctx.save();
           ctx.beginPath();
-          ctx.arc(width / 2, logoCenterY, logoRadius - 4, 0, Math.PI * 2);
+          ctx.arc(width / 2, logoCenterY, clipRadius, 0, Math.PI * 2);
           ctx.clip();
           ctx.drawImage(storeImg, drawX, drawY, drawW, drawH);
           ctx.restore();
@@ -673,13 +697,19 @@ export const MerchantPromoKit = ({ store, coupons = [] }) => {
 // 2. COMPONENTE: PAINEL DE DIVULGAÇÃO & INSTAGRAM DO ADMIN (AdminPromoManager)
 // ============================================================================
 export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
-  const { coupons = [] } = useApp();
+  const { coupons = [], updateStore } = useApp();
   const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id || '');
   const [format, setFormat] = useState('feed'); // 'feed' (1:1) ou 'story' (9:16)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishErrorModal, setPublishErrorModal] = useState(null);
+
+  // Estados locais para ajuste e expansão da logo em tempo real
+  const [liveLogoScale, setLiveLogoScale] = useState(115);
+  const [liveLogoFit, setLiveLogoFit] = useState('contain');
+  const [liveLogoBg, setLiveLogoBg] = useState('#ffffff');
+  const [savedLogoSettings, setSavedLogoSettings] = useState(false);
 
   // Sessão Oficial do Instagram via Meta Graph API v20.0 (App ID: 4514869808731364 • Account ID: 28667775222832917)
   const [instagramSession, setInstagramSession] = useState(() => {
@@ -843,12 +873,19 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   // Consolidar lojas cadastradas + lojas e marcas de cupons avulsos para divulgação no Instagram
   const allPromoStores = useMemo(() => {
     const storeMap = new Map();
-    // 1. Inserir lojas oficiais
-    stores.forEach(s => storeMap.set(s.id, s));
+    // 1. Inserir lojas oficiais com resolução inteligente de logos
+    stores.forEach(s => {
+      const resolvedLogo = s.logoImage || getBrandLogo(s.name) || getBrandLogo(s.id) || getBrandLogo(s.apiSource) || '';
+      storeMap.set(s.id, {
+        ...s,
+        logoImage: resolvedLogo
+      });
+    });
 
     // 2. Extrair marcas e ofertas de cupons avulsos (ex: Omens) para entrar diretamente na fila de postagens
     coupons.forEach(c => {
       const sId = c.storeId || `store_${c.id}`;
+      const resolvedLogo = c.storeLogoImage || c.logoImage || (typeof c.storeLogo === 'string' && (c.storeLogo.startsWith('http') || c.storeLogo.startsWith('data:')) ? c.storeLogo : '') || getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || '';
       if (!storeMap.has(sId)) {
         storeMap.set(sId, {
           id: sId,
@@ -860,7 +897,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
           type: c.type || 'online',
           isOnline: c.type === 'online' || (c.city && c.city.toLowerCase().includes('online')),
           logo: c.storeLogo || '🏪',
-          logoImage: c.storeLogoImage || c.logoImage || (typeof c.storeLogo === 'string' && (c.storeLogo.startsWith('http') || c.storeLogo.startsWith('data:')) ? c.storeLogo : ''),
+          logoImage: resolvedLogo,
           image: c.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
           tier: 'api',
           isAvulso: true,
@@ -873,7 +910,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
             ...existing, 
             isAvulso: true,
             hasAvulso: true,
-            logoImage: c.storeLogoImage || c.logoImage || existing.logoImage,
+            logoImage: resolvedLogo || existing.logoImage,
             image: c.banner || existing.image
           });
         }
@@ -1060,12 +1097,37 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     }
   }, [selectedStoreId, locationText, selectedStore?.name, selectedStore?.isApiIntegrated, selectedStore?.cities, instagramSession?.username, partnerInstagram]);
 
-  // Renderizar criativo no Canvas
+  // Sincronizar ajustes da logo com a loja selecionada
+  useEffect(() => {
+    if (selectedStore) {
+      setLiveLogoScale(selectedStore.logoScale !== undefined ? selectedStore.logoScale : 115);
+      setLiveLogoFit(selectedStore.logoFit || 'contain');
+      setLiveLogoBg(selectedStore.logoBg || '#ffffff');
+      setSavedLogoSettings(false);
+    }
+  }, [selectedStoreId, selectedStore]);
+
+  // Salvar ajustes de enquadramento da logo permanentemente
+  const handleSaveLogoSettings = () => {
+    if (!selectedStore) return;
+    if (typeof updateStore === 'function') {
+      updateStore(selectedStore.id, {
+        logoScale: liveLogoScale,
+        logoFit: liveLogoFit,
+        logoBg: liveLogoBg
+      });
+    }
+    setSavedLogoSettings(true);
+    showToast(`Enquadramento da logo de ${selectedStore.name} salvo com sucesso!`, 'success');
+    setTimeout(() => setSavedLogoSettings(false), 2500);
+  };
+
+  // Renderizar criativo no Canvas em tempo real
   useEffect(() => {
     drawAdminArtwork();
-  }, [format, selectedStore, selectedStoreId]);
+  }, [format, selectedStore, selectedStoreId, liveLogoScale, liveLogoFit, liveLogoBg]);
 
-  const renderAdminArtworkToCanvas = async (targetCanvas, targetFormat = format) => {
+  const renderAdminArtworkToCanvas = async (targetCanvas, targetFormat = format, customLogoOpts = null) => {
     if (!targetCanvas) return;
     const ctx = targetCanvas.getContext('2d');
     if (!ctx) return;
@@ -1168,15 +1230,21 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.fillStyle = aura;
     ctx.fillRect(0, 0, width, height);
 
-    // 4. Logo do Lojista em Destaque com Fundo Branco Sólido e Enquadramento Proporcional
+    // 4. Logo do Lojista em Destaque com Fundo e Enquadramento Proporcional Expandido
     const logoY = currentFormat === 'feed' ? 195 : 360;
     const logoRadius = currentFormat === 'feed' ? 125 : 170;
+    const clipRadius = logoRadius - 4;
+    const circleDiameter = clipRadius * 2;
 
-    // 1. Fundo Branco Sólido no Interior do Círculo
+    const activeFit = customLogoOpts?.fit || liveLogoFit || selectedStore?.logoFit || 'contain';
+    const activeScale = ((customLogoOpts?.scale !== undefined ? customLogoOpts.scale : (liveLogoScale !== undefined ? liveLogoScale : (selectedStore?.logoScale !== undefined ? selectedStore.logoScale : 115)))) / 100;
+    const activeBg = customLogoOpts?.bg || liveLogoBg || selectedStore?.logoBg || '#FFFFFF';
+
+    // 1. Fundo do Interior do Círculo
     ctx.save();
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = activeBg;
     ctx.beginPath();
-    ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+    ctx.arc(width / 2, logoY, clipRadius, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -1194,20 +1262,26 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+    ctx.arc(width / 2, logoY, clipRadius, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    // 3. Imagem da Logo da Loja Proporcional (Sem Distorção)
+    // 3. Imagem da Logo da Loja Proporcional (Expansão Harmônica)
     let logoDrawn = false;
-    if (selectedStore?.logoImage || selectedStore?.image) {
+    const storeLogoSrc = selectedStore?.logoImage || 
+      getBrandLogo(selectedStore?.name) || 
+      getBrandLogo(selectedStore?.id) || 
+      getBrandLogo(selectedStore?.apiSource) || 
+      selectedStore?.image;
+
+    if (storeLogoSrc) {
       try {
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
         await new Promise((resolve) => {
           logoImg.onload = resolve;
           logoImg.onerror = resolve;
-          logoImg.src = selectedStore.logoImage || selectedStore.image;
+          logoImg.src = storeLogoSrc;
         });
 
         const naturalW = logoImg.naturalWidth || logoImg.width;
@@ -1215,26 +1289,34 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
         if (naturalW > 0 && naturalH > 0) {
           const aspect = naturalW / naturalH;
-          const innerR = logoRadius - 8;
-          // Preenchimento imersivo da logo no badge oficial
-          const maxBoxW = innerR * 1.95;
-          const maxBoxH = innerR * 1.85;
 
           let drawW, drawH;
-          if (aspect >= 1) {
-            drawW = maxBoxW;
-            drawH = drawW / aspect;
-            if (drawH > maxBoxH) {
-              drawH = maxBoxH;
-              drawW = drawH * aspect;
-            }
+          if (activeFit === 'cover') {
+            const scale = Math.max(circleDiameter / naturalW, circleDiameter / naturalH) * activeScale;
+            drawW = naturalW * scale;
+            drawH = naturalH * scale;
           } else {
-            drawH = maxBoxH;
-            drawW = drawH * aspect;
-            if (drawW > maxBoxW) {
-              drawW = maxBoxW;
-              drawW = maxBoxW / aspect;
+            let baseW, baseH;
+            if (aspect >= 1.4) {
+              baseW = circleDiameter * 0.94;
+              baseH = baseW / aspect;
+              const maxSafeH = circleDiameter * 0.78;
+              if (baseH > maxSafeH) {
+                baseH = maxSafeH;
+                baseW = baseH * aspect;
+              }
+            } else if (aspect >= 1.1) {
+              baseW = circleDiameter * 0.90;
+              baseH = baseW / aspect;
+            } else if (aspect >= 0.9) {
+              baseW = circleDiameter * 0.92;
+              baseH = circleDiameter * 0.92;
+            } else {
+              baseH = circleDiameter * 0.90;
+              baseW = baseH * aspect;
             }
+            drawW = baseW * activeScale;
+            drawH = baseH * activeScale;
           }
 
           const drawX = (width / 2) - (drawW / 2);
@@ -1242,7 +1324,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
           ctx.save();
           ctx.beginPath();
-          ctx.arc(width / 2, logoY, logoRadius - 4, 0, Math.PI * 2);
+          ctx.arc(width / 2, logoY, clipRadius, 0, Math.PI * 2);
           ctx.clip();
           ctx.drawImage(logoImg, drawX, drawY, drawW, drawH);
           ctx.restore();
@@ -1399,7 +1481,11 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
   const drawAdminArtwork = async () => {
     if (canvasRef.current) {
-      await renderAdminArtworkToCanvas(canvasRef.current, format);
+      await renderAdminArtworkToCanvas(canvasRef.current, format, {
+        scale: liveLogoScale,
+        fit: liveLogoFit,
+        bg: liveLogoBg
+      });
     }
   };
 
@@ -1414,10 +1500,16 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   };
 
   // Baixar imagem do Admin
-  const handleDownloadArtwork = () => {
+  const handleDownloadArtwork = async () => {
     try {
       const canvas = canvasRef.current;
       if (!canvas) return;
+
+      await renderAdminArtworkToCanvas(canvas, format, {
+        scale: liveLogoScale,
+        fit: liveLogoFit,
+        bg: liveLogoBg
+      });
 
       const dataUrl = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
@@ -1448,11 +1540,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
     if (mode === 'auto') {
       setIsPublishing(true);
       try {
+        const logoFramingOpts = {
+          scale: liveLogoScale,
+          fit: liveLogoFit,
+          bg: liveLogoBg
+        };
+
         // 1. Gerar criativo quadrado do Feed (1080x1080) otimizado em JPEG
         let feedImageBase64 = '';
         try {
           const feedCanvas = document.createElement('canvas');
-          await renderAdminArtworkToCanvas(feedCanvas, 'feed');
+          await renderAdminArtworkToCanvas(feedCanvas, 'feed', logoFramingOpts);
           feedImageBase64 = feedCanvas.toDataURL('image/jpeg', 0.88);
         } catch (feedCanvasErr) {
           console.warn('Fallback canvas feed:', feedCanvasErr);
@@ -1463,7 +1561,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
         let storyImageBase64 = '';
         try {
           const storyCanvas = document.createElement('canvas');
-          await renderAdminArtworkToCanvas(storyCanvas, 'story');
+          await renderAdminArtworkToCanvas(storyCanvas, 'story', logoFramingOpts);
           storyImageBase64 = storyCanvas.toDataURL('image/jpeg', 0.88);
         } catch (storyCanvasErr) {
           console.warn('Fallback canvas story:', storyCanvasErr);
@@ -2225,6 +2323,133 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
 
             <div className="w-full text-center mt-3 text-xs text-gray-400">
               Criativo gerado com logo oficial, selo de parceria (+) e informações de cidade.
+            </div>
+
+            {/* Painel Interativo de Ajuste e Expansão da Logo no Círculo */}
+            <div className="w-full max-w-[420px] bg-[#12121C] border border-white/10 rounded-2xl p-4 space-y-3 mt-4 text-left">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sliders size={14} className="text-orange-400" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    Expansão da Logo no Círculo
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveLogoSettings}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    savedLogoSettings
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'bg-orange-600 hover:bg-orange-500 text-white shadow-md'
+                  }`}
+                >
+                  {savedLogoSettings ? <Check size={12} /> : null}
+                  <span>{savedLogoSettings ? 'Salvo!' : 'Salvar Ajuste'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {/* Modo de Preenchimento */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-gray-300 flex items-center justify-between">
+                    <span>Preenchimento:</span>
+                    <span className="text-orange-400 font-bold">{liveLogoFit === 'cover' ? 'Cobrir 100%' : 'Conter'}</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => setLiveLogoFit('contain')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
+                        liveLogoFit === 'contain'
+                          ? 'bg-[#FF5F00] text-white shadow-sm'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Conter
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLiveLogoFit('cover')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
+                        liveLogoFit === 'cover'
+                          ? 'bg-[#FF5F00] text-white shadow-sm'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Cobrir 100%
+                    </button>
+                  </div>
+                </div>
+
+                {/* Cor de Fundo do Círculo */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-gray-300 flex items-center justify-between">
+                    <span>Fundo do Círculo:</span>
+                    <span className="font-mono text-[10px] text-gray-400">{liveLogoBg}</span>
+                  </label>
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    {[
+                      { label: 'Branco', value: '#ffffff' },
+                      { label: 'Escuro', value: '#111119' },
+                      { label: 'Verde', value: '#006B3F' },
+                      { label: 'Laranja', value: '#FF5F00' }
+                    ].map(bg => (
+                      <button
+                        key={bg.value}
+                        type="button"
+                        onClick={() => setLiveLogoBg(bg.value)}
+                        className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
+                          liveLogoBg === bg.value ? 'border-orange-500 scale-110 shadow-md ring-2 ring-orange-500/30' : 'border-white/20 hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: bg.value }}
+                        title={`Fundo ${bg.label}`}
+                      />
+                    ))}
+                    <input
+                      type="color"
+                      value={liveLogoBg.startsWith('#') ? liveLogoBg : '#ffffff'}
+                      onChange={(e) => setLiveLogoBg(e.target.value)}
+                      className="w-6 h-6 rounded-full cursor-pointer bg-transparent border-0 p-0"
+                      title="Escolher cor personalizada"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Slider de Escala / Expansão */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-300">
+                  <span>Tamanho / Expansão:</span>
+                  <span className="text-orange-400 font-bold font-mono">{liveLogoScale}%</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="70"
+                    max="220"
+                    step="5"
+                    value={liveLogoScale}
+                    onChange={(e) => setLiveLogoScale(Number(e.target.value))}
+                    className="w-full accent-orange-500 cursor-pointer h-1.5 bg-white/10 rounded-lg appearance-none"
+                  />
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {[100, 125, 150, 180].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setLiveLogoScale(s)}
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                          liveLogoScale === s
+                            ? 'bg-orange-500/30 text-orange-400 border border-orange-500/50'
+                            : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'
+                        }`}
+                      >
+                        {s}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>
