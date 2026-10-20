@@ -18,8 +18,14 @@ import {
   Tag,
   ShieldCheck,
   Building2,
-  ExternalLink
+  ExternalLink,
+  Pencil,
+  Upload,
+  RotateCcw,
+  Check,
+  X
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { getBrandLogo } from '../assets/brands';
 
 const CATEGORY_CHIPS = [
@@ -64,10 +70,55 @@ const getStoreLogoFit = (store, storeLogo) => {
 };
 
 export const StoresView = ({ onSelectStore }) => {
-  const { stores, openAuthModal, userProfile, currentRole, isSimulatingRole, setIsReferralModalOpen } = useApp();
+  const { stores, openAuthModal, userProfile, currentRole, isSimulatingRole, setIsReferralModalOpen, updateStore } = useApp();
   const [search, setSearch] = useState('');
   const [storeTypeFilter, setStoreTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Estados para edição administrativa da logo dos parceiros (API ou cadastrados)
+  const [editingStore, setEditingStore] = useState(null);
+  const [logoInputMode, setLogoInputMode] = useState('upload'); // 'upload' | 'url'
+  const [newLogoUrl, setNewLogoUrl] = useState('');
+  const [previewLogo, setPreviewLogo] = useState('');
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result;
+      if (base64) {
+        setPreviewLogo(base64);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveLogo = () => {
+    if (!editingStore) return;
+    const finalLogo = (previewLogo || newLogoUrl || '').trim();
+    if (!finalLogo) return;
+
+    updateStore(editingStore.id, {
+      logoImage: finalLogo,
+      logo: '🏪'
+    });
+
+    setEditingStore(null);
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ['#3B82F6', '#FF5F00', '#10B981']
+    });
+  };
+
+  const handleResetToDefault = () => {
+    if (!editingStore) return;
+    const defaultLogo = getBrandLogo(editingStore.name) || getBrandLogo(editingStore.id) || getBrandLogo(editingStore.apiSource) || '';
+    setPreviewLogo(defaultLogo);
+    setNewLogoUrl('');
+  };
 
   const isSimulationOrAdmin = currentRole === 'admin' || currentRole === 'merchant_parceiro_demo' || isSimulatingRole;
 
@@ -383,7 +434,7 @@ export const StoresView = ({ onSelectStore }) => {
           {/* Cards das Lojas Cadastradas */}
           {filteredStores.map((store) => {
             const isHighlighted = Boolean(store.highlight || store.isFeatured);
-            const storeLogo = getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || store.logoImage;
+            const storeLogo = store.logoImage || getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource);
             const isOnlineStore = store.isApiIntegrated || store.type === 'online';
             const isPaidStore = Boolean(store.adminPaidPlan && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
             const tier = isPaidStore ? store.tier : 'api';
@@ -447,35 +498,57 @@ export const StoresView = ({ onSelectStore }) => {
                   </div>
                 </div>
 
-                {/* Logo da Marca Oficial com borda correspondente ao plano Bronze, Prata, Ouro */}
-                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
-                  tier === 'gold'
-                    ? 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                    : tier === 'silver'
-                    ? 'border-2 border-slate-300 shadow-[0_0_10px_rgba(203,213,225,0.4)]'
-                    : tier === 'bronze'
-                    ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.4)]'
-                    : 'border border-white/15'
-                }`}>
-                  {storeLogo ? (
-                    <>
-                      <img
-                        src={storeLogo}
-                        alt={store.name}
-                        className={getStoreLogoFit(store, storeLogo)}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
-                          if (fb) fb.style.display = 'flex';
-                        }}
-                      />
-                      <span className="store-fallback-icon hidden w-full h-full items-center justify-center text-3xl">
-                        {store.logo || '🛍️'}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-3xl sm:text-4xl">{store.logo || '🏪'}</span>
+                {/* Container do Logo com botão de edição exclusiva para Administrador */}
+                <div className="relative my-1">
+                  {/* Logo da Marca Oficial com borda correspondente ao plano Bronze, Prata, Ouro */}
+                  <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
+                    tier === 'gold'
+                      ? 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                      : tier === 'silver'
+                      ? 'border-2 border-slate-300 shadow-[0_0_10px_rgba(203,213,225,0.4)]'
+                      : tier === 'bronze'
+                      ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.4)]'
+                      : 'border border-white/15'
+                  }`}>
+                    {storeLogo ? (
+                      <>
+                        <img
+                          src={storeLogo}
+                          alt={store.name}
+                          className={getStoreLogoFit(store, storeLogo)}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
+                            if (fb) fb.style.display = 'flex';
+                          }}
+                        />
+                        <span className="store-fallback-icon hidden w-full h-full items-center justify-center text-3xl">
+                          {store.logo || '🛍️'}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl sm:text-4xl">{store.logo || '🏪'}</span>
+                    )}
+                  </div>
+
+                  {/* Botão ADM para editar logo de qualquer parceiro (incluindo API) */}
+                  {currentRole === 'admin' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingStore(store);
+                        setLogoInputMode('upload');
+                        const currentImg = store.logoImage || getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || '';
+                        setPreviewLogo(currentImg);
+                        setNewLogoUrl(store.logoImage?.startsWith('http') ? store.logoImage : '');
+                      }}
+                      className="absolute -top-2 -right-2 z-20 w-6 h-6 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg flex items-center justify-center border-2 border-[#181824] transition-all hover:scale-125 cursor-pointer"
+                      title={`Editar logo da loja ${store.name}`}
+                    >
+                      <Pencil size={11} />
+                    </button>
                   )}
                 </div>
 
@@ -577,6 +650,150 @@ export const StoresView = ({ onSelectStore }) => {
           </button>
         </div>
       </div>
+
+      {/* MODAL ADMINISTRATIVO PARA TROCA DE LOGO DE QUALQUER PARCEIRO / API */}
+      {editingStore && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={() => setEditingStore(null)}
+        >
+          <div 
+            className="bg-[#151522] border-2 border-blue-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl relative space-y-4 text-left animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center border border-blue-500/40">
+                  <Pencil size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">Editar Logo do Parceiro</h3>
+                  <p className="text-xs text-blue-300 font-semibold truncate max-w-[240px]">{editingStore.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingStore(null)}
+                className="text-gray-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                title="Fechar"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Prévia do Quadrinho como fica na tela de parceiros */}
+            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+              <span className="text-[11px] font-bold text-gray-400">Prévia no Quadrinho Oficial</span>
+              <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-lg border-2 border-blue-500/40">
+                {previewLogo ? (
+                  <img
+                    src={previewLogo}
+                    alt={editingStore.name}
+                    className={getStoreLogoFit(editingStore, previewLogo)}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <span className="text-4xl">{editingStore.logo || '🏪'}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Alternância de Modo: Upload ou URL */}
+            <div className="space-y-3">
+              <div className="flex rounded-xl bg-white/5 p-1 border border-white/10 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setLogoInputMode('upload')}
+                  className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    logoInputMode === 'upload' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Upload size={13} />
+                  <span>Enviar Foto / Arquivo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLogoInputMode('url')}
+                  className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    logoInputMode === 'url' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Globe size={13} />
+                  <span>Link da Imagem (URL)</span>
+                </button>
+              </div>
+
+              {logoInputMode === 'upload' ? (
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                    Selecione a imagem da logo (PNG, JPG, SVG, WebP)
+                  </label>
+                  <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-blue-500/40 hover:border-blue-400 rounded-2xl bg-blue-500/5 hover:bg-blue-500/10 cursor-pointer transition-all">
+                    <Upload size={24} className="text-blue-400 mb-1.5" />
+                    <span className="text-xs font-black text-blue-300">Escolher Imagem do PC ou Celular</span>
+                    <span className="text-[10px] text-gray-400 mt-0.5">Arquivos locais convertidos automaticamente</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                    Cole o link direto da imagem
+                  </label>
+                  <input
+                    type="url"
+                    value={newLogoUrl}
+                    onChange={(e) => {
+                      setNewLogoUrl(e.target.value);
+                      setPreviewLogo(e.target.value);
+                    }}
+                    placeholder="https://exemplo.com/logo.png"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              )}
+
+              {/* Botão Restaurar Logo Padrão da API */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleResetToDefault}
+                  className="text-[11px] text-gray-400 hover:text-amber-400 flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <RotateCcw size={11} />
+                  <span>Restaurar logo padrão da marca</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Ações */}
+            <div className="flex items-center gap-2 pt-3 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => setEditingStore(null)}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveLogo}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Check size={14} />
+                <span>Salvar Nova Logo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

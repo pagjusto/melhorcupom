@@ -33,17 +33,34 @@ export const ExtensionBanner = () => {
     }
   });
 
+  // Detectar dispositivo móvel (celular/tablet) para NÃO exibir popups de extensão em telas mobile
+  const [isMobileDevice, setIsMobileDevice] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileDevice(
+        window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      );
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const extensionPath = 'C:\\Users\\pagju\\.gemini\\antigravity\\scratch\\melhor-cupom\\chrome-extension';
 
-  // O popup surge automaticamente após 2.5 segundos de navegação
+  // O popup surge automaticamente após 2.5 segundos de navegação APENAS em computadores/desktops
   useEffect(() => {
+    if (isMobileDevice) return; // Nunca ativa no celular
     if (!isDismissed) {
       const timer = setTimeout(() => {
         setIsPopupVisible(true);
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [isDismissed]);
+  }, [isDismissed, isMobileDevice]);
 
   const handleCopyPath = () => {
     navigator.clipboard.writeText(extensionPath);
@@ -78,11 +95,11 @@ export const ExtensionBanner = () => {
 
   return (
     <>
-      {/* 1. POPUP FLUTUANTE QUE APARECE ENQUANTO NAVEGA PELO SITE */}
-      {isPopupVisible && !isDismissed && (
+      {/* 1. POPUP FLUTUANTE QUE APARECE ENQUANTO NAVEGA PELO SITE (APENAS COMPUTADOR/DESKTOP) */}
+      {!isMobileDevice && isPopupVisible && !isDismissed && (
         <aside 
           aria-label="Notificação da Extensão"
-          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 max-w-[370px] w-[calc(100%-2.5rem)] animate-slide-up group"
+          className="hidden md:block fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 max-w-[370px] w-[calc(100%-2.5rem)] animate-slide-up group"
         >
           {/* Brilho neon de fundo */}
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-[#FF5F00] via-amber-500 to-orange-600 opacity-40 blur-lg group-hover:opacity-75 transition duration-500 pointer-events-none" />
@@ -157,14 +174,14 @@ export const ExtensionBanner = () => {
         </aside>
       )}
 
-      {/* 2. BOTÃO FLUTUANTE DISCRETO QUANDO O POPUP FOR MINIMIZADO */}
-      {isDismissed && (
+      {/* 2. BOTÃO FLUTUANTE DISCRETO QUANDO O POPUP FOR MINIMIZADO (APENAS COMPUTADOR/DESKTOP) */}
+      {!isMobileDevice && isDismissed && (
         <button
           onClick={() => {
             setIsDismissed(false);
             setIsPopupVisible(true);
           }}
-          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 bg-gradient-to-r from-[#171226] to-[#21142B] border border-[#FF5F00]/50 hover:border-[#FF5F00] text-white px-3.5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 transition-all hover:scale-105 cursor-pointer group"
+          className="hidden md:flex fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 bg-gradient-to-r from-[#171226] to-[#21142B] border border-[#FF5F00]/50 hover:border-[#FF5F00] text-white px-3.5 py-2.5 rounded-full shadow-2xl items-center gap-2 transition-all hover:scale-105 cursor-pointer group"
           title="Abrir detalhes da Extensão para Chrome do Melhor Cupom"
         >
           <div className="w-6 h-6 rounded-full bg-[#FF5F00] text-white flex items-center justify-center shadow-sm">

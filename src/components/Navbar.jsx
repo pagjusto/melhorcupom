@@ -370,27 +370,52 @@ export const Navbar = ({ activeTab, setActiveTab, selectedCity, setSelectedCity 
           </div>
 
           {/* Mobile Menu Button & Quick Actions */}
-          <div className="flex md:hidden items-center gap-2">
-            {/* Quick Referral Pill on Mobile (Apenas para logados) */}
-            {(isUserLoggedIn || isMerchantRole) && (
-              <button
-                onClick={() => setIsReferralModalOpen(true)}
-                className="bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1"
-                title="Divulgue & Ganhe"
-              >
-                <span>🎁</span>
-                <span>R$ {activeReferralBalance.toFixed(0)}</span>
-              </button>
+          <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+            {/* Atalhos Rápidos quando NÃO estiver logado: Entrar e Cadastrar diretamente visíveis */}
+            {!isUserLoggedIn && !isMerchantRole && currentRole !== 'admin' ? (
+              <>
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className="bg-white/10 hover:bg-white/15 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold border border-white/10 flex items-center gap-1 transition-all"
+                  title="Entrar na minha conta"
+                >
+                  <LogIn size={13} className="text-gray-300" />
+                  <span>Entrar</span>
+                </button>
+                <button
+                  onClick={() => openAuthModal('user_register')}
+                  className="bg-gradient-to-r from-[#FF5F00] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1 shadow-sm transition-all"
+                  title="Criar conta grátis"
+                >
+                  <UserPlus size={13} />
+                  <span>Cadastrar</span>
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Quick Referral Pill on Mobile (Apenas para logados) */}
+                {(isUserLoggedIn || isMerchantRole) && (
+                  <button
+                    onClick={() => setIsReferralModalOpen(true)}
+                    className="bg-amber-500/20 border border-amber-500/40 text-amber-300 px-2 py-1 rounded-lg text-xs font-black flex items-center gap-1"
+                    title="Divulgue & Ganhe"
+                  >
+                    <span>🎁</span>
+                    <span>R$ {activeReferralBalance.toFixed(0)}</span>
+                  </button>
+                )}
+
+                {!isVipUser && !isMerchantRole && (
+                  <button
+                    onClick={() => setIsSubscriptionModalOpen(true)}
+                    className="bg-[#FF5F00] text-white px-2.5 py-1.5 rounded-lg text-xs font-bold"
+                  >
+                    Seja VIP
+                  </button>
+                )}
+              </>
             )}
 
-            {!isVipUser && !isMerchantRole && (
-              <button
-                onClick={() => setIsSubscriptionModalOpen(true)}
-                className="bg-[#FF5F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold"
-              >
-                Seja VIP
-              </button>
-            )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white"
