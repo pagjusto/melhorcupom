@@ -1594,14 +1594,48 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  // Atualizar Perfil da Loja / Logo da Empresa
+  // Atualizar Perfil da Loja / Logo da Empresa e Ajustes de Enquadramento
   const updateStore = (storeId, updatedData) => {
-    setStores(prev => prev.map(s => {
-      if (s.id === storeId || s.merchantId === storeId) {
-        return { ...s, ...updatedData };
+    setStores(prev => {
+      const updated = prev.map(s => {
+        if (s.id === storeId || s.merchantId === storeId) {
+          return { ...s, ...updatedData };
+        }
+        return s;
+      });
+      safeSetItem('melhor_cupom_stores_v11', updated);
+      return updated;
+    });
+
+    if (updatedData.logoImage) {
+      setCoupons(prev => {
+        const updated = prev.map(c => {
+          if (c.storeId === storeId || c.merchantId === storeId) {
+            return {
+              ...c,
+              logoImage: updatedData.logoImage,
+              storeLogoImage: updatedData.logoImage,
+              storeLogo: updatedData.logoImage
+            };
+          }
+          return c;
+        });
+        safeSetItem('melhor_cupom_coupons_v10', updated);
+        return updated;
+      });
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      const dbPayload = {};
+      if (updatedData.logoImage !== undefined) dbPayload.logo_image = updatedData.logoImage;
+      if (updatedData.name !== undefined) dbPayload.name = updatedData.name;
+      if (updatedData.logoFit !== undefined) dbPayload.logo_fit = updatedData.logoFit;
+      if (updatedData.logoScale !== undefined) dbPayload.logo_scale = updatedData.logoScale;
+      if (updatedData.logoPadding !== undefined) dbPayload.logo_padding = updatedData.logoPadding;
+      if (Object.keys(dbPayload).length > 0) {
+        db.updateStore(storeId, dbPayload).catch(() => {});
       }
-      return s;
-    }));
+    }
   };
 
   // Alterar / Fazer Upgrade de Plano de Lojista (Free, Bronze, Prata, Ouro)

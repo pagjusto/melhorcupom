@@ -10,20 +10,22 @@ import {
   CheckCircle2, 
   TrendingUp, 
   Users, 
-  QrCode,
-  MapPin,
-  Coins,
-  Globe,
-  Zap,
-  Tag,
-  ShieldCheck,
-  Building2,
-  ExternalLink,
-  Pencil,
-  Upload,
-  RotateCcw,
-  Check,
-  X
+  QrCode, 
+  MapPin, 
+  Coins, 
+  Globe, 
+  Zap, 
+  Tag, 
+  ShieldCheck, 
+  Building2, 
+  ExternalLink, 
+  Pencil, 
+  Upload, 
+  RotateCcw, 
+  Check, 
+  X,
+  Sliders,
+  Maximize2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getBrandLogo } from '../assets/brands';
@@ -40,7 +42,36 @@ const CATEGORY_CHIPS = [
   { id: 'outros', label: 'Outros Parceiros', icon: '📦' }
 ];
 
-// Helper para enquadramento inteligente e preenchimento harmônico dos logos
+// Helper para verificar se a loja possui ajustes manuais de enquadramento salvos pelo Administrador
+const hasCustomStoreLogoSettings = (store) => {
+  return Boolean(
+    store?.logoFit || 
+    (store?.logoScale !== undefined && store?.logoScale !== 100) || 
+    store?.logoPadding !== undefined || 
+    store?.logoBg
+  );
+};
+
+// Helper para gerar o style do logo respeitando ajustes manuais salvos
+const getStoreLogoStyle = (store, override = {}) => {
+  const fit = override.logoFit ?? store?.logoFit;
+  const scale = override.logoScale ?? store?.logoScale;
+  const padding = override.logoPadding ?? store?.logoPadding;
+
+  const style = {};
+  if (fit) {
+    style.objectFit = fit;
+  }
+  if (scale !== undefined && scale !== 100) {
+    style.transform = `scale(${scale / 100})`;
+  }
+  if (padding !== undefined) {
+    style.padding = `${padding}px`;
+  }
+  return style;
+};
+
+// Helper para enquadramento inteligente e preenchimento harmônico dos logos (padrão)
 const getStoreLogoFit = (store, storeLogo) => {
   const name = (store?.name || '').toLowerCase();
   const id = (store?.id || '').toLowerCase();
@@ -75,11 +106,43 @@ export const StoresView = ({ onSelectStore }) => {
   const [storeTypeFilter, setStoreTypeFilter] = useState('all'); // 'all' | 'physical' | 'online'
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Estados para edição administrativa da logo dos parceiros (API ou cadastrados)
+  // Estados para edição administrativa e ajuste de enquadramento da logo dos parceiros
   const [editingStore, setEditingStore] = useState(null);
+  const [modalTab, setModalTab] = useState('adjust'); // 'adjust' | 'replace'
   const [logoInputMode, setLogoInputMode] = useState('upload'); // 'upload' | 'url'
   const [newLogoUrl, setNewLogoUrl] = useState('');
   const [previewLogo, setPreviewLogo] = useState('');
+
+  // Controles de enquadramento fino
+  const [logoFit, setLogoFit] = useState('contain'); // 'contain' | 'cover'
+  const [logoScale, setLogoScale] = useState(100); // 50% a 250%
+  const [logoPadding, setLogoPadding] = useState(6); // 0px a 24px
+  const [logoBg, setLogoBg] = useState('#ffffff');
+
+  const handleOpenEditLogo = (store) => {
+    const currentImg = store.logoImage || getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || '';
+    const inferredClass = getStoreLogoFit(store, currentImg);
+    
+    // Herda valores já configurados pelo lojista/admin ou calcula padrões ideais
+    const defaultFit = store.logoFit || (inferredClass.includes('object-cover') ? 'cover' : 'contain');
+    const defaultScale = store.logoScale !== undefined 
+      ? store.logoScale 
+      : (inferredClass.includes('scale-145') ? 145 : inferredClass.includes('scale-102') ? 102 : 100);
+    const defaultPadding = store.logoPadding !== undefined 
+      ? store.logoPadding 
+      : (inferredClass.includes('p-0') ? 0 : 6);
+    const defaultBg = store.logoBg || '#ffffff';
+
+    setEditingStore(store);
+    setPreviewLogo(currentImg);
+    setNewLogoUrl(store.logoImage?.startsWith('http') ? store.logoImage : '');
+    setLogoFit(defaultFit);
+    setLogoScale(defaultScale);
+    setLogoPadding(defaultPadding);
+    setLogoBg(defaultBg);
+    setModalTab(currentImg ? 'adjust' : 'replace');
+    setLogoInputMode('upload');
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -97,20 +160,29 @@ export const StoresView = ({ onSelectStore }) => {
   const handleSaveLogo = () => {
     if (!editingStore) return;
     const finalLogo = (previewLogo || newLogoUrl || '').trim();
-    if (!finalLogo) return;
 
     updateStore(editingStore.id, {
-      logoImage: finalLogo,
-      logo: '🏪'
+      ...(finalLogo ? { logoImage: finalLogo, logo: '🏪' } : {}),
+      logoFit,
+      logoScale,
+      logoPadding,
+      logoBg
     });
 
     setEditingStore(null);
     confetti({
-      particleCount: 50,
+      particleCount: 60,
       spread: 60,
       origin: { y: 0.6 },
       colors: ['#3B82F6', '#FF5F00', '#10B981']
     });
+  };
+
+  const handleResetFraming = () => {
+    setLogoFit('contain');
+    setLogoScale(100);
+    setLogoPadding(6);
+    setLogoBg('#ffffff');
   };
 
   const handleResetToDefault = () => {
@@ -118,6 +190,7 @@ export const StoresView = ({ onSelectStore }) => {
     const defaultLogo = getBrandLogo(editingStore.name) || getBrandLogo(editingStore.id) || getBrandLogo(editingStore.apiSource) || '';
     setPreviewLogo(defaultLogo);
     setNewLogoUrl('');
+    handleResetFraming();
   };
 
   const isSimulationOrAdmin = currentRole === 'admin' || currentRole === 'merchant_parceiro_demo' || isSimulatingRole;
@@ -501,21 +574,25 @@ export const StoresView = ({ onSelectStore }) => {
                 {/* Container do Logo com botão de edição exclusiva para Administrador */}
                 <div className="relative my-1">
                   {/* Logo da Marca Oficial com borda correspondente ao plano Bronze, Prata, Ouro */}
-                  <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
-                    tier === 'gold'
-                      ? 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                      : tier === 'silver'
-                      ? 'border-2 border-slate-300 shadow-[0_0_10px_rgba(203,213,225,0.4)]'
-                      : tier === 'bronze'
-                      ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.4)]'
-                      : 'border border-white/15'
-                  }`}>
+                  <div 
+                    style={{ backgroundColor: store.logoBg || '#ffffff' }}
+                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
+                      tier === 'gold'
+                        ? 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                        : tier === 'silver'
+                        ? 'border-2 border-slate-300 shadow-[0_0_10px_rgba(203,213,225,0.4)]'
+                        : tier === 'bronze'
+                        ? 'border-2 border-[#CD7F32] shadow-[0_0_10px_rgba(205,127,50,0.4)]'
+                        : 'border border-white/15'
+                    }`}
+                  >
                     {storeLogo ? (
                       <>
                         <img
                           src={storeLogo}
                           alt={store.name}
-                          className={getStoreLogoFit(store, storeLogo)}
+                          style={hasCustomStoreLogoSettings(store) ? getStoreLogoStyle(store) : undefined}
+                          className={hasCustomStoreLogoSettings(store) ? 'w-full h-full transition-transform duration-150' : getStoreLogoFit(store, storeLogo)}
                           loading="lazy"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
@@ -538,14 +615,10 @@ export const StoresView = ({ onSelectStore }) => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEditingStore(store);
-                        setLogoInputMode('upload');
-                        const currentImg = store.logoImage || getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || '';
-                        setPreviewLogo(currentImg);
-                        setNewLogoUrl(store.logoImage?.startsWith('http') ? store.logoImage : '');
+                        handleOpenEditLogo(store);
                       }}
                       className="absolute -top-2 -right-2 z-20 w-6 h-6 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg flex items-center justify-center border-2 border-[#181824] transition-all hover:scale-125 cursor-pointer"
-                      title={`Editar logo da loja ${store.name}`}
+                      title={`Editar e ajustar logo da loja ${store.name}`}
                     >
                       <Pencil size={11} />
                     </button>
@@ -651,14 +724,14 @@ export const StoresView = ({ onSelectStore }) => {
         </div>
       </div>
 
-      {/* MODAL ADMINISTRATIVO PARA TROCA DE LOGO DE QUALQUER PARCEIRO / API */}
+      {/* MODAL ADMINISTRATIVO PARA ENQUADRAMENTO E TROCA DE LOGO DE QUALQUER PARCEIRO / API */}
       {editingStore && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto"
           onClick={() => setEditingStore(null)}
         >
           <div 
-            className="bg-[#151522] border-2 border-blue-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl relative space-y-4 text-left animate-scale-up"
+            className="bg-[#151522] border-2 border-blue-500/50 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative space-y-4 text-left animate-scale-up my-auto max-h-[95vh] overflow-y-auto no-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -668,8 +741,8 @@ export const StoresView = ({ onSelectStore }) => {
                   <Pencil size={18} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white">Editar Logo do Parceiro</h3>
-                  <p className="text-xs text-blue-300 font-semibold truncate max-w-[240px]">{editingStore.name}</p>
+                  <h3 className="text-sm font-black text-white">Ajustar & Enquadrar Logo</h3>
+                  <p className="text-xs text-blue-300 font-semibold truncate max-w-[260px]">{editingStore.name}</p>
                 </div>
               </div>
               <button
@@ -681,15 +754,39 @@ export const StoresView = ({ onSelectStore }) => {
               </button>
             </div>
 
-            {/* Prévia do Quadrinho como fica na tela de parceiros */}
-            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2">
-              <span className="text-[11px] font-bold text-gray-400">Prévia no Quadrinho Oficial</span>
-              <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-lg border-2 border-blue-500/40">
+            {/* Prévia do Quadrinho com Atualização em Tempo Real */}
+            <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+              <div className="flex items-center justify-between w-full px-2 text-[11px]">
+                <span className="font-bold text-gray-400">Prévia em Tempo Real no Card</span>
+                <span className="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-md font-mono font-bold">
+                  {logoFit === 'cover' ? 'Cobrir' : 'Conter'} • {logoScale}% • {logoPadding}px
+                </span>
+              </div>
+
+              {/* Card de Prévia Idêntico à Vitrine */}
+              <div 
+                style={{ backgroundColor: logoBg || '#ffffff' }}
+                className={`w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden shadow-2xl relative transition-all duration-150 ${
+                  editingStore.tier === 'gold'
+                    ? 'border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                    : editingStore.tier === 'silver'
+                    ? 'border-2 border-slate-300 shadow-[0_0_15px_rgba(203,213,225,0.3)]'
+                    : editingStore.tier === 'bronze'
+                    ? 'border-2 border-[#CD7F32] shadow-[0_0_15px_rgba(205,127,50,0.3)]'
+                    : 'border-2 border-blue-500/50'
+                }`}
+              >
                 {previewLogo ? (
                   <img
                     src={previewLogo}
                     alt={editingStore.name}
-                    className={getStoreLogoFit(editingStore, previewLogo)}
+                    style={{
+                      objectFit: logoFit,
+                      transform: logoScale !== 100 ? `scale(${logoScale / 100})` : undefined,
+                      padding: `${logoPadding}px`,
+                      transition: 'transform 0.1s ease, padding 0.1s ease'
+                    }}
+                    className="w-full h-full"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -698,82 +795,303 @@ export const StoresView = ({ onSelectStore }) => {
                   <span className="text-4xl">{editingStore.logo || '🏪'}</span>
                 )}
               </div>
+              <span className="text-[10px] text-gray-400">
+                Mova os controles abaixo para regular o tamanho, corte e respiro
+              </span>
             </div>
 
-            {/* Alternância de Modo: Upload ou URL */}
-            <div className="space-y-3">
-              <div className="flex rounded-xl bg-white/5 p-1 border border-white/10 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setLogoInputMode('upload')}
-                  className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    logoInputMode === 'upload' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Upload size={13} />
-                  <span>Enviar Foto / Arquivo</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLogoInputMode('url')}
-                  className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    logoInputMode === 'url' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Globe size={13} />
-                  <span>Link da Imagem (URL)</span>
-                </button>
-              </div>
+            {/* Abas Superiores do Modal: Enquadramento vs Trocar Imagem */}
+            <div className="flex rounded-xl bg-white/5 p-1 border border-white/10 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setModalTab('adjust')}
+                className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  modalTab === 'adjust' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Sliders size={13} />
+                <span>Ajustar Enquadramento</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab('replace')}
+                className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  modalTab === 'replace' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Upload size={13} />
+                <span>Substituir Imagem</span>
+              </button>
+            </div>
 
-              {logoInputMode === 'upload' ? (
+            {/* CONTEÚDO DA ABA 1: AJUSTE FINO DE ENQUADRAMENTO DA IMAGEM ATUAL */}
+            {modalTab === 'adjust' && (
+              <div className="space-y-3.5 bg-black/20 p-3.5 rounded-2xl border border-white/5">
+                {/* 1. Modo de Enquadramento */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                    Selecione a imagem da logo (PNG, JPG, SVG, WebP)
+                  <label className="block text-xs font-bold text-gray-300 mb-1.5 flex items-center justify-between">
+                    <span>1. Formato de Preenchimento:</span>
+                    <span className="text-[10px] text-blue-300 font-semibold">{logoFit === 'contain' ? 'Conter (Sem cortes)' : 'Cobrir (Sem bordas)'}</span>
                   </label>
-                  <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-blue-500/40 hover:border-blue-400 rounded-2xl bg-blue-500/5 hover:bg-blue-500/10 cursor-pointer transition-all">
-                    <Upload size={24} className="text-blue-400 mb-1.5" />
-                    <span className="text-xs font-black text-blue-300">Escolher Imagem do PC ou Celular</span>
-                    <span className="text-[10px] text-gray-400 mt-0.5">Arquivos locais convertidos automaticamente</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLogoFit('contain')}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        logoFit === 'contain'
+                          ? 'bg-blue-600/30 border-blue-500 text-blue-200 shadow-sm'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Maximize2 size={13} />
+                      <span>Conter (Proporcional)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoFit('cover')}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        logoFit === 'cover'
+                          ? 'bg-blue-600/30 border-blue-500 text-blue-200 shadow-sm'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Sliders size={13} />
+                      <span>Cobrir Quadrinho</span>
+                    </button>
+                  </div>
                 </div>
-              ) : (
+
+                {/* 2. Zoom / Escala Slider */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                    Cole o link direto da imagem
-                  </label>
+                  <div className="flex items-center justify-between text-xs font-bold mb-1">
+                    <span className="text-gray-300">2. Zoom / Escala da Imagem:</span>
+                    <span className="text-amber-300 font-mono bg-amber-500/20 px-2 py-0.5 rounded text-[11px] font-black">
+                      {logoScale}%
+                    </span>
+                  </div>
                   <input
-                    type="url"
-                    value={newLogoUrl}
-                    onChange={(e) => {
-                      setNewLogoUrl(e.target.value);
-                      setPreviewLogo(e.target.value);
-                    }}
-                    placeholder="https://exemplo.com/logo.png"
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    type="range"
+                    min="50"
+                    max="230"
+                    step="5"
+                    value={logoScale}
+                    onChange={(e) => setLogoScale(Number(e.target.value))}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
                   />
+                  {/* Presets Rápidos de Zoom */}
+                  <div className="flex items-center justify-between gap-1 mt-1.5 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setLogoScale(prev => Math.max(50, prev - 10))}
+                      className="px-2 py-1 bg-white/5 hover:bg-white/10 text-gray-300 rounded-md font-bold transition-colors cursor-pointer"
+                    >
+                      -10%
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoScale(100)}
+                      className={`px-2 py-1 rounded-md font-bold transition-colors cursor-pointer ${
+                        logoScale === 100 ? 'bg-blue-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      }`}
+                    >
+                      100%
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoScale(125)}
+                      className={`px-2 py-1 rounded-md font-bold transition-colors cursor-pointer ${
+                        logoScale === 125 ? 'bg-blue-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      }`}
+                    >
+                      125%
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoScale(145)}
+                      className={`px-2 py-1 rounded-md font-bold transition-colors cursor-pointer ${
+                        logoScale === 145 ? 'bg-blue-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      }`}
+                      title="Ideal para marcas com margens brancas embutidas (ex: Drogaria Rosário)"
+                    >
+                      145% (Rosário)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoScale(prev => Math.min(230, prev + 10))}
+                      className="px-2 py-1 bg-white/5 hover:bg-white/10 text-gray-300 rounded-md font-bold transition-colors cursor-pointer"
+                    >
+                      +10%
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              {/* Botão Restaurar Logo Padrão da API */}
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleResetToDefault}
-                  className="text-[11px] text-gray-400 hover:text-amber-400 flex items-center gap-1 transition-colors cursor-pointer"
-                >
-                  <RotateCcw size={11} />
-                  <span>Restaurar logo padrão da marca</span>
-                </button>
+                {/* 3. Margem Interna (Padding) Slider */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold mb-1">
+                    <span className="text-gray-300">3. Margem Interna (Respiro):</span>
+                    <span className="text-emerald-300 font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-[11px] font-black">
+                      {logoPadding}px {logoPadding === 0 ? '(Sem bordas)' : ''}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="24"
+                    step="2"
+                    value={logoPadding}
+                    onChange={(e) => setLogoPadding(Number(e.target.value))}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  />
+                  {/* Presets Rápidos de Margem */}
+                  <div className="flex items-center justify-between gap-1 mt-1.5 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setLogoPadding(0)}
+                      className={`px-2 py-1 rounded-md font-bold transition-colors cursor-pointer ${
+                        logoPadding === 0 ? 'bg-emerald-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      }`}
+                    >
+                      0px (Encosta na borda)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoPadding(6)}
+                      className={`px-2 py-1 rounded-md font-bold transition-colors cursor-pointer ${
+                        logoPadding === 6 ? 'bg-emerald-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      }`}
+                    >
+                      6px (Padrão)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLogoPadding(12)}
+                      className={`px-2 py-1 rounded-md font-bold transition-colors cursor-pointer ${
+                        logoPadding === 12 ? 'bg-emerald-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      }`}
+                    >
+                      12px (Mais respiro)
+                    </button>
+                  </div>
+                </div>
+
+                {/* 4. Cor de Fundo da Caixa */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                    4. Cor de Fundo do Quadrinho:
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { label: 'Branco', value: '#ffffff', border: 'border-gray-300' },
+                      { label: 'Escuro', value: '#151522', border: 'border-white/20' },
+                      { label: 'Preto', value: '#000000', border: 'border-white/20' },
+                      { label: 'Laranja Suave', value: '#FFF7ED', border: 'border-orange-300' },
+                      { label: 'Transparente', value: 'transparent', border: 'border-dashed border-white/30' }
+                    ].map(c => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setLogoBg(c.value)}
+                        className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${c.border} ${
+                          logoBg === c.value ? 'ring-2 ring-blue-500 scale-105' : 'opacity-80 hover:opacity-100'
+                        }`}
+                        style={{ backgroundColor: c.value === 'transparent' ? '#1a1a24' : c.value, color: c.value === '#ffffff' || c.value === '#FFF7ED' ? '#000' : '#fff' }}
+                      >
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Botão Redefinir Enquadramento Padrão */}
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={handleResetFraming}
+                    className="text-[11px] text-gray-400 hover:text-amber-400 flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw size={11} />
+                    <span>Redefinir enquadramento para valores padrão</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Ações */}
+            {/* CONTEÚDO DA ABA 2: SUBSTITUIR IMAGEM (UPLOAD OU LINK) */}
+            {modalTab === 'replace' && (
+              <div className="space-y-3 bg-black/20 p-3.5 rounded-2xl border border-white/5">
+                <div className="flex rounded-xl bg-white/5 p-1 border border-white/10 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setLogoInputMode('upload')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      logoInputMode === 'upload' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Upload size={13} />
+                    <span>Enviar Foto / Arquivo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLogoInputMode('url')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      logoInputMode === 'url' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Globe size={13} />
+                    <span>Link da Imagem (URL)</span>
+                  </button>
+                </div>
+
+                {logoInputMode === 'upload' ? (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                      Selecione a imagem da logo (PNG, JPG, SVG, WebP)
+                    </label>
+                    <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-blue-500/40 hover:border-blue-400 rounded-2xl bg-blue-500/5 hover:bg-blue-500/10 cursor-pointer transition-all">
+                      <Upload size={24} className="text-blue-400 mb-1.5" />
+                      <span className="text-xs font-black text-blue-300">Escolher Imagem do PC ou Celular</span>
+                      <span className="text-[10px] text-gray-400 mt-0.5">Arquivos locais convertidos automaticamente</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                      Cole o link direto da imagem
+                    </label>
+                    <input
+                      type="url"
+                      value={newLogoUrl}
+                      onChange={(e) => {
+                        setNewLogoUrl(e.target.value);
+                        setPreviewLogo(e.target.value);
+                      }}
+                      placeholder="https://exemplo.com/logo.png"
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                )}
+
+                {/* Botão Restaurar Logo Padrão da API */}
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={handleResetToDefault}
+                    className="text-[11px] text-gray-400 hover:text-amber-400 flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw size={11} />
+                    <span>Restaurar logo original da marca</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Ações do Rodapé */}
             <div className="flex items-center gap-2 pt-3 border-t border-white/10">
               <button
                 type="button"
@@ -788,7 +1106,7 @@ export const StoresView = ({ onSelectStore }) => {
                 className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <Check size={14} />
-                <span>Salvar Nova Logo</span>
+                <span>Salvar Ajustes do Parceiro</span>
               </button>
             </div>
           </div>
