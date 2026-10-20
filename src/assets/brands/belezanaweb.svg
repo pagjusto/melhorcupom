@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Sparkle star -->
+  <path d="M44 40 L47 30 L50 40 L60 43 L50 46 L47 56 L44 46 L34 43 Z" fill="#E5A823"/>
+  <g font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" fill="#000000">
+    <text x="66" y="38" font-size="16">beleza</text>
+    <text x="66" y="53" font-size="13" fill="#666666" font-weight="bold">NA WEB</text>
+  </g>
+</svg>

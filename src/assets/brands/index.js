@@ -35,6 +35,36 @@ import corleoneLogo from './corleone.jpg';
 import omensLogo from './omens.svg';
 import manualLogo from './manual.svg';
 
+// 28 Novas Logos de Marcas Oficiais
+import dellLogo from './dell.svg';
+import carrefourLogo from './carrefour.svg';
+import raybanLogo from './rayban.svg';
+import oakleyLogo from './oakley.svg';
+import pumaLogo from './puma.svg';
+import underarmourLogo from './underarmour.svg';
+import rennerLogo from './renner.svg';
+import ceaLogo from './cea.svg';
+import riachueloLogo from './riachuelo.svg';
+import naturaLogo from './natura.svg';
+import eudoraLogo from './eudora.svg';
+import qdbLogo from './qdb.svg';
+import belezanawebLogo from './belezanaweb.svg';
+import drogaraiaLogo from './drogaraia.svg';
+import paguemenosLogo from './paguemenos.svg';
+import cobasiLogo from './cobasi.svg';
+import fastshopLogo from './fastshop.svg';
+import electroluxLogo from './electrolux.svg';
+import brastempLogo from './brastemp.svg';
+import lenovoLogo from './lenovo.svg';
+import dafitiLogo from './dafiti.svg';
+import zattiniLogo from './zattini.svg';
+import bookingLogo from './booking.svg';
+import decolarLogo from './decolar.svg';
+import loccitaneLogo from './loccitane.svg';
+import philipsLogo from './philips.svg';
+import camicadoLogo from './camicado.svg';
+import tokstokLogo from './tokstok.svg';
+
 export const BRAND_LOGOS = {
   manual: manualLogo,
   'manual tratamento contra queda capilar': manualLogo,
@@ -105,7 +135,159 @@ export const BRAND_LOGOS = {
   barbeariacorleone: corleoneLogo,
   trackfield: trackfieldLogo,
   trackandfield: trackfieldLogo,
-  'track & field': trackfieldLogo
+  'track & field': trackfieldLogo,
+
+  // 28 Novas Marcas
+  dell: dellLogo,
+  dellcomputadores: dellLogo,
+  'dell computadores': dellLogo,
+  store_awin_dell: dellLogo,
+
+  carrefour: carrefourLogo,
+  carrefourbrasil: carrefourLogo,
+  'carrefour brasil': carrefourLogo,
+  store_awin_carrefour: carrefourLogo,
+
+  rayban: raybanLogo,
+  raybanbrasil: raybanLogo,
+  'ray-ban brasil': raybanLogo,
+  'rayban brasil': raybanLogo,
+  store_awin_rayban: raybanLogo,
+
+  oakley: oakleyLogo,
+  oakleybrasil: oakleyLogo,
+  'oakley brasil': oakleyLogo,
+  store_awin_oakley: oakleyLogo,
+
+  puma: pumaLogo,
+  pumabrasil: pumaLogo,
+  'puma brasil': pumaLogo,
+  store_awin_puma: pumaLogo,
+
+  underarmour: underarmourLogo,
+  'under armour': underarmourLogo,
+  store_awin_underarmour: underarmourLogo,
+
+  renner: rennerLogo,
+  lojasrenner: rennerLogo,
+  'lojas renner': rennerLogo,
+  store_awin_renner: rennerLogo,
+
+  cea: ceaLogo,
+  ceamoda: ceaLogo,
+  ceamodabrasil: ceaLogo,
+  'c&a': ceaLogo,
+  'c&a moda brasil': ceaLogo,
+  store_awin_cea: ceaLogo,
+
+  riachuelo: riachueloLogo,
+  'riachuelo & casa riachuelo': riachueloLogo,
+  riachuelocasariachuelo: riachueloLogo,
+  store_awin_riachuelo: riachueloLogo,
+
+  natura: naturaLogo,
+  naturaoficial: naturaLogo,
+  'natura oficial': naturaLogo,
+  store_awin_natura: naturaLogo,
+
+  eudora: eudoraLogo,
+  eudoraoficial: eudoraLogo,
+  store_awin_eudora: eudoraLogo,
+
+  qdb: qdbLogo,
+  quemdisseberenice: qdbLogo,
+  'quem disse, berenice?': qdbLogo,
+  'quem disse berenice': qdbLogo,
+  store_awin_qdb: qdbLogo,
+
+  belezanaweb: belezanawebLogo,
+  'beleza na web': belezanawebLogo,
+  store_awin_belezanaweb: belezanawebLogo,
+
+  drogaraia: drogaraiaLogo,
+  drogaraiaonline: drogaraiaLogo,
+  'droga raia online': drogaraiaLogo,
+  'droga raia': drogaraiaLogo,
+  store_awin_drogaraia: drogaraiaLogo,
+
+  paguemenos: paguemenosLogo,
+  farmaciaspaguemenos: paguemenosLogo,
+  'farmacias pague menos': paguemenosLogo,
+  'farmácias pague menos': paguemenosLogo,
+  store_awin_paguemenos: paguemenosLogo,
+
+  cobasi: cobasiLogo,
+  cobasipetshop: cobasiLogo,
+  'cobasi pet shop': cobasiLogo,
+  store_awin_cobasi: cobasiLogo,
+
+  fastshop: fastshopLogo,
+  'fast shop': fastshopLogo,
+  store_awin_fastshop: fastshopLogo,
+
+  electrolux: electroluxLogo,
+  electroluxoficial: electroluxLogo,
+  'electrolux oficial': electroluxLogo,
+  store_awin_electrolux: electroluxLogo,
+
+  brastemp: brastempLogo,
+  brastempconsul: brastempLogo,
+  'brastemp & consul': brastempLogo,
+  store_awin_brastemp: brastempLogo,
+
+  lenovo: lenovoLogo,
+  lenovobrasil: lenovoLogo,
+  'lenovo brasil': lenovoLogo,
+  store_awin_lenovo: lenovoLogo,
+
+  dafiti: dafitiLogo,
+  store_awin_dafiti: dafitiLogo,
+
+  zattini: zattiniLogo,
+  zattinicalcados: zattiniLogo,
+  'zattini calcados': zattiniLogo,
+  'zattini calçados': zattiniLogo,
+  store_awin_zattini: zattiniLogo,
+
+  booking: bookingLogo,
+  bookingcom: bookingLogo,
+  'booking.com': bookingLogo,
+  'booking.com viagens': bookingLogo,
+  bookingcomviagens: bookingLogo,
+  store_awin_booking: bookingLogo,
+
+  decolar: decolarLogo,
+  decolarcom: decolarLogo,
+  'decolar.com': decolarLogo,
+  store_awin_decolar: decolarLogo,
+
+  loccitane: loccitaneLogo,
+  loccitaneaubresil: loccitaneLogo,
+  "l'occitane au bresil": loccitaneLogo,
+  "l'occitane au brésil": loccitaneLogo,
+  store_awin_loccitane: loccitaneLogo,
+
+  philips: philipsLogo,
+  philipswalita: philipsLogo,
+  philipswalitaoficial: philipsLogo,
+  'philips walita oficial': philipsLogo,
+  'philips walita': philipsLogo,
+  store_awin_philips: philipsLogo,
+
+  camicado: camicadoLogo,
+  camicadocasa: camicadoLogo,
+  'camicado casa & decoração': camicadoLogo,
+  'camicado casa & decoracao': camicadoLogo,
+  camicadocasadecoracao: camicadoLogo,
+  store_awin_camicado: camicadoLogo,
+
+  tokstok: tokstokLogo,
+  tokstokmoveis: tokstokLogo,
+  'tok&stok': tokstokLogo,
+  'tok&stok móveis & design': tokstokLogo,
+  'tok&stok moveis & design': tokstokLogo,
+  tokstokmoveisdesign: tokstokLogo,
+  store_awin_tokstok: tokstokLogo
 };
 
 export const getBrandLogo = (identifier) => {
@@ -116,7 +298,7 @@ export const getBrandLogo = (identifier) => {
   // 1. Busca exata prioritária
   if (BRAND_LOGOS[key]) return BRAND_LOGOS[key];
 
-  // 2. Busca onde o identificador contém a chave da marca (ex: "loja magalu" contém "magalu")
+  // 2. Busca onde o identificador contém a chave da marca (ex: "loja renner brasil" contém "renner")
   for (const [k, v] of Object.entries(BRAND_LOGOS)) {
     const cleanK = k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
     if (cleanK && cleanK.length >= 3 && key.includes(cleanK)) {

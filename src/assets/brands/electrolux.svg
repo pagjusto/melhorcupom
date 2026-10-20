@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Electrolux Circle E -->
+  <circle cx="48" cy="40" r="18" fill="#011E41"/>
+  <path d="M42 30 h12 v4 h-7 v4 h6 v4 h-6 v4 h7 v4 h-12 z" fill="#ffffff"/>
+  <text x="74" y="47" font-family="'Century Gothic', Arial, sans-serif" font-size="21" font-weight="bold" fill="#011E41" letter-spacing="1">Electrolux</text>
+</svg>

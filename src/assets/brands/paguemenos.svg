@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Heart Cross Icon -->
+  <g transform="translate(42, 40)">
+    <path d="M0 -12 C-6 -18 -16 -12 -16 -4 C-16 6 0 16 0 16 C0 16 16 6 16 -4 C16 -12 6 -18 0 -12 Z" fill="#ED1C24"/>
+    <rect x="-3" y="-7" width="6" height="14" fill="#ffffff" rx="1"/>
+    <rect x="-7" y="-3" width="14" height="6" fill="#ffffff" rx="1"/>
+  </g>
+  <g font-family="'Arial', sans-serif" font-weight="900">
+    <text x="66" y="38" font-size="14" fill="#0054A6">FARMÁCIAS</text>
+    <text x="66" y="54" font-size="16" fill="#ED1C24">pague menos</text>
+  </g>
+</svg>

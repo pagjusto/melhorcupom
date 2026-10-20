@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Dog silhouette in orange paw -->
+  <circle cx="48" cy="40" r="18" fill="#FF8200"/>
+  <path d="M42 37 c0-3 3-5 6-5 s6 2 6 5 c0 2-2 4-4 5 l2 7 h-3 l-2-5 -2 5 h-3 l2-7 c-2-1-4-3-4-5z" fill="#ffffff"/>
+  <g font-family="'Arial Black', sans-serif">
+    <text x="74" y="45" font-size="24" font-weight="900" fill="#0C2340" letter-spacing="-1">cobasi</text>
+    <text x="74" y="56" font-size="8" font-weight="bold" fill="#FF8200" letter-spacing="1">ESSENCIAL PRA VIDA</text>
+  </g>
+</svg>

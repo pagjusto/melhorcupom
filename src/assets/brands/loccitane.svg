@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <g font-family="'Times New Roman', Georgia, serif" text-anchor="middle">
+    <text x="120" y="42" font-size="17" font-weight="bold" fill="#1C2D42" letter-spacing="2">L'OCCITANE</text>
+    <text x="120" y="55" font-size="9" font-weight="normal" fill="#C69214" letter-spacing="3">AU BRÉSIL</text>
+  </g>
+</svg>

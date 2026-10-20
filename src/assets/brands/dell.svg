@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <circle cx="120" cy="40" r="32" fill="none" stroke="#007DB8" stroke-width="4.5"/>
+  <g fill="#007DB8">
+    <!-- D -->
+    <path d="M100 27h6.5c5.5 0 9 3.8 9 9s-3.5 9-9 9H100V27zm4 14.5h2.5c3.2 0 5-2.2 5-5.5s-1.8-5.5-5-5.5H104v11z"/>
+    <!-- Slanted E -->
+    <path d="M117 38.5l9.5-3.5 1.5 3.8-5.8 2.2 2 5.5 5.2-1.9 1.4 3.7-9 3.4-6-16.5 9-3.4 1.4 3.7-5.2 1.9 1.8 5.1z"/>
+    <!-- L1 -->
+    <path d="M129.5 27h4v14.5h7.5V45h-11.5V27z"/>
+    <!-- L2 -->
+    <path d="M142.5 27h4v14.5h7.5V45h-11.5V27z"/>
+  </g>
+</svg>

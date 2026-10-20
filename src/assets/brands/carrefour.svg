@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Diamond Left (Red) -->
+  <path d="M38 40 L52 24 L52 32 C46 36 46 44 52 48 L52 56 Z" fill="#D71921"/>
+  <!-- Diamond Right (Blue) -->
+  <path d="M66 40 L52 24 L52 32 C58 36 58 44 52 48 L52 56 Z" fill="#00387B"/>
+  <!-- Text -->
+  <text x="76" y="47" font-family="'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="900" fill="#00387B" letter-spacing="-0.5">Carrefour</text>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Intertwined E icon -->
+  <circle cx="50" cy="40" r="18" fill="#4B1248"/>
+  <text x="50" y="46" font-family="'Georgia', serif" font-size="18" font-weight="bold" font-style="italic" fill="#C5A059" text-anchor="middle">E</text>
+  <text x="78" y="47" font-family="'Optima', 'Century Gothic', sans-serif" font-size="22" font-weight="bold" fill="#4B1248" letter-spacing="3">EUDORA</text>
+</svg>

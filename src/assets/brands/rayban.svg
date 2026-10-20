@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <!-- Red trapezoid badge -->
+  <path d="M42 16 L198 22 L192 64 L48 58 Z" fill="#E21B23" rx="4"/>
+  <g fill="#ffffff" font-family="'Impact', 'Arial Black', sans-serif" font-style="italic">
+    <text x="120" y="49" font-size="30" font-weight="bold" text-anchor="middle" letter-spacing="1">Ray•Ban</text>
+    <text x="178" y="34" font-size="9" font-weight="normal">®</text>
+  </g>
+</svg>
