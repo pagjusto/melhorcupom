@@ -34,6 +34,35 @@ const CATEGORY_CHIPS = [
   { id: 'outros', label: 'Outros Parceiros', icon: '📦' }
 ];
 
+// Helper para enquadramento inteligente e preenchimento harmônico dos logos
+const getStoreLogoFit = (store, storeLogo) => {
+  const name = (store?.name || '').toLowerCase();
+  const id = (store?.id || '').toLowerCase();
+  const url = (storeLogo || '').toLowerCase();
+
+  // 1. Logos com margens brancas embutidas no arquivo original da Lomadee/Awin (ex: Drogaria Rosário):
+  if (name.includes('rosário') || name.includes('rosario') || id.includes('ros_rio')) {
+    return 'w-full h-full object-contain scale-145 p-0';
+  }
+
+  // 2. Selos e ícones de app com fundo colorido próprio (PneuBest, Friopeças, Speedmax, Eco Flame):
+  // Preenchem 100% do quadrinho arredondado de ponta a ponta sem bordas brancas:
+  if (
+    url.includes('apenas_icone') ||
+    name.includes('pneubest') ||
+    name.includes('speedmax') ||
+    name.includes('eco flame') ||
+    name.includes('friopecas') ||
+    name.includes('friopeças')
+  ) {
+    return 'w-full h-full object-cover scale-102 p-0';
+  }
+
+  // 3. Logos de marcas oficiais (Balaroti, Toymania, Homedock, Kidy, Sottile Casa, Terabyte, etc.):
+  // Sem o padding duplo antigo, aproveitam a largura máxima da caixa mantendo proporção e legibilidade:
+  return 'w-full h-full object-contain p-1.5';
+};
+
 export const StoresView = ({ onSelectStore }) => {
   const { stores, openAuthModal, userProfile, currentRole, isSimulatingRole, setIsReferralModalOpen } = useApp();
   const [search, setSearch] = useState('');
@@ -419,7 +448,7 @@ export const StoresView = ({ onSelectStore }) => {
                 </div>
 
                 {/* Logo da Marca Oficial com borda correspondente ao plano Bronze, Prata, Ouro */}
-                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-2 flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
+                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 relative z-10 ${
                   tier === 'gold'
                     ? 'border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
                     : tier === 'silver'
@@ -433,7 +462,7 @@ export const StoresView = ({ onSelectStore }) => {
                       <img
                         src={storeLogo}
                         alt={store.name}
-                        className="w-full h-full object-contain p-1 rounded-lg"
+                        className={getStoreLogoFit(store, storeLogo)}
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
