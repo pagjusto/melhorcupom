@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   Lock, 
@@ -10,19 +10,31 @@ import {
   ArrowUpRight, 
   Tag, 
   Crown, 
-  Award,
-  Medal,
-  Users,
-  Eye,
-  Coins,
-  Zap,
-  ExternalLink
+  Award, 
+  Medal, 
+  Users, 
+  Eye, 
+  Coins, 
+  Zap, 
+  ExternalLink,
+  Pencil
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
 import { getCouponBanner } from '../utils/bannerResolver';
+import { AdminEditOfferBannerModal } from './AdminEditOfferBannerModal';
 
 export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
-  const { isVipUser, userProfile, redemptions, toggleFavorite, setIsSubscriptionModalOpen, recordCouponView } = useApp();
+  const { 
+    isVipUser, 
+    userProfile, 
+    redemptions, 
+    toggleFavorite, 
+    setIsSubscriptionModalOpen, 
+    recordCouponView,
+    currentRole 
+  } = useApp();
+
+  const [isEditingBanner, setIsEditingBanner] = useState(false);
 
   const isFavorite = userProfile.savedCouponIds.includes(coupon.id);
   // Regra de Negócio: Apenas parceiros com adminPaidPlan ativo possuem plano (Bronze, Prata, Ouro).
@@ -118,7 +130,12 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
         <img
           src={bannerImage}
           alt={coupon.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          style={{
+            objectFit: coupon.bannerFit || 'cover',
+            objectPosition: coupon.bannerPosition || 'center',
+            transform: coupon.bannerScale && coupon.bannerScale !== 100 ? `scale(${coupon.bannerScale / 100})` : undefined
+          }}
+          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#17171E] via-transparent to-black/40 pointer-events-none" />
@@ -137,8 +154,23 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </div>
         </div>
 
-        {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão de Favoritar */}
+        {/* Topo Direito: Ícone de Medalha do Plano da Loja + Botão ADM Editar Capa + Botão de Favoritar */}
         <div className="absolute top-1.5 right-1.5 z-20 flex items-center gap-1">
+          {/* Botão ADM para editar capa da oferta */}
+          {currentRole === 'admin' && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditingBanner(true);
+              }}
+              className="p-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-md border border-white/30 transition-all hover:scale-115 cursor-pointer z-30"
+              title="Editar capa e enquadramento desta oferta"
+            >
+              <Pencil size={11} />
+            </button>
+          )}
+
           {/* Ícone da Medalha na cor da assinatura da loja parceira ou Coroa de Destaque */}
           {isHighlighted && (
             <div 
@@ -406,6 +438,16 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
           </button>
         )}
       </div>
+
+      {/* Modal Administrativo para Edição e Enquadramento da Capa da Oferta */}
+      {isEditingBanner && (
+        <AdminEditOfferBannerModal
+          coupon={coupon}
+          store={store}
+          isOpen={isEditingBanner}
+          onClose={() => setIsEditingBanner(false)}
+        />
+      )}
 
     </div>
   );

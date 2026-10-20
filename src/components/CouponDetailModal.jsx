@@ -20,11 +20,13 @@ import {
   CheckCircle2,
   Coins,
   Zap,
-  ArrowRight
+  ArrowRight,
+  Pencil
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
 import { getCouponBanner } from '../utils/bannerResolver';
+import { AdminEditOfferBannerModal } from './AdminEditOfferBannerModal';
 
 export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerchant }) => {
   const { 
@@ -42,6 +44,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const [timeLeft, setTimeLeft] = useState(1200); // 20 min in seconds
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectProgress, setRedirectProgress] = useState(0);
+  const [isEditingBanner, setIsEditingBanner] = useState(false);
 
   // Identificar se é cupom de grande loja / e-commerce online
   const isBigStoreCoupon = Boolean(
@@ -339,13 +342,31 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
               <img 
                 src={bannerImage} 
                 alt={coupon.title} 
-                className="w-full h-full object-cover"
+                style={{
+                  objectFit: coupon.bannerFit || 'cover',
+                  objectPosition: coupon.bannerPosition || 'center',
+                  transform: coupon.bannerScale && coupon.bannerScale !== 100 ? `scale(${coupon.bannerScale / 100})` : undefined
+                }}
+                className="w-full h-full"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#181822] via-[#181822]/40 to-black/50 pointer-events-none" />
               
+              {/* Botão ADM para Editar Capa da Oferta */}
+              {currentRole === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingBanner(true)}
+                  className="absolute top-3 right-14 h-9 px-3 bg-blue-600/90 hover:bg-blue-600 text-white rounded-full flex items-center gap-1.5 transition-all z-20 backdrop-blur-md text-xs font-bold shadow-md cursor-pointer border border-white/20"
+                  title="Editar capa desta oferta"
+                >
+                  <Pencil size={13} />
+                  <span>Editar Capa</span>
+                </button>
+              )}
+
               <button 
                 onClick={onClose}
-                className="absolute top-3 right-3 w-9 h-9 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors z-20 backdrop-blur-md"
+                className="absolute top-3 right-3 w-9 h-9 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors z-20 backdrop-blur-md cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -796,6 +817,17 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
         </div>
 
       </div>
+
+      {/* Modal Administrativo para Edição e Enquadramento da Capa da Oferta */}
+      {isEditingBanner && (
+        <AdminEditOfferBannerModal
+          coupon={coupon}
+          store={store}
+          isOpen={isEditingBanner}
+          onClose={() => setIsEditingBanner(false)}
+        />
+      )}
+
     </div>
   );
 };
