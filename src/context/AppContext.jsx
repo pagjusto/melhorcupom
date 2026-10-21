@@ -233,15 +233,81 @@ export const AppProvider = ({ children }) => {
       const missing = INITIAL_STORES.filter(s => !parsedIds.has(s.id));
       const combined = [...parsed, ...missing];
 
-      // Recuperar mapa dedicado permanente de logos customizadas salvas pelo lojista ou admin
-      const savedCustomLogos = (() => {
+      // Recuperador profundo de logos e enquadramentos do LocalStorage (resgata dados de cupons e versões anteriores)
+      const recoverSavedLogosFromStorage = () => {
+        const recoveredMap = {};
+
+        // 1. Mapa dedicado permanente
         try {
           const raw = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
-          return raw ? JSON.parse(raw) : {};
-        } catch {
-          return {};
-        }
-      })();
+          if (raw) Object.assign(recoveredMap, JSON.parse(raw));
+        } catch {}
+
+        // 2. Varrer chaves de cupons (onde as logos atualizadas foram gravadas por updateStore)
+        const couponKeys = ['melhor_cupom_coupons_v10', 'melhor_cupom_coupons', 'melhor_cupom_coupons_v9', 'melhor_cupom_custom_coupons'];
+        couponKeys.forEach(k => {
+          try {
+            const raw = localStorage.getItem(k);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(c => {
+                if (!c || !c.storeId) return;
+                const candidateLogo = (typeof c.customStoreLogoImage === 'string' && c.customStoreLogoImage.length > 0) ? c.customStoreLogoImage :
+                  (typeof c.storeLogoImage === 'string' && (c.storeLogoImage.startsWith('data:') || (c.storeLogoImage.startsWith('http') && !c.storeLogoImage.includes('unsplash')))) ? c.storeLogoImage :
+                  (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || (c.logoImage.startsWith('http') && !c.logoImage.includes('unsplash')))) ? c.logoImage : null;
+                
+                if (candidateLogo) {
+                  recoveredMap[c.storeId] = {
+                    ...(recoveredMap[c.storeId] || {}),
+                    logoImage: candidateLogo,
+                    hasCustomLogo: true
+                  };
+                }
+              });
+            }
+          } catch {}
+        });
+
+        // 3. Varrer chaves legadas de lojas
+        const storeKeys = ['melhor_cupom_stores_v11', 'melhor_cupom_stores_v10', 'melhor_cupom_stores_v9', 'melhor_cupom_stores_v8', 'melhor_cupom_stores_v7', 'melhor_cupom_stores'];
+        storeKeys.forEach(k => {
+          try {
+            const raw = localStorage.getItem(k);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(s => {
+                if (!s || !s.id) return;
+                const candidateLogo = (typeof s.logoImage === 'string' && (s.logoImage.startsWith('data:') || (s.logoImage.startsWith('http') && !s.logoImage.includes('unsplash')))) ? s.logoImage : null;
+                const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
+
+                if (candidateLogo || hasFraming || s.hasCustomLogo) {
+                  recoveredMap[s.id] = {
+                    ...(recoveredMap[s.id] || {}),
+                    ...(candidateLogo ? { logoImage: candidateLogo, hasCustomLogo: true } : {}),
+                    ...(s.logoFit !== undefined ? { logoFit: s.logoFit } : {}),
+                    ...(s.logoScale !== undefined ? { logoScale: s.logoScale } : {}),
+                    ...(s.logoPadding !== undefined ? { logoPadding: s.logoPadding } : {}),
+                    ...(s.logoBg !== undefined ? { logoBg: s.logoBg } : {})
+                  };
+                }
+              });
+            }
+          } catch {}
+        });
+
+        // Persistir o mapa recuperado no mapa permanente para nunca mais ser perdido
+        try {
+          if (Object.keys(recoveredMap).length > 0) {
+            localStorage.setItem('melhor_cupom_custom_store_logos_v1', JSON.stringify(recoveredMap));
+          }
+        } catch {}
+
+        return recoveredMap;
+      };
+
+      const savedCustomLogos = recoverSavedLogosFromStorage();
 
       const mapped = combined.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
