@@ -73,13 +73,15 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                     getBrandLogo(store?.id) || 
                     getBrandLogo(store?.name);
 
-  const customLogo = (coupon.customStoreLogoImage || 
-                      (typeof coupon.logoImage === 'string' && coupon.logoImage.startsWith('data:') ? coupon.logoImage : null) || 
-                      (typeof coupon.storeLogo === 'string' && coupon.storeLogo.startsWith('data:') ? coupon.storeLogo : null));
-
-  const storeLogo = (coupon.isAvulso && customLogo)
-    ? customLogo
-    : (brandLogo || customLogo || coupon.storeLogoImage || coupon.logoImage || store?.logoImage);
+  // Prioridade absoluta para logos customizadas/editadas pelo lojista ou admin
+  const storeLogo = (store?.hasCustomLogo && store?.logoImage) ||
+                    (coupon.hasCustomLogo && coupon.logoImage) ||
+                    coupon.customStoreLogoImage ||
+                    store?.logoImage ||
+                    coupon.storeLogoImage ||
+                    coupon.logoImage ||
+                    brandLogo ||
+                    (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
   const bannerImage = getCouponBanner(coupon, store);
 
   const isHighlighted = Boolean(coupon.highlight || store?.highlight || store?.isFeatured);

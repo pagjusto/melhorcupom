@@ -88,7 +88,7 @@ export const AppProvider = ({ children }) => {
               if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 180000) {
                 clean.banner = '';
               }
-              if (clean.logoImage && typeof clean.logoImage === 'string' && clean.logoImage.startsWith('data:image/') && clean.logoImage.length > 120000) {
+              if (clean.logoImage && typeof clean.logoImage === 'string' && clean.logoImage.startsWith('data:image/') && clean.logoImage.length > 500000) {
                 clean.logoImage = '';
               }
               return clean;
@@ -159,7 +159,8 @@ export const AppProvider = ({ children }) => {
             banner: init.banner || c.banner,
             storeName: init.storeName || c.storeName,
             storeLogo: init.storeLogo || c.storeLogo,
-            logoImage: getBrandLogo(init.storeId || c.storeId) || getBrandLogo(init.storeName || c.storeName) || init.logoImage || (c.logoImage && c.logoImage.startsWith('data:') ? c.logoImage : '') || '',
+            logoImage: (c.hasCustomLogo && c.logoImage) || c.customStoreLogoImage || (c.logoImage && (c.logoImage.startsWith('data:') || c.logoImage.startsWith('http') || c.logoImage.startsWith('/'))) || getBrandLogo(init.storeId || c.storeId) || getBrandLogo(init.storeName || c.storeName) || init.logoImage || '',
+            hasCustomLogo: Boolean(c.hasCustomLogo || c.customStoreLogoImage),
             viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
             isApiIntegrated: init.isApiIntegrated ?? c.isApiIntegrated ?? false,
             apiSource: init.apiSource || c.apiSource || null,
@@ -225,6 +226,17 @@ export const AppProvider = ({ children }) => {
       const parsedIds = new Set(parsed.map(s => s.id));
       const missing = INITIAL_STORES.filter(s => !parsedIds.has(s.id));
       const combined = [...parsed, ...missing];
+
+      // Recuperar mapa dedicado permanente de logos customizadas salvas pelo lojista ou admin
+      const savedCustomLogos = (() => {
+        try {
+          const raw = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
+        }
+      })();
+
       const mapped = combined.map(s => {
         const init = INITIAL_STORES.find(i => i.id === s.id);
         const storeRefCode = s.referralCode || init?.referralCode || (init?.name || s.name ? (init?.name || s.name).substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, '') + '5' : 'LOJA5');
@@ -240,12 +252,28 @@ export const AppProvider = ({ children }) => {
         // Destaque persistido de forma permanente
         const isHighlighted = Boolean(s.highlight || s.isFeatured || s.manualHighlight);
 
+        // PERSISTÊNCIA ABSOLUTA DA LOGO:
+        // Prioriza qualquer logo personalizada salva pelo lojista ou admin (no mapa dedicado ou no objeto s)
+        const customOverride = savedCustomLogos[s.id] || savedCustomLogos[init?.id] || null;
+        const hasCustom = Boolean(customOverride?.hasCustomLogo || s.hasCustomLogo || (s.logoImage && !s.logoImage.includes('unsplash')));
+        const finalLogoImage = customOverride?.logoImage || (hasCustom ? s.logoImage : '') || s.logoImage || getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || '';
+
+        const finalLogoFit = customOverride?.logoFit || s.logoFit || init?.logoFit || 'contain';
+        const finalLogoScale = customOverride?.logoScale !== undefined ? customOverride.logoScale : (s.logoScale !== undefined ? s.logoScale : init?.logoScale);
+        const finalLogoPadding = customOverride?.logoPadding !== undefined ? customOverride.logoPadding : (s.logoPadding !== undefined ? s.logoPadding : init?.logoPadding);
+        const finalLogoBg = customOverride?.logoBg || s.logoBg || init?.logoBg || '#ffffff';
+
         return {
           ...s,
           name: init?.name || s.name,
           instagram,
           logo: init?.logo || s.logo || '🏪',
-          logoImage: getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || (s.logoImage && s.logoImage.startsWith('data:') ? s.logoImage : '') || '',
+          logoImage: finalLogoImage,
+          hasCustomLogo: hasCustom,
+          logoFit: finalLogoFit,
+          logoScale: finalLogoScale,
+          logoPadding: finalLogoPadding,
+          logoBg: finalLogoBg,
           image: init?.image || s.image || '',
           tier: resolvedTier,
           freeTrialActive: false,
@@ -1596,10 +1624,31 @@ export const AppProvider = ({ children }) => {
 
   // Atualizar Perfil da Loja / Logo da Empresa e Ajustes de Enquadramento
   const updateStore = (storeId, updatedData) => {
+    // 1. Gravar no mapa dedicado e permanente de logos customizadas (imune a resets e normalizações)
+    try {
+      const rawLogos = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
+      const logosMap = rawLogos ? JSON.parse(rawLogos) : {};
+      logosMap[storeId] = {
+        ...(logosMap[storeId] || {}),
+        ...(updatedData.logoImage ? { logoImage: updatedData.logoImage, hasCustomLogo: true } : {}),
+        ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
+        ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
+        ...(updatedData.logoPadding !== undefined ? { logoPadding: updatedData.logoPadding } : {}),
+        ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
+      };
+      localStorage.setItem('melhor_cupom_custom_store_logos_v1', JSON.stringify(logosMap));
+    } catch (e) {
+      console.warn('Erro ao salvar no mapa permanente de logos:', e);
+    }
+
     setStores(prev => {
       const updated = prev.map(s => {
         if (s.id === storeId || s.merchantId === storeId) {
-          return { ...s, ...updatedData };
+          return { 
+            ...s, 
+            ...updatedData,
+            hasCustomLogo: updatedData.logoImage ? true : s.hasCustomLogo
+          };
         }
         return s;
       });
@@ -1613,14 +1662,16 @@ export const AppProvider = ({ children }) => {
           if (c.storeId === storeId || c.merchantId === storeId) {
             return {
               ...c,
+              hasCustomLogo: true,
               logoImage: updatedData.logoImage,
               storeLogoImage: updatedData.logoImage,
-              storeLogo: updatedData.logoImage
+              storeLogo: updatedData.logoImage,
+              customStoreLogoImage: updatedData.logoImage
             };
           }
           return c;
         });
-        safeSetItem('melhor_cupom_coupons_v10', updated);
+        safeSaveCoupons(updated);
         return updated;
       });
     }

@@ -147,12 +147,48 @@ export const StoresView = ({ onSelectStore }) => {
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Se for SVG, preserva vetor leve original
+    if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const svgContent = event.target?.result;
+        if (svgContent) setPreviewLogo(svgContent);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // Para PNG/JPG/WebP: redimensionar inteligentemente para 400x400 para salvar instantâneo sem estourar cota de armazenamento
     const reader = new FileReader();
     reader.onload = (event) => {
-      const base64 = event.target?.result;
-      if (base64) {
-        setPreviewLogo(base64);
-      }
+      const rawBase64 = event.target?.result;
+      if (!rawBase64) return;
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 400;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const isPng = file.type === 'image/png' || file.type === 'image/webp' || file.name.endsWith('.png');
+        const optimized = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.88);
+        setPreviewLogo(optimized);
+      };
+      img.onerror = () => setPreviewLogo(rawBase64);
+      img.src = rawBase64;
     };
     reader.readAsDataURL(file);
   };
@@ -162,7 +198,7 @@ export const StoresView = ({ onSelectStore }) => {
     const finalLogo = (previewLogo || newLogoUrl || '').trim();
 
     updateStore(editingStore.id, {
-      ...(finalLogo ? { logoImage: finalLogo, logo: '🏪' } : {}),
+      ...(finalLogo ? { logoImage: finalLogo, hasCustomLogo: true, logo: '🏪' } : {}),
       logoFit,
       logoScale,
       logoPadding,

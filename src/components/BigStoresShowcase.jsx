@@ -247,7 +247,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     
     // Suporte a nomes e logotipos originais das marcas e grandes lojas
     const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-    const storeLogo = coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || apiSource) || store?.logoImage;
+    const storeLogo = (store?.hasCustomLogo && store?.logoImage) || store?.logoImage || coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || apiSource) || '';
 
     return (
       <div
