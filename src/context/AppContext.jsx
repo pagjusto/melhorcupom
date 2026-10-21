@@ -159,7 +159,12 @@ export const AppProvider = ({ children }) => {
             banner: init.banner || c.banner,
             storeName: init.storeName || c.storeName,
             storeLogo: init.storeLogo || c.storeLogo,
-            logoImage: (c.hasCustomLogo && c.logoImage) || c.customStoreLogoImage || (c.logoImage && (c.logoImage.startsWith('data:') || c.logoImage.startsWith('http') || c.logoImage.startsWith('/'))) || getBrandLogo(init.storeId || c.storeId) || getBrandLogo(init.storeName || c.storeName) || init.logoImage || '',
+            logoImage: (c.hasCustomLogo && typeof c.logoImage === 'string' ? c.logoImage : '') || 
+                       (typeof c.customStoreLogoImage === 'string' ? c.customStoreLogoImage : '') || 
+                       (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || c.logoImage.startsWith('http') || c.logoImage.startsWith('/')) ? c.logoImage : '') || 
+                       getBrandLogo(init.storeId || c.storeId) || 
+                       getBrandLogo(init.storeName || c.storeName) || 
+                       init.logoImage || '',
             hasCustomLogo: Boolean(c.hasCustomLogo || c.customStoreLogoImage),
             viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
             isApiIntegrated: init.isApiIntegrated ?? c.isApiIntegrated ?? false,
@@ -180,7 +185,8 @@ export const AppProvider = ({ children }) => {
           };
         }
         const cleanAffiliate = normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, c);
-        const resolvedLogo = (c.isAvulso && c.logoImage && c.logoImage.startsWith('data:')) ? c.logoImage : (getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || c.logoImage || c.storeLogoImage || '');
+        const isDataLogo = Boolean(c.isAvulso && typeof c.logoImage === 'string' && c.logoImage.startsWith('data:'));
+        const resolvedLogo = isDataLogo ? c.logoImage : (getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || (typeof c.logoImage === 'string' ? c.logoImage : '') || (typeof c.storeLogoImage === 'string' ? c.storeLogoImage : '') || '');
         const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
         const isExplicitLink = Boolean(c.isLinkOnly || (!c.code && !c.codePrefix) || c.title?.toLowerCase().includes('pelo link') || c.title?.toLowerCase().includes('pelo site'));
         const cleanCode = (isExplicitLink || c.code === 'MELHORVIP' || c.codePrefix === 'MELHORVIP') ? (isExplicitLink ? '' : c.code) : (c.code || c.codePrefix || '');
@@ -255,8 +261,14 @@ export const AppProvider = ({ children }) => {
         // PERSISTÊNCIA ABSOLUTA DA LOGO:
         // Prioriza qualquer logo personalizada salva pelo lojista ou admin (no mapa dedicado ou no objeto s)
         const customOverride = savedCustomLogos[s.id] || savedCustomLogos[init?.id] || null;
-        const hasCustom = Boolean(customOverride?.hasCustomLogo || s.hasCustomLogo || (s.logoImage && !s.logoImage.includes('unsplash')));
-        const finalLogoImage = customOverride?.logoImage || (hasCustom ? s.logoImage : '') || s.logoImage || getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || '';
+        const sLogoStr = typeof s.logoImage === 'string' ? s.logoImage : '';
+        const customLogoStr = typeof customOverride?.logoImage === 'string' ? customOverride.logoImage : '';
+        const hasCustom = Boolean(
+          customOverride?.hasCustomLogo || 
+          s.hasCustomLogo || 
+          (sLogoStr && !sLogoStr.includes('unsplash') && sLogoStr.length > 0)
+        );
+        const finalLogoImage = customLogoStr || (hasCustom ? sLogoStr : '') || sLogoStr || getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || '';
 
         const finalLogoFit = customOverride?.logoFit || s.logoFit || init?.logoFit || 'contain';
         const finalLogoScale = customOverride?.logoScale !== undefined ? customOverride.logoScale : (s.logoScale !== undefined ? s.logoScale : init?.logoScale);
@@ -830,8 +842,8 @@ export const AppProvider = ({ children }) => {
                 return {
                   ...c,
                   ...fromCloud,
-                  banner: (c.banner && c.banner.startsWith('data:')) ? c.banner : (fromCloud.banner || c.banner),
-                  logoImage: (c.logoImage && c.logoImage.startsWith('data:')) ? c.logoImage : (fromCloud.logoImage || c.logoImage),
+                  banner: (typeof c.banner === 'string' && c.banner.startsWith('data:')) ? c.banner : (fromCloud.banner || c.banner),
+                  logoImage: (typeof c.logoImage === 'string' && c.logoImage.startsWith('data:')) ? c.logoImage : (fromCloud.logoImage || c.logoImage),
                   highlight: fromCloud.highlight !== undefined ? Boolean(fromCloud.highlight) : Boolean(c.highlight)
                 };
               }

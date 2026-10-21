@@ -135,7 +135,7 @@ export const StoresView = ({ onSelectStore }) => {
 
     setEditingStore(store);
     setPreviewLogo(currentImg);
-    setNewLogoUrl(store.logoImage?.startsWith('http') ? store.logoImage : '');
+    setNewLogoUrl(typeof store.logoImage === 'string' && store.logoImage.startsWith('http') ? store.logoImage : '');
     setLogoFit(defaultFit);
     setLogoScale(defaultScale);
     setLogoPadding(defaultPadding);
