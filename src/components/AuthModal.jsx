@@ -386,8 +386,8 @@ export const AuthModal = () => {
   // Submissão do Cadastro de Lojista
   const handleSubmitMerchant = async (e) => {
     e.preventDefault();
-    if (!merchantForm.name || !merchantForm.cnpj || !merchantForm.email) {
-      setErrorMsg('Por favor, preencha todos os campos obrigatórios (Nome da Loja, CNPJ e E-mail).');
+    if (!merchantForm.name || !merchantForm.cnpj || !merchantForm.email || !merchantForm.phone) {
+      setErrorMsg('Por favor, preencha todos os campos obrigatórios (Nome da Loja, CNPJ, E-mail e WhatsApp).');
       return;
     }
     if (merchantForm.cnpj.replace(/\D/g, '').length < 14) {
