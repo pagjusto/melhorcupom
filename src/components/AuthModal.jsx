@@ -37,6 +37,8 @@ import {
 import logoMelhorCupom from '../assets/logo-melhor-cupom.png';
 import { validateStoreSafety, validateUserSafety } from '../utils/contentModeration';
 import { ImageFramingModal } from './ImageFramingModal';
+import { notifyPartnerRegistration } from '../utils/partnerNotification';
+import { PartnerWelcomeModal } from './PartnerWelcomeModal';
 
 const BANNER_PRESETS = [
   { name: 'Burger Artesanal', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=80' },
@@ -89,6 +91,10 @@ export const AuthModal = () => {
     logoImage: '',
     password: ''
   });
+
+  // Modal de Boas-Vindas & Entrega de Acesso / Arte Oficial para Parceiros
+  const [partnerWelcomeData, setPartnerWelcomeData] = useState(null);
+  const [isNotifyingPartner, setIsNotifyingPartner] = useState(false);
 
   // Modal de Ajuste de Zoom & Enquadramento Interativo para Logo e Capa
   const [framingModalState, setFramingModalState] = useState({
@@ -195,6 +201,25 @@ export const AuthModal = () => {
   const [customCityInput, setCustomCityInput] = useState('');
   const [isSearchingCep, setIsSearchingCep] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Exibir Modal de Boas-Vindas com Arte e Acesso via WhatsApp se parceiro acabou de cadastrar
+  if (partnerWelcomeData) {
+    return (
+      <PartnerWelcomeModal
+        data={partnerWelcomeData}
+        onClose={() => {
+          setPartnerWelcomeData(null);
+          closeAuthModal();
+          if (setActiveTab) setActiveTab('merchant-dashboard');
+        }}
+        onGoToDashboard={() => {
+          setPartnerWelcomeData(null);
+          closeAuthModal();
+          if (setActiveTab) setActiveTab('merchant-dashboard');
+        }}
+      />
+    );
+  }
 
   if (!isAuthModalOpen) return null;
 
@@ -359,7 +384,7 @@ export const AuthModal = () => {
   };
 
   // Submissão do Cadastro de Lojista
-  const handleSubmitMerchant = (e) => {
+  const handleSubmitMerchant = async (e) => {
     e.preventDefault();
     if (!merchantForm.name || !merchantForm.cnpj || !merchantForm.email) {
       setErrorMsg('Por favor, preencha todos os campos obrigatórios (Nome da Loja, CNPJ e E-mail).');
@@ -386,7 +411,8 @@ export const AuthModal = () => {
       logoImage: logoImg,
       cities: finalCities,
       storeType: isOnline ? 'online' : 'physical',
-      isOnline
+      isOnline,
+      keepAuthModalOpen: true // Manter aberto para exibir o modal de entrega com WhatsApp e Arte
     };
 
     const safetyCheck = validateStoreSafety(payload);
@@ -395,77 +421,99 @@ export const AuthModal = () => {
       return;
     }
 
-    const regResult = registerMerchant(payload);
+    setIsNotifyingPartner(true);
+    setErrorMsg('');
 
-    // Se o lojista preencheu o 1º cupom, cadastrar automaticamente com todos os dados
-    if (includeCoupon && couponForm.title.trim() && regResult?.store) {
-      const orig = couponForm.originalPrice ? parseFloat(couponForm.originalPrice.replace(',', '.')) : null;
-      const promo = couponForm.promoPrice ? parseFloat(couponForm.promoPrice.replace(',', '.')) : null;
-      const computedSavings = (orig && promo && orig > promo)
-        ? Number((orig - promo).toFixed(2))
-        : 20;
+    try {
+      const regResult = registerMerchant(payload);
 
-      let badge = couponForm.discountBadge?.trim() || '';
-      if (!badge) {
-        if (orig && promo && orig > promo) {
-          const pct = Math.round(((orig - promo) / orig) * 100);
-          badge = `${pct}% OFF`;
-        } else {
-          badge = 'SUPER OFERTA';
+      // Se o lojista preencheu o 1º cupom, cadastrar automaticamente com todos os dados
+      if (includeCoupon && couponForm.title.trim() && regResult?.store) {
+        const orig = couponForm.originalPrice ? parseFloat(couponForm.originalPrice.replace(',', '.')) : null;
+        const promo = couponForm.promoPrice ? parseFloat(couponForm.promoPrice.replace(',', '.')) : null;
+        const computedSavings = (orig && promo && orig > promo)
+          ? Number((orig - promo).toFixed(2))
+          : 20;
+
+        let badge = couponForm.discountBadge?.trim() || '';
+        if (!badge) {
+          if (orig && promo && orig > promo) {
+            const pct = Math.round(((orig - promo) / orig) * 100);
+            badge = `${pct}% OFF`;
+          } else {
+            badge = 'SUPER OFERTA';
+          }
         }
+
+        const cleanStoreName = regResult.store.name || merchantForm.name || 'CUPOM';
+        const storeCodePrefix = cleanStoreName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 5) || 'PROMO';
+        const finalCode = couponForm.code.trim().toUpperCase() || `${storeCodePrefix}${Math.floor(10 + Math.random() * 90)}`;
+
+        let finalExpiresAt = null;
+        if (couponForm.validityType === 'days') {
+          const days = Math.max(1, parseInt(couponForm.validityDays) || 30);
+          const targetDate = new Date();
+          targetDate.setDate(targetDate.getDate() + days);
+          finalExpiresAt = targetDate.toISOString().split('T')[0];
+        } else {
+          finalExpiresAt = 'unlimited';
+        }
+
+        const maxUses = couponForm.limitType === 'one' ? 1 : couponForm.limitType === 'custom' ? (parseInt(couponForm.customMaxUses) || 2) : null;
+
+        const rulesArray = couponForm.rules.trim()
+          ? couponForm.rules.split('\n').map(r => r.trim()).filter(Boolean)
+          : ['Apresentar o cupom VIP no balcão.', 'Não cumulativo com outras promoções.', 'Válido para consumo no local.'];
+
+        addCoupon({
+          storeId: regResult.store.id,
+          merchantId: regResult.store.merchantId,
+          storeName: regResult.store.name,
+          storeLogoImage: logoImg,
+          logoImage: logoImg,
+          title: couponForm.title.trim(),
+          description: couponForm.description.trim() || 'Oferta especial de inauguração para clientes VIP.',
+          code: finalCode,
+          originalPrice: orig,
+          promoPrice: promo,
+          discountBadge: badge,
+          discountValue: badge,
+          discountType: couponForm.discountType || 'percentage',
+          estimatedSavings: computedSavings,
+          category: couponForm.category || regResult.store.category || merchantForm.category || 'gastronomia',
+          city: regResult.store.city || 'São Paulo - SP',
+          cities: regResult.store.cities || [regResult.store.city || 'São Paulo - SP'],
+          banner: couponForm.banner || BANNER_PRESETS[0].url,
+          type: couponForm.type || regResult.store.type || 'physical',
+          validityType: couponForm.validityType,
+          validityDays: couponForm.validityType === 'days' ? (parseInt(couponForm.validityDays) || 30) : null,
+          expiresAt: finalExpiresAt,
+          maxUsesPerUser: maxUses,
+          affiliateUrl: couponForm.affiliateUrl || '',
+          rules: rulesArray
+        });
       }
 
-      const cleanStoreName = regResult.store.name || merchantForm.name || 'CUPOM';
-      const storeCodePrefix = cleanStoreName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 5) || 'PROMO';
-      const finalCode = couponForm.code.trim().toUpperCase() || `${storeCodePrefix}${Math.floor(10 + Math.random() * 90)}`;
-
-      let finalExpiresAt = null;
-      if (couponForm.validityType === 'days') {
-        const days = Math.max(1, parseInt(couponForm.validityDays) || 30);
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + days);
-        finalExpiresAt = targetDate.toISOString().split('T')[0];
-      } else {
-        finalExpiresAt = 'unlimited';
-      }
-
-      const maxUses = couponForm.limitType === 'one' ? 1 : couponForm.limitType === 'custom' ? (parseInt(couponForm.customMaxUses) || 2) : null;
-
-      const rulesArray = couponForm.rules.trim()
-        ? couponForm.rules.split('\n').map(r => r.trim()).filter(Boolean)
-        : ['Apresentar o cupom VIP no balcão.', 'Não cumulativo com outras promoções.', 'Válido para consumo no local.'];
-
-      addCoupon({
-        storeId: regResult.store.id,
-        merchantId: regResult.store.merchantId,
-        storeName: regResult.store.name,
-        storeLogoImage: logoImg,
-        logoImage: logoImg,
-        title: couponForm.title.trim(),
-        description: couponForm.description.trim() || 'Oferta especial de inauguração para clientes VIP.',
-        code: finalCode,
-        originalPrice: orig,
-        promoPrice: promo,
-        discountBadge: badge,
-        discountValue: badge,
-        discountType: couponForm.discountType || 'percentage',
-        estimatedSavings: computedSavings,
-        category: couponForm.category || regResult.store.category || merchantForm.category || 'gastronomia',
-        city: regResult.store.city || 'São Paulo - SP',
-        cities: regResult.store.cities || [regResult.store.city || 'São Paulo - SP'],
-        banner: couponForm.banner || BANNER_PRESETS[0].url,
-        type: couponForm.type || regResult.store.type || 'physical',
-        validityType: couponForm.validityType,
-        validityDays: couponForm.validityType === 'days' ? (parseInt(couponForm.validityDays) || 30) : null,
-        expiresAt: finalExpiresAt,
-        maxUsesPerUser: maxUses,
-        affiliateUrl: couponForm.affiliateUrl || '',
-        rules: rulesArray
+      // Notificação via WhatsApp + Criação da Arte com a logo do parceiro + Download do arquivo
+      const targetStore = regResult?.store || { ...payload, name: merchantForm.name, logoImage: logoImg };
+      const welcomeData = await notifyPartnerRegistration({
+        store: targetStore,
+        email: merchantForm.email,
+        password: merchantForm.password,
+        phone: merchantForm.phone,
+        instagram: merchantForm.instagram
       });
-    }
 
-    if (setActiveTab) {
-      setActiveTab('merchant-dashboard');
+      // Exibir o modal de entrega interativo
+      setPartnerWelcomeData(welcomeData);
+    } catch (err) {
+      console.error('[handleSubmitMerchant Error]:', err);
+      if (setActiveTab) {
+        setActiveTab('merchant-dashboard');
+      }
+      closeAuthModal();
+    } finally {
+      setIsNotifyingPartner(false);
     }
   };
 
@@ -484,6 +532,25 @@ export const AuthModal = () => {
       setErrorMsg('');
     }
   };
+
+  // Se houver entrega de boas-vindas do parceiro, renderizar a tela exclusiva de entrega
+  if (partnerWelcomeData) {
+    return (
+      <PartnerWelcomeModal
+        data={partnerWelcomeData}
+        onClose={() => {
+          setPartnerWelcomeData(null);
+          closeAuthModal();
+          if (setActiveTab) setActiveTab('merchant-dashboard');
+        }}
+        onGoToDashboard={() => {
+          setPartnerWelcomeData(null);
+          closeAuthModal();
+          if (setActiveTab) setActiveTab('merchant-dashboard');
+        }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
@@ -1773,20 +1840,27 @@ export const AuthModal = () => {
               {/* Botão de Concluir */}
               <button
                 type="submit"
-                className="w-full mt-2 bg-gradient-to-r from-emerald-500 via-[#FF5F00] to-amber-500 hover:from-emerald-400 hover:to-[#E04F00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01] cursor-pointer"
+                disabled={isNotifyingPartner}
+                className="w-full mt-2 bg-gradient-to-r from-emerald-500 via-[#FF5F00] to-amber-500 hover:from-emerald-400 hover:to-[#E04F00] text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01] cursor-pointer disabled:opacity-75 disabled:cursor-wait"
               >
-                {includeCoupon && couponForm.title.trim() ? (
+                {isNotifyingPartner ? (
+                  <>
+                    <RefreshCw size={18} className="animate-spin text-white" />
+                    <span>Gerando Arte Oficial e WhatsApp...</span>
+                  </>
+                ) : includeCoupon && couponForm.title.trim() ? (
                   <>
                     <Tag size={18} />
                     <span>Cadastrar Loja e Publicar Cupom Agora 🚀</span>
+                    <ArrowRight size={16} />
                   </>
                 ) : (
                   <>
                     <Store size={18} />
                     <span>Cadastrar Minha Loja Gratuitamente</span>
+                    <ArrowRight size={16} />
                   </>
                 )}
-                <ArrowRight size={16} />
               </button>
 
               <div className="text-center text-[11px] text-gray-400 pt-1">

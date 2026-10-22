@@ -2036,7 +2036,24 @@ export const AppProvider = ({ children }) => {
       return { success: false, error: safety.reason };
     }
 
-    const { name, legalName, cnpj, cep, cities, email, phone, category, instagram, storeType, isOnline, logoImage, image, banner } = merchantData;
+    const { 
+      name, 
+      legalName, 
+      cnpj, 
+      cep, 
+      cities, 
+      email, 
+      password, 
+      phone, 
+      category, 
+      instagram, 
+      storeType, 
+      isOnline, 
+      logoImage, 
+      image, 
+      banner, 
+      keepAuthModalOpen 
+    } = merchantData;
     const storeId = `store_${Date.now()}`;
     const merchantId = `merchant_${Date.now()}`;
     const cleanName = name?.trim() || 'Nova Loja Parceira';
@@ -2064,6 +2081,7 @@ export const AppProvider = ({ children }) => {
       city: isOnlineStore ? 'Brasil (Todo o País / Online)' : (selectedCities[0] || 'São Paulo - SP'),
       phone: phone || '(11) 98123-4567',
       email: email || 'contato@lojaparceira.com.br',
+      password: password || '',
       instagram: (instagram || '').trim(),
       address: isOnlineStore ? 'Atendimento Online em Todo o Brasil' : `${selectedCities[0] || 'Brasil'}`,
       type: isOnlineStore ? 'online' : 'physical',
@@ -2090,6 +2108,27 @@ export const AppProvider = ({ children }) => {
     };
 
     setStores(prev => [newStore, ...prev]);
+
+    // Registrar usuário lojista no registro unificado de usuários
+    if (email) {
+      setRegisteredUsers(prev => {
+        const exists = prev.some(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (exists) return prev;
+        return [{
+          id: `user_merchant_${Date.now()}`,
+          name: cleanName,
+          email: email.trim(),
+          password: password || '',
+          phone: phone || '',
+          cpf: cnpj || '',
+          role: 'merchant',
+          merchantId: merchantId,
+          createdAt: new Date().toISOString()
+        }, ...prev];
+      });
+    }
+
+    setCurrentRole(merchantId);
     setCurrentRole(merchantId);
     setUserProfile(prev => ({
       ...prev,
@@ -2154,7 +2193,9 @@ export const AppProvider = ({ children }) => {
       colors: ['#FF5F00', '#F59E0B', '#10B981', '#FFFFFF']
     });
 
-    setIsAuthModalOpen(false);
+    if (!keepAuthModalOpen) {
+      setIsAuthModalOpen(false);
+    }
 
     // Publicação 100% Automática no Instagram para este novo parceiro cadastrado a partir de agora
     setTimeout(() => {
@@ -2244,6 +2285,15 @@ export const AppProvider = ({ children }) => {
 
     if (isMerchant) {
       const targetStore = matchedStore || stores[0];
+
+      // Se a loja cadastrada possuir senha definida, validar credencial
+      if (matchedStore && matchedStore.password && password && matchedStore.password !== password) {
+        return {
+          success: false,
+          error: 'Senha incorreta para a conta de Lojista.'
+        };
+      }
+
       const targetMerchantId = targetStore.merchantId || 'merchant_burger';
       
       setCurrentRole(targetMerchantId);
