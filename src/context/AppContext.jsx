@@ -20,7 +20,7 @@ import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
 import { validateStoreSafety, validateUserSafety, validateCouponSafety } from '../utils/contentModeration';
 import { getStoreDestinationUrl, normalizeUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
-import { persistCustomLogoToIDB, loadAllCustomLogosFromIDB, getStoreLogoKeys } from '../utils/storeLogosStorage';
+import { persistCustomLogoToIDB, loadAllCustomLogosFromIDB, getStoreLogoKeys, getBrandRootKey } from '../utils/storeLogosStorage';
 
 const AppContext = createContext();
 
@@ -50,29 +50,30 @@ export const AppProvider = ({ children }) => {
 
   // Limpeza proativa de chaves legadas e duplicadas para liberar espaço no LocalStorage
   const cleanObsoleteStorage = () => {
-    const obsoleteKeys = [
-      'melhor_cupom_stores_v10',
-      'melhor_cupom_stores_v9',
-      'melhor_cupom_stores_v8',
-      'melhor_cupom_stores_v7',
-      'melhor_cupom_stores_v6',
-      'melhor_cupom_stores_v5',
-      'melhor_cupom_stores_v4',
-      'melhor_cupom_stores',
-      'melhor_cupom_coupons_v10',
-      'melhor_cupom_coupons_v9',
-      'melhor_cupom_coupons_v8',
-      'melhor_cupom_coupons_v7',
-      'melhor_cupom_coupons_v6',
-      'melhor_cupom_user',
-      'melhor_cupom_redemptions',
-      'melhor_cupom_admin_users',
-      'melhor_cupom_hot_deals_v8',
-      'melhor_cupom_hot_deals_v7'
-    ];
-    obsoleteKeys.forEach(key => {
-      try { localStorage.removeItem(key); } catch {}
-    });
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (
+          (k.startsWith('melhor_cupom_stores_v') && k !== 'melhor_cupom_stores_v11') ||
+          (k.startsWith('melhor_cupom_coupons_v')) ||
+          (k.startsWith('melhor_cupom_hot_deals_v') && k !== 'melhor_cupom_hot_deals_v9') ||
+          (k.startsWith('melhor_cupom_admin_users_v') && k !== 'melhor_cupom_admin_users_v3') ||
+          (k.startsWith('melhor_cupom_redemptions_v') && k !== 'melhor_cupom_redemptions_v3') ||
+          (k.startsWith('melhor_cupom_user_v') && k !== 'melhor_cupom_user_v3') ||
+          k === 'melhor_cupom_stores' ||
+          k === 'melhor_cupom_user' ||
+          k === 'melhor_cupom_redemptions' ||
+          k === 'melhor_cupom_admin_users'
+        ) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(key => {
+        try { localStorage.removeItem(key); } catch {}
+      });
+    } catch {}
   };
 
   // Executar limpeza proativa de chaves legadas e sincronização profunda com IndexedDB
@@ -1778,6 +1779,8 @@ export const AppProvider = ({ children }) => {
   const updateStore = (storeId, updatedData) => {
     const currentStore = stores.find(s => s.id === storeId || s.merchantId === storeId);
     const storeName = updatedData.storeName || updatedData.name || currentStore?.name || '';
+    const rootKey = getBrandRootKey(storeId) || getBrandRootKey(storeName);
+
     const logoEntry = {
       ...(updatedData.logoImage ? { logoImage: updatedData.logoImage, hasCustomLogo: true } : {}),
       ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
@@ -1806,7 +1809,13 @@ export const AppProvider = ({ children }) => {
 
     setStores(prev => {
       const updated = prev.map(s => {
-        if (s.id === storeId || s.merchantId === storeId || (storeName && s.name?.toLowerCase().trim() === storeName.toLowerCase().trim())) {
+        const sRoot = getBrandRootKey(s.id) || getBrandRootKey(s.name);
+        const isMatch = s.id === storeId || 
+                        s.merchantId === storeId || 
+                        (storeName && s.name?.toLowerCase().trim() === storeName.toLowerCase().trim()) ||
+                        (rootKey && sRoot && rootKey === sRoot);
+
+        if (isMatch) {
           return { 
             ...s, 
             ...updatedData,
@@ -1822,7 +1831,13 @@ export const AppProvider = ({ children }) => {
     if (updatedData.logoImage) {
       setCoupons(prev => {
         return prev.map(c => {
-          if (c.storeId === storeId || c.merchantId === storeId || (storeName && c.storeName?.toLowerCase().trim() === storeName.toLowerCase().trim())) {
+          const cRoot = getBrandRootKey(c.storeId) || getBrandRootKey(c.storeName);
+          const isMatch = c.storeId === storeId || 
+                          c.merchantId === storeId || 
+                          (storeName && c.storeName?.toLowerCase().trim() === storeName.toLowerCase().trim()) ||
+                          (rootKey && cRoot && rootKey === cRoot);
+
+          if (isMatch) {
             return {
               ...c,
               hasCustomLogo: true,

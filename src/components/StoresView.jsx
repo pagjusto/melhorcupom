@@ -183,8 +183,7 @@ export const StoresView = ({ onSelectStore }) => {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        const isPng = file.type === 'image/png' || file.name.endsWith('.png');
-        const optimized = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.85);
+        const optimized = canvas.toDataURL('image/png');
         setPreviewLogo(optimized);
       };
       img.onerror = () => setPreviewLogo(rawBase64);
@@ -631,6 +630,11 @@ export const StoresView = ({ onSelectStore }) => {
                           style={hasCustomStoreLogoSettings(store) ? getStoreLogoStyle(store) : undefined}
                           className={hasCustomStoreLogoSettings(store) ? 'w-full h-full transition-transform duration-150' : getStoreLogoFit(store, storeLogo)}
                           loading="lazy"
+                          onLoad={(e) => {
+                            e.currentTarget.style.display = 'block';
+                            const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
+                            if (fb) fb.style.display = 'none';
+                          }}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
