@@ -406,8 +406,18 @@ export const AuthModal = () => {
 
     // Filtro Anti-Pornografia, Explícito e Trolls para Lojas
     const logoImg = merchantForm.logoImage || couponForm.logoImage || '';
+    const cleanIg = (merchantForm.instagram || '')
+      .replace(/https?:\/\/(www\.)?instagram\.com\//i, '')
+      .replace(/instagram\.com\//i, '')
+      .replace(/[/?#].*$/, '')
+      .replace(/^@+/, '')
+      .replace(/[^a-zA-Z0-9._]/g, '')
+      .trim();
+    const finalInstagram = cleanIg ? `@${cleanIg}` : '';
+
     const payload = {
       ...merchantForm,
+      instagram: finalInstagram,
       logoImage: logoImg,
       cities: finalCities,
       storeType: isOnline ? 'online' : 'physical',

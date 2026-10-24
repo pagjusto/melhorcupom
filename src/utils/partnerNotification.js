@@ -29,10 +29,10 @@ Olá, *${storeName}*! Seu comércio agora faz parte oficial da nossa rede de par
 🌐 *Acesse o seu Painel:* https://www.omelhorcupom.com.br
 
 📸 *SUA ARTE OFICIAL DE DIVULGAÇÃO:*
-${imageUrl ? `👉 Link da sua arte em alta resolução para download:\n${imageUrl}\n\n` : ''}Acabamos de gerar o criativo oficial com a sua logo para você divulgar nas redes sociais! O arquivo também foi baixado no seu aparelho.
+${imageUrl ? `👉 Link da sua arte em alta resolução para download:\n${imageUrl}\n\n` : ''}Acabamos de postar a arte oficial no Instagram do *@omelhorcupom.com.br* marcando o seu perfil *${cleanInstagram}*! O arquivo em alta resolução também foi baixado no seu aparelho.
 
-🚀 *COMO POSTAR NO INSTAGRAM:*
-1. Abra seu Instagram e poste essa arte no seu *Feed* ou *Stories*.
+🚀 *COMO COMPARTILHAR NO INSTAGRAM:*
+1. Reposte a publicação ou compartilhe a arte no seu *Feed* ou *Stories*.
 2. Na legenda, marque *@omelhorcupom.com.br* e o seu perfil *${cleanInstagram}*.
 3. Avise seus clientes que eles já podem resgatar cupons da sua loja gratuitamente pelo site oficial!
 

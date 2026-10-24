@@ -123,6 +123,29 @@ async function createGraphMediaContainer(igAccountId, buffer, filename, extraPay
 
       lastError = createJson?.error?.message || JSON.stringify(createJson);
       console.warn(`[Meta Graph API] Provedor ${provider.name} (${publicUrl}) rejeitado pela Meta:`, lastError);
+
+      // Se falhar por restrição ou erro de marcação (user_tags / usuário privado / username inexistente), tenta imediatamente sem user_tags
+      if (extraPayload && extraPayload.user_tags) {
+        try {
+          const { user_tags, ...cleanPayload } = extraPayload;
+          const retryRes = await fetch(`https://graph.instagram.com/v20.0/${igAccountId}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image_url: publicUrl,
+              ...cleanPayload,
+              access_token: accessToken
+            })
+          });
+          const retryJson = await retryRes.json();
+          if (retryRes.ok && retryJson.id) {
+            console.log(`[Meta Graph API] Container criado com sucesso sem user_tags (fallback automático):`, retryJson.id);
+            return { id: retryJson.id, publicUrl, provider: provider.name, userTagsBypassed: true };
+          }
+        } catch (fallbackErr) {
+          console.warn('[Meta Graph API Fallback user_tags]', fallbackErr);
+        }
+      }
     } catch (err) {
       lastError = err.message;
       console.warn(`[Meta Graph API] Falha no provedor ${provider.name}:`, err.message);
@@ -197,6 +220,7 @@ export default async function handler(req, res) {
     const storyImageBase64 = body.storyImageBase64 || body.imageBase64 || '';
     const caption = body.caption || '🎉 Cupons exclusivos em www.omelhorcupom.com.br! Siga @omelhorcupom.com.br';
     const storeName = body.storeName || '';
+    const partnerUsername = (body.partnerUsername || body.partnerInstagram || '').replace(/^@/, '').trim();
     const onlyStory = body.onlyStory === true || body.format === 'story_only';
     const publishStory = !onlyStory && body.publishStory !== false && body.format !== 'feed_only';
 
@@ -276,13 +300,26 @@ export default async function handler(req, res) {
     // ==========================================
     const shouldPublishStory = publishStory && storyBuffer && storyBuffer.length > 0;
 
-    // 1. Dispara a criação dos dois containers em paralelo na Meta Graph API
+    // 1. Configura a carga do Feed com marcação oficial (user_tags) do parceiro credenciado
+    const feedExtraPayload = { caption };
+    if (partnerUsername) {
+      feedExtraPayload.user_tags = [
+        {
+          username: partnerUsername,
+          x: 0.5,
+          y: 0.22
+        }
+      ];
+      console.log(`[Meta Graph API] Marcando parceiro no Feed: @${partnerUsername}`);
+    }
+
+    // 2. Dispara a criação dos dois containers em paralelo na Meta Graph API
     const [feedContainerOutcome, storyContainerOutcome] = await Promise.allSettled([
       createGraphMediaContainer(
         igAccountId,
         feedBuffer,
         `feed-${Date.now()}.jpg`,
-        { caption },
+        feedExtraPayload,
         accessToken,
         false
       ),

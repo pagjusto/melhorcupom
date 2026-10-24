@@ -101,14 +101,26 @@ export const KNOWN_BRAND_INSTAGRAMS = {
   'mercado livre': '@mercadolivre'
 };
 
+export const cleanInstagramUsername = (raw) => {
+  if (!raw) return '';
+  let str = String(raw).trim();
+  // Remove links completos colados pelo lojista (ex: instagram.com/perfil)
+  str = str.replace(/https?:\/\/(www\.)?instagram\.com\//i, '');
+  str = str.replace(/instagram\.com\//i, '');
+  str = str.replace(/[/?#].*$/, '');
+  str = str.replace(/^@+/, '').trim();
+  str = str.replace(/[^a-zA-Z0-9._]/g, '');
+  return str;
+};
+
 export const getPartnerInstagramHandle = (store, overrideHandle = '') => {
   if (overrideHandle?.trim()) {
-    const clean = overrideHandle.trim();
-    return clean.startsWith('@') ? clean : `@${clean}`;
+    const user = cleanInstagramUsername(overrideHandle);
+    if (user) return `@${user}`;
   }
   if (store?.instagram?.trim()) {
-    const clean = store.instagram.trim();
-    return clean.startsWith('@') ? clean : `@${clean}`;
+    const user = cleanInstagramUsername(store.instagram);
+    if (user) return `@${user}`;
   }
   const lowerName = (store?.name || '').toLowerCase().trim();
   if (KNOWN_BRAND_INSTAGRAMS[lowerName]) {
@@ -130,7 +142,7 @@ export const getPartnerInstagramHandle = (store, overrideHandle = '') => {
   return '@lojaparceira';
 };
 
-// Formatar Legenda Oficial do Instagram
+// Formatar Legenda Oficial do Instagram marcando o novo parceiro
 export const formatStoreCaption = (store, activeHandle = '@omelhorcupom.com.br', overrideHandle = '') => {
   const cleanStore = store?.name || 'Comércio Parceiro';
   const partnerHandle = getPartnerInstagramHandle(store, overrideHandle);
@@ -141,15 +153,27 @@ export const formatStoreCaption = (store, activeHandle = '@omelhorcupom.com.br',
   const hashtagStore = cleanStore.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
   const hashtagCity = cleanCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '');
 
-  const introLine = isBig
-    ? `Agora você economiza com cupons exclusivos no ${cleanStore} (${partnerHandle})! ✨`
-    : `Agora você economiza com cupons exclusivos no ${cleanStore} (${partnerHandle}) em ${locationText}! ✨`;
-
   const hashtags = isBig
     ? `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #Economia #CuponsBrasil`
     : `#MelhorCupom #NovaParceria #${hashtagStore} #DescontosVIP #${hashtagCity} #Economia #CuponsBrasil`;
 
-  return `🎉 NOVA PARCERIA CREDENCIADA NO MELHOR CUPOM! 🎟️🔥\n\n${introLine}\n\n✅ Descontos exclusivos fisicamente e online\n✅ Siga ${partnerHandle} e não perca nenhuma promoção!\n✅ Resgate gratuito pelo site oficial!\n\n👉 Acesse o link da nossa bio ${activeHandle} ou no link direto dos Stories para resgatar seus cupons!\n\nParceria oficial: ${partnerHandle} + ${activeHandle}! 🤝\n\n${hashtags}`;
+  return `🎉 NOVA PARCERIA CREDENCIADA: ${partnerHandle} (${cleanStore})! 🏪✨
+
+Damos as boas-vindas oficiais ao novo parceiro da nossa rede: ${partnerHandle}! 👏🔥
+
+${isBig 
+  ? `Agora você garante cupons e descontos exclusivos no ${cleanStore}!` 
+  : `Agora você garante cupons e descontos exclusivos no ${cleanStore} em ${locationText}!`}
+
+🎟️ Cupons e ofertas exclusivas para economizar de verdade
+📍 Siga o perfil oficial: ${partnerHandle} e não perca nenhuma promoção!
+📲 Resgate seus cupons gratuitamente em: www.omelhorcupom.com.br (link na bio ${activeHandle})
+
+👉 Marque nos comentários quem vai aproveitar essa novidade com você!
+
+🤝 Parceria oficial: ${partnerHandle} ✕ ${activeHandle}
+
+${hashtags}`;
 };
 
 // Renderizar arte em Canvas (para Feed 1080x1080 ou Stories 1080x1920)
@@ -425,7 +449,7 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.fillText(btnText, width / 2, botY + (btnH / 2) - 1);
   ctx.restore();
 
-  // 9. Rodapé
+  // 9. Rodapé com menção e convite aos perfis oficiais
   const footerY = targetFormat === 'feed' ? 880 : 1520;
   ctx.save();
   ctx.fillStyle = '#E5E7EB';
@@ -433,9 +457,10 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.textAlign = 'center';
   ctx.fillText('Disponível no app e em www.omelhorcupom.com.br', width / 2, footerY);
 
-  ctx.fillStyle = '#9CA3AF';
-  ctx.font = '600 16px "Inter", sans-serif';
-  ctx.fillText(`Siga ${activeHandle} para não perder nenhuma oferta`, width / 2, footerY + 34);
+  const partnerHandle = getPartnerInstagramHandle(store);
+  ctx.fillStyle = '#FFB280';
+  ctx.font = '700 17px "Inter", sans-serif';
+  ctx.fillText(`Siga ${partnerHandle} e ${activeHandle} no Instagram`, width / 2, footerY + 34);
   ctx.restore();
 
   // 10. Borda Externa Minimalista Fina (Padrão Oficial do Folder de Divulgação)
@@ -596,6 +621,10 @@ export const autoPublishStoreToInstagram = async (store, coupons = []) => {
           : `https://www.omelhorcupom.com.br/?loja=${store.id}`)
       : 'https://www.omelhorcupom.com.br';
 
+    // Identificar o Instagram do parceiro para marcação oficial
+    const partnerHandle = getPartnerInstagramHandle(store);
+    const partnerUser = cleanInstagramUsername(partnerHandle);
+
     // Gerar artes
     const feedImageBase64 = await generateStoreArtworkBase64(store, 'feed', handle);
     const storyImageBase64 = await generateStoreArtworkBase64(store, 'story', handle);
@@ -615,6 +644,8 @@ export const autoPublishStoreToInstagram = async (store, coupons = []) => {
         linkTitle: 'RESGATAR CUPOM',
         caption,
         storeName: store.name,
+        partnerInstagram: partnerHandle,
+        partnerUsername: partnerUser,
         sessionId: savedSessionId,
         format: 'feed_and_story'
       })
