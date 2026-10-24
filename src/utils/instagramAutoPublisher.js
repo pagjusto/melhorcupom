@@ -449,7 +449,7 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.fillText(btnText, width / 2, botY + (btnH / 2) - 1);
   ctx.restore();
 
-  // 9. Rodapé com menção e convite aos perfis oficiais
+  // 9. Rodapé
   const footerY = targetFormat === 'feed' ? 880 : 1520;
   ctx.save();
   ctx.fillStyle = '#E5E7EB';
@@ -457,10 +457,9 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.textAlign = 'center';
   ctx.fillText('Disponível no app e em www.omelhorcupom.com.br', width / 2, footerY);
 
-  const partnerHandle = getPartnerInstagramHandle(store);
-  ctx.fillStyle = '#FFB280';
-  ctx.font = '700 17px "Inter", sans-serif';
-  ctx.fillText(`Siga ${partnerHandle} e ${activeHandle} no Instagram`, width / 2, footerY + 34);
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '600 16px "Inter", sans-serif';
+  ctx.fillText(`Siga ${activeHandle} para não perder nenhuma oferta`, width / 2, footerY + 34);
   ctx.restore();
 
   // 10. Borda Externa Minimalista Fina (Padrão Oficial do Folder de Divulgação)
