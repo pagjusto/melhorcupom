@@ -20,6 +20,7 @@ import { supabase, isSupabaseConfigured, db } from '../lib/supabase';
 import { validateStoreSafety, validateUserSafety, validateCouponSafety } from '../utils/contentModeration';
 import { getStoreDestinationUrl, normalizeUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
+import { persistCustomLogoToIDB, loadAllCustomLogosFromIDB, getStoreLogoKeys } from '../utils/storeLogosStorage';
 
 const AppContext = createContext();
 
@@ -50,12 +51,19 @@ export const AppProvider = ({ children }) => {
   // Limpeza proativa de chaves legadas e duplicadas para liberar espaço no LocalStorage
   const cleanObsoleteStorage = () => {
     const obsoleteKeys = [
+      'melhor_cupom_stores_v10',
+      'melhor_cupom_stores_v9',
       'melhor_cupom_stores_v8',
       'melhor_cupom_stores_v7',
       'melhor_cupom_stores_v6',
       'melhor_cupom_stores_v5',
       'melhor_cupom_stores_v4',
       'melhor_cupom_stores',
+      'melhor_cupom_coupons_v10',
+      'melhor_cupom_coupons_v9',
+      'melhor_cupom_coupons_v8',
+      'melhor_cupom_coupons_v7',
+      'melhor_cupom_coupons_v6',
       'melhor_cupom_user',
       'melhor_cupom_redemptions',
       'melhor_cupom_admin_users',
@@ -67,9 +75,53 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  // Executar limpeza proativa de chaves legadas imediatamente ao carregar
+  // Executar limpeza proativa de chaves legadas e sincronização profunda com IndexedDB
   useEffect(() => {
     cleanObsoleteStorage();
+
+    // Sincronizar logos salvos no IndexedDB para restaurar caso o LocalStorage tenha sofrido reset
+    loadAllCustomLogosFromIDB().then(idbLogos => {
+      if (idbLogos && Object.keys(idbLogos).length > 0) {
+        setStores(prev => {
+          let hasChanges = false;
+          const updated = prev.map(s => {
+            const keys = getStoreLogoKeys(s.id, s.name);
+            let matched = null;
+            for (const k of keys) {
+              if (idbLogos[k]) {
+                matched = idbLogos[k];
+                break;
+              }
+            }
+            if (!matched) return s;
+
+            const shouldUpdate = (matched.logoImage && s.logoImage !== matched.logoImage) ||
+              (matched.logoFit && s.logoFit !== matched.logoFit) ||
+              (matched.logoScale !== undefined && s.logoScale !== matched.logoScale) ||
+              (matched.logoPadding !== undefined && s.logoPadding !== matched.logoPadding) ||
+              (matched.logoBg && s.logoBg !== matched.logoBg);
+
+            if (shouldUpdate) {
+              hasChanges = true;
+              return {
+                ...s,
+                ...(matched.logoImage ? { logoImage: matched.logoImage, hasCustomLogo: true } : {}),
+                ...(matched.logoFit ? { logoFit: matched.logoFit } : {}),
+                ...(matched.logoScale !== undefined ? { logoScale: matched.logoScale } : {}),
+                ...(matched.logoPadding !== undefined ? { logoPadding: matched.logoPadding } : {}),
+                ...(matched.logoBg ? { logoBg: matched.logoBg } : {})
+              };
+            }
+            return s;
+          });
+          if (hasChanges) {
+            safeSetItem('melhor_cupom_stores_v11', updated);
+            return updated;
+          }
+          return prev;
+        });
+      }
+    }).catch(() => {});
   }, []);
 
   // Gravador universal seguro protegido contra QuotaExceededError
@@ -258,11 +310,15 @@ export const AppProvider = ({ children }) => {
                   (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || (c.logoImage.startsWith('http') && !c.logoImage.includes('unsplash')))) ? c.logoImage : null;
                 
                 if (candidateLogo) {
-                  recoveredMap[c.storeId] = {
-                    ...(recoveredMap[c.storeId] || {}),
+                  const entry = {
                     logoImage: candidateLogo,
                     hasCustomLogo: true
                   };
+                  const keys = getStoreLogoKeys(c.storeId, c.storeName);
+                  keys.forEach(key => {
+                    recoveredMap[key] = { ...(recoveredMap[key] || {}), ...entry };
+                    persistCustomLogoToIDB(key, entry).catch(() => {});
+                  });
                 }
               });
             }
@@ -283,14 +339,18 @@ export const AppProvider = ({ children }) => {
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
-                  recoveredMap[s.id] = {
-                    ...(recoveredMap[s.id] || {}),
+                  const entry = {
                     ...(candidateLogo ? { logoImage: candidateLogo, hasCustomLogo: true } : {}),
                     ...(s.logoFit !== undefined ? { logoFit: s.logoFit } : {}),
                     ...(s.logoScale !== undefined ? { logoScale: s.logoScale } : {}),
                     ...(s.logoPadding !== undefined ? { logoPadding: s.logoPadding } : {}),
                     ...(s.logoBg !== undefined ? { logoBg: s.logoBg } : {})
                   };
+                  const keys = getStoreLogoKeys(s.id, s.name);
+                  keys.forEach(key => {
+                    recoveredMap[key] = { ...(recoveredMap[key] || {}), ...entry };
+                    persistCustomLogoToIDB(key, entry).catch(() => {});
+                  });
                 }
               });
             }
@@ -300,7 +360,7 @@ export const AppProvider = ({ children }) => {
         // Persistir o mapa recuperado no mapa permanente para nunca mais ser perdido
         try {
           if (Object.keys(recoveredMap).length > 0) {
-            localStorage.setItem('melhor_cupom_custom_store_logos_v1', JSON.stringify(recoveredMap));
+            safeSetItem('melhor_cupom_custom_store_logos_v1', recoveredMap);
           }
         } catch {}
 
@@ -326,7 +386,15 @@ export const AppProvider = ({ children }) => {
 
         // PERSISTÊNCIA ABSOLUTA DA LOGO:
         // Prioriza qualquer logo personalizada salva pelo lojista ou admin (no mapa dedicado ou no objeto s)
-        const customOverride = savedCustomLogos[s.id] || savedCustomLogos[init?.id] || null;
+        const lookupKeys = getStoreLogoKeys(s.id, s.name || init?.name);
+        let customOverride = null;
+        for (const k of lookupKeys) {
+          if (savedCustomLogos[k]) {
+            customOverride = savedCustomLogos[k];
+            break;
+          }
+        }
+
         const sLogoStr = typeof s.logoImage === 'string' ? s.logoImage : '';
         const customLogoStr = typeof customOverride?.logoImage === 'string' ? customOverride.logoImage : '';
         const hasCustom = Boolean(
@@ -846,6 +914,12 @@ export const AppProvider = ({ children }) => {
                 return {
                   ...s,
                   ...fromCloud,
+                  logoImage: (s.hasCustomLogo && s.logoImage) ? s.logoImage : (fromCloud.logo_image || s.logoImage),
+                  hasCustomLogo: Boolean(s.hasCustomLogo || fromCloud.logo_image),
+                  logoFit: s.logoFit || fromCloud.logo_fit || 'contain',
+                  logoScale: s.logoScale ?? fromCloud.logo_scale,
+                  logoPadding: s.logoPadding ?? fromCloud.logo_padding,
+                  logoBg: s.logoBg || fromCloud.logo_bg || '#ffffff',
                   tier: cleanCloudTier,
                   adminPaidPlan: isPaid,
                   highlight: cloudHighlight !== undefined ? Boolean(cloudHighlight) : Boolean(s.highlight),
@@ -1702,26 +1776,37 @@ export const AppProvider = ({ children }) => {
 
   // Atualizar Perfil da Loja / Logo da Empresa e Ajustes de Enquadramento
   const updateStore = (storeId, updatedData) => {
-    // 1. Gravar no mapa dedicado e permanente de logos customizadas (imune a resets e normalizações)
+    const currentStore = stores.find(s => s.id === storeId || s.merchantId === storeId);
+    const storeName = updatedData.storeName || updatedData.name || currentStore?.name || '';
+    const logoEntry = {
+      ...(updatedData.logoImage ? { logoImage: updatedData.logoImage, hasCustomLogo: true } : {}),
+      ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
+      ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
+      ...(updatedData.logoPadding !== undefined ? { logoPadding: updatedData.logoPadding } : {}),
+      ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
+    };
+
+    // 1. Gravar no IndexedDB de alta capacidade (imune ao limite de 5MB)
+    const storeKeys = getStoreLogoKeys(storeId, storeName);
+    storeKeys.forEach(k => {
+      persistCustomLogoToIDB(k, logoEntry).catch(() => {});
+    });
+
+    // 2. Gravar no mapa dedicado e permanente de logos customizadas no LocalStorage
     try {
       const rawLogos = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
       const logosMap = rawLogos ? JSON.parse(rawLogos) : {};
-      logosMap[storeId] = {
-        ...(logosMap[storeId] || {}),
-        ...(updatedData.logoImage ? { logoImage: updatedData.logoImage, hasCustomLogo: true } : {}),
-        ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
-        ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
-        ...(updatedData.logoPadding !== undefined ? { logoPadding: updatedData.logoPadding } : {}),
-        ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
-      };
-      localStorage.setItem('melhor_cupom_custom_store_logos_v1', JSON.stringify(logosMap));
+      storeKeys.forEach(k => {
+        logosMap[k] = { ...(logosMap[k] || {}), ...logoEntry };
+      });
+      safeSetItem('melhor_cupom_custom_store_logos_v1', logosMap);
     } catch (e) {
       console.warn('Erro ao salvar no mapa permanente de logos:', e);
     }
 
     setStores(prev => {
       const updated = prev.map(s => {
-        if (s.id === storeId || s.merchantId === storeId) {
+        if (s.id === storeId || s.merchantId === storeId || (storeName && s.name?.toLowerCase().trim() === storeName.toLowerCase().trim())) {
           return { 
             ...s, 
             ...updatedData,
@@ -1736,8 +1821,8 @@ export const AppProvider = ({ children }) => {
 
     if (updatedData.logoImage) {
       setCoupons(prev => {
-        const updated = prev.map(c => {
-          if (c.storeId === storeId || c.merchantId === storeId) {
+        return prev.map(c => {
+          if (c.storeId === storeId || c.merchantId === storeId || (storeName && c.storeName?.toLowerCase().trim() === storeName.toLowerCase().trim())) {
             return {
               ...c,
               hasCustomLogo: true,
@@ -1749,8 +1834,6 @@ export const AppProvider = ({ children }) => {
           }
           return c;
         });
-        safeSaveCoupons(updated);
-        return updated;
       });
     }
 

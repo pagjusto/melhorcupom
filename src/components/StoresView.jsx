@@ -159,14 +159,14 @@ export const StoresView = ({ onSelectStore }) => {
       return;
     }
 
-    // Para PNG/JPG/WebP: redimensionar inteligentemente para 400x400 para salvar instantâneo sem estourar cota de armazenamento
+    // Para PNG/JPG/WebP: redimensionar otimizado para 240x240 garantindo nitidez cristalina e peso ultraleve (<25KB)
     const reader = new FileReader();
     reader.onload = (event) => {
       const rawBase64 = event.target?.result;
       if (!rawBase64) return;
       const img = new Image();
       img.onload = () => {
-        const maxDim = 400;
+        const maxDim = 240;
         let w = img.width;
         let h = img.height;
         if (w > maxDim || h > maxDim) {
@@ -183,8 +183,8 @@ export const StoresView = ({ onSelectStore }) => {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        const isPng = file.type === 'image/png' || file.type === 'image/webp' || file.name.endsWith('.png');
-        const optimized = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.88);
+        const isPng = file.type === 'image/png' || file.name.endsWith('.png');
+        const optimized = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.85);
         setPreviewLogo(optimized);
       };
       img.onerror = () => setPreviewLogo(rawBase64);
@@ -202,7 +202,8 @@ export const StoresView = ({ onSelectStore }) => {
       logoFit,
       logoScale,
       logoPadding,
-      logoBg
+      logoBg,
+      storeName: editingStore.name
     });
 
     setEditingStore(null);
