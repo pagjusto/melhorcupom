@@ -42,6 +42,24 @@ const CATEGORY_CHIPS = [
   { id: 'outros', label: 'Outros Parceiros', icon: '📦' }
 ];
 
+// Helper para obter a logo real e confiável da marca (resolvendo marcas oficiais e evitando links quebrados)
+export const getEffectiveStoreLogo = (store) => {
+  if (!store) return '';
+  const raw = store.logoImage;
+  const isCustomUserUpload = store.hasCustomLogo && typeof raw === 'string' && raw.startsWith('data:image/');
+  if (isCustomUserUpload) {
+    return raw;
+  }
+  const brandLogo = getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource);
+  if (brandLogo) {
+    return brandLogo;
+  }
+  if (typeof raw === 'string' && raw.length > 0 && !raw.includes('/src/') && !raw.includes('cdn.lomadee.com.br')) {
+    return raw;
+  }
+  return '';
+};
+
 // Helper para verificar se a loja possui ajustes manuais de enquadramento salvos pelo Administrador
 const hasCustomStoreLogoSettings = (store) => {
   return Boolean(
@@ -54,19 +72,16 @@ const hasCustomStoreLogoSettings = (store) => {
 
 // Helper para gerar o style do logo respeitando ajustes manuais salvos
 const getStoreLogoStyle = (store, override = {}) => {
-  const fit = override.logoFit ?? store?.logoFit;
-  const scale = override.logoScale ?? store?.logoScale;
-  const padding = override.logoPadding ?? store?.logoPadding;
+  const fit = override.logoFit ?? store?.logoFit ?? 'contain';
+  const scale = override.logoScale ?? store?.logoScale ?? 100;
+  const padding = override.logoPadding ?? store?.logoPadding ?? 6;
 
-  const style = {};
-  if (fit) {
-    style.objectFit = fit;
-  }
-  if (scale !== undefined && scale !== 100) {
+  const style = {
+    objectFit: fit,
+    padding: `${padding}px`
+  };
+  if (scale !== 100) {
     style.transform = `scale(${scale / 100})`;
-  }
-  if (padding !== undefined) {
-    style.padding = `${padding}px`;
   }
   return style;
 };
@@ -121,27 +136,22 @@ export const StoresView = ({ onSelectStore }) => {
   const [logoBg, setLogoBg] = useState('#ffffff');
 
   const handleOpenEditLogo = (store) => {
-    const currentImg = store.logoImage || getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource) || '';
-    const inferredClass = getStoreLogoFit(store, currentImg);
+    const currentImg = getEffectiveStoreLogo(store);
     
     // Herda valores já configurados pelo lojista/admin ou calcula padrões ideais
-    const defaultFit = store.logoFit || (inferredClass.includes('object-cover') ? 'cover' : 'contain');
-    const defaultScale = store.logoScale !== undefined 
-      ? store.logoScale 
-      : (inferredClass.includes('scale-145') ? 145 : inferredClass.includes('scale-102') ? 102 : 100);
-    const defaultPadding = store.logoPadding !== undefined 
-      ? store.logoPadding 
-      : (inferredClass.includes('p-0') ? 0 : 6);
+    const defaultFit = store.logoFit || 'contain';
+    const defaultScale = store.logoScale !== undefined ? store.logoScale : 100;
+    const defaultPadding = store.logoPadding !== undefined ? store.logoPadding : 6;
     const defaultBg = store.logoBg || '#ffffff';
 
     setEditingStore(store);
     setPreviewLogo(currentImg);
-    setNewLogoUrl(typeof store.logoImage === 'string' && store.logoImage.startsWith('http') ? store.logoImage : '');
+    setNewLogoUrl(typeof store.logoImage === 'string' && store.logoImage.startsWith('http') && !store.logoImage.includes('cdn.lomadee.com.br') ? store.logoImage : '');
     setLogoFit(defaultFit);
     setLogoScale(defaultScale);
     setLogoPadding(defaultPadding);
     setLogoBg(defaultBg);
-    setModalTab(currentImg ? 'adjust' : 'replace');
+    setModalTab('adjust');
     setLogoInputMode('upload');
   };
 
@@ -198,7 +208,8 @@ export const StoresView = ({ onSelectStore }) => {
     const finalLogo = (previewLogo || newLogoUrl || '').trim();
 
     updateStore(editingStore.id, {
-      ...(finalLogo ? { logoImage: finalLogo, hasCustomLogo: true, logo: '🏪' } : {}),
+      ...(finalLogo ? { logoImage: finalLogo } : {}),
+      hasCustomLogo: Boolean(finalLogo && finalLogo.startsWith('data:image/')),
       logoFit,
       logoScale,
       logoPadding,
@@ -554,7 +565,7 @@ export const StoresView = ({ onSelectStore }) => {
           {/* Cards das Lojas Cadastradas */}
           {filteredStores.map((store) => {
             const isHighlighted = Boolean(store.highlight || store.isFeatured);
-            const storeLogo = store.logoImage || getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource);
+            const storeLogo = getEffectiveStoreLogo(store);
             const isOnlineStore = store.isApiIntegrated || store.type === 'online';
             const isPaidStore = Boolean(store.adminPaidPlan && (store.tier === 'gold' || store.tier === 'silver' || store.tier === 'bronze'));
             const tier = isPaidStore ? store.tier : 'api';
@@ -639,8 +650,8 @@ export const StoresView = ({ onSelectStore }) => {
                           key={`${store.id}_${storeLogo}_${store.logoScale}_${store.logoFit}_${store.logoPadding}_${store.logoBg}`}
                           src={storeLogo}
                           alt={store.name}
-                          style={hasCustomStoreLogoSettings(store) ? getStoreLogoStyle(store) : undefined}
-                          className={hasCustomStoreLogoSettings(store) ? 'w-full h-full transition-transform duration-150' : getStoreLogoFit(store, storeLogo)}
+                          style={getStoreLogoStyle(store)}
+                          className="w-full h-full transition-transform duration-150"
                           loading="lazy"
                           onLoad={(e) => {
                             e.currentTarget.style.display = 'block';
@@ -648,6 +659,11 @@ export const StoresView = ({ onSelectStore }) => {
                             if (fb) fb.style.display = 'none';
                           }}
                           onError={(e) => {
+                            const fbLogo = getBrandLogo(store.name) || getBrandLogo(store.id);
+                            if (fbLogo && e.currentTarget.src !== fbLogo) {
+                              e.currentTarget.src = fbLogo;
+                              return;
+                            }
                             e.currentTarget.style.display = 'none';
                             const fb = e.currentTarget.parentElement?.querySelector('.store-fallback-icon');
                             if (fb) fb.style.display = 'flex';

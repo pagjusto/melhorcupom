@@ -1123,13 +1123,18 @@ export const AdminCouponsManager = ({ showToast }) => {
                                 getBrandLogo(store?.id) || 
                                 getBrandLogo(store?.name);
 
-              const storeLogo = (store?.hasCustomLogo && store?.logoImage) ||
-                                (coupon.hasCustomLogo && coupon.logoImage) ||
-                                store?.logoImage ||
-                                coupon.customStoreLogoImage ||
-                                coupon.storeLogoImage ||
-                                coupon.logoImage ||
+              const customUpload = (store?.hasCustomLogo && typeof store?.logoImage === 'string' && store.logoImage.startsWith('data:image/'))
+                ? store.logoImage
+                : (coupon.hasCustomLogo && typeof coupon.logoImage === 'string' && coupon.logoImage.startsWith('data:image/'))
+                  ? coupon.logoImage
+                  : (typeof coupon.customStoreLogoImage === 'string' && coupon.customStoreLogoImage.startsWith('data:image/'))
+                    ? coupon.customStoreLogoImage
+                    : null;
+
+              const storeLogo = customUpload ||
                                 brandLogo ||
+                                (typeof store?.logoImage === 'string' && !store.logoImage.includes('/src/') && !store.logoImage.includes('cdn.lomadee.com.br') ? store.logoImage : '') ||
+                                (typeof coupon.storeLogoImage === 'string' && !coupon.storeLogoImage.includes('/src/') && !coupon.storeLogoImage.includes('cdn.lomadee.com.br') ? coupon.storeLogoImage : '') ||
                                 (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
 
               const isOnline = coupon.type === 'online' || coupon.city?.toLowerCase().includes('online');

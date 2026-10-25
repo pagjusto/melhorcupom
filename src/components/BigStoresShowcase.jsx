@@ -247,7 +247,10 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     
     // Suporte a nomes e logotipos originais das marcas e grandes lojas
     const storeName = coupon.storeName || store?.name || 'Loja Parceira';
-    const storeLogo = (store?.hasCustomLogo && store?.logoImage) || store?.logoImage || coupon.storeLogo || getBrandLogo(coupon.storeId || storeName || apiSource) || '';
+    const brandSvg = getBrandLogo(storeName) || getBrandLogo(coupon.storeId) || getBrandLogo(store?.id) || getBrandLogo(apiSource);
+    const storeLogo = (store?.hasCustomLogo && typeof store?.logoImage === 'string' && store.logoImage.startsWith('data:image/'))
+      ? store.logoImage
+      : (brandSvg || (typeof store?.logoImage === 'string' && !store.logoImage.includes('/src/') && !store.logoImage.includes('cdn.lomadee.com.br') ? store.logoImage : '') || coupon.storeLogo || '');
 
     return (
       <div

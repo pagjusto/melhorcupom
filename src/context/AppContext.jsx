@@ -48,6 +48,46 @@ export const cleanObsoleteStorage = () => {
     keysToRemove.forEach(key => {
       try { localStorage.removeItem(key); } catch {}
     });
+
+    // Sanitizar caminhos quebrados de dev (/src/) ou URLs sem CORS da Lomadee no LocalStorage
+    try {
+      const rawV11 = localStorage.getItem('melhor_cupom_stores_v11');
+      if (rawV11) {
+        const parsed = JSON.parse(rawV11);
+        if (Array.isArray(parsed)) {
+          let modified = false;
+          parsed.forEach(s => {
+            if (s && typeof s.logoImage === 'string' && (s.logoImage.includes('/src/') || s.logoImage.includes('cdn.lomadee.com.br'))) {
+              s.logoImage = '';
+              s.hasCustomLogo = false;
+              modified = true;
+            }
+          });
+          if (modified) {
+            localStorage.setItem('melhor_cupom_stores_v11', JSON.stringify(parsed));
+          }
+        }
+      }
+    } catch {}
+
+    try {
+      const rawLogos = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
+      if (rawLogos) {
+        const parsedLogos = JSON.parse(rawLogos);
+        let modified = false;
+        Object.keys(parsedLogos).forEach(k => {
+          const item = parsedLogos[k];
+          if (item && typeof item.logoImage === 'string' && (item.logoImage.includes('/src/') || item.logoImage.includes('cdn.lomadee.com.br'))) {
+            delete item.logoImage;
+            delete item.hasCustomLogo;
+            modified = true;
+          }
+        });
+        if (modified) {
+          localStorage.setItem('melhor_cupom_custom_store_logos_v1', JSON.stringify(parsedLogos));
+        }
+      }
+    } catch {}
   } catch {}
 };
 
@@ -316,7 +356,7 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsedV11)) {
               parsedV11.forEach(s => {
                 if (!s || !s.id) return;
-                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash')) ? s.logoImage : null;
+                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash') && !s.logoImage.includes('/src/') && !s.logoImage.includes('cdn.lomadee.com.br')) ? s.logoImage : null;
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
@@ -349,7 +389,7 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsed)) {
               parsed.forEach(s => {
                 if (!s || !s.id) return;
-                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash')) ? s.logoImage : null;
+                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash') && !s.logoImage.includes('/src/') && !s.logoImage.includes('cdn.lomadee.com.br')) ? s.logoImage : null;
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
@@ -448,13 +488,23 @@ export const AppProvider = ({ children }) => {
         const brandFallback = getBrandLogo(s.name) || getBrandLogo(s.id) || getBrandLogo(init?.name) || getBrandLogo(init?.id) || '';
         const sLogoStr = typeof s.logoImage === 'string' ? s.logoImage : '';
         const customLogoStr = typeof customOverride?.logoImage === 'string' ? customOverride.logoImage : '';
-        const hasCustom = Boolean(
-          customOverride?.hasCustomLogo || 
-          s.hasCustomLogo || 
-          (customLogoStr && customLogoStr.length > 0)
-        );
-        const baseLogo = (sLogoStr && !sLogoStr.includes('cdn.lomadee.com.br')) ? sLogoStr : (brandFallback || init?.logoImage || sLogoStr);
-        const finalLogoImage = customLogoStr || (hasCustom && sLogoStr && !sLogoStr.includes('cdn.lomadee.com.br') ? sLogoStr : '') || baseLogo || brandFallback || init?.logoImage || '';
+
+        const isUserUpload = (customLogoStr && customLogoStr.startsWith('data:image/')) ||
+                             (sLogoStr && sLogoStr.startsWith('data:image/'));
+
+        let resolvedLogo = '';
+        if (isUserUpload) {
+          resolvedLogo = (customLogoStr && customLogoStr.startsWith('data:image/')) ? customLogoStr : sLogoStr;
+        } else if (brandFallback) {
+          resolvedLogo = brandFallback;
+        } else if (sLogoStr && !sLogoStr.includes('/src/') && !sLogoStr.includes('cdn.lomadee.com.br')) {
+          resolvedLogo = sLogoStr;
+        } else {
+          resolvedLogo = init?.logoImage || '';
+        }
+
+        const finalLogoImage = resolvedLogo;
+        const hasCustom = Boolean(isUserUpload || customOverride?.hasCustomLogo || s.hasCustomLogo);
 
         const finalLogoFit = customOverride?.logoFit || s.logoFit || init?.logoFit || 'contain';
         const finalLogoScale = customOverride?.logoScale !== undefined ? customOverride.logoScale : (s.logoScale !== undefined ? s.logoScale : init?.logoScale);
