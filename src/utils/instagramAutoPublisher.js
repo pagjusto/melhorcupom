@@ -268,11 +268,10 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
   ctx.restore();
 
   let logoDrawn = false;
-  const storeLogoSrc = store?.logoImage || 
-    getBrandLogo(store?.name) || 
-    getBrandLogo(store?.id) || 
-    getBrandLogo(store?.apiSource) || 
-    store?.image;
+  const brandLogo = getBrandLogo(store?.name) || getBrandLogo(store?.id) || getBrandLogo(store?.apiSource);
+  let storeLogoSrc = (store?.hasCustomLogo && store?.logoImage) 
+    ? store.logoImage 
+    : (brandLogo || store?.logoImage || store?.image);
 
   if (storeLogoSrc) {
     try {
@@ -283,6 +282,15 @@ export const renderStoreArtworkToCanvas = async (targetCanvas, targetFormat = 'f
         logoImg.onerror = resolve;
         logoImg.src = storeLogoSrc;
       });
+
+      // Fallback robusto se a imagem remota falhar ou tiver CORS bloqueado
+      if ((!logoImg.naturalWidth || logoImg.naturalWidth === 0) && brandLogo && storeLogoSrc !== brandLogo) {
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = resolve;
+          logoImg.src = brandLogo;
+        });
+      }
 
       const naturalW = logoImg.naturalWidth || logoImg.width;
       const naturalH = logoImg.naturalHeight || logoImg.height;

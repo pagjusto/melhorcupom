@@ -100,22 +100,23 @@ export const AppProvider = ({ children }) => {
             }
             if (!matched) return s;
 
-            // Restaura apenas campos que s não tenha customizado ou onde o IDB tem dado mais completo
-            const shouldUpdate = (matched.logoImage && (!s.logoImage || !s.hasCustomLogo)) ||
-              (matched.logoFit && !s.logoFit) ||
-              (matched.logoScale !== undefined && s.logoScale === undefined) ||
-              (matched.logoPadding !== undefined && s.logoPadding === undefined) ||
-              (matched.logoBg && !s.logoBg);
+            const shouldUpdate = Boolean(
+              (matched.logoImage && matched.logoImage !== s.logoImage) ||
+              (matched.logoFit !== undefined && matched.logoFit !== s.logoFit) ||
+              (matched.logoScale !== undefined && matched.logoScale !== s.logoScale) ||
+              (matched.logoPadding !== undefined && matched.logoPadding !== s.logoPadding) ||
+              (matched.logoBg !== undefined && matched.logoBg !== s.logoBg)
+            );
 
             if (shouldUpdate) {
               hasChanges = true;
               return {
                 ...s,
-                ...(matched.logoImage && (!s.logoImage || !s.hasCustomLogo) ? { logoImage: matched.logoImage, hasCustomLogo: true } : {}),
-                ...(matched.logoFit && !s.logoFit ? { logoFit: matched.logoFit } : {}),
-                ...(matched.logoScale !== undefined && s.logoScale === undefined ? { logoScale: matched.logoScale } : {}),
-                ...(matched.logoPadding !== undefined && s.logoPadding === undefined ? { logoPadding: matched.logoPadding } : {}),
-                ...(matched.logoBg && !s.logoBg ? { logoBg: matched.logoBg } : {})
+                ...(matched.logoImage ? { logoImage: matched.logoImage, hasCustomLogo: true } : {}),
+                ...(matched.logoFit !== undefined ? { logoFit: matched.logoFit } : {}),
+                ...(matched.logoScale !== undefined ? { logoScale: matched.logoScale } : {}),
+                ...(matched.logoPadding !== undefined ? { logoPadding: matched.logoPadding } : {}),
+                ...(matched.logoBg !== undefined ? { logoBg: matched.logoBg } : {})
               };
             }
             return s;
@@ -315,7 +316,7 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsedV11)) {
               parsedV11.forEach(s => {
                 if (!s || !s.id) return;
-                const candidateLogo = (typeof s.logoImage === 'string' && (s.logoImage.startsWith('data:') || (s.logoImage.startsWith('http') && !s.logoImage.includes('unsplash')))) ? s.logoImage : null;
+                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash')) ? s.logoImage : null;
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
@@ -348,7 +349,7 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsed)) {
               parsed.forEach(s => {
                 if (!s || !s.id) return;
-                const candidateLogo = (typeof s.logoImage === 'string' && (s.logoImage.startsWith('data:') || (s.logoImage.startsWith('http') && !s.logoImage.includes('unsplash')))) ? s.logoImage : null;
+                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash')) ? s.logoImage : null;
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
@@ -444,14 +445,16 @@ export const AppProvider = ({ children }) => {
           }
         }
 
+        const brandFallback = getBrandLogo(s.name) || getBrandLogo(s.id) || getBrandLogo(init?.name) || getBrandLogo(init?.id) || '';
         const sLogoStr = typeof s.logoImage === 'string' ? s.logoImage : '';
         const customLogoStr = typeof customOverride?.logoImage === 'string' ? customOverride.logoImage : '';
         const hasCustom = Boolean(
           customOverride?.hasCustomLogo || 
           s.hasCustomLogo || 
-          (sLogoStr && !sLogoStr.includes('unsplash') && sLogoStr.length > 0)
+          (customLogoStr && customLogoStr.length > 0)
         );
-        const finalLogoImage = customLogoStr || (hasCustom ? sLogoStr : '') || sLogoStr || getBrandLogo(init?.id || s.id) || getBrandLogo(init?.name || s.name) || init?.logoImage || '';
+        const baseLogo = (sLogoStr && !sLogoStr.includes('cdn.lomadee.com.br')) ? sLogoStr : (brandFallback || init?.logoImage || sLogoStr);
+        const finalLogoImage = customLogoStr || (hasCustom && sLogoStr && !sLogoStr.includes('cdn.lomadee.com.br') ? sLogoStr : '') || baseLogo || brandFallback || init?.logoImage || '';
 
         const finalLogoFit = customOverride?.logoFit || s.logoFit || init?.logoFit || 'contain';
         const finalLogoScale = customOverride?.logoScale !== undefined ? customOverride.logoScale : (s.logoScale !== undefined ? s.logoScale : init?.logoScale);
@@ -1859,10 +1862,12 @@ export const AppProvider = ({ children }) => {
       let matchedAny = false;
       const updated = prev.map(s => {
         const sRoot = getBrandRootKey(s.id) || getBrandRootKey(s.name);
+        const sKeys = getStoreLogoKeys(s.id, s.name);
         const isMatch = s.id === storeId || 
                         s.merchantId === storeId || 
                         (storeName && s.name?.toLowerCase().trim() === storeName.toLowerCase().trim()) ||
-                        (rootKey && sRoot && rootKey === sRoot);
+                        (rootKey && sRoot && rootKey === sRoot) ||
+                        storeKeys.some(k => sKeys.includes(k));
 
         if (isMatch) {
           matchedAny = true;
@@ -1899,10 +1904,12 @@ export const AppProvider = ({ children }) => {
       let hasCouponChanges = false;
       const updatedCoupons = prev.map(c => {
         const cRoot = getBrandRootKey(c.storeId) || getBrandRootKey(c.storeName);
+        const cKeys = getStoreLogoKeys(c.storeId, c.storeName);
         const isMatch = c.storeId === storeId || 
                         c.merchantId === storeId || 
                         (storeName && c.storeName?.toLowerCase().trim() === storeName.toLowerCase().trim()) ||
-                        (rootKey && cRoot && rootKey === cRoot);
+                        (rootKey && cRoot && rootKey === cRoot) ||
+                        storeKeys.some(k => cKeys.includes(k));
 
         if (isMatch) {
           hasCouponChanges = true;

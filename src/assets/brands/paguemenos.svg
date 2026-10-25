@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
-  <rect width="240" height="80" rx="12" fill="#ffffff"/>
+  <rect width="240" height="80" rx="12" fill="transparent"/>
   <!-- Heart Cross Icon -->
   <g transform="translate(42, 40)">
     <path d="M0 -12 C-6 -18 -16 -12 -16 -4 C-16 6 0 16 0 16 C0 16 16 6 16 -4 C16 -12 6 -18 0 -12 Z" fill="#ED1C24"/>

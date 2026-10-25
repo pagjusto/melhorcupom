@@ -33,6 +33,14 @@ export const getBrandRootKey = (str) => {
   const clean = String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
   if (!clean) return '';
 
+  if (clean.includes('berenice') || clean.includes('qdb') || clean.includes('quemdisse')) return 'qdb';
+  if (clean.includes('dako')) return 'dako';
+  if (clean.includes('dafiti')) return 'dafiti';
+  if (clean.includes('lenovo')) return 'lenovo';
+  if (clean.includes('brastemp')) return 'brastemp';
+  if (clean.includes('puma')) return 'puma';
+  if (clean.includes('paguemenos') || (clean.includes('pague') && clean.includes('menos'))) return 'paguemenos';
+
   const roots = [
     'amazon', 'magalu', 'shopee', 'shein', 'mercadolivre', 'meli', 'nike', 'adidas', 'kabum',
     'samsung', 'drogasil', 'drogaraia', 'aliexpress', 'casasbahia', 'netshoes', 'mcdonalds',
@@ -41,7 +49,7 @@ export const getBrandRootKey = (str) => {
     'cacaushow', 'madero', 'subway', 'spoleto', 'sephora', 'paodeacucar', 'petz', 'fastshop',
     'electrolux', 'brastemp', 'lenovo', 'dafiti', 'zattini', 'booking', 'decolar', 'loccitane',
     'philips', 'camicado', 'tokstok', 'paguemenos', 'cobasi', 'cea', 'renner', 'riachuelo',
-    'natura', 'carrefour', 'puma', 'underarmour', 'oakley', 'rayban', 'eudora', 'qdb', 'belezanaweb',
+    'natura', 'carrefour', 'puma', 'underarmour', 'oakley', 'rayban', 'eudora', 'qdb', 'berenice', 'dako', 'belezanaweb',
     'manual', 'gazin', 'toymania', 'balaroti', 'homedock', 'kidy', 'terabyte', 'sottile', 'rosario'
   ];
 
@@ -59,11 +67,18 @@ export const getStoreLogoKeys = (storeId, storeName = '') => {
   if (storeId) {
     const cleanId = String(storeId).toLowerCase().trim();
     keys.push(cleanId);
-    const withoutPrefix = cleanId.replace(/^store_awin_/, '').replace(/^store_/, '');
+    const withoutPrefix = cleanId
+      .replace(/^store_awin_/, '')
+      .replace(/^store_lmd_/, '')
+      .replace(/^store_/, '')
+      .replace(/^merchant_awin_/, '')
+      .replace(/^merchant_lmd_/, '')
+      .replace(/^merchant_/, '');
     if (withoutPrefix && withoutPrefix !== cleanId) {
       keys.push(withoutPrefix);
       keys.push(`store_${withoutPrefix}`);
       keys.push(`store_awin_${withoutPrefix}`);
+      keys.push(`store_lmd_${withoutPrefix}`);
     }
   }
   if (storeName) {
@@ -73,11 +88,35 @@ export const getStoreLogoKeys = (storeId, storeName = '') => {
     if (slug) {
       keys.push(slug);
       const simplified = slug
-        .replace(/(brasil|esportes|supermercados|chocolateria|oficial|academias|rio|leblon|bh|batel|steakhouse|cinemas|games|tech|calcados|viagens|moveis|design)$/g, '')
+        .replace(/(brasil|esportes|supermercados|chocolateria|oficial|academias|rio|leblon|bh|batel|steakhouse|cinemas|games|tech|calcados|viagens|moveis|design|eletrodomesticos)$/g, '')
         .trim();
       if (simplified && simplified.length >= 3) {
         keys.push(simplified);
       }
+    }
+
+    // Vínculo bidirecional e aliases essenciais
+    const clean = cleanName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (clean.includes('berenice') || clean.includes('qdb')) {
+      keys.push('berenice', 'qdb', 'quemdisseberenice', 'quem disse, berenice?');
+    }
+    if (clean.includes('dako')) {
+      keys.push('dako', 'store_lmd_dako', 'lmd_dako');
+    }
+    if (clean.includes('brastemp')) {
+      keys.push('brastemp', 'consul', 'brastempconsul');
+    }
+    if (clean.includes('dafiti')) {
+      keys.push('dafiti');
+    }
+    if (clean.includes('lenovo')) {
+      keys.push('lenovo');
+    }
+    if (clean.includes('puma')) {
+      keys.push('puma');
+    }
+    if (clean.includes('paguemenos') || (clean.includes('pague') && clean.includes('menos'))) {
+      keys.push('paguemenos', 'pague menos', 'farmacias paguemenos');
     }
   }
 

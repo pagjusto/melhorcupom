@@ -34,6 +34,7 @@ import belmonteLogo from './botecobelmonte.jpg';
 import corleoneLogo from './corleone.jpg';
 import omensLogo from './omens.svg';
 import manualLogo from './manual.svg';
+import dakoLogo from './dako.svg';
 
 // 28 Novas Logos de Marcas Oficiais
 import dellLogo from './dell.svg';
@@ -194,11 +195,26 @@ export const BRAND_LOGOS = {
   eudoraoficial: eudoraLogo,
   store_awin_eudora: eudoraLogo,
 
+  // Dako Eletrodomésticos
+  dako: dakoLogo,
+  'dako eletrodomésticos': dakoLogo,
+  'dako eletrodomesticos': dakoLogo,
+  dakoeletrodomesticos: dakoLogo,
+  store_lmd_dako: dakoLogo,
+  store_dako: dakoLogo,
+  storedako: dakoLogo,
+  lmd_dako: dakoLogo,
+
+  // Quem Disse, Berenice?
   qdb: qdbLogo,
-  quemdisseberenice: qdbLogo,
+  berenice: qdbLogo,
   'quem disse, berenice?': qdbLogo,
   'quem disse berenice': qdbLogo,
+  quemdisseberenice: qdbLogo,
+  'quem disse berenice?': qdbLogo,
   store_awin_qdb: qdbLogo,
+  store_qdb: qdbLogo,
+  store_berenice: qdbLogo,
 
   belezanaweb: belezanawebLogo,
   'beleza na web': belezanawebLogo,
@@ -298,12 +314,27 @@ export const getBrandLogo = (identifier) => {
   // 1. Busca exata prioritária
   if (BRAND_LOGOS[key]) return BRAND_LOGOS[key];
 
-  // 2. Busca onde o identificador contém a chave da marca (ex: "loja renner brasil" contém "renner")
+  // 2. Descascar prefixos comuns como store_awin_, store_lmd_, store_
+  const stripped = key.replace(/^(storeawin|storelmd|store)/, '');
+  if (stripped && BRAND_LOGOS[stripped]) return BRAND_LOGOS[stripped];
+
+  // 3. Busca bidirecional inteligente (ex: "loja renner brasil" contém "renner", ou "berenice" em "quemdisseberenice")
   for (const [k, v] of Object.entries(BRAND_LOGOS)) {
     const cleanK = k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-    if (cleanK && cleanK.length >= 3 && key.includes(cleanK)) {
+    if (!cleanK || cleanK.length < 3) continue;
+    if (key.includes(cleanK) || (key.length >= 4 && cleanK.includes(key))) {
       return v;
     }
   }
+
+  // 4. Aliases manuais de apoio para marcas críticas
+  if (key.includes('dako')) return BRAND_LOGOS.dako;
+  if (key.includes('berenice') || key.includes('qdb')) return BRAND_LOGOS.qdb;
+  if (key.includes('dafiti')) return BRAND_LOGOS.dafiti;
+  if (key.includes('lenovo')) return BRAND_LOGOS.lenovo;
+  if (key.includes('brastemp')) return BRAND_LOGOS.brastemp;
+  if (key.includes('puma')) return BRAND_LOGOS.puma;
+  if (key.includes('paguemenos') || key.includes('pague')) return BRAND_LOGOS.paguemenos;
+
   return null;
 };
