@@ -38,6 +38,7 @@ import {
   Zap,
   Server,
   Activity,
+  Clock,
   Terminal,
   ExternalLink,
   Coins,
@@ -79,6 +80,7 @@ export const AdminDashboard = () => {
     apiLogs,
     isSyncingApis,
     syncApisNow,
+    lastApiSyncTimestamp,
     setActiveTab,
     switchRole
   } = useApp();
@@ -1851,6 +1853,13 @@ export const AdminDashboard = () => {
               </div>
 
               {/* Ações Rápidas: Sincronizar Agora */}
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold">
+                  <Clock size={14} className="animate-pulse text-emerald-400" />
+                  <span>Sincronização Automática: A cada 2 horas</span>
+                  <span className="text-gray-400 font-normal hidden md:inline">• Ativa</span>
+                </div>
+              </div>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={async () => {

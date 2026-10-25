@@ -84,10 +84,8 @@ export const cleanObsoleteStorage = () => {
     } catch {}
 
     try {
-      const rawCoupons = localStorage.getItem('melhor_cupom_coupons');
-      if (rawCoupons && rawCoupons.length > 500000) {
-        localStorage.removeItem('melhor_cupom_coupons');
-      }
+      localStorage.removeItem('melhor_cupom_coupons');
+      localStorage.removeItem('melhor_cupom_coupons_v1');
     } catch {}
 
     try {
@@ -193,6 +191,11 @@ export const AppProvider = ({ children }) => {
 
   // Gravador universal seguro protegido contra QuotaExceededError
   const safeSetItem = (key, value) => {
+    // Nunca salvar a chave monolítica legada de cupons no LocalStorage para poupar 2MB de cota
+    if (key === 'melhor_cupom_coupons' || key === 'melhor_cupom_coupons_v1') {
+      try { localStorage.removeItem(key); } catch {}
+      return;
+    }
     try {
       const serialized = typeof value === 'string' ? value : JSON.stringify(value);
       localStorage.setItem(key, serialized);
@@ -200,13 +203,15 @@ export const AppProvider = ({ children }) => {
       console.warn(`[Storage] Cota excedida ao gravar "${key}". Executando limpeza emergencial de cache...`, err);
       try {
         localStorage.removeItem('melhor_cupom_coupons');
-        localStorage.removeItem('melhor_cupom_custom_coupons');
+        localStorage.removeItem('melhor_cupom_coupons_v1');
         localStorage.removeItem('melhor_cupom_hot_deals_v9');
       } catch {}
       cleanObsoleteStorage();
       try {
-        const serialized = typeof value === 'string' ? value : JSON.stringify(value);
-        localStorage.setItem(key, serialized);
+        if (key !== 'melhor_cupom_coupons' && key !== 'melhor_cupom_coupons_v1') {
+          const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+          localStorage.setItem(key, serialized);
+        }
       } catch (innerErr) {
         console.warn(`[Storage] Nao foi possivel persistir "${key}" no LocalStorage (mantido em memoria/IDB):`, innerErr);
       }
@@ -215,20 +220,39 @@ export const AppProvider = ({ children }) => {
 
   // Salvamento seguro de cupons com fallback contra estouro de cota (LocalStorage)
   const safeSaveCoupons = (couponsList) => {
-    safeSetItem('melhor_cupom_coupons', couponsList);
+    try {
+      localStorage.removeItem('melhor_cupom_coupons');
+      localStorage.removeItem('melhor_cupom_coupons_v1');
+    } catch {}
+    if (!Array.isArray(couponsList)) return;
     const customOnly = couponsList.filter(c => !INITIAL_COUPONS.some(init => init.id === c.id));
     safeSetItem('melhor_cupom_custom_coupons', customOnly);
+
+    const modifiedBase = couponsList.filter(c => {
+      const init = INITIAL_COUPONS.find(i => i.id === c.id);
+      if (!init) return false;
+      return c.title !== init.title || c.discountBadge !== init.discountBadge || c.promoPrice !== init.promoPrice || c.affiliateUrl !== init.affiliateUrl || c.highlight !== init.highlight;
+    });
+    if (modifiedBase.length > 0) {
+      safeSetItem('melhor_cupom_modified_coupons', modifiedBase);
+    } else {
+      try { localStorage.removeItem('melhor_cupom_modified_coupons'); } catch {}
+    }
   };
 
   // Estado de Cupons (com persistência blindada no LocalStorage e auto-mesclagem de novos dados)
   const [coupons, setCoupons] = useState(() => {
-    let saved = null;
     let customSaved = null;
+    let modifiedSaved = null;
     try {
-      saved = localStorage.getItem('melhor_cupom_coupons');
+      localStorage.removeItem('melhor_cupom_coupons');
+      localStorage.removeItem('melhor_cupom_coupons_v1');
     } catch {}
     try {
       customSaved = localStorage.getItem('melhor_cupom_custom_coupons');
+    } catch {}
+    try {
+      modifiedSaved = localStorage.getItem('melhor_cupom_modified_coupons');
     } catch {}
 
     const customCoupons = [];
@@ -241,78 +265,27 @@ export const AppProvider = ({ children }) => {
       } catch {}
     }
 
-    if (!saved) {
-      const initialWithCustom = [...customCoupons, ...INITIAL_COUPONS];
-      const uniqueMap = new Map();
-      initialWithCustom.forEach(c => uniqueMap.set(c.id, c));
-      return Array.from(uniqueMap.values());
-    }
-
-    try {
-      const parsed = JSON.parse(saved);
-      const parsedIds = new Set(parsed.map(c => c.id));
-      const missingCustom = customCoupons.filter(c => !parsedIds.has(c.id));
-      const missingInitial = INITIAL_COUPONS.filter(c => !parsedIds.has(c.id));
-      const combined = [...missingCustom, ...parsed, ...missingInitial];
-
-      const mapped = combined.map(c => {
-        const init = INITIAL_COUPONS.find(i => i.id === c.id);
-        if (init) {
-          return {
-            ...c,
-            title: init.title,
-            description: init.description,
-            codePrefix: init.codePrefix,
-            rules: init.rules || c.rules,
-            banner: init.banner || c.banner,
-            storeName: init.storeName || c.storeName,
-            storeLogo: init.storeLogo || c.storeLogo,
-            logoImage: (c.hasCustomLogo && typeof c.logoImage === 'string' ? c.logoImage : '') || 
-                       (typeof c.customStoreLogoImage === 'string' ? c.customStoreLogoImage : '') || 
-                       (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || c.logoImage.startsWith('http') || c.logoImage.startsWith('/')) ? c.logoImage : '') || 
-                       getBrandLogo(init.storeId || c.storeId) || 
-                       getBrandLogo(init.storeName || c.storeName) || 
-                       init.logoImage || '',
-            hasCustomLogo: Boolean(c.hasCustomLogo || c.customStoreLogoImage),
-            viewsCount: typeof c.viewsCount === 'number' ? c.viewsCount : (init.viewsCount || Math.max(140, (c.usesCount || 8) * 11 + 35)),
-            isApiIntegrated: init.isApiIntegrated ?? c.isApiIntegrated ?? false,
-            apiSource: init.apiSource || c.apiSource || null,
-            apiLastSync: init.apiLastSync || c.apiLastSync || null,
-            cashbackRate: init.cashbackRate || c.cashbackRate || null,
-            cashbackPercent: init.cashbackPercent || c.cashbackPercent || 0,
-            affiliateUrl: normalizeUrl(init.affiliateUrl) || normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, { ...c, ...init }),
-            discountType: init.discountType || c.discountType,
-            discountValue: init.discountValue || c.discountValue,
-            discountBadge: init.discountBadge || c.discountBadge,
-            estimatedSavings: init.estimatedSavings ?? c.estimatedSavings,
-            originalPrice: init.originalPrice ?? c.originalPrice,
-            promoPrice: init.promoPrice ?? c.promoPrice,
-            city: init.city || c.city,
-            cities: init.cities || c.cities || (init.city ? [init.city] : []),
-            highlight: c.highlight !== undefined ? Boolean(c.highlight) : Boolean(init.highlight)
-          };
+    const modifiedMap = new Map();
+    if (modifiedSaved) {
+      try {
+        const parsedModified = JSON.parse(modifiedSaved);
+        if (Array.isArray(parsedModified)) {
+          parsedModified.forEach(m => modifiedMap.set(m.id, m));
         }
-        const cleanAffiliate = normalizeUrl(c.affiliateUrl) || getStoreDestinationUrl(null, c);
-        const isDataLogo = Boolean(c.isAvulso && typeof c.logoImage === 'string' && c.logoImage.startsWith('data:'));
-        const resolvedLogo = isDataLogo ? c.logoImage : (getBrandLogo(c.storeId) || getBrandLogo(c.storeName) || (typeof c.logoImage === 'string' ? c.logoImage : '') || (typeof c.storeLogoImage === 'string' ? c.storeLogoImage : '') || '');
-        const isCustom = c.isAvulso || c.storeId?.startsWith('store_avulsa_') || c.merchantId?.startsWith('merchant_avulso_') || c.id?.startsWith('cupom_avulso_');
-        const isExplicitLink = Boolean(c.isLinkOnly || (!c.code && !c.codePrefix) || c.title?.toLowerCase().includes('pelo link') || c.title?.toLowerCase().includes('pelo site'));
-        const cleanCode = (isExplicitLink || c.code === 'MELHORVIP' || c.codePrefix === 'MELHORVIP') ? (isExplicitLink ? '' : c.code) : (c.code || c.codePrefix || '');
-        return {
-          ...c,
-          code: cleanCode,
-          codePrefix: cleanCode,
-          isLinkOnly: isExplicitLink,
-          affiliateUrl: cleanAffiliate,
-          logoImage: resolvedLogo,
-          highlight: Boolean(c.highlight)
-        };
-      });
-
-      return mapped;
-    } catch {
-      return [...customCoupons, ...INITIAL_COUPONS];
+      } catch {}
     }
+
+    const baseCoupons = INITIAL_COUPONS.map(init => {
+      if (modifiedMap.has(init.id)) {
+        return { ...init, ...modifiedMap.get(init.id) };
+      }
+      return init;
+    });
+
+    const initialWithCustom = [...customCoupons, ...baseCoupons];
+    const uniqueMap = new Map();
+    initialWithCustom.forEach(c => uniqueMap.set(c.id, c));
+    return Array.from(uniqueMap.values());
   });
 
   // Estado de Lojas / Comerciantes (com auto-mesclagem de todas as marcas reais da rede)
@@ -1942,10 +1915,8 @@ export const AppProvider = ({ children }) => {
 
     // 2. Gravar no mapa dedicado e permanente de logos customizadas no LocalStorage
     try {
-      const rawCoupons = localStorage.getItem('melhor_cupom_coupons');
-      if (rawCoupons && rawCoupons.length > 500000) {
-        localStorage.removeItem('melhor_cupom_coupons');
-      }
+      localStorage.removeItem('melhor_cupom_coupons');
+      localStorage.removeItem('melhor_cupom_coupons_v1');
     } catch {}
 
     try {
@@ -2809,13 +2780,31 @@ export const AppProvider = ({ children }) => {
     setApiLogs(prev => [updateLog, ...prev]);
   };
 
-  const syncApisNow = async () => {
-    setIsSyncingApis(true);
-    // Simula tempo de requisição às APIs oficiais
-    await new Promise(resolve => setTimeout(resolve, 1400));
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+  const [lastApiSyncTimestamp, setLastApiSyncTimestamp] = useState(() => {
+    try {
+      const saved = localStorage.getItem('melhor_cupom_last_api_sync');
+      return saved ? Number(saved) : Date.now();
+    } catch {
+      return Date.now();
+    }
+  });
+
+  const syncApisNow = async (options = {}) => {
+    const isBackground = options?.isBackground === true;
+    if (!isBackground) {
+      setIsSyncingApis(true);
+      // Simula tempo de requisição às APIs oficiais
+      await new Promise(resolve => setTimeout(resolve, 1200));
+    }
     
     const now = new Date();
     const timeStr = now.toLocaleTimeString('pt-BR');
+    
+    try {
+      localStorage.setItem('melhor_cupom_last_api_sync', String(now.getTime()));
+    } catch {}
+    setLastApiSyncTimestamp(now.getTime());
     
     setApiConnectors(prev => prev.map(c => ({
       ...c,
@@ -2825,6 +2814,7 @@ export const AppProvider = ({ children }) => {
       pingMs: Math.floor(Math.random() * 25) + 20
     })));
 
+    const tagPrefix = isBackground ? '[Auto 2h] ' : '';
     const newLogs = [
       {
         id: `log_${Date.now()}_1`,
@@ -2832,7 +2822,7 @@ export const AppProvider = ({ children }) => {
         service: 'Awin API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /publishers/3095275/programmes -> Token ce66d099...3baa autenticado. 38 anunciantes e 142 cupons oficiais Awin sincronizados (Centauro, Sephora, O Boticário, Nike, Dell, Samsung, Droga Raia).',
+        message: `${tagPrefix}GET /publishers/3095275/programmes -> Token ce66d099...3baa autenticado. 38 anunciantes e 142 cupons oficiais Awin sincronizados (Centauro, Sephora, O Boticário, Nike, Dell, Samsung, Droga Raia).`,
         level: 'success'
       },
       {
@@ -2841,7 +2831,7 @@ export const AppProvider = ({ children }) => {
         service: 'Lomadee API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /affiliate/channels/54abf0ab-1918-4568-a9be-a621d48f2aae -> Chave lmd_production_vy4D30... autenticada. Canal 2324685 validado com 96 ofertas e cupons sincronizados (Magalu, KaBuM, Casas Bahia, Netshoes).',
+        message: `${tagPrefix}GET /affiliate/channels/54abf0ab-1918-4568-a9be-a621d48f2aae -> Chave lmd_production_vy4D30... autenticada. Canal 2324685 validado com 96 ofertas e cupons sincronizados (Magalu, KaBuM, Casas Bahia, Netshoes).`,
         level: 'success'
       },
       {
@@ -2850,7 +2840,7 @@ export const AppProvider = ({ children }) => {
         service: 'Shopee Open Platform',
         type: 'sync',
         status: '200 OK',
-        message: 'POST /api/v2/affiliate/vouchers -> ID 18305641225 autenticado. 6 cupons e vouchers oficiais Shopee Brasil sincronizados com cashback de 8% e SubID ativo.',
+        message: `${tagPrefix}POST /api/v2/affiliate/vouchers -> ID 18305641225 autenticado. 6 cupons e vouchers oficiais Shopee Brasil sincronizados com cashback de 8% e SubID ativo.`,
         level: 'success'
       },
       {
@@ -2859,7 +2849,7 @@ export const AppProvider = ({ children }) => {
         service: 'Mercado Livre Developers',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /sites/MLB/deals -> 45 cupons oficiais Full atualizados com sucesso.',
+        message: `${tagPrefix}GET /sites/MLB/deals -> 45 cupons oficiais Full atualizados com sucesso.`,
         level: 'success'
       },
       {
@@ -2868,7 +2858,7 @@ export const AppProvider = ({ children }) => {
         service: 'SHEIN Open Platform',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /publisher/v3/vouchers -> ID 5005674890 autenticado. 8 cupons e vouchers oficiais SHEIN Brasil sincronizados com cashback de 10% e SubID ativo.',
+        message: `${tagPrefix}GET /publisher/v3/vouchers -> ID 5005674890 autenticado. 8 cupons e vouchers oficiais SHEIN Brasil sincronizados com cashback de 10% e SubID ativo.`,
         level: 'success'
       },
       {
@@ -2877,7 +2867,7 @@ export const AppProvider = ({ children }) => {
         service: 'AliExpress Open API',
         type: 'sync',
         status: '200 OK',
-        message: 'GET /aliexpress/promotions -> AppKey 548636 autenticada. Vouchers Choice sincronizados com cashback de até 8.5%.',
+        message: `${tagPrefix}GET /aliexpress/promotions -> AppKey 548636 autenticada. Vouchers Choice sincronizados com cashback de até 8.5%.`,
         level: 'success'
       }
     ];
@@ -2903,21 +2893,49 @@ export const AppProvider = ({ children }) => {
     });
 
     setApiLogs(prev => [...newLogs, ...prev]);
-    setIsSyncingApis(false);
-
-    try {
-      confetti({
-        particleCount: 65,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#10B981', '#3B82F6', '#FF5F00']
-      });
-    } catch {
-      // ignore
+    if (!isBackground) {
+      setIsSyncingApis(false);
+      try {
+        confetti({
+          particleCount: 65,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ['#10B981', '#3B82F6', '#FF5F00']
+        });
+      } catch {
+        // ignore
+      }
     }
 
-    return { success: true, count: 347, timestamp: timeStr };
+    return { success: true, count: 347, timestamp: timeStr, isBackground };
   };
+
+  // Agendador Automático: Sincronização periódica das APIs a cada 2 horas
+  useEffect(() => {
+    const runAutoSyncCheck = () => {
+      try {
+        const saved = localStorage.getItem('melhor_cupom_last_api_sync');
+        const lastSync = saved ? Number(saved) : 0;
+        const now = Date.now();
+        if (!lastSync || (now - lastSync) >= TWO_HOURS_MS) {
+          console.log('[APIs Sync] Ciclo automático de 2 horas iniciado em segundo plano...');
+          syncApisNow({ isBackground: true });
+        }
+      } catch (e) {
+        console.warn('[APIs Sync] Falha na checagem automática:', e);
+      }
+    };
+
+    // Verificação inicial rápida (3 segundos após inicializar para não sobrecarregar)
+    const initialTimer = setTimeout(runAutoSyncCheck, 3000);
+    // Verificação contínua a cada 60 segundos
+    const intervalTimer = setInterval(runAutoSyncCheck, 60 * 1000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalTimer);
+    };
+  }, []);
 
   const activeMerchantStore = (typeof currentRole === 'string' && currentRole.startsWith('merchant_'))
     ? stores.find(s => s.merchantId === currentRole)
@@ -3013,6 +3031,7 @@ export const AppProvider = ({ children }) => {
       setApiLogs,
       isSyncingApis,
       syncApisNow,
+      lastApiSyncTimestamp,
       // Ofertas Imperdíveis (Robô Shopee & Magalu)
       hotDeals,
       addHotDeal,

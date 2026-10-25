@@ -13,6 +13,14 @@ export class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary capturou erro não tratado:', error, errorInfo);
+    // Limpeza profilática se for erro de cota de storage para desarmar travamentos
+    if (error && (error.name === 'QuotaExceededError' || String(error).toLowerCase().includes('quota'))) {
+      try {
+        localStorage.removeItem('melhor_cupom_coupons');
+        localStorage.removeItem('melhor_cupom_custom_coupons');
+        localStorage.removeItem('melhor_cupom_modified_coupons');
+      } catch {}
+    }
     this.setState({ errorInfo });
   }
 
@@ -28,7 +36,8 @@ export class ErrorBoundary extends React.Component {
         'melhor_cupom_user',
         'melhor_cupom_redemptions',
         'melhor_cupom_admin_users',
-        'melhor_cupom_coupons'
+        'melhor_cupom_coupons',
+        'melhor_cupom_coupons_v1'
       ];
       obsoleteKeys.forEach(k => {
         try { localStorage.removeItem(k); } catch {}
