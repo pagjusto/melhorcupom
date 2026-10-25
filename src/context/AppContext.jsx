@@ -22,7 +22,7 @@ import { getStoreDestinationUrl, normalizeUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
 import { persistCustomLogoToIDB, loadAllCustomLogosFromIDB, getStoreLogoKeys, getBrandRootKey } from '../utils/storeLogosStorage';
 
-// Limpeza proativa de chaves legadas e duplicadas para liberar espaço no LocalStorage
+// Limpeza proativa de chaves legadas e restauração de integridade de logos
 export const cleanObsoleteStorage = () => {
   if (typeof window === 'undefined' || !window.localStorage) return;
   try {
@@ -49,7 +49,7 @@ export const cleanObsoleteStorage = () => {
       try { localStorage.removeItem(key); } catch {}
     });
 
-    // Sanitizar caminhos quebrados de dev (/src/) ou URLs sem CORS da Lomadee no LocalStorage
+    // Sanitizar caminhos quebrados de dev (/src/) e restaurar logos de lojas que foram esvaziadas
     try {
       const rawV11 = localStorage.getItem('melhor_cupom_stores_v11');
       if (rawV11) {
@@ -57,10 +57,23 @@ export const cleanObsoleteStorage = () => {
         if (Array.isArray(parsed)) {
           let modified = false;
           parsed.forEach(s => {
-            if (s && typeof s.logoImage === 'string' && (s.logoImage.includes('/src/') || s.logoImage.includes('cdn.lomadee.com.br'))) {
+            if (!s || !s.id) return;
+            // Se tinha caminho de dev inválido /src/, limpa
+            if (typeof s.logoImage === 'string' && s.logoImage.includes('/src/')) {
               s.logoImage = '';
               s.hasCustomLogo = false;
               modified = true;
+            }
+            // Se a loja não tem upload próprio (base64) e está com logo vazia ou inconsistente, restaura a logo oficial
+            const isUserBase64 = typeof s.logoImage === 'string' && s.logoImage.startsWith('data:image/');
+            if (!isUserBase64) {
+              const brand = getBrandLogo(s.name) || getBrandLogo(s.id);
+              const init = INITIAL_STORES.find(i => i.id === s.id);
+              const proper = brand || init?.logoImage || '';
+              if (proper && s.logoImage !== proper) {
+                s.logoImage = proper;
+                modified = true;
+              }
             }
           });
           if (modified) {
@@ -77,7 +90,7 @@ export const cleanObsoleteStorage = () => {
         let modified = false;
         Object.keys(parsedLogos).forEach(k => {
           const item = parsedLogos[k];
-          if (item && typeof item.logoImage === 'string' && (item.logoImage.includes('/src/') || item.logoImage.includes('cdn.lomadee.com.br'))) {
+          if (item && typeof item.logoImage === 'string' && item.logoImage.includes('/src/')) {
             delete item.logoImage;
             delete item.hasCustomLogo;
             modified = true;
@@ -497,7 +510,7 @@ export const AppProvider = ({ children }) => {
           resolvedLogo = (customLogoStr && customLogoStr.startsWith('data:image/')) ? customLogoStr : sLogoStr;
         } else if (brandFallback) {
           resolvedLogo = brandFallback;
-        } else if (sLogoStr && !sLogoStr.includes('/src/') && !sLogoStr.includes('cdn.lomadee.com.br')) {
+        } else if (sLogoStr && !sLogoStr.includes('/src/')) {
           resolvedLogo = sLogoStr;
         } else {
           resolvedLogo = init?.logoImage || '';

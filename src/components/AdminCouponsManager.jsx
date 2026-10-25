@@ -1133,8 +1133,8 @@ export const AdminCouponsManager = ({ showToast }) => {
 
               const storeLogo = customUpload ||
                                 brandLogo ||
-                                (typeof store?.logoImage === 'string' && !store.logoImage.includes('/src/') && !store.logoImage.includes('cdn.lomadee.com.br') ? store.logoImage : '') ||
-                                (typeof coupon.storeLogoImage === 'string' && !coupon.storeLogoImage.includes('/src/') && !coupon.storeLogoImage.includes('cdn.lomadee.com.br') ? coupon.storeLogoImage : '') ||
+                                (typeof store?.logoImage === 'string' && !store.logoImage.includes('/src/') ? store.logoImage : '') ||
+                                (typeof coupon.storeLogoImage === 'string' && !coupon.storeLogoImage.includes('/src/') ? coupon.storeLogoImage : '') ||
                                 (typeof coupon.storeLogo === 'string' && (coupon.storeLogo.startsWith('http') || coupon.storeLogo.startsWith('/')) ? coupon.storeLogo : null);
 
               const isOnline = coupon.type === 'online' || coupon.city?.toLowerCase().includes('online');

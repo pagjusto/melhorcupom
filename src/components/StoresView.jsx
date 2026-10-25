@@ -54,7 +54,7 @@ export const getEffectiveStoreLogo = (store) => {
   if (brandLogo) {
     return brandLogo;
   }
-  if (typeof raw === 'string' && raw.length > 0 && !raw.includes('/src/') && !raw.includes('cdn.lomadee.com.br')) {
+  if (typeof raw === 'string' && raw.length > 0 && !raw.includes('/src/')) {
     return raw;
   }
   return '';

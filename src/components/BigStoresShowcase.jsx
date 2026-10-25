@@ -250,7 +250,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     const brandSvg = getBrandLogo(storeName) || getBrandLogo(coupon.storeId) || getBrandLogo(store?.id) || getBrandLogo(apiSource);
     const storeLogo = (store?.hasCustomLogo && typeof store?.logoImage === 'string' && store.logoImage.startsWith('data:image/'))
       ? store.logoImage
-      : (brandSvg || (typeof store?.logoImage === 'string' && !store.logoImage.includes('/src/') && !store.logoImage.includes('cdn.lomadee.com.br') ? store.logoImage : '') || coupon.storeLogo || '');
+      : (brandSvg || (typeof store?.logoImage === 'string' && !store.logoImage.includes('/src/') ? store.logoImage : '') || coupon.storeLogo || '');
 
     return (
       <div
