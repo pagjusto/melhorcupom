@@ -85,7 +85,7 @@ export const cleanObsoleteStorage = () => {
 
     try {
       const rawCoupons = localStorage.getItem('melhor_cupom_coupons');
-      if (rawCoupons && rawCoupons.length > 800000) {
+      if (rawCoupons && rawCoupons.length > 500000) {
         localStorage.removeItem('melhor_cupom_coupons');
       }
     } catch {}
@@ -1919,7 +1919,7 @@ export const AppProvider = ({ children }) => {
     // 2. Gravar no mapa dedicado e permanente de logos customizadas no LocalStorage
     try {
       const rawCoupons = localStorage.getItem('melhor_cupom_coupons');
-      if (rawCoupons && rawCoupons.length > 800000) {
+      if (rawCoupons && rawCoupons.length > 500000) {
         localStorage.removeItem('melhor_cupom_coupons');
       }
     } catch {}
@@ -2874,7 +2874,7 @@ export const AppProvider = ({ children }) => {
       const prevIds = new Set(prev.map(c => c.id));
       const newlyAdded = INITIAL_COUPONS.filter(c => !prevIds.has(c.id));
       const result = [...updated, ...newlyAdded];
-      localStorage.setItem('melhor_cupom_coupons', JSON.stringify(result));
+      safeSaveCoupons(result);
       return result;
     });
 

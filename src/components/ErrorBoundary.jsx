@@ -27,7 +27,8 @@ export class ErrorBoundary extends React.Component {
         'melhor_cupom_stores',
         'melhor_cupom_user',
         'melhor_cupom_redemptions',
-        'melhor_cupom_admin_users'
+        'melhor_cupom_admin_users',
+        'melhor_cupom_coupons'
       ];
       obsoleteKeys.forEach(k => {
         try { localStorage.removeItem(k); } catch {}
