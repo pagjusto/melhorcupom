@@ -1118,9 +1118,11 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   // Salvar ajustes de enquadramento da logo permanentemente
   const handleSaveLogoSettings = () => {
     if (!selectedStore) return;
-    const effectiveLogo = (selectedStore.hasCustomLogo && typeof selectedStore.logoImage === 'string' && selectedStore.logoImage.startsWith('data:image/'))
+    const effectiveLogo = (selectedStore.hasCustomLogo && typeof selectedStore.logoImage === 'string' && selectedStore.logoImage.length > 0 && !selectedStore.logoImage.includes('/src/'))
       ? selectedStore.logoImage
-      : (getBrandLogo(selectedStore.name) || getBrandLogo(selectedStore.id) || (typeof selectedStore.logoImage === 'string' && !selectedStore.logoImage.includes('/src/') && !selectedStore.logoImage.includes('cdn.lomadee.com.br') ? selectedStore.logoImage : ''));
+      : (typeof selectedStore.logoImage === 'string' && selectedStore.logoImage.startsWith('data:'))
+        ? selectedStore.logoImage
+        : (getBrandLogo(selectedStore.name) || getBrandLogo(selectedStore.id) || (typeof selectedStore.logoImage === 'string' && !selectedStore.logoImage.includes('/src/') ? selectedStore.logoImage : ''));
 
     if (typeof updateStore === 'function') {
       updateStore(selectedStore.id, {

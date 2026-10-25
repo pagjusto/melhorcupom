@@ -1123,13 +1123,15 @@ export const AdminCouponsManager = ({ showToast }) => {
                                 getBrandLogo(store?.id) || 
                                 getBrandLogo(store?.name);
 
-              const customUpload = (store?.hasCustomLogo && typeof store?.logoImage === 'string' && store.logoImage.startsWith('data:image/'))
+              const customUpload = (store?.hasCustomLogo && typeof store?.logoImage === 'string' && store.logoImage.length > 0 && !store.logoImage.includes('/src/'))
                 ? store.logoImage
-                : (coupon.hasCustomLogo && typeof coupon.logoImage === 'string' && coupon.logoImage.startsWith('data:image/'))
-                  ? coupon.logoImage
-                  : (typeof coupon.customStoreLogoImage === 'string' && coupon.customStoreLogoImage.startsWith('data:image/'))
-                    ? coupon.customStoreLogoImage
-                    : null;
+                : (typeof store?.logoImage === 'string' && store.logoImage.startsWith('data:'))
+                  ? store.logoImage
+                  : (coupon.hasCustomLogo && typeof coupon.logoImage === 'string' && coupon.logoImage.length > 0 && !coupon.logoImage.includes('/src/'))
+                    ? coupon.logoImage
+                    : (typeof coupon.customStoreLogoImage === 'string' && coupon.customStoreLogoImage.length > 0)
+                      ? coupon.customStoreLogoImage
+                      : null;
 
               const storeLogo = customUpload ||
                                 brandLogo ||

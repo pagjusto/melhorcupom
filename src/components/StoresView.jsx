@@ -46,14 +46,19 @@ const CATEGORY_CHIPS = [
 export const getEffectiveStoreLogo = (store) => {
   if (!store) return '';
   const raw = store.logoImage;
-  const isCustomUserUpload = store.hasCustomLogo && typeof raw === 'string' && raw.startsWith('data:image/');
-  if (isCustomUserUpload) {
+  // 1. Prioridade máxima: logo customizada definida pelo lojista ou admin (Upload de arquivo Base64 ou Link URL)
+  if (store.hasCustomLogo && typeof raw === 'string' && raw.length > 0 && !raw.includes('/src/')) {
     return raw;
   }
+  if (typeof raw === 'string' && (raw.startsWith('data:image/') || raw.startsWith('data:'))) {
+    return raw;
+  }
+  // 2. Logo vetorial oficial da marca
   const brandLogo = getBrandLogo(store.name) || getBrandLogo(store.id) || getBrandLogo(store.apiSource);
   if (brandLogo) {
     return brandLogo;
   }
+  // 3. Logo da API ou link externo original
   if (typeof raw === 'string' && raw.length > 0 && !raw.includes('/src/')) {
     return raw;
   }
@@ -128,6 +133,8 @@ export const StoresView = ({ onSelectStore }) => {
   const [logoInputMode, setLogoInputMode] = useState('upload'); // 'upload' | 'url'
   const [newLogoUrl, setNewLogoUrl] = useState('');
   const [previewLogo, setPreviewLogo] = useState('');
+  const [hasReplacedLogo, setHasReplacedLogo] = useState(false);
+  const [isResetToDefault, setIsResetToDefault] = useState(false);
 
   // Controles de enquadramento fino
   const [logoFit, setLogoFit] = useState('contain'); // 'contain' | 'cover'
@@ -147,6 +154,8 @@ export const StoresView = ({ onSelectStore }) => {
     setEditingStore(store);
     setPreviewLogo(currentImg);
     setNewLogoUrl(typeof store.logoImage === 'string' && store.logoImage.startsWith('http') && !store.logoImage.includes('cdn.lomadee.com.br') ? store.logoImage : '');
+    setHasReplacedLogo(false);
+    setIsResetToDefault(false);
     setLogoFit(defaultFit);
     setLogoScale(defaultScale);
     setLogoPadding(defaultPadding);
@@ -158,6 +167,9 @@ export const StoresView = ({ onSelectStore }) => {
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setHasReplacedLogo(true);
+    setIsResetToDefault(false);
 
     // Se for SVG, preserva vetor leve original
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
@@ -205,17 +217,33 @@ export const StoresView = ({ onSelectStore }) => {
 
   const handleSaveLogo = () => {
     if (!editingStore) return;
-    const finalLogo = (previewLogo || newLogoUrl || '').trim();
 
-    updateStore(editingStore.id, {
-      ...(finalLogo ? { logoImage: finalLogo } : {}),
-      hasCustomLogo: Boolean(finalLogo && finalLogo.startsWith('data:image/')),
-      logoFit,
-      logoScale,
-      logoPadding,
-      logoBg,
-      storeName: editingStore.name
-    });
+    if (isResetToDefault) {
+      updateStore(editingStore.id, {
+        logoImage: '',
+        hasCustomLogo: false,
+        logoFit,
+        logoScale,
+        logoPadding,
+        logoBg,
+        storeName: editingStore.name
+      });
+    } else {
+      const finalLogo = (previewLogo || newLogoUrl || '').trim();
+      const isCustom = hasReplacedLogo 
+        ? Boolean(finalLogo && finalLogo.length > 0)
+        : Boolean(editingStore.hasCustomLogo || (finalLogo && (finalLogo.startsWith('data:') || (finalLogo.startsWith('http') && !finalLogo.includes('cdn.lomadee.com.br')))));
+
+      updateStore(editingStore.id, {
+        ...(finalLogo ? { logoImage: finalLogo } : {}),
+        hasCustomLogo: isCustom,
+        logoFit,
+        logoScale,
+        logoPadding,
+        logoBg,
+        storeName: editingStore.name
+      });
+    }
 
     const savedName = editingStore.name;
     setSaveSuccessToast(`Ajustes e logo da marca "${savedName}" salvos com sucesso!`);
@@ -242,6 +270,8 @@ export const StoresView = ({ onSelectStore }) => {
     const defaultLogo = getBrandLogo(editingStore.name) || getBrandLogo(editingStore.id) || getBrandLogo(editingStore.apiSource) || '';
     setPreviewLogo(defaultLogo);
     setNewLogoUrl('');
+    setHasReplacedLogo(false);
+    setIsResetToDefault(true);
     handleResetFraming();
   };
 
@@ -1139,6 +1169,8 @@ export const StoresView = ({ onSelectStore }) => {
                       onChange={(e) => {
                         setNewLogoUrl(e.target.value);
                         setPreviewLogo(e.target.value);
+                        setHasReplacedLogo(true);
+                        setIsResetToDefault(false);
                       }}
                       placeholder="https://exemplo.com/logo.png"
                       className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"

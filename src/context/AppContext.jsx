@@ -64,13 +64,13 @@ export const cleanObsoleteStorage = () => {
               s.hasCustomLogo = false;
               modified = true;
             }
-            // Se a loja não tem upload próprio (base64) e está com logo vazia ou inconsistente, restaura a logo oficial
-            const isUserBase64 = typeof s.logoImage === 'string' && s.logoImage.startsWith('data:image/');
-            if (!isUserBase64) {
+            // Se a loja não tem upload/customização própria e está com logo vazia, restaura a logo oficial
+            const isCustomLogo = Boolean(s.hasCustomLogo || (typeof s.logoImage === 'string' && (s.logoImage.startsWith('data:') || s.logoImage.startsWith('http'))));
+            if (!isCustomLogo && (!s.logoImage || s.logoImage.trim() === '')) {
               const brand = getBrandLogo(s.name) || getBrandLogo(s.id);
               const init = INITIAL_STORES.find(i => i.id === s.id);
               const proper = brand || init?.logoImage || '';
-              if (proper && s.logoImage !== proper) {
+              if (proper) {
                 s.logoImage = proper;
                 modified = true;
               }
@@ -369,7 +369,9 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsedV11)) {
               parsedV11.forEach(s => {
                 if (!s || !s.id) return;
-                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash') && !s.logoImage.includes('/src/') && !s.logoImage.includes('cdn.lomadee.com.br')) ? s.logoImage : null;
+                const candidateLogo = (s.hasCustomLogo && typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash') && !s.logoImage.includes('/src/'))
+                  ? s.logoImage
+                  : ((typeof s.logoImage === 'string' && s.logoImage.startsWith('data:')) ? s.logoImage : null);
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
@@ -402,7 +404,9 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsed)) {
               parsed.forEach(s => {
                 if (!s || !s.id) return;
-                const candidateLogo = (typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash') && !s.logoImage.includes('/src/') && !s.logoImage.includes('cdn.lomadee.com.br')) ? s.logoImage : null;
+                const candidateLogo = (s.hasCustomLogo && typeof s.logoImage === 'string' && s.logoImage.length > 0 && !s.logoImage.includes('unsplash') && !s.logoImage.includes('/src/'))
+                  ? s.logoImage
+                  : ((typeof s.logoImage === 'string' && s.logoImage.startsWith('data:')) ? s.logoImage : null);
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
 
                 if (candidateLogo || hasFraming || s.hasCustomLogo) {
@@ -502,22 +506,35 @@ export const AppProvider = ({ children }) => {
         const sLogoStr = typeof s.logoImage === 'string' ? s.logoImage : '';
         const customLogoStr = typeof customOverride?.logoImage === 'string' ? customOverride.logoImage : '';
 
-        const isUserUpload = (customLogoStr && customLogoStr.startsWith('data:image/')) ||
-                             (sLogoStr && sLogoStr.startsWith('data:image/'));
+        // Se tem override customizado do lojista/admin (seja upload base64 ou link de imagem URL)
+        const hasCustomLogoFlag = Boolean(
+          customOverride?.hasCustomLogo || 
+          s.hasCustomLogo || 
+          (customLogoStr && (customLogoStr.startsWith('data:') || customLogoStr.startsWith('http'))) ||
+          (sLogoStr && s.hasCustomLogo && (sLogoStr.startsWith('data:') || sLogoStr.startsWith('http')))
+        );
 
         let resolvedLogo = '';
-        if (isUserUpload) {
-          resolvedLogo = (customLogoStr && customLogoStr.startsWith('data:image/')) ? customLogoStr : sLogoStr;
-        } else if (brandFallback) {
-          resolvedLogo = brandFallback;
-        } else if (sLogoStr && !sLogoStr.includes('/src/')) {
-          resolvedLogo = sLogoStr;
-        } else {
-          resolvedLogo = init?.logoImage || '';
+        if (hasCustomLogoFlag) {
+          if (customLogoStr && !customLogoStr.includes('/src/')) {
+            resolvedLogo = customLogoStr;
+          } else if (sLogoStr && !sLogoStr.includes('/src/')) {
+            resolvedLogo = sLogoStr;
+          }
+        }
+
+        if (!resolvedLogo) {
+          if (brandFallback) {
+            resolvedLogo = brandFallback;
+          } else if (sLogoStr && !sLogoStr.includes('/src/')) {
+            resolvedLogo = sLogoStr;
+          } else {
+            resolvedLogo = init?.logoImage || '';
+          }
         }
 
         const finalLogoImage = resolvedLogo;
-        const hasCustom = Boolean(isUserUpload || customOverride?.hasCustomLogo || s.hasCustomLogo);
+        const hasCustom = Boolean(hasCustomLogoFlag && resolvedLogo && resolvedLogo !== brandFallback && resolvedLogo !== init?.logoImage);
 
         const finalLogoFit = customOverride?.logoFit || s.logoFit || init?.logoFit || 'contain';
         const finalLogoScale = customOverride?.logoScale !== undefined ? customOverride.logoScale : (s.logoScale !== undefined ? s.logoScale : init?.logoScale);
@@ -1895,13 +1912,16 @@ export const AppProvider = ({ children }) => {
     const storeName = updatedData.storeName || updatedData.name || currentStore?.name || '';
     const rootKey = getBrandRootKey(storeId) || getBrandRootKey(storeName);
 
-    const logoEntry = {
-      ...(updatedData.logoImage ? { logoImage: updatedData.logoImage, hasCustomLogo: true } : {}),
-      ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
-      ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
-      ...(updatedData.logoPadding !== undefined ? { logoPadding: updatedData.logoPadding } : {}),
-      ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
-    };
+    const isClearingCustomLogo = updatedData.hasCustomLogo === false;
+    const logoEntry = isClearingCustomLogo
+      ? { logoImage: '', hasCustomLogo: false, logoFit: updatedData.logoFit, logoScale: updatedData.logoScale, logoPadding: updatedData.logoPadding, logoBg: updatedData.logoBg }
+      : {
+          ...(updatedData.logoImage ? { logoImage: updatedData.logoImage, hasCustomLogo: true } : (updatedData.hasCustomLogo !== undefined ? { hasCustomLogo: updatedData.hasCustomLogo } : {})),
+          ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
+          ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
+          ...(updatedData.logoPadding !== undefined ? { logoPadding: updatedData.logoPadding } : {}),
+          ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
+        };
 
     // 1. Gravar no IndexedDB de alta capacidade (imune ao limite de 5MB)
     const storeKeys = getStoreLogoKeys(storeId, storeName);
@@ -1914,7 +1934,11 @@ export const AppProvider = ({ children }) => {
       const rawLogos = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
       const logosMap = rawLogos ? JSON.parse(rawLogos) : {};
       storeKeys.forEach(k => {
-        logosMap[k] = { ...(logosMap[k] || {}), ...logoEntry };
+        if (isClearingCustomLogo) {
+          delete logosMap[k];
+        } else {
+          logosMap[k] = { ...(logosMap[k] || {}), ...logoEntry };
+        }
       });
       safeSetItem('melhor_cupom_custom_store_logos_v1', logosMap);
     } catch (e) {
@@ -1937,7 +1961,9 @@ export const AppProvider = ({ children }) => {
           return { 
             ...s, 
             ...updatedData,
-            hasCustomLogo: updatedData.logoImage ? true : s.hasCustomLogo
+            hasCustomLogo: updatedData.hasCustomLogo !== undefined 
+              ? updatedData.hasCustomLogo 
+              : (updatedData.logoImage ? true : s.hasCustomLogo)
           };
         }
         return s;
@@ -1953,7 +1979,7 @@ export const AppProvider = ({ children }) => {
           city: 'Todo o Brasil (Online)',
           tier: 'api',
           ...updatedData,
-          hasCustomLogo: Boolean(updatedData.logoImage)
+          hasCustomLogo: Boolean(updatedData.hasCustomLogo !== undefined ? updatedData.hasCustomLogo : updatedData.logoImage)
         };
         finalStores = [newStore, ...updated];
       }
@@ -1984,6 +2010,10 @@ export const AppProvider = ({ children }) => {
               storeLogoImage: updatedData.logoImage,
               storeLogo: updatedData.logoImage,
               customStoreLogoImage: updatedData.logoImage
+            } : {}),
+            ...(updatedData.hasCustomLogo === false ? {
+              hasCustomLogo: false,
+              customStoreLogoImage: ''
             } : {}),
             ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
             ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
