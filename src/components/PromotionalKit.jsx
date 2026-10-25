@@ -1105,7 +1105,7 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       setLiveLogoBg(selectedStore.logoBg || '#ffffff');
       setSavedLogoSettings(false);
     }
-  }, [selectedStoreId, selectedStore]);
+  }, [selectedStoreId]);
 
   // Salvar ajustes de enquadramento da logo permanentemente
   const handleSaveLogoSettings = () => {
@@ -1114,7 +1114,9 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
       updateStore(selectedStore.id, {
         logoScale: liveLogoScale,
         logoFit: liveLogoFit,
-        logoBg: liveLogoBg
+        logoBg: liveLogoBg,
+        storeName: selectedStore.name,
+        ...(selectedStore.logoImage ? { logoImage: selectedStore.logoImage } : {})
       });
     }
     setSavedLogoSettings(true);

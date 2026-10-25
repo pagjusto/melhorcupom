@@ -22,6 +22,38 @@ import { getStoreDestinationUrl, normalizeUrl } from '../utils/storeUrls';
 import { getBrandLogo } from '../assets/brands';
 import { persistCustomLogoToIDB, loadAllCustomLogosFromIDB, getStoreLogoKeys, getBrandRootKey } from '../utils/storeLogosStorage';
 
+// Limpeza proativa de chaves legadas e duplicadas para liberar espaço no LocalStorage
+export const cleanObsoleteStorage = () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k) continue;
+      if (
+        (k.startsWith('melhor_cupom_stores_v') && k !== 'melhor_cupom_stores_v11') ||
+        (k.startsWith('melhor_cupom_coupons_v')) ||
+        (k.startsWith('melhor_cupom_hot_deals_v') && k !== 'melhor_cupom_hot_deals_v9') ||
+        (k.startsWith('melhor_cupom_admin_users_v') && k !== 'melhor_cupom_admin_users_v3') ||
+        (k.startsWith('melhor_cupom_redemptions_v') && k !== 'melhor_cupom_redemptions_v3') ||
+        (k.startsWith('melhor_cupom_user_v') && k !== 'melhor_cupom_user_v3') ||
+        k === 'melhor_cupom_stores' ||
+        k === 'melhor_cupom_user' ||
+        k === 'melhor_cupom_redemptions' ||
+        k === 'melhor_cupom_admin_users'
+      ) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(key => {
+      try { localStorage.removeItem(key); } catch {}
+    });
+  } catch {}
+};
+
+// Executa limpeza imediatamente ao inicializar o arquivo para liberar espaço
+cleanObsoleteStorage();
+
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -48,34 +80,6 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('melhor_cupom_role') || 'visitor';
   });
 
-  // Limpeza proativa de chaves legadas e duplicadas para liberar espaço no LocalStorage
-  const cleanObsoleteStorage = () => {
-    try {
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k) continue;
-        if (
-          (k.startsWith('melhor_cupom_stores_v') && k !== 'melhor_cupom_stores_v11') ||
-          (k.startsWith('melhor_cupom_coupons_v')) ||
-          (k.startsWith('melhor_cupom_hot_deals_v') && k !== 'melhor_cupom_hot_deals_v9') ||
-          (k.startsWith('melhor_cupom_admin_users_v') && k !== 'melhor_cupom_admin_users_v3') ||
-          (k.startsWith('melhor_cupom_redemptions_v') && k !== 'melhor_cupom_redemptions_v3') ||
-          (k.startsWith('melhor_cupom_user_v') && k !== 'melhor_cupom_user_v3') ||
-          k === 'melhor_cupom_stores' ||
-          k === 'melhor_cupom_user' ||
-          k === 'melhor_cupom_redemptions' ||
-          k === 'melhor_cupom_admin_users'
-        ) {
-          keysToRemove.push(k);
-        }
-      }
-      keysToRemove.forEach(key => {
-        try { localStorage.removeItem(key); } catch {}
-      });
-    } catch {}
-  };
-
   // Executar limpeza proativa de chaves legadas e sincronização profunda com IndexedDB
   useEffect(() => {
     cleanObsoleteStorage();
@@ -96,21 +100,22 @@ export const AppProvider = ({ children }) => {
             }
             if (!matched) return s;
 
-            const shouldUpdate = (matched.logoImage && s.logoImage !== matched.logoImage) ||
-              (matched.logoFit && s.logoFit !== matched.logoFit) ||
-              (matched.logoScale !== undefined && s.logoScale !== matched.logoScale) ||
-              (matched.logoPadding !== undefined && s.logoPadding !== matched.logoPadding) ||
-              (matched.logoBg && s.logoBg !== matched.logoBg);
+            // Restaura apenas campos que s não tenha customizado ou onde o IDB tem dado mais completo
+            const shouldUpdate = (matched.logoImage && (!s.logoImage || !s.hasCustomLogo)) ||
+              (matched.logoFit && !s.logoFit) ||
+              (matched.logoScale !== undefined && s.logoScale === undefined) ||
+              (matched.logoPadding !== undefined && s.logoPadding === undefined) ||
+              (matched.logoBg && !s.logoBg);
 
             if (shouldUpdate) {
               hasChanges = true;
               return {
                 ...s,
-                ...(matched.logoImage ? { logoImage: matched.logoImage, hasCustomLogo: true } : {}),
-                ...(matched.logoFit ? { logoFit: matched.logoFit } : {}),
-                ...(matched.logoScale !== undefined ? { logoScale: matched.logoScale } : {}),
-                ...(matched.logoPadding !== undefined ? { logoPadding: matched.logoPadding } : {}),
-                ...(matched.logoBg ? { logoBg: matched.logoBg } : {})
+                ...(matched.logoImage && (!s.logoImage || !s.hasCustomLogo) ? { logoImage: matched.logoImage, hasCustomLogo: true } : {}),
+                ...(matched.logoFit && !s.logoFit ? { logoFit: matched.logoFit } : {}),
+                ...(matched.logoScale !== undefined && s.logoScale === undefined ? { logoScale: matched.logoScale } : {}),
+                ...(matched.logoPadding !== undefined && s.logoPadding === undefined ? { logoPadding: matched.logoPadding } : {}),
+                ...(matched.logoBg && !s.logoBg ? { logoBg: matched.logoBg } : {})
               };
             }
             return s;
@@ -138,22 +143,28 @@ export const AppProvider = ({ children }) => {
           const sanitized = value.map(item => {
             if (item && typeof item === 'object') {
               const clean = { ...item };
-              if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 180000) {
+              if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 80000) {
                 clean.banner = '';
               }
-              if (clean.logoImage && typeof clean.logoImage === 'string' && clean.logoImage.startsWith('data:image/') && clean.logoImage.length > 500000) {
-                clean.logoImage = '';
+              if (clean.image && typeof clean.image === 'string' && clean.image.startsWith('data:image/') && clean.image.length > 80000) {
+                clean.image = '';
               }
               return clean;
             }
             return item;
           });
           localStorage.setItem(key, JSON.stringify(sanitized));
+        } else if (typeof value === 'object' && value !== null) {
+          const cleanObj = {};
+          Object.keys(value).forEach(k => {
+            if (value[k]) cleanObj[k] = value[k];
+          });
+          localStorage.setItem(key, JSON.stringify(cleanObj));
         } else {
           localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
         }
       } catch (innerErr) {
-        console.warn(`[Storage] Nao foi possivel persistir "${key}" no LocalStorage (mantido em memoria):`, innerErr);
+        console.warn(`[Storage] Nao foi possivel persistir "${key}" no LocalStorage (mantido em memoria/IDB):`, innerErr);
       }
     }
   };
@@ -286,55 +297,23 @@ export const AppProvider = ({ children }) => {
       const missing = INITIAL_STORES.filter(s => !parsedIds.has(s.id));
       const combined = [...parsed, ...missing];
 
-      // Recuperador profundo de logos e enquadramentos do LocalStorage (resgata dados de cupons e versões anteriores)
+      // Recuperador profundo e seguro de logos e enquadramentos do LocalStorage
       const recoverSavedLogosFromStorage = () => {
         const recoveredMap = {};
 
-        // 1. Mapa dedicado permanente
+        // 1. Prioridade Máxima: Mapa dedicado permanente de logos
         try {
           const raw = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
           if (raw) Object.assign(recoveredMap, JSON.parse(raw));
         } catch {}
 
-        // 2. Varrer chaves de cupons (onde as logos atualizadas foram gravadas por updateStore)
-        const couponKeys = ['melhor_cupom_coupons_v10', 'melhor_cupom_coupons', 'melhor_cupom_coupons_v9', 'melhor_cupom_custom_coupons'];
-        couponKeys.forEach(k => {
-          try {
-            const raw = localStorage.getItem(k);
-            if (!raw) return;
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-              parsed.forEach(c => {
-                if (!c || !c.storeId) return;
-                const candidateLogo = (typeof c.customStoreLogoImage === 'string' && c.customStoreLogoImage.length > 0) ? c.customStoreLogoImage :
-                  (typeof c.storeLogoImage === 'string' && (c.storeLogoImage.startsWith('data:') || (c.storeLogoImage.startsWith('http') && !c.storeLogoImage.includes('unsplash')))) ? c.storeLogoImage :
-                  (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || (c.logoImage.startsWith('http') && !c.logoImage.includes('unsplash')))) ? c.logoImage : null;
-                
-                if (candidateLogo) {
-                  const entry = {
-                    logoImage: candidateLogo,
-                    hasCustomLogo: true
-                  };
-                  const keys = getStoreLogoKeys(c.storeId, c.storeName);
-                  keys.forEach(key => {
-                    recoveredMap[key] = { ...(recoveredMap[key] || {}), ...entry };
-                    persistCustomLogoToIDB(key, entry).catch(() => {});
-                  });
-                }
-              });
-            }
-          } catch {}
-        });
-
-        // 3. Varrer chaves legadas de lojas
-        const storeKeys = ['melhor_cupom_stores_v11', 'melhor_cupom_stores_v10', 'melhor_cupom_stores_v9', 'melhor_cupom_stores_v8', 'melhor_cupom_stores_v7', 'melhor_cupom_stores'];
-        storeKeys.forEach(k => {
-          try {
-            const raw = localStorage.getItem(k);
-            if (!raw) return;
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-              parsed.forEach(s => {
+        // 2. Prioridade 2: Versão atual de lojas (melhor_cupom_stores_v11)
+        try {
+          const rawV11 = localStorage.getItem('melhor_cupom_stores_v11');
+          if (rawV11) {
+            const parsedV11 = JSON.parse(rawV11);
+            if (Array.isArray(parsedV11)) {
+              parsedV11.forEach(s => {
                 if (!s || !s.id) return;
                 const candidateLogo = (typeof s.logoImage === 'string' && (s.logoImage.startsWith('data:') || (s.logoImage.startsWith('http') && !s.logoImage.includes('unsplash')))) ? s.logoImage : null;
                 const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
@@ -355,10 +334,79 @@ export const AppProvider = ({ children }) => {
                 }
               });
             }
+          }
+        } catch {}
+
+        // 3. Fallback APENAS para chaves inexistentes: Versões legadas (v10, v9, v8...)
+        // NUNCA sobrescreve chaves já configuradas na versão v11 ou no mapa dedicado
+        const legacyStoreKeys = ['melhor_cupom_stores_v10', 'melhor_cupom_stores_v9', 'melhor_cupom_stores_v8', 'melhor_cupom_stores'];
+        legacyStoreKeys.forEach(k => {
+          try {
+            const raw = localStorage.getItem(k);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(s => {
+                if (!s || !s.id) return;
+                const candidateLogo = (typeof s.logoImage === 'string' && (s.logoImage.startsWith('data:') || (s.logoImage.startsWith('http') && !s.logoImage.includes('unsplash')))) ? s.logoImage : null;
+                const hasFraming = s.logoFit !== undefined || (s.logoScale !== undefined && s.logoScale !== 100) || s.logoPadding !== undefined || (s.logoBg && s.logoBg !== '#ffffff');
+
+                if (candidateLogo || hasFraming || s.hasCustomLogo) {
+                  const entry = {
+                    ...(candidateLogo ? { logoImage: candidateLogo, hasCustomLogo: true } : {}),
+                    ...(s.logoFit !== undefined ? { logoFit: s.logoFit } : {}),
+                    ...(s.logoScale !== undefined ? { logoScale: s.logoScale } : {}),
+                    ...(s.logoPadding !== undefined ? { logoPadding: s.logoPadding } : {}),
+                    ...(s.logoBg !== undefined ? { logoBg: s.logoBg } : {})
+                  };
+                  const keys = getStoreLogoKeys(s.id, s.name);
+                  keys.forEach(key => {
+                    if (!recoveredMap[key]) {
+                      recoveredMap[key] = entry;
+                      persistCustomLogoToIDB(key, entry).catch(() => {});
+                    } else {
+                      recoveredMap[key] = { ...entry, ...recoveredMap[key] };
+                    }
+                  });
+                }
+              });
+            }
           } catch {}
         });
 
-        // Persistir o mapa recuperado no mapa permanente para nunca mais ser perdido
+        // 4. Fallback final: cupons (apenas se a loja ainda não tiver logo definida)
+        const couponKeys = ['melhor_cupom_custom_coupons', 'melhor_cupom_coupons'];
+        couponKeys.forEach(k => {
+          try {
+            const raw = localStorage.getItem(k);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(c => {
+                if (!c || !c.storeId) return;
+                const candidateLogo = (typeof c.customStoreLogoImage === 'string' && c.customStoreLogoImage.length > 0) ? c.customStoreLogoImage :
+                  (typeof c.storeLogoImage === 'string' && (c.storeLogoImage.startsWith('data:') || (c.storeLogoImage.startsWith('http') && !c.storeLogoImage.includes('unsplash')))) ? c.storeLogoImage :
+                  (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || (c.logoImage.startsWith('http') && !c.logoImage.includes('unsplash')))) ? c.logoImage : null;
+                
+                if (candidateLogo) {
+                  const entry = {
+                    logoImage: candidateLogo,
+                    hasCustomLogo: true
+                  };
+                  const keys = getStoreLogoKeys(c.storeId, c.storeName);
+                  keys.forEach(key => {
+                    if (!recoveredMap[key] || !recoveredMap[key].logoImage) {
+                      recoveredMap[key] = { ...(recoveredMap[key] || {}), ...entry };
+                      persistCustomLogoToIDB(key, entry).catch(() => {});
+                    }
+                  });
+                }
+              });
+            }
+          } catch {}
+        });
+
+        // Persistir o mapa consolidado no mapa permanente para garantir integridade
         try {
           if (Object.keys(recoveredMap).length > 0) {
             safeSetItem('melhor_cupom_custom_store_logos_v1', recoveredMap);
@@ -1235,7 +1283,7 @@ export const AppProvider = ({ children }) => {
         }
         return s;
       });
-      safeSetItem('melhor_cupom_stores_v10', updated);
+      safeSetItem('melhor_cupom_stores_v11', updated);
       return updated;
     });
 
@@ -1724,7 +1772,7 @@ export const AppProvider = ({ children }) => {
           }
           return s;
         });
-        safeSetItem('melhor_cupom_stores_v10', updatedStores);
+        safeSetItem('melhor_cupom_stores_v11', updatedStores);
         return updatedStores;
       });
     }
@@ -1808,6 +1856,7 @@ export const AppProvider = ({ children }) => {
     }
 
     setStores(prev => {
+      let matchedAny = false;
       const updated = prev.map(s => {
         const sRoot = getBrandRootKey(s.id) || getBrandRootKey(s.name);
         const isMatch = s.id === storeId || 
@@ -1816,6 +1865,7 @@ export const AppProvider = ({ children }) => {
                         (rootKey && sRoot && rootKey === sRoot);
 
         if (isMatch) {
+          matchedAny = true;
           return { 
             ...s, 
             ...updatedData,
@@ -1824,33 +1874,60 @@ export const AppProvider = ({ children }) => {
         }
         return s;
       });
-      safeSetItem('melhor_cupom_stores_v11', updated);
-      return updated;
+
+      // Se a loja não estava em stores (ex: loja avulsa de cupom ou adicionada dinamicamente)
+      let finalStores = updated;
+      if (!matchedAny && (storeId || storeName)) {
+        const newStore = {
+          id: storeId || `store_${Date.now()}`,
+          name: storeName || 'Nova Loja Parceira',
+          category: 'outros',
+          city: 'Todo o Brasil (Online)',
+          tier: 'api',
+          ...updatedData,
+          hasCustomLogo: Boolean(updatedData.logoImage)
+        };
+        finalStores = [newStore, ...updated];
+      }
+
+      safeSetItem('melhor_cupom_stores_v11', finalStores);
+      return finalStores;
     });
 
-    if (updatedData.logoImage) {
-      setCoupons(prev => {
-        return prev.map(c => {
-          const cRoot = getBrandRootKey(c.storeId) || getBrandRootKey(c.storeName);
-          const isMatch = c.storeId === storeId || 
-                          c.merchantId === storeId || 
-                          (storeName && c.storeName?.toLowerCase().trim() === storeName.toLowerCase().trim()) ||
-                          (rootKey && cRoot && rootKey === cRoot);
+    // Sincronizar cupons vinculados (logo e enquadramento) com persistência definitiva
+    setCoupons(prev => {
+      let hasCouponChanges = false;
+      const updatedCoupons = prev.map(c => {
+        const cRoot = getBrandRootKey(c.storeId) || getBrandRootKey(c.storeName);
+        const isMatch = c.storeId === storeId || 
+                        c.merchantId === storeId || 
+                        (storeName && c.storeName?.toLowerCase().trim() === storeName.toLowerCase().trim()) ||
+                        (rootKey && cRoot && rootKey === cRoot);
 
-          if (isMatch) {
-            return {
-              ...c,
+        if (isMatch) {
+          hasCouponChanges = true;
+          return {
+            ...c,
+            ...(updatedData.logoImage ? {
               hasCustomLogo: true,
               logoImage: updatedData.logoImage,
               storeLogoImage: updatedData.logoImage,
               storeLogo: updatedData.logoImage,
               customStoreLogoImage: updatedData.logoImage
-            };
-          }
-          return c;
-        });
+            } : {}),
+            ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
+            ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
+            ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
+          };
+        }
+        return c;
       });
-    }
+
+      if (hasCouponChanges) {
+        safeSaveCoupons(updatedCoupons);
+      }
+      return updatedCoupons;
+    });
 
     if (isSupabaseConfigured && supabase) {
       const dbPayload = {};
@@ -1886,7 +1963,7 @@ export const AppProvider = ({ children }) => {
         }
         return s;
       });
-      safeSetItem('melhor_cupom_stores_v10', updated);
+      safeSetItem('melhor_cupom_stores_v11', updated);
       return updated;
     });
 
@@ -2698,11 +2775,11 @@ export const AppProvider = ({ children }) => {
 
     setStores(prev => {
       const initMap = new Map(INITIAL_STORES.map(s => [s.id, s]));
-      const updated = prev.map(s => initMap.get(s.id) ? { ...s, ...initMap.get(s.id) } : s);
+      const updated = prev.map(s => initMap.get(s.id) ? { ...initMap.get(s.id), ...s } : s);
       const prevIds = new Set(prev.map(s => s.id));
       const newlyAdded = INITIAL_STORES.filter(s => !prevIds.has(s.id));
       const result = [...updated, ...newlyAdded];
-      localStorage.setItem('melhor_cupom_stores_v4', JSON.stringify(result));
+      safeSetItem('melhor_cupom_stores_v11', result);
       return result;
     });
 

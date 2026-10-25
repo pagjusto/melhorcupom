@@ -101,7 +101,20 @@ export const persistCustomLogoToIDB = async (key, logoData) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       const store = tx.objectStore(STORE_NAME);
       const cleanKey = String(key).toLowerCase().trim();
-      store.put({ key: cleanKey, ...logoData, updatedAt: new Date().toISOString() });
+      const getReq = store.get(cleanKey);
+      getReq.onsuccess = () => {
+        const existing = getReq.result || {};
+        const merged = {
+          ...existing,
+          ...logoData,
+          key: cleanKey,
+          updatedAt: new Date().toISOString()
+        };
+        store.put(merged);
+      };
+      getReq.onerror = () => {
+        store.put({ key: cleanKey, ...logoData, updatedAt: new Date().toISOString() });
+      };
       tx.oncomplete = () => resolve(true);
       tx.onerror = () => resolve(false);
     });

@@ -108,6 +108,7 @@ export const StoresView = ({ onSelectStore }) => {
 
   // Estados para edição administrativa e ajuste de enquadramento da logo dos parceiros
   const [editingStore, setEditingStore] = useState(null);
+  const [saveSuccessToast, setSaveSuccessToast] = useState(null);
   const [modalTab, setModalTab] = useState('adjust'); // 'adjust' | 'replace'
   const [logoInputMode, setLogoInputMode] = useState('upload'); // 'upload' | 'url'
   const [newLogoUrl, setNewLogoUrl] = useState('');
@@ -204,6 +205,10 @@ export const StoresView = ({ onSelectStore }) => {
       logoBg,
       storeName: editingStore.name
     });
+
+    const savedName = editingStore.name;
+    setSaveSuccessToast(`Ajustes e logo da marca "${savedName}" salvos com sucesso!`);
+    setTimeout(() => setSaveSuccessToast(null), 3500);
 
     setEditingStore(null);
     confetti({
@@ -306,9 +311,15 @@ export const StoresView = ({ onSelectStore }) => {
   }, [sortedStores, search, storeTypeFilter, selectedCategory]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in space-y-8 relative">
       
-      {/* 1. HEADER PRINCIPAL & BANNER CHAMATIVO */}
+      {/* Toast flutuante de sucesso ao salvar ajustes de parceiro */}
+      {saveSuccessToast && (
+        <div className="fixed top-20 right-4 z-50 max-w-md bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-400 animate-bounce">
+          <Check size={18} className="flex-shrink-0" />
+          <span className="text-xs font-bold leading-snug">{saveSuccessToast}</span>
+        </div>
+      )}
       <div>
         <div className="text-center max-w-3xl mx-auto mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-orange-400 text-xs font-bold uppercase tracking-wider mb-2.5">
@@ -625,6 +636,7 @@ export const StoresView = ({ onSelectStore }) => {
                     {storeLogo ? (
                       <>
                         <img
+                          key={`${store.id}_${storeLogo}_${store.logoScale}_${store.logoFit}_${store.logoPadding}_${store.logoBg}`}
                           src={storeLogo}
                           alt={store.name}
                           style={hasCustomStoreLogoSettings(store) ? getStoreLogoStyle(store) : undefined}
