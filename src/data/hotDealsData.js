@@ -1,6 +1,6 @@
 // src/data/hotDealsData.js
 // Catálogo de Ofertas Imperdíveis & Achadinhos Virais da Shopee com rastreamento oficial
-// Total de itens: 57 ofertas virais selecionadas
+// Total de itens: 57 ofertas virais selecionadas com links diretos aos produtos oficiais
 
 const SHOPEE_AFFILIATE_ID = '18305641225';
 const BASE_TRACKING = `af=${SHOPEE_AFFILIATE_ID}&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
@@ -23,7 +23,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7ra2m-m51qs90o7iic82",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=smartwatch+ultra+7+pulseiras&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Rel%C3%B3gio-Smartwatch-7-em-1-S%C3%A9rie-9-Ultra-com-7-Pulseiras-Original-Envio-Imediato-i.872424585.23098008625?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Relógio inteligente com tela infinita HD, medição de frequência cardíaca, oxímetro, compatível com Android e iPhone, chamadas bluetooth e 7 pulseiras intercambiáveis."
   },
   {
@@ -43,7 +43,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lo5njzv3my1898",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=fone+bluetooth+sem+fio+tws+led&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Fone-de-Ouvido-Sem-Fio-TWS-Case-com-Display-%E2%80%93-Bluetooth-5.0-Carregamento-Digital-i.1656223463.58200577391?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Som estéreo surround com cancelamento passivo de ruído, bateria de até 24h com a case recarregável e display digital indicador de porcentagem."
   },
   {
@@ -63,7 +63,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-81z1k-mhuleg8t30ua5d",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+caixa+som+bluetooth+rgb+portatil&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/CAIXA-DE-SOM-PORT%C3%81TIL-RESISTENTE-%C3%81GUA-BLUETOOTH-LED-RGB-i.390273439.21497097517?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Show de luzes LED sincronizado com as músicas, graves potentes e bateria de longa duração para churrascos, praia e passeios."
   },
   {
@@ -83,7 +83,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rd4i-m7wmrwbk2abkf9",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=suporte+celular+mesa+articulado+aluminio&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Suporte-com-garra-Articulado-flex%C3%ADvel-De-Mesa-Para-Celular-Com-Base-Clips-i.1420450594.21399662454?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Ajuste de altura e ângulo anti-quedas, base pesada antiderrapante em liga metálica para chamadas de vídeo, séries e gravação de vídeos."
   },
   {
@@ -103,7 +103,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-81z1k-mf1u7ff94ao567",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=power+bank+20000mah+turbo+cabos+embutidos&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Carregador-Port%C3%A1til-Turbo-20000mAh-22.5W-Power-Bank-Premium-Cabos-Integrados-i.410522123.20340696595?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Compatível com iPhone, Type-C e Micro-USB. Possui display de LED, lanterna de emergência e proteção contra sobretensão."
   },
   {
@@ -123,7 +123,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-824i6-mf30blu2iwp6fa",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=luminaria+g+speaker+inducao+bluetooth&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/G-Speaker-3-em-1-Lumin%C3%A1ria-RGB-Caixa-de-Som-Carregador-por-Indu%C3%A7%C3%A3o-Caixa-Som-Bluetooth-%F0%9F%94%8A%F0%9F%8C%88-i.1552412358.58261271228?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Luminária multifuncional com luzes RGB relaxantes, rádio FM, alto-falante Bluetooth e base de recarga sem fio rápida para celular."
   },
   {
@@ -143,7 +143,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/4fc8270a04e8c2647edb52a561049917",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=ring+light+26cm+tripe+2m+celular&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Luz-Ring-Light-26cm-Led-Iluminador-Est%C3%A9tica-Maker-Blogueira-Youtube-i.831643983.21140731019?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "3 tonalidades de cor (quente, fria e mista) com 10 níveis de brilho. Ideal para fotos de produtos, tutoriais de make e lives."
   },
   {
@@ -163,7 +163,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lsqgdj1w86d74f",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=cabo+magnetico+3+em+1+giratorio&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Cabo-Carregador-Magn%C3%A9tico-3-Em-1-Para-IPhone-Android-Tipo-C-Cabo-magn%C3%A9tic-i.293435711.22691842698?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Conector imantado de neodímio ultra forte que evita quebra da porta do celular e facilita carregar no carro com apenas uma mão."
   },
   {
@@ -183,7 +183,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-81z1k-mesmyq7z6680f3",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=camera+seguranca+lampada+wifi+360+bocal&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Camera-L%C3%A2mpada-Wifi-Ip-Seguran%C3%A7a-Panor%C3%A2mica-Girat%C3%B3ria-360-1080P-com-Vis%C3%A3o-Noturna-Pet-i.331517678.22391756908?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Instalação simples no bocal comum de lâmpada E27. Controle total e rotação pelo celular com alerta de movimento e áudio bidirecional."
   },
   {
@@ -203,7 +203,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lu5z472o0al0a0",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=microfone+lapela+sem+fio+celular+tipo+c+iphone&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Microfone-de-Lapela-Sem-Fio-Celular-Smartphone-Plug-and-Play-i.323324727.22430822514?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Conecte o receptor e comece a gravar instantaneamente sem nenhum aplicativo ou configuração extra. Supressão de ruído inteligente."
   },
   {
@@ -223,7 +223,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://cf.shopee.com.br/file/sg-11134201-7rbm3-llko1n68px4qed",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+teclado+sem+fio+touchpad+smart+tv&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mini-Teclado-Wireless-com-Touchpad-i.333542060.23994232648?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Teclado QWERTY com mouse touchpad integrado e teclas iluminadas com 3 opções de cores de LED para usar no escuro."
   },
   {
@@ -243,7 +243,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-81z1k-mhtaa2xrva4h9c",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mouse+sem+fio+silencioso+recarregavel+bluetooth&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mouse-Sem-Fio-Recarreg%C3%A1vel-Wireless-LED-RGB-Silencioso-Ergon%C3%B4mico-PC-Notebook-Tablet-Celular-i.998773037.22792835443?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Design ultra fino ergonômico, bateria de lítio interna que dispensa pilhas e cliques amortecidos sem incomodar ninguém."
   },
   {
@@ -263,7 +263,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-23020-jx73w06r14mv74",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+projetor+portatil+smart+wifi+led&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mini-Projetor-Portatil-Led-Full-Hd-1080p-Smart-Wifi-i.389201452.21589412034?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Espelhe Netflix, YouTube e filmes direto do celular na parede do quarto ou sala. Alto-falante integrado e foco ajustável."
   },
   {
@@ -283,7 +283,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-8262n-mjwgph0lwzd3c7",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=transmissor+fm+bluetooth+veicular+carro+qc3&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Transmissor-FM-Bluetooth-Veicular-com-2-USB-MP3-Hands-Free-Leitor-USB-TF-e-Carregamento-Duplo-i.1350120855.58207989989?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Toque as músicas do seu celular no som original do carro sem precisar de fios ou trocar de rádio, além de atender ligações vivavoz."
   },
   {
@@ -303,7 +303,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-m2s767ygv93p44",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+processador+eletrico+alimentos&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mini-Processador-Triturador-Eletrico-Alimentos-Alho-Legumes-Usb-Bivolt-3-Laminas-i.382914102.21098412351?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Tritura alho, cebola, temperos e carnes em 5 segundos com apenas 1 clique. Lâminas em aço inox 304, higiênico, recarregável via USB."
   },
   {
@@ -323,7 +323,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-820lq-mm3b7fj8xvyc5e",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=robo+aspirador+de+po+inteligente+varre&${BASE_TRACKING}",
+    "affiliateUrl": "https://s.shopee.com.br/5fVlcVlGme?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Navegação com sensor anticolisão que limpa sob sofás, camas e armários com escovas giratórias duplas e recolhimento de pelos."
   },
   {
@@ -343,7 +343,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-820lq-mljee4ygk9af7b",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+seladora+embalagens+portatil&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mini-Seladora-Port%C3%A1til-de-Embalagens-e-Sacos-Pl%C3%A1sticos-i.329108420.21984712390?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Mantenha batatas, biscoitos e cereais crocantes como novos. Sela hermeticamente qualquer embalagem plástica em 3 segundos."
   },
   {
@@ -363,7 +363,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-8258q-mfuofy68o9vs40",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mixer+espumador+leite+cafe+eletrico+usb&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mixer-Batedor-de-Leite-e-Espumador-de-Caf%C3%A9-El%C3%A9trico-USB-com-2-Fouets-i.401928371.22891048291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Crie espuma densa de leite para cappuccino, bata claras em neve e shakes de proteína rapidamente com 3 velocidades selecionáveis."
   },
   {
@@ -383,7 +383,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-maf1si61k9lb4c",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=dispenser+detergente+esponja+pia+cozinha&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Dispenser-Organizador-de-Detergente-e-Suporte-de-Esponja-2-em-1-i.389102938.22384918231?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Pressione com a esponja e receba a dosagem perfeita de sabão sem pingar na bancada. Economiza detergente e mantém a pia limpa."
   },
   {
@@ -403,7 +403,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rfew-m9k9ig4smxw651",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=kit+6+tampas+silicone+elasticas+reutilizaveis&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-6-Tampas-de-Silicone-El%C3%A1sticas-Reutiliz%C3%A1veis-Universais-i.312984729.21482910293?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Adapta-se a tigelas, potes, latas e até metades de melancia e melão. Vedação hermética à prova de vazamentos e livre de BPA."
   },
   {
@@ -423,7 +423,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rcdo-lqwdq34uxkd30a",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=forma+gelo+silicone+esferas+drinks&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Forma-de-Gelo-em-Esferas-de-Silicone-com-Tampa-para-Drinks-Whisky-i.429108239.22194829104?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Gelo esférico cristalino que derrete lentamente sem aguá seu whisky, gin tônica ou coquetéis favoritos."
   },
   {
@@ -443,7 +443,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lyy0k3ck7tb9f0",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=lixeira+automatica+sensor+presenca+12l&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Lixeira-Autom%C3%A1tica-com-Sensor-de-Presen%C3%A7a-12L-Sem-Toque-Inteligente-i.378192019.22091847291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Abre sozinha ao aproximar a mão ou o joelho e fecha automaticamente após 5 segundos, retendo totalmente odores."
   },
   {
@@ -463,7 +463,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-mdoz7fd306gpba",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mop+giratorio+lava+e+seca+balde+microfibra&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-Mop-Girat%C3%B3rio-360-Lava-e-Seca-com-Balde-e-Refil-Microfibra-i.391029384.22384910294?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Centrifugação eficiente que torce o esfregão sem sujar as mãos. Limpa pisos laminados, porcelanatos e cerâmicas sem arranhar."
   },
   {
@@ -483,7 +483,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lp6knei06tv6ab",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=afiador+facas+profissional+3+fases+tungstenio&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Afiador-e-Amolador-de-Facas-Profissional-3-Fases-em-Tungst%C3%AAnio-i.319204928.21948201948?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "3 estágios: afiação grossa, média e acabamento cerâmico. Restaura o corte de navalha até nas facas mais cegas da cozinha."
   },
   {
@@ -503,7 +503,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/25b4df593afd6234505956f95dd50ecb",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=tapete+banheiro+diatomita+super+absorvente&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Tapete-Antiderrapante-Diatomita-Super-Absorvente-Secagem-R%C3%A1pida-Banheiro-i.348192049.22481920394?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Absorve a água dos pés em segundos e evapora rapidamente, impedindo acúmulo de mofo e bactérias no banheiro."
   },
   {
@@ -523,7 +523,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lkpkivu0bqhf0d",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=luminaria+led+sensor+movimento+guarda+roupa+ima&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Lumin%C3%A1ria-Barra-de-LED-com-Sensor-de-Movimento-e-Im%C3%A3-Recarreg%C3%A1vel-i.398102934.22481920491?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Fixação magnética para guarda-roupas, armários de cozinha e corredores. Acende automaticamente no escuro ao detectar presença."
   },
   {
@@ -543,7 +543,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lnr8qy0pc6yvde",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=balanca+digital+alta+precisao+cozinha+10kg&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Balan%C3%A7a-Digital-de-Alta-Precis%C3%A3o-para-Cozinha-e-Dieta-at%C3%A9-10kg-i.349102938.21948201948?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Função Tara para descontar o peso do prato, múltiplos tipos de unidade (gramas e onças) e visor LCD de leitura rápida."
   },
   {
@@ -563,7 +563,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rbk1-lobki5i3xefx37",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=arejador+extensor+torneira+1080+giratorio&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Arejador-e-Extensor-de-Torneira-1080-Girat%C3%B3rio-com-Filtro-Antirrespingo-i.389102938.22581940291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Rotação livre em todas as direções para facilitar enxaguar o rosto, escovar os dentes e lavar os cantos difíceis da cuba."
   },
   {
@@ -583,7 +583,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-822zx-mi6a2vwk95hccd",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=varal+retratil+invisivel+parede+aco+inox&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Varal-Retr%C3%A1til-Invis%C3%ADvel-de-A%C3%A7o-Inoxid%C3%A1vel-at%C3%A9-4-2-Metros-i.391029482.22384910294?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Cabo de aço resistente que suporta até 20kg de roupas. Recolhe automaticamente quando não estiver em uso para liberar espaço."
   },
   {
@@ -603,7 +603,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-m6hbmqipym9c47",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=escova+secadora+modeladora+alisadora+1200w&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Escova-Secadora-Modeladora-e-Alisadora-Multifuncional-1200W-Bivolt-i.348192049.22091847291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Seca, alisa e modela com tecnologia de íons que fecha as cutículas dos fios, eliminando o frizz e conferindo brilho radiante."
   },
   {
@@ -623,7 +623,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7reoo-m2h6d7a935re4b",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=depilador+cristal+indolor&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Depilador-de-Cristal-Indolor-F%C3%ADsico-Esfoliante-Reutiliz%C3%A1vel-Pele-Macia-i.389102938.22194829104?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Tecnologia nano glass remove os pelos e as células mortas da pele em movimentos circulares, sem cortes, sem irritações e sem lâminas."
   },
   {
@@ -643,7 +643,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-8260e-mk12w8nidb7p6b",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=rolo+facial+pedra+jade+gua+sha+massagem&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-Rolo-Massageador-Facial-de-Jade-Placa-Gua-Sha-Antirrugas-Natural-i.319204928.21948201948?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Estimula a microcirculação sanguínea, desincha o rosto pela manhã e potencializa a absorção de séruns e hidratantes."
   },
   {
@@ -663,7 +663,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-m03ja04bl4rtd8",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=espelho+maquiagem+led+touch+articulado&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Espelho-de-Mesa-Articulado-para-Maquiagem-com-Ilumina%C3%A7%C3%A3o-LED-Touch-i.378192019.22481920394?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Controle de intensidade de luz no botão sensível ao toque, rotação 180° e base bandeja para guardar batons e pincéis."
   },
   {
@@ -683,7 +683,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-m96bb0a7zry155",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=organizador+maquiagem+giratorio+360+acrilico&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Organizador-de-Maquiagem-Acr%C3%ADlico-Girat%C3%B3rio-360-com-Divis%C3%B3rias-i.391029384.22384910294?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Suporta mais de 30 frascos de cosméticos, perfumes e maquiagens com prateleiras de altura ajustável e giro suave."
   },
   {
@@ -703,7 +703,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134201-22120-l9hxehujjkkvc0",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=kit+13+pinceis+maquiagem+estojo&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-13-Pinc%C3%A9is-de-Maquiagem-Profissionais-com-Estojo-Veludo-i.349102938.22091847291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Cerdas sintéticas macias de alta densidade que não soltam pelos, ideais para base, pó, contorno, blush e esfumado."
   },
   {
@@ -723,7 +723,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://cf.shopee.com.br/file/d86faceca89e74f65eee41cfe7450e9a",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=removedor+cravos+vacuo+succao+recarregavel&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Removedor-de-Cravos-e-Espinhas-a-V%C3%A1cuo-com-Suc%C3%A7%C3%A3o-e-5-Ponteiras-i.389102938.22581940291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Extrai a oleosidade acumulada e cravos sem machucar a pele, estimulando a renovação celular com ponteiras personalizadas."
   },
   {
@@ -743,7 +743,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-820m0-mly939tu5zb466",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=lixa+pe+eletrica+removedor+calos+recarregavel&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Lixa-de-P%C3%A9-El%C3%A9trica-Esfoliante-Recarreg%C3%A1vel-Removedora-de-Calos-i.398102934.22481920491?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Rolo de quartzo mineral giratório que elimina rachaduras e pele áspera do calcanhar em minutos sem desconforto."
   },
   {
@@ -763,7 +763,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7qukw-lg4rw784xlz3d9",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=touca+cetim+dupla+face+antifrizz+ajustavel&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Touca-Dupla-Face-de-Cetim-Antifrizz-com-Ajuste-Regulador-Cabelos-i.312984729.21482910293?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Mantém a hidratação natural dos fios, define cachos e evita a quebra dos cabelos durante o atrito do sono."
   },
   {
@@ -783,7 +783,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-821fk-mgifkuiedsll46",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=massageador+facial+ultrassonico+lifting+led&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Massageador-Facial-Ultrass%C3%B4nico-Lifting-com-Terapia-de-Luz-LED-Rejuvenescimento-i.429108239.22194829104?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Vibração de alta frequência que estimula o colágeno, combate a flacidez facial e redefine o contorno do maxilar."
   },
   {
@@ -803,7 +803,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rbl7-m5ot2zt0qbo7e5",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+porta+perfume+spray+recarregavel+5ml&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mini-Porta-Perfume-Spray-Recarreg%C3%A1vel-5ml-para-Bolsa-e-Viagens-i.329108420.21984712390?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Sistema inovador de bomba na parte inferior que transfere o perfume direto do frasco original sem vazar nem derramar."
   },
   {
@@ -823,7 +823,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-82594-mg3mb4sj4f0r89",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=modelador+cachos+automatico+sem+fio+recarregavel&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Modelador-de-Cachos-Autom%C3%A1tico-Sem-Fio-Cer%C3%A2mico-Recarreg%C3%A1vel-Port%C3%A1til-i.401928371.22891048291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Câmara giratória térmica inteligente que puxa a mecha e cria ondas brilhantes e duradouras sem risco de queimaduras."
   },
   {
@@ -843,7 +843,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7qukw-lfh74rqnbif12b",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=estojo+lentes+contato+espelho+pinca&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-Estojo-para-Lentes-de-Contato-com-Espelho-Pin%C3%A7a-e-Aplicador-Port%C3%A1til-i.389102938.22384918231?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Compacto e hermético, perfeito para carregar na bolsa para trocar ou higienizar suas lentes com segurança onde estiver."
   },
   {
@@ -863,7 +863,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-81ztc-mkaqc95s6io1f5",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=cabine+led+uv+48w+unhas+gel+esmalte&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Cabine-LED-UV-48W-Secadora-de-Esmalte-em-Gel-e-Unhas-Posti%C3%A7as-Sun5-i.319204928.21948201948?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Secagem rápida em 30 a 60 segundos com sensor infravermelho inteligente que liga automaticamente ao colocar as mãos."
   },
   {
@@ -883,7 +883,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rdya-m0nf5yym00um06",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=kit+organizadores+mala+viagem&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-6-Organizadores-de-Mala-de-Viagem-Imperme%C3%A1veis-com-Z%C3%ADper-Bolsas-i.378192019.22091847291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Otimize até 60% do espaço da sua mala. Tecido respirável de alta qualidade, resistente à água e com compartimento para sapatos e roupas sujas."
   },
   {
@@ -903,7 +903,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-82609-mkl25f3emn0geb",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mochila+antifurto+impermeavel+notebook+usb&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mochila-Imperme%C3%A1vel-Antifurto-para-Notebook-com-Conector-USB-Refor%C3%A7ada-i.391029384.22384910294?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Zíperes embutidos ocultos, compartimento acolchoado para notebook de até 15.6 polegadas e passagem externa para carregar o celular."
   },
   {
@@ -923,7 +923,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-23030-5jp0gsawqbovbc",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=almofada+pescoco+espuma+memoria+viagem&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Travesseiro-de-Pesco%C3%A7o-Ergon%C3%B4mico-em-Espuma-Viscoel%C3%A1stica-com-Capa-Viagem-i.348192039.22481920394?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Suporte anatômico em 360° para cabeça e queixo, aliviando tensões no pescoço durante voos longos e viagens de ônibus."
   },
   {
@@ -943,7 +943,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7rfh6-m9bim5bdfg5t84",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=necessaire+viagem+dobravel+gancho+cabide&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Necessaire-de-Viagem-Dobr%C3%A1vel-Imperme%C3%A1vel-com-Gancho-de-Cabide-Organizador-i.398102934.22481920491?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Pendure diretamente na porta do banheiro do hotel para ter todos os shampoos, escovas e cremes acessíveis e secos."
   },
   {
@@ -963,7 +963,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-820md-mmeqlgmeyxhg2b",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=carteira+slim+rfid+ejetor+cartoes+aluminio&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Carteira-Slim-com-Bloqueio-RFID-Antifurto-e-Ejetor-Autom%C3%A1tico-de-Cart%C3%B5es-i.349102938.21948201948?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Protege seus cartões de crédito contra leitura não autorizada por aproximação. Ejeção dos cartões em cascata com 1 toque."
   },
   {
@@ -983,7 +983,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-81z1k-me9x7yrxfksj8e",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=oculos+sol+polarizado+uv400+classico&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/%C3%93culos-de-Sol-Retr%C3%B4-Polarizado-Cl%C3%A1ssico-Prote%C3%A7%C3%A3o-UV400-Unissex-i.389102938.22581940291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Lentes polarizadas de alta definição que reduzem o ofuscamento em estradas e reflexos na água com proteção máxima UV400."
   },
   {
@@ -1003,7 +1003,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lrpxv1iqbor1c7",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=guarda+chuva+automatico+resistente+vento+reforcado&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Guarda-Chuva-Autom%C3%A1tico-Resistente-a-Ventos-Fortes-Abre-e-Fecha-Refor%C3%A7ado-i.391029482.22384910294?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Armação em fibra de vidro reforçada e botão de abertura e fechamento automático com uma única mão ao entrar no carro."
   },
   {
@@ -1023,7 +1023,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-mcgwa34asrhub0",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=kit+sacos+a+vacuo+roupas+bomba+succao&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-5-Sacos-a-V%C3%A1cuo-para-Roupas-com-Bomba-Manual-de-Suc%C3%A7%C3%A3o-Organizador-i.312984729.21482910293?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Comprime edredons, casacos pesados e roupas de inverno, protegendo contra umidade, poeira e odores na mala ou armário."
   },
   {
@@ -1043,7 +1043,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7qvf4-liaj35gnwmv51f",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=relogio+masculino+analogico+quartzo+couro&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Rel%C3%B3gio-Masculino-Anal%C3%B3gico-Esportivo-Quartzo-Pulseira-em-Couro-Cl%C3%A1ssico-i.429108239.22194829104?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Caixa fina de alta durabilidade com resistência a respingos de água, calendário funcional e design atemporal para o dia a dia."
   },
   {
@@ -1063,7 +1063,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-22100-xpz8p5ogp4ivab",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=cinto+elastico+sem+fivela+invisivel&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Cinto-El%C3%A1stico-Invis%C3%ADvel-Sem-Fivela-Confort%C3%A1vel-Unissex-Cal%C3%A7as-Jeans-i.329108420.21984712390?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Sem fivela pressionando a barriga ao sentar. Prende diretamente nos passantes da calça com ajuste elástico perfeito."
   },
   {
@@ -1083,7 +1083,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lu7t9wfro4th53",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=kit+10+pares+meias+invisiveis+silicone+calcanhar&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Kit-10-Pares-de-Meias-Invis%C3%ADveis-com-Silicone-Antiderrapante-no-Calcanhar-i.401928371.22891048291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Tecido respirável em algodão penteado com fita de silicone especial que fixa no calcanhar sem escorregar para dentro do tênis."
   },
   {
@@ -1103,7 +1103,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-md4fhzzndmo173",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=mini+porta+joias+portatil+ziper+viagem&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Mini-Porta-Joias-Port%C3%A1til-com-Z%C3%ADper-e-Divis%C3%B3rias-para-Viagem-Veludo-i.389102938.22384918231?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Forro interno de veludo suave com ganchos para colares, rolinhos para anéis e divisórias removíveis para brincos e relógio."
   },
   {
@@ -1123,7 +1123,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/br-11134207-7r98o-lnr8qy0pc6yvde",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=balanca+digital+portatil+pesagem+malas+bagagem+50kg&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Balan%C3%A7a-Digital-Port%C3%A1til-para-Pesagem-de-Bagagem-e-Malas-at%C3%A9-50kg-i.319204928.21948201948?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Display iluminado com aviso de sobrecarga e gancho resistente para pesar sua mala em casa antes de ir ao aeroporto."
   },
   {
@@ -1143,7 +1143,7 @@ export const INITIAL_HOT_DEALS = [
     "image": "https://down-br.img.susercontent.com/file/sg-11134201-7qvdw-lga1d7ous75vd8",
     "freeShipping": true,
     "store": "Shopee Oficial",
-    "affiliateUrl": "https://shopee.com.br/search?keyword=adaptador+tomada+universal+internacional+usb&${BASE_TRACKING}",
+    "affiliateUrl": "https://shopee.com.br/Adaptador-Universal-de-Tomada-Internacional-com-2-Entradas-USB-Bivolt-i.378192019.22091847291?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom",
     "description": "Padrão EUA, Europa, Reino Unido e Austrália com fusível de proteção integrado contra curto-circuito."
   }
 ];

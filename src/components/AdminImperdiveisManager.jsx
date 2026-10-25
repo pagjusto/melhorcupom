@@ -16,7 +16,10 @@ import {
   Sparkles, 
   CheckCircle2, 
   AlertCircle,
-  Truck
+  Truck,
+  Edit2,
+  X,
+  Save
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -24,6 +27,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   const { 
     hotDeals = [], 
     addHotDeal, 
+    updateHotDeal,
     deleteHotDeal, 
     syncShopeeHotDeals,
     syncMagaluHotDeals,
@@ -35,6 +39,7 @@ export const AdminImperdiveisManager = ({ showToast }) => {
   const [isSyncingShein, setIsSyncingShein] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
+  const [editingDeal, setEditingDeal] = useState(null);
 
   // Formulário de Cadastro Rápido de Oferta (Shopee, Magalu ou SHEIN)
   const [newDealForm, setNewDealForm] = useState({
@@ -212,6 +217,33 @@ export const AdminImperdiveisManager = ({ showToast }) => {
     setTimeout(() => setCopiedId(null), 2000);
     if (showToast) {
       showToast('Texto copiado para WhatsApp e Telegram!');
+    }
+  };
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    if (!editingDeal) return;
+    const orig = parseFloat(editingDeal.originalPrice) || (parseFloat(editingDeal.promoPrice) * 1.5);
+    const promo = parseFloat(editingDeal.promoPrice) || 0;
+    const disc = Math.max(5, Math.round(((orig - promo) / orig) * 100));
+
+    const updated = {
+      ...editingDeal,
+      title: (editingDeal.title || '').trim(),
+      originalPrice: orig,
+      promoPrice: promo,
+      discountBadge: `${disc}% OFF`,
+      discountPercent: disc,
+      savings: Math.max(0, orig - promo),
+      affiliateUrl: (editingDeal.affiliateUrl || '').trim()
+    };
+
+    if (updateHotDeal) {
+      updateHotDeal(updated);
+    }
+    setEditingDeal(null);
+    if (showToast) {
+      showToast('Oferta imperdível atualizada com sucesso!', 'success');
     }
   };
 
@@ -556,6 +588,16 @@ export const AdminImperdiveisManager = ({ showToast }) => {
                   <span>{copiedId === deal.id ? 'Copiado!' : 'Copiar p/ Grupos'}</span>
                 </button>
 
+                {/* Editar Oferta */}
+                <button
+                  type="button"
+                  onClick={() => setEditingDeal({ ...deal })}
+                  className="p-1.5 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 transition-colors cursor-pointer"
+                  title="Editar Oferta & Link Direto do Produto"
+                >
+                  <Edit2 size={14} />
+                </button>
+
                 {/* Testar Link */}
                 <a
                   href={deal.affiliateUrl}
@@ -585,6 +627,139 @@ export const AdminImperdiveisManager = ({ showToast }) => {
           ))}
         </div>
       </div>
+
+      {/* MODAL DE EDIÇÃO DE OFERTA IMPERDÍVEL */}
+      {editingDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-xl bg-[#1A1817] border border-white/10 rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-orange-400 font-bold">
+                <Edit2 size={18} />
+                <span className="text-white text-base">Editar Oferta Imperdível</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingDeal(null)}
+                className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1">Título do Produto</label>
+                <input
+                  type="text"
+                  required
+                  value={editingDeal.title || ''}
+                  onChange={(e) => setEditingDeal({ ...editingDeal, title: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1">
+                  Link Direto do Produto (Shopee / Magalu / SHEIN)
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={editingDeal.affiliateUrl || ''}
+                  onChange={(e) => setEditingDeal({ ...editingDeal, affiliateUrl: e.target.value })}
+                  placeholder="https://shopee.com.br/produto... ou https://s.shopee.com.br/..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-orange-300 font-mono text-[11px] focus:outline-none focus:border-orange-500"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Cole o link direto do anúncio ou link de afiliado oficial. As tags de rastreamento serão aplicadas automaticamente.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-1">Preço Promocional (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={editingDeal.promoPrice || ''}
+                    onChange={(e) => setEditingDeal({ ...editingDeal, promoPrice: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-emerald-400 font-bold text-xs focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-1">Preço De (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingDeal.originalPrice || ''}
+                    onChange={(e) => setEditingDeal({ ...editingDeal, originalPrice: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-gray-300 text-xs focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1">URL da Imagem do Produto</label>
+                <input
+                  type="url"
+                  value={editingDeal.image || ''}
+                  onChange={(e) => setEditingDeal({ ...editingDeal, image: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-[11px] focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-1">Tag de Destaque</label>
+                  <input
+                    type="text"
+                    value={editingDeal.tag || ''}
+                    onChange={(e) => setEditingDeal({ ...editingDeal, tag: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-1">Loja</label>
+                  <input
+                    type="text"
+                    value={editingDeal.store || ''}
+                    onChange={(e) => setEditingDeal({ ...editingDeal, store: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-orange-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-300 font-semibold mb-1">Descrição</label>
+                <textarea
+                  rows={2}
+                  value={editingDeal.description || ''}
+                  onChange={(e) => setEditingDeal({ ...editingDeal, description: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-gray-300 text-xs focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setEditingDeal(null)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold flex items-center gap-1.5 transition-all shadow-md shadow-orange-600/30 cursor-pointer"
+                >
+                  <Save size={14} />
+                  <span>Salvar Alterações</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

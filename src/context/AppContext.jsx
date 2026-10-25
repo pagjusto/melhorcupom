@@ -722,10 +722,22 @@ export const AppProvider = ({ children }) => {
     try {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        // Atualizar imagens existentes e garantir que todas as ofertas base (SHEIN, Magalu e Shopee) existam no cache
+        // Atualizar imagens existentes e garantir que todas as ofertas base (SHEIN, Magalu e Shopee) existam no cache com links diretos
         const updated = parsed.map(item => {
           const fresh = ALL_BASE_HOT_DEALS.find(d => d.id === item.id);
-          return fresh && fresh.image ? { ...item, image: fresh.image, store: fresh.store || item.store, affiliateUrl: fresh.affiliateUrl || item.affiliateUrl } : item;
+          if (fresh) {
+            const isBrokenOrSearch = !item.affiliateUrl || item.affiliateUrl.includes('${BASE_TRACKING}') || item.affiliateUrl.includes('search?keyword=');
+            return {
+              ...item,
+              image: fresh.image || item.image,
+              store: fresh.store || item.store,
+              affiliateUrl: isBrokenOrSearch ? fresh.affiliateUrl : formatAffiliateUrl(item.affiliateUrl)
+            };
+          }
+          return {
+            ...item,
+            affiliateUrl: formatAffiliateUrl(item.affiliateUrl)
+          };
         });
 
         const existingIds = new Set(updated.map(d => d.id));
@@ -744,26 +756,29 @@ export const AppProvider = ({ children }) => {
   const formatAffiliateUrl = (rawUrl, storeType = 'auto') => {
     if (!rawUrl) return 'https://shopee.com.br/?af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom';
     
+    // Limpar interpolação quebrada que possa ter ficado no storage
+    let cleaned = rawUrl.replace(/&?\$\{BASE_TRACKING\}/g, '').replace(/\$\{SHOPEE_AFFILIATE_ID\}/g, '18305641225');
+    
     // Se for link Magalu / Magazine Você / Influencer Magalu
-    if (storeType === 'magalu' || rawUrl.includes('magazinevoce.com.br') || rawUrl.includes('magazineluiza.com.br') || rawUrl.includes('maga.lu')) {
-      return rawUrl;
+    if (storeType === 'magalu' || cleaned.includes('magazinevoce.com.br') || cleaned.includes('magazineluiza.com.br') || cleaned.includes('maga.lu')) {
+      return cleaned;
     }
 
     // Se for link SHEIN
-    if (storeType === 'shein' || rawUrl.includes('shein.com')) {
-      if (rawUrl.includes('aff_id=')) return rawUrl;
-      const separator = rawUrl.includes('?') ? '&' : '?';
-      return `${rawUrl}${separator}aff_id=melhorcupom&utm_source=affiliate&utm_medium=partner&ref=www&rep=dir&ret=br`;
+    if (storeType === 'shein' || cleaned.includes('shein.com')) {
+      if (cleaned.includes('aff_id=')) return cleaned;
+      const separator = cleaned.includes('?') ? '&' : '?';
+      return `${cleaned}${separator}aff_id=melhorcupom&utm_source=affiliate&utm_medium=partner&ref=www&rep=dir&ret=br`;
     }
 
     // Se for Shopee
-    if (rawUrl.includes('af=18305641225')) return rawUrl;
-    if (rawUrl.includes('shopee.com') || rawUrl.includes('s.shopee.com')) {
-      const separator = rawUrl.includes('?') ? '&' : '?';
-      return `${rawUrl}${separator}af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+    if (cleaned.includes('af=18305641225')) return cleaned;
+    if (cleaned.includes('shopee.com') || cleaned.includes('s.shopee.com')) {
+      const separator = cleaned.includes('?') ? '&' : '?';
+      return `${cleaned}${separator}af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
     }
 
-    return rawUrl;
+    return cleaned;
   };
 
   const addHotDeal = (dealData) => {
@@ -807,6 +822,15 @@ export const AppProvider = ({ children }) => {
   const deleteHotDeal = (id) => {
     setHotDeals(prev => {
       const updated = prev.filter(d => d.id !== id);
+      safeSetItem('melhor_cupom_hot_deals_v9', updated);
+      return updated;
+    });
+  };
+
+  const updateHotDeal = (updatedDeal) => {
+    if (!updatedDeal || !updatedDeal.id) return;
+    setHotDeals(prev => {
+      const updated = prev.map(d => d.id === updatedDeal.id ? { ...d, ...updatedDeal, affiliateUrl: formatAffiliateUrl(updatedDeal.affiliateUrl) } : d);
       safeSetItem('melhor_cupom_hot_deals_v9', updated);
       return updated;
     });
@@ -2992,6 +3016,7 @@ export const AppProvider = ({ children }) => {
       // Ofertas Imperdíveis (Robô Shopee & Magalu)
       hotDeals,
       addHotDeal,
+      updateHotDeal,
       deleteHotDeal,
       syncShopeeHotDeals,
       syncMagaluHotDeals,
