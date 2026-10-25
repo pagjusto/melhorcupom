@@ -84,13 +84,20 @@ export const cleanObsoleteStorage = () => {
     } catch {}
 
     try {
+      const rawCoupons = localStorage.getItem('melhor_cupom_coupons');
+      if (rawCoupons && rawCoupons.length > 800000) {
+        localStorage.removeItem('melhor_cupom_coupons');
+      }
+    } catch {}
+
+    try {
       const rawLogos = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
       if (rawLogos) {
         const parsedLogos = JSON.parse(rawLogos);
         let modified = false;
         Object.keys(parsedLogos).forEach(k => {
           const item = parsedLogos[k];
-          if (item && typeof item.logoImage === 'string' && item.logoImage.includes('/src/')) {
+          if (item && typeof item.logoImage === 'string' && (item.logoImage.includes('/src/') || item.logoImage.includes('cdn.lomadee.com.br'))) {
             delete item.logoImage;
             delete item.hasCustomLogo;
             modified = true;
@@ -146,7 +153,7 @@ export const AppProvider = ({ children }) => {
             const keys = getStoreLogoKeys(s.id, s.name);
             let matched = null;
             for (const k of keys) {
-              if (idbLogos[k]) {
+              if (idbLogos[k] && idbLogos[k].logoImage && !idbLogos[k].logoImage.includes('cdn.lomadee.com.br') && !idbLogos[k].logoImage.includes('/src/')) {
                 matched = idbLogos[k];
                 break;
               }
@@ -154,7 +161,7 @@ export const AppProvider = ({ children }) => {
             if (!matched) return s;
 
             const shouldUpdate = Boolean(
-              (matched.logoImage && matched.logoImage !== s.logoImage) ||
+              (matched.logoImage && (matched.logoImage !== s.logoImage || !s.hasCustomLogo)) ||
               (matched.logoFit !== undefined && matched.logoFit !== s.logoFit) ||
               (matched.logoScale !== undefined && matched.logoScale !== s.logoScale) ||
               (matched.logoPadding !== undefined && matched.logoPadding !== s.logoPadding) ||
@@ -190,33 +197,16 @@ export const AppProvider = ({ children }) => {
       const serialized = typeof value === 'string' ? value : JSON.stringify(value);
       localStorage.setItem(key, serialized);
     } catch (err) {
-      console.warn(`[Storage] Cota excedida ao gravar "${key}". Executando limpeza e sanitizacao...`, err);
+      console.warn(`[Storage] Cota excedida ao gravar "${key}". Executando limpeza emergencial de cache...`, err);
+      try {
+        localStorage.removeItem('melhor_cupom_coupons');
+        localStorage.removeItem('melhor_cupom_custom_coupons');
+        localStorage.removeItem('melhor_cupom_hot_deals_v9');
+      } catch {}
       cleanObsoleteStorage();
       try {
-        if (typeof value === 'object' && Array.isArray(value)) {
-          const sanitized = value.map(item => {
-            if (item && typeof item === 'object') {
-              const clean = { ...item };
-              if (clean.banner && typeof clean.banner === 'string' && clean.banner.startsWith('data:image/') && clean.banner.length > 80000) {
-                clean.banner = '';
-              }
-              if (clean.image && typeof clean.image === 'string' && clean.image.startsWith('data:image/') && clean.image.length > 80000) {
-                clean.image = '';
-              }
-              return clean;
-            }
-            return item;
-          });
-          localStorage.setItem(key, JSON.stringify(sanitized));
-        } else if (typeof value === 'object' && value !== null) {
-          const cleanObj = {};
-          Object.keys(value).forEach(k => {
-            if (value[k]) cleanObj[k] = value[k];
-          });
-          localStorage.setItem(key, JSON.stringify(cleanObj));
-        } else {
-          localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
-        }
+        const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+        localStorage.setItem(key, serialized);
       } catch (innerErr) {
         console.warn(`[Storage] Nao foi possivel persistir "${key}" no LocalStorage (mantido em memoria/IDB):`, innerErr);
       }
@@ -385,7 +375,6 @@ export const AppProvider = ({ children }) => {
                   const keys = getStoreLogoKeys(s.id, s.name);
                   keys.forEach(key => {
                     recoveredMap[key] = { ...(recoveredMap[key] || {}), ...entry };
-                    persistCustomLogoToIDB(key, entry).catch(() => {});
                   });
                 }
               });
@@ -421,7 +410,6 @@ export const AppProvider = ({ children }) => {
                   keys.forEach(key => {
                     if (!recoveredMap[key]) {
                       recoveredMap[key] = entry;
-                      persistCustomLogoToIDB(key, entry).catch(() => {});
                     } else {
                       recoveredMap[key] = { ...entry, ...recoveredMap[key] };
                     }
@@ -432,7 +420,7 @@ export const AppProvider = ({ children }) => {
           } catch {}
         });
 
-        // 4. Fallback final: cupons (apenas se a loja ainda não tiver logo definida)
+        // 4. Fallback final: cupons com uploads locais
         const couponKeys = ['melhor_cupom_custom_coupons', 'melhor_cupom_coupons'];
         couponKeys.forEach(k => {
           try {
@@ -442,9 +430,9 @@ export const AppProvider = ({ children }) => {
             if (Array.isArray(parsed)) {
               parsed.forEach(c => {
                 if (!c || !c.storeId) return;
-                const candidateLogo = (typeof c.customStoreLogoImage === 'string' && c.customStoreLogoImage.length > 0) ? c.customStoreLogoImage :
-                  (typeof c.storeLogoImage === 'string' && (c.storeLogoImage.startsWith('data:') || (c.storeLogoImage.startsWith('http') && !c.storeLogoImage.includes('unsplash')))) ? c.storeLogoImage :
-                  (typeof c.logoImage === 'string' && (c.logoImage.startsWith('data:') || (c.logoImage.startsWith('http') && !c.logoImage.includes('unsplash')))) ? c.logoImage : null;
+                const candidateLogo = (typeof c.customStoreLogoImage === 'string' && c.customStoreLogoImage.length > 0 && !c.customStoreLogoImage.includes('/src/') && !c.customStoreLogoImage.includes('lomadee')) ? c.customStoreLogoImage :
+                  (typeof c.storeLogoImage === 'string' && c.storeLogoImage.startsWith('data:')) ? c.storeLogoImage :
+                  (typeof c.logoImage === 'string' && c.logoImage.startsWith('data:')) ? c.logoImage : null;
                 
                 if (candidateLogo) {
                   const entry = {
@@ -455,7 +443,6 @@ export const AppProvider = ({ children }) => {
                   keys.forEach(key => {
                     if (!recoveredMap[key] || !recoveredMap[key].logoImage) {
                       recoveredMap[key] = { ...(recoveredMap[key] || {}), ...entry };
-                      persistCustomLogoToIDB(key, entry).catch(() => {});
                     }
                   });
                 }
@@ -1931,9 +1918,17 @@ export const AppProvider = ({ children }) => {
 
     // 2. Gravar no mapa dedicado e permanente de logos customizadas no LocalStorage
     try {
+      const rawCoupons = localStorage.getItem('melhor_cupom_coupons');
+      if (rawCoupons && rawCoupons.length > 800000) {
+        localStorage.removeItem('melhor_cupom_coupons');
+      }
+    } catch {}
+
+    try {
       const rawLogos = localStorage.getItem('melhor_cupom_custom_store_logos_v1');
       const logosMap = rawLogos ? JSON.parse(rawLogos) : {};
-      storeKeys.forEach(k => {
+      const targetKeys = [...new Set([storeId, rootKey, ...storeKeys])].filter(Boolean);
+      targetKeys.forEach(k => {
         if (isClearingCustomLogo) {
           delete logosMap[k];
         } else {
@@ -1988,7 +1983,7 @@ export const AppProvider = ({ children }) => {
       return finalStores;
     });
 
-    // Sincronizar cupons vinculados (logo e enquadramento) com persistência definitiva
+    // Sincronizar cupons vinculados (APENAS enquadramento e flag, sem duplicar base64 redundante)
     setCoupons(prev => {
       let hasCouponChanges = false;
       const updatedCoupons = prev.map(c => {
@@ -2004,17 +1999,7 @@ export const AppProvider = ({ children }) => {
           hasCouponChanges = true;
           return {
             ...c,
-            ...(updatedData.logoImage ? {
-              hasCustomLogo: true,
-              logoImage: updatedData.logoImage,
-              storeLogoImage: updatedData.logoImage,
-              storeLogo: updatedData.logoImage,
-              customStoreLogoImage: updatedData.logoImage
-            } : {}),
-            ...(updatedData.hasCustomLogo === false ? {
-              hasCustomLogo: false,
-              customStoreLogoImage: ''
-            } : {}),
+            hasCustomLogo: Boolean(updatedData.hasCustomLogo ?? c.hasCustomLogo),
             ...(updatedData.logoFit !== undefined ? { logoFit: updatedData.logoFit } : {}),
             ...(updatedData.logoScale !== undefined ? { logoScale: updatedData.logoScale } : {}),
             ...(updatedData.logoBg !== undefined ? { logoBg: updatedData.logoBg } : {})
