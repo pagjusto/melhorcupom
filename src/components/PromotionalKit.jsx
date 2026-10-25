@@ -1118,13 +1118,17 @@ export const AdminPromoManager = ({ stores = [], showToast = () => {} }) => {
   // Salvar ajustes de enquadramento da logo permanentemente
   const handleSaveLogoSettings = () => {
     if (!selectedStore) return;
+    const effectiveLogo = (selectedStore.hasCustomLogo && typeof selectedStore.logoImage === 'string' && selectedStore.logoImage.startsWith('data:image/'))
+      ? selectedStore.logoImage
+      : (getBrandLogo(selectedStore.name) || getBrandLogo(selectedStore.id) || (typeof selectedStore.logoImage === 'string' && !selectedStore.logoImage.includes('/src/') && !selectedStore.logoImage.includes('cdn.lomadee.com.br') ? selectedStore.logoImage : ''));
+
     if (typeof updateStore === 'function') {
       updateStore(selectedStore.id, {
         logoScale: liveLogoScale,
         logoFit: liveLogoFit,
         logoBg: liveLogoBg,
         storeName: selectedStore.name,
-        ...(selectedStore.logoImage ? { logoImage: selectedStore.logoImage } : {})
+        ...(effectiveLogo ? { logoImage: effectiveLogo } : {})
       });
     }
     setSavedLogoSettings(true);

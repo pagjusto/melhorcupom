@@ -679,7 +679,7 @@ export const StoresView = ({ onSelectStore }) => {
                   </div>
 
                   {/* Botão ADM para editar logo de qualquer parceiro (incluindo API) */}
-                  {currentRole === 'admin' && (
+                  {(currentRole === 'admin' || isSimulationOrAdmin) && (
                     <button
                       type="button"
                       onClick={(e) => {
