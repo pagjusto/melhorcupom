@@ -1459,15 +1459,15 @@ export const AppProvider = ({ children }) => {
     }
 
     const store = stores.find(s => s.id === coupon.storeId);
-    const isApiOrOnline = Boolean(
-      coupon.type === 'online' ||
-      coupon.isApiIntegrated ||
-      coupon.apiSource ||
-      store?.type === 'online' ||
-      store?.isApiIntegrated ||
-      store?.apiSource ||
-      store?.tier === 'api'
+    // Identificar com máxima clareza se é Parceiro Local (estabelecimentos físicos com validação de balcão via QR Code)
+    const isLocalPartner = Boolean(
+      coupon.type === 'physical' ||
+      coupon.type === 'both' ||
+      store?.type === 'physical' ||
+      store?.type === 'both' ||
+      (!coupon.isApiIntegrated && !coupon.apiSource && !store?.isApiIntegrated && !store?.apiSource && coupon.type !== 'online' && store?.type !== 'online')
     );
+    const isApiOrOnline = !isLocalPartner;
     
     // Gera código único ex: VIP-VIP50-8472
     const randomCode = Math.floor(1000 + Math.random() * 9000);
@@ -1488,11 +1488,17 @@ export const AppProvider = ({ children }) => {
     const redemptionId = `red_${Date.now()}`;
     const qrPayload = !isApiOrOnline
       ? JSON.stringify({
+          type: 'melhorcupom_local_partner',
           code: generatedCode,
           passCode: generatedPassCode,
           id: redemptionId,
           couponId: coupon.id,
-          merchantId: coupon.merchantId
+          storeId: coupon.storeId || store?.id,
+          storeName: store ? store.name : 'Loja Parceira',
+          merchantId: coupon.merchantId || store?.merchantId,
+          userName: userProfile.name,
+          userCpf: userProfile.cpf || '***.***.***-**',
+          timestamp: Date.now()
         })
       : null;
 
@@ -1581,10 +1587,10 @@ export const AppProvider = ({ children }) => {
     }
 
     const currentMerchantStore = stores.find(s => s.merchantId === merchantId || s.id === merchantId);
-    if (currentMerchantStore && (currentMerchantStore.tier === 'api' || currentMerchantStore.isApiIntegrated || currentMerchantStore.apiSource)) {
+    if (currentMerchantStore && (currentMerchantStore.isApiIntegrated || currentMerchantStore.apiSource) && currentMerchantStore.type !== 'physical' && currentMerchantStore.type !== 'both') {
       return {
         success: false,
-        message: '⚠️ O Validador de Balcão (Caixa / PDV) é exclusivo para lojistas cadastrados e não está disponível para empresas de API.'
+        message: '⚠️ O Validador de Balcão (Caixa / PDV) é exclusivo para lojistas parceiros locais.'
       };
     }
 
@@ -1625,17 +1631,17 @@ export const AppProvider = ({ children }) => {
 
     const foundCoupon = coupons.find(c => c.id === found.couponId);
     const foundStore = stores.find(s => s.id === foundCoupon?.storeId || s.merchantId === found.merchantId);
-    if (
-      found.isApiRedemption ||
-      foundCoupon?.isApiIntegrated ||
-      foundCoupon?.apiSource ||
-      foundStore?.tier === 'api' ||
-      foundStore?.isApiIntegrated ||
-      foundStore?.apiSource
-    ) {
+    const isFoundLocal = Boolean(
+      foundCoupon?.type === 'physical' ||
+      foundCoupon?.type === 'both' ||
+      foundStore?.type === 'physical' ||
+      foundStore?.type === 'both' ||
+      (!foundCoupon?.isApiIntegrated && !foundCoupon?.apiSource && foundCoupon?.type !== 'online' && foundStore?.type !== 'online')
+    );
+    if (!isFoundLocal || found.isApiRedemption) {
       return {
         success: false,
-        message: '⚠️ Operação Bloqueada: O Validador de Balcão (PDV) é exclusivo para lojistas e não se aplica a cupons de empresas de API.'
+        message: '⚠️ Operação Bloqueada: O Validador de Balcão (PDV) é exclusivo para lojistas parceiros locais.'
       };
     }
 

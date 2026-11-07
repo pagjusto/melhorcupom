@@ -421,6 +421,10 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
                 {(() => {
                   const isLinkOnly = coupon.isLinkOnly || (!coupon.code && (!coupon.codePrefix || coupon.codePrefix === 'MELHORVIP') && (coupon.type === 'online' || coupon.title?.toLowerCase().includes('pelo link')));
                   if (isLinkOnly) return '🔗 Seguir para Loja';
+                  const isPhysicalLocal = coupon.type === 'physical' || coupon.type === 'both' || store?.type === 'physical' || store?.type === 'both' || (!coupon.isApiIntegrated && !coupon.apiSource && coupon.type !== 'online' && storeTier !== 'api');
+                  if (isPhysicalLocal) {
+                    return '📱 Gerar QR Code (No Caixa)';
+                  }
                   if (coupon.type === 'online' || coupon.isApiIntegrated || coupon.apiSource || store?.isApiIntegrated || store?.apiSource || storeTier === 'api') {
                     return '🎟️ Pegar Cupom';
                   }

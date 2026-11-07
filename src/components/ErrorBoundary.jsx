@@ -17,8 +17,11 @@ export class ErrorBoundary extends React.Component {
     if (error && (error.name === 'QuotaExceededError' || String(error).toLowerCase().includes('quota'))) {
       try {
         localStorage.removeItem('melhor_cupom_coupons');
+        localStorage.removeItem('melhor_cupom_coupons_v1');
         localStorage.removeItem('melhor_cupom_custom_coupons');
         localStorage.removeItem('melhor_cupom_modified_coupons');
+        localStorage.removeItem('melhor_cupom_hot_deals_v9');
+        localStorage.removeItem('melhor_cupom_hot_deals_v8');
       } catch {}
     }
     this.setState({ errorInfo });
@@ -37,7 +40,11 @@ export class ErrorBoundary extends React.Component {
         'melhor_cupom_redemptions',
         'melhor_cupom_admin_users',
         'melhor_cupom_coupons',
-        'melhor_cupom_coupons_v1'
+        'melhor_cupom_coupons_v1',
+        'melhor_cupom_custom_coupons',
+        'melhor_cupom_modified_coupons',
+        'melhor_cupom_hot_deals_v9',
+        'melhor_cupom_hot_deals_v8'
       ];
       obsoleteKeys.forEach(k => {
         try { localStorage.removeItem(k); } catch {}

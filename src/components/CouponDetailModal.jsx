@@ -21,7 +21,11 @@ import {
   Coins,
   Zap,
   ArrowRight,
-  Pencil
+  Pencil,
+  Eye,
+  Shield,
+  ShieldAlert,
+  Radio
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
@@ -46,6 +50,55 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   const [redirectProgress, setRedirectProgress] = useState(0);
   const [isEditingBanner, setIsEditingBanner] = useState(false);
 
+  // Estados de Segurança e Proteção Anti-Print / Anti-Screenshot
+  const [isScreenShieldActive, setIsScreenShieldActive] = useState(false);
+  const [liveSecondsTime, setLiveSecondsTime] = useState(() => new Date().toLocaleTimeString('pt-BR'));
+
+  // Relógio ao vivo em tempo real para comprovação de vida (prova de tela ao vivo contra prints)
+  useEffect(() => {
+    const clockInterval = setInterval(() => {
+      setLiveSecondsTime(new Date().toLocaleTimeString('pt-BR'));
+    }, 1000);
+    return () => clearInterval(clockInterval);
+  }, []);
+
+  // Interceptador e sensor de captura de tela (Anti-Print / Anti-Screenshot)
+  useEffect(() => {
+    // 1. Mudança de visibilidade / foco (quando o usuário tenta tirar print no celular iOS ou Android)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        setIsScreenShieldActive(true);
+      }
+    };
+
+    const handleWindowBlur = () => {
+      // Ao pressionar botões físicos de captura no mobile ou atalhos de sistema, a janela perde o foco
+      setIsScreenShieldActive(true);
+    };
+
+    // 2. Teclas de captura comuns de tela no computador / desktop
+    const handleKeyDown = (e) => {
+      if (
+        e.key === 'PrintScreen' ||
+        (e.ctrlKey && (e.key === 'p' || e.key === 'P')) ||
+        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5'))
+      ) {
+        try { e.preventDefault(); } catch {}
+        setIsScreenShieldActive(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // Identificar se é cupom de grande loja / e-commerce online
   const isBigStoreCoupon = Boolean(
     coupon?.isApiIntegrated || 
@@ -56,13 +109,17 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     store?.type === 'online'
   );
 
-  // Identificar se pertence a uma empresa de API / rede nacional (sem plano de lojista credenciado)
-  // Validador de Balcão (QR Code + Senha de 6 dígitos) é EXCLUSIVO para lojistas cadastrados com plano ativo
-  const isApiCompanyCoupon = Boolean(
-    isBigStoreCoupon ||
-    store?.tier === 'api' ||
-    (!store?.isNewPartner && !store?.adminPaidPlan && (!store?.tier || store?.tier === 'api' || store?.tier === 'free'))
+  // Identificar se é Parceiro Local / Loja Física (comércio da cidade, gastronomia, serviços)
+  // Toda vez que o usuário for usar um cupom de parceiro local, deve gerar QR Code e mostrar ao lojista com proteção anti-print
+  const isLocalPartner = Boolean(
+    coupon?.type === 'physical' || 
+    coupon?.type === 'both' || 
+    store?.type === 'physical' || 
+    store?.type === 'both' ||
+    (!isBigStoreCoupon && coupon?.type !== 'online' && store?.type !== 'online')
   );
+
+  const isOnlineCoupon = !isLocalPartner && isBigStoreCoupon;
 
   // Histórico de resgates deste cupom pelo usuário logado
   const pastUserRedemptions = redemptions.filter(r => 
@@ -85,23 +142,23 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   useEffect(() => {
     if (!coupon) return;
 
-    // Cupons de lojas físicas locais e Ofertas Imperdíveis requerem assinatura VIP do clube
-    if (!isVipUser && (!isBigStoreCoupon || coupon.isHotDeal || coupon.isImperdivel)) {
+    // Cupons de parceiros locais físicos e Ofertas Imperdíveis requerem assinatura VIP do clube
+    if (!isVipUser && (isLocalPartner || coupon.isHotDeal || coupon.isImperdivel)) {
       onClose();
       setIsSubscriptionModalOpen(true);
       return;
     }
 
-    // Cupons de empresas de API e grandes lojas não dependem de validação PDV (Caixa / Senha 6 dígitos)
-    if (isApiCompanyCoupon) {
+    // Cupons puramente de rede/online de grande e-commerce não geram QR Code de balcão físico
+    if (isOnlineCoupon) {
       setIsLimitReached(false);
       return;
     }
 
-    // 1. Verificar se já existe resgate válido para este cupom (apenas para Lojistas Credenciados)
+    // 1. Verificar se já existe resgate válido para este cupom
     const existing = redemptions.find(r => 
       r.couponId === coupon.id && 
-      (r.userName === userProfile.name || (userProfile.cpf && r.userCpf === userProfile.cpf)) && 
+      (r.userName === userProfile?.name || (userProfile?.cpf && r.userCpf === userProfile?.cpf)) && 
       r.status === 'valid'
     );
 
@@ -112,7 +169,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
       // 2. Verificar se o usuário já atingiu a cota de uso por CPF
       const userUses = redemptions.filter(r => 
         r.couponId === coupon.id && 
-        (r.userName === userProfile.name || (userProfile.cpf && r.userCpf === userProfile.cpf))
+        (r.userName === userProfile?.name || (userProfile?.cpf && r.userCpf === userProfile?.cpf))
       ).length;
 
       const maxUses = coupon.maxUsesPerUser;
@@ -130,7 +187,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
         }
       }
     }
-  }, [coupon, isVipUser]);
+  }, [coupon, isVipUser, isLocalPartner, isOnlineCoupon]);
 
   // Timer regressivo
   useEffect(() => {
@@ -141,13 +198,12 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
   }, []);
 
   if (!coupon) return null;
-  if (!isLimitReached && !activeRedemption && !isApiCompanyCoupon) return null;
+  if (!isLimitReached && !activeRedemption && !isOnlineCoupon) return null;
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-  const isOnlineCoupon = isApiCompanyCoupon;
   // Identifica se o cupom possui de fato um código definido para digitação no checkout
   const rawProvidedCode = (coupon.code?.trim() || coupon.codePrefix?.trim() || '');
   const isExplicitLinkOffer = Boolean(
@@ -684,70 +740,134 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
             /* FLUXO DE LOJA FÍSICA (COM QR CODE E SENHA DE 6 DÍGITOS)  */
             /* ======================================================== */
             <>
-              {/* Área do Cupom / QR Code Box */}
-              <div className="bg-[#101017] border-2 border-dashed border-[#FF5F00]/40 rounded-2xl p-5 text-center relative mb-5">
-                
-                <div className="text-xs text-gray-400 mb-2 font-medium">
-                  Apresente o QR Code ao atendente ou informe a senha de 6 dígitos abaixo:
-                </div>
-
-                {/* Renderização do QR Code oficial */}
-                <div className="inline-block p-3 bg-white rounded-2xl shadow-xl my-2">
-                  <QRCodeSVG 
-                    value={activeRedemption.qrPayload || activeRedemption.code} 
-                    size={155} 
-                    level="H" 
-                    includeMargin={false}
-                  />
-                </div>
-
-                {/* Senha Obrigatória do QR Code para Ofertas Locais */}
-                <div className="my-3 p-3.5 bg-gradient-to-r from-orange-500/20 via-black/60 to-orange-500/20 border-2 border-[#FF5F00] rounded-2xl text-center shadow-lg">
-                  <div className="text-[11px] font-black text-orange-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1">
-                    <KeyRound size={15} className="text-[#FF5F00]" />
-                    <span>Senha de Validação do QR Code:</span>
+              {isScreenShieldActive ? (
+                /* ESCUDO DE PROTEÇÃO ANTI-PRINT / ANTI-SCREENSHOT */
+                <div className="bg-red-950/70 border-2 border-red-500 rounded-3xl p-6 sm:p-8 text-center space-y-4 animate-fade-in shadow-2xl mb-5">
+                  <div className="w-16 h-16 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center mx-auto shadow-inner">
+                    <ShieldAlert size={36} className="animate-bounce" />
                   </div>
-                  <div className="font-mono text-3xl sm:text-4xl font-black text-white tracking-[0.25em] py-1 select-all">
-                    {activeRedemption.passCode || '849201'}
-                  </div>
-                  <p className="text-[10px] text-gray-300 mt-1 max-w-xs mx-auto leading-tight">
-                    Apresente o QR Code no caixa para leitura. Caso a câmera do lojista não consiga escanear, informe esta <strong>Senha de 6 dígitos</strong> para baixa manual.
-                  </p>
-                </div>
-
-                {/* Status de Baixa Confirmada */}
-                {activeRedemption.status === 'used' && (
-                  <div className="my-3 p-3 bg-emerald-500/20 border-2 border-emerald-500/50 rounded-2xl text-center animate-fade-in">
-                    <div className="text-emerald-400 font-black text-sm flex items-center justify-center gap-1.5 mb-0.5">
-                      <CheckCircle2 size={18} />
-                      <span>CUPOM BAIXADO NO CAIXA COM SUCESSO!</span>
-                    </div>
-                    <div className="text-[11px] text-emerald-200">
-                      Economia de R$ {Number(activeRedemption.savings || 20).toFixed(2).replace('.', ',')} creditada na sua carteira.
-                    </div>
-                  </div>
-                )}
-
-                {/* Código em Destaque */}
-                <div className="mt-3 flex items-center justify-center gap-2">
-                  <div className="bg-white/10 border border-white/20 font-mono text-xl sm:text-2xl font-black text-orange-400 tracking-wider px-4 py-2 rounded-xl">
-                    {activeRedemption.code}
+                  <div className="space-y-1">
+                    <h4 className="text-base font-black text-white flex items-center justify-center gap-2">
+                      <span>🛡️ Proteção Anti-Print Ativada!</span>
+                    </h4>
+                    <p className="text-xs text-red-200 leading-relaxed max-w-sm mx-auto">
+                      Identificamos que a tela perdeu o foco ou houve tentativa de captura de imagem. Por segurança contra fraudes e prints falsos, o QR Code foi ocultado.
+                    </p>
                   </div>
                   <button
-                    onClick={handleCopy}
-                    className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-2.5 rounded-xl transition-colors shadow-md flex items-center justify-center cursor-pointer"
-                    title="Copiar código"
+                    onClick={() => setIsScreenShieldActive(false)}
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs py-3 px-5 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] cursor-pointer inline-flex items-center gap-2"
                   >
-                    {copied ? <Check size={20} className="text-emerald-300" /> : <Copy size={20} />}
+                    <Eye size={16} />
+                    <span>Reexibir QR Code Ao Vivo (Apresentar ao Caixa)</span>
                   </button>
                 </div>
+              ) : (
+                /* Área do Cupom / QR Code Box com Prova de Vida ao Vivo */
+                <div 
+                  className="bg-[#101017] border-2 border-dashed border-[#FF5F00]/50 rounded-2xl p-5 text-center relative mb-5 select-none anti-screen-capture overflow-hidden"
+                  onContextMenu={(e) => e.preventDefault()}
+                >
+                  {/* Header de Segurança e Prova de Vida ao Vivo */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-black uppercase tracking-wider">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span>🟢 Ao Vivo: {liveSecondsTime}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1 text-[11px] text-amber-300 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                      <Shield size={12} className="text-amber-400" />
+                      <span>Protegido Anti-Print</span>
+                    </div>
+                  </div>
 
-                {/* Timer de Validade do Resgate */}
-                <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-                  <Clock size={13} className="animate-spin-slow" />
-                  <span>Código ativo por: <strong>{formattedTime}</strong> min</span>
+                  <div className="text-xs text-gray-300 mb-3 font-semibold">
+                    Apresente esta tela <strong>AO VIVO</strong> ao lojista/atendente no caixa:
+                  </div>
+
+                  {/* Container do QR Code Oficial com Feixe Laser em Movimento e Marca D'água Dinâmica */}
+                  <div className="relative inline-block p-4 bg-white rounded-2xl shadow-2xl my-2 border-4 border-[#FF5F00]/30 overflow-hidden select-none">
+                    {/* Linha Laser Verde em Movimento Contínuo (impossível em prints estáticos) */}
+                    <div className="animate-laser-scan pointer-events-none" />
+
+                    {/* Marca D'água Holográfica de Segurança */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-20 text-[9px] font-mono font-bold text-gray-900 select-none rotate-[-25deg] leading-tight">
+                      <span>{userProfile?.name || 'CLIENTE VIP'}</span>
+                      <span>{userProfile?.cpf ? `CPF: ${userProfile.cpf.substring(0, 3)}.***.***-${userProfile.cpf.slice(-2)}` : 'VALIDAÇÃO PDV'}</span>
+                      <span className="text-[7px]">{liveSecondsTime}</span>
+                    </div>
+
+                    {/* QR Code SVG */}
+                    <div className="relative z-10 pointer-events-none">
+                      <QRCodeSVG 
+                        value={activeRedemption?.qrPayload || activeRedemption?.code || 'MELHORCUPOM'} 
+                        size={165} 
+                        level="H" 
+                        includeMargin={false}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Senha Obrigatória do QR Code para Ofertas Locais */}
+                  <div className="my-3 p-3.5 bg-gradient-to-r from-orange-500/20 via-black/60 to-orange-500/20 border-2 border-[#FF5F00] rounded-2xl text-center shadow-lg">
+                    <div className="text-[11px] font-black text-orange-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1">
+                      <KeyRound size={15} className="text-[#FF5F00]" />
+                      <span>Senha de Validação do QR Code:</span>
+                    </div>
+                    <div className="font-mono text-3xl sm:text-4xl font-black text-white tracking-[0.25em] py-1 select-all">
+                      {activeRedemption?.passCode || '849201'}
+                    </div>
+                    <p className="text-[10px] text-gray-300 mt-1 max-w-xs mx-auto leading-tight">
+                      Apresente o QR Code no caixa para leitura. Caso a câmera do lojista não consiga escanear, informe esta <strong>Senha de 6 dígitos</strong> para baixa manual no validador.
+                    </p>
+                  </div>
+
+                  {/* Alerta de Verificação para o Lojista */}
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-left space-y-1 mt-3">
+                    <div className="text-[11px] font-black text-amber-300 flex items-center gap-1.5">
+                      <AlertTriangle size={14} className="text-amber-400 flex-shrink-0" />
+                      <span>Atenção Lojista / Atendente:</span>
+                    </div>
+                    <p className="text-[10px] text-gray-300 leading-relaxed">
+                      • Exija a apresentação desta tela <strong>ao vivo</strong> pelo aplicativo/site.<br/>
+                      • Verifique a <strong>linha laser verde em movimento</strong> e o <strong>relógio de segundos rodando</strong>.<br/>
+                      • <strong>NÃO ACEITE PRINTS DE TELA OU FOTOS</strong> (imagens estáticas são inválidas).
+                    </p>
+                  </div>
+
+                  {/* Status de Baixa Confirmada */}
+                  {activeRedemption?.status === 'used' && (
+                    <div className="my-3 p-3 bg-emerald-500/20 border-2 border-emerald-500/50 rounded-2xl text-center animate-fade-in">
+                      <div className="text-emerald-400 font-black text-sm flex items-center justify-center gap-1.5 mb-0.5">
+                        <CheckCircle2 size={18} />
+                        <span>CUPOM BAIXADO NO CAIXA COM SUCESSO!</span>
+                      </div>
+                      <div className="text-[11px] text-emerald-200">
+                        Economia de R$ {Number(activeRedemption.savings || 20).toFixed(2).replace('.', ',')} creditada na sua carteira.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Código em Destaque */}
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <div className="bg-white/10 border border-white/20 font-mono text-xl sm:text-2xl font-black text-orange-400 tracking-wider px-4 py-2 rounded-xl">
+                      {activeRedemption?.code || 'MELHORVIP'}
+                    </div>
+                    <button
+                      onClick={handleCopy}
+                      className="bg-[#FF5F00] hover:bg-[#E04F00] text-white p-2.5 rounded-xl transition-colors shadow-md flex items-center justify-center cursor-pointer"
+                      title="Copiar código"
+                    >
+                      {copied ? <Check size={20} className="text-emerald-300" /> : <Copy size={20} />}
+                    </button>
+                  </div>
+
+                  {/* Timer de Validade do Resgate */}
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                    <Clock size={13} className="animate-spin-slow" />
+                    <span>Código ativo por: <strong>{formattedTime}</strong> min</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Botões de Ação Rápida: WhatsApp e Como Chegar (Localização) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">

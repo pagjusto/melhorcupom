@@ -3,6 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="lomadee" content="2324685" />
+    <script>
+      // Blindagem Proativa Global Contra QuotaExceededError (LocalStorage)
+      (function() {
+        try {
+          // Limpeza emergencial de chaves legadas pesadas para liberar espaço no navegador
+          var heavyKeys = [
+            'melhor_cupom_coupons',
+            'melhor_cupom_coupons_v1',
+            'melhor_cupom_hot_deals_v8',
+            'melhor_cupom_hot_deals_v7',
+            'melhor_cupom_stores_v8',
+            'melhor_cupom_stores_v7',
+            'melhor_cupom_stores_v6',
+            'melhor_cupom_stores_v5',
+            'melhor_cupom_stores'
+          ];
+          for (var i = 0; i < heavyKeys.length; i++) {
+            try { localStorage.removeItem(heavyKeys[i]); } catch(e) {}
+          }
+        } catch(e) {}
+
+        // Interceptador e protetor universal do localStorage.setItem
+        try {
+          var originalSetItem = window.localStorage.setItem.bind(window.localStorage);
+          window.localStorage.setItem = function(key, value) {
+            // Nunca persistir a chave legada monolítica de cupons (>3MB)
+            if (key === 'melhor_cupom_coupons' || key === 'melhor_cupom_coupons_v1') {
+              try { window.localStorage.removeItem(key); } catch(e) {}
+              return;
+            }
+            try {
+              originalSetItem(key, value);
+            } catch (err) {
+              console.warn('[Storage Protection] Cota excedida ao gravar chave:', key, err);
+              try {
+                // Tenta expurgar caches pesados e gravar novamente
+                window.localStorage.removeItem('melhor_cupom_coupons');
+                window.localStorage.removeItem('melhor_cupom_coupons_v1');
+                window.localStorage.removeItem('melhor_cupom_hot_deals_v9');
+                originalSetItem(key, value);
+              } catch (innerErr) {
+                console.warn('[Storage Protection] Fallback seguro ativado para:', key);
+              }
+            }
+          };
+        } catch(e) {}
+      })();
+    </script>
     <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png?v=5" />
     <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png?v=5" />
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=5" />
