@@ -796,7 +796,7 @@ export const StoresView = ({ onSelectStore }) => {
             </div>
             <h4 className="font-bold text-white text-sm mb-1">Validação Rápida no Caixa</h4>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Escaneie o QR Code pela câmera do celular ou digite o código de 6 dígitos. Sem burocracia nem aparelhos extras.
+              Escaneie o QR Code diretamente pela câmera do celular ou digite o código do cupom. Sem burocracia nem aparelhos extras.
             </p>
           </div>
 

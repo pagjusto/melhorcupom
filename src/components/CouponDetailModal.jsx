@@ -800,36 +800,22 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                     <div className="relative z-10 pointer-events-none">
                       <QRCodeSVG 
                         value={activeRedemption?.qrPayload || activeRedemption?.code || 'MELHORCUPOM'} 
-                        size={165} 
+                        size={185} 
                         level="H" 
                         includeMargin={false}
                       />
                     </div>
                   </div>
 
-                  {/* Senha Obrigatória do QR Code para Ofertas Locais */}
-                  <div className="my-3 p-3.5 bg-gradient-to-r from-orange-500/20 via-black/60 to-orange-500/20 border-2 border-[#FF5F00] rounded-2xl text-center shadow-lg">
-                    <div className="text-[11px] font-black text-orange-300 uppercase tracking-wider flex items-center justify-center gap-1.5 mb-1">
-                      <KeyRound size={15} className="text-[#FF5F00]" />
-                      <span>Senha de Validação do QR Code:</span>
-                    </div>
-                    <div className="font-mono text-3xl sm:text-4xl font-black text-white tracking-[0.25em] py-1 select-all">
-                      {activeRedemption?.passCode || '849201'}
-                    </div>
-                    <p className="text-[10px] text-gray-300 mt-1 max-w-xs mx-auto leading-tight">
-                      Apresente o QR Code no caixa para leitura. Caso a câmera do lojista não consiga escanear, informe esta <strong>Senha de 6 dígitos</strong> para baixa manual no validador.
-                    </p>
-                  </div>
-
                   {/* Alerta de Verificação para o Lojista */}
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-left space-y-1 mt-3">
+                  <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-left space-y-1.5 mt-3 shadow-sm">
                     <div className="text-[11px] font-black text-amber-300 flex items-center gap-1.5">
-                      <AlertTriangle size={14} className="text-amber-400 flex-shrink-0" />
-                      <span>Atenção Lojista / Atendente:</span>
+                      <AlertTriangle size={15} className="text-amber-400 flex-shrink-0" />
+                      <span>Atenção Lojista / Atendente do Caixa:</span>
                     </div>
-                    <p className="text-[10px] text-gray-300 leading-relaxed">
-                      • Exija a apresentação desta tela <strong>ao vivo</strong> pelo aplicativo/site.<br/>
-                      • Verifique a <strong>linha laser verde em movimento</strong> e o <strong>relógio de segundos rodando</strong>.<br/>
+                    <p className="text-[11px] text-gray-300 leading-relaxed">
+                      • Exija a apresentação deste QR Code <strong>ao vivo</strong> na tela do cliente.<br/>
+                      • Verifique a <strong>linha laser verde em movimento contínuo</strong> e o <strong>relógio de segundos rodando</strong>.<br/>
                       • <strong>NÃO ACEITE PRINTS DE TELA OU FOTOS</strong> (imagens estáticas são inválidas).
                     </p>
                   </div>

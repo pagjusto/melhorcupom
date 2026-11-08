@@ -1583,7 +1583,7 @@ export const AppProvider = ({ children }) => {
   // Validar Cupom e Dar Baixa Automática (Exclusivo para Lojistas no Balcão via QR Code ou Senha - bloqueado para empresas de API)
   const validateRedemption = (inputQuery, merchantId) => {
     if (!inputQuery) {
-      return { success: false, message: 'Por favor, escaneie o QR Code ou digite a senha de 6 dígitos.' };
+      return { success: false, message: 'Por favor, escaneie o QR Code ou digite o código do cupom.' };
     }
 
     const currentMerchantStore = stores.find(s => s.merchantId === merchantId || s.id === merchantId);
@@ -1625,7 +1625,7 @@ export const AppProvider = ({ children }) => {
     if (!found) {
       return { 
         success: false, 
-        message: 'Código ou Senha do QR Code não encontrado no sistema. Verifique a senha de 6 dígitos com o cliente.' 
+        message: 'QR Code ou Código de Cupom não encontrado no sistema. Verifique o código com o cliente.' 
       };
     }
 

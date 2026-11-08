@@ -86,22 +86,13 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [couponToast, setCouponToast] = useState('');
 
-  // Identificar se o estabelecimento é parceiro via API ou Oferta Avulsa (sem painel de lojista PDV) ou Lojista Credenciado
+  // Identificar se o estabelecimento é estritamente uma rede online de API sem ponto físico
   const isApiStore = (st) => Boolean(
-    st?.isApiIntegrated || 
-    st?.apiSource || 
-    st?.tier === 'api' || 
-    st?.isAvulsa ||
-    st?.isAvulso ||
-    st?.isCustom ||
-    st?.noSimulator ||
-    st?.id?.startsWith('store_avulsa_') ||
-    st?.merchantId?.startsWith('merchant_avulso_') ||
-    (!st?.isNewPartner && !st?.adminPaidPlan && (!st?.tier || st?.tier === 'api' || st?.tier === 'free'))
+    st?.type === 'online' && (st?.isApiIntegrated || st?.apiSource) && !st?.address && !st?.merchantId?.startsWith('merchant_')
   );
   const lojistaStores = stores.filter(s => !isApiStore(s));
 
-  // Identificar loja correspondente ao role (priorizando lojistas reais cadastrados)
+  // Identificar loja correspondente ao role (priorizando lojistas parceiros)
   const merchantId = currentRole.startsWith('merchant_') ? currentRole : (lojistaStores[0]?.merchantId || 'merchant_burger');
   const currentStore = stores.find(s => s.merchantId === merchantId || s.id === merchantId) || lojistaStores[0] || stores[0];
   const isCurrentStoreApi = isApiStore(currentStore);
@@ -187,36 +178,56 @@ export const MerchantDashboard = ({ prefilledCode }) => {
   // Scanner de Câmera com html5-qrcode
   useEffect(() => {
     let html5QrCode = null;
+    let isCancelled = false;
+
     if (isScannerOpen) {
       setScannerError('');
-      import('html5-qrcode').then(({ Html5Qrcode }) => {
-        html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          (decodedText) => {
-            handleValidateText(decodedText);
-            setIsScannerOpen(false);
-            try {
-              html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
-            } catch (e) {}
-          },
-          () => {}
-        ).catch(err => {
-          console.warn("Câmera indisponível ou permissão negada:", err);
-          setScannerError("Câmera indisponível neste navegador. Digite a Senha de 6 dígitos gerada no app do cliente.");
+      const timer = setTimeout(() => {
+        if (isCancelled) return;
+        const qrContainer = document.getElementById("qr-reader");
+        if (!qrContainer) {
+          setScannerError("Preparando leitor da câmera... Tente novamente.");
+          return;
+        }
+
+        import('html5-qrcode').then(({ Html5Qrcode }) => {
+          if (isCancelled) return;
+          try {
+            html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+              { facingMode: "environment" },
+              { fps: 12, qrbox: { width: 230, height: 230 } },
+              (decodedText) => {
+                handleValidateText(decodedText);
+                setIsScannerOpen(false);
+                try {
+                  html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+                } catch (e) {}
+              },
+              () => {}
+            ).catch(err => {
+              console.warn("Câmera indisponível ou permissão negada:", err);
+              setScannerError("Câmera indisponível ou permissão negada no navegador. Você pode digitar o código do cupom logo abaixo.");
+            });
+          } catch (initErr) {
+            console.warn("Erro ao instanciar Html5Qrcode:", initErr);
+            setScannerError("Não foi possível acessar a câmera do dispositivo.");
+          }
+        }).catch(err => {
+          setScannerError("Erro ao carregar o módulo de leitura de QR Code.");
         });
-      }).catch(err => {
-        setScannerError("Erro ao carregar o módulo de leitura de QR Code.");
-      });
+      }, 100);
+
+      return () => {
+        isCancelled = true;
+        clearTimeout(timer);
+        if (html5QrCode) {
+          try {
+            html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+          } catch (e) {}
+        }
+      };
     }
-    return () => {
-      if (html5QrCode) {
-        try {
-          html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
-        } catch (e) {}
-      }
-    };
   }, [isScannerOpen]);
 
   // Upload refs
@@ -778,23 +789,21 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           </span>
         </button>
 
-        {/* Validador de Balcão (Caixa / PDV) é exclusivo para lojistas cadastrados e não empresas de API */}
-        {!isCurrentStoreApi && (
-          <button
-            onClick={() => setActiveTab('validator')}
-            title="Validador de Balcão (Caixa / PDV) — Exclusivo Lojistas"
-            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 lg:px-2.5 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-[11px] lg:text-xs transition-all text-center whitespace-nowrap ${
-              activeTab === 'validator'
-                ? 'bg-[#FF5F00] text-white shadow-md shadow-orange-600/30'
-                : 'bg-[#181824] text-gray-400 hover:text-white border border-white/5'
-            }`}
-          >
-            <QrCode size={14} className="flex-shrink-0" />
-            <span className="truncate">
-              Validador <span className="hidden 2xl:inline">de Balcão </span>(PDV)
-            </span>
-          </button>
-        )}
+        {/* Leitor de QR Code do Caixa */}
+        <button
+          onClick={() => setActiveTab('validator')}
+          title="Leitor de QR Code (Caixa / Balcão)"
+          className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-2 sm:py-2.5 rounded-xl font-black text-[11px] sm:text-xs transition-all text-center whitespace-nowrap cursor-pointer ${
+            activeTab === 'validator'
+              ? 'bg-[#FF5F00] text-white shadow-lg shadow-orange-600/40 ring-2 ring-[#FF5F00]/50'
+              : 'bg-[#181824] text-orange-400 hover:text-white border border-orange-500/20'
+          }`}
+        >
+          <Camera size={15} className="flex-shrink-0 animate-pulse text-[#FF5F00]" />
+          <span className="truncate">
+            📷 Leitor de QR Code <span className="hidden xl:inline">(Caixa)</span>
+          </span>
+        </button>
 
         <button
           onClick={() => {
@@ -885,25 +894,25 @@ export const MerchantDashboard = ({ prefilledCode }) => {
         </button>
       </div>
 
-      {/* ABA 1: VALIDADOR DE BALCÃO COM QR CODE + SENHA (Exclusivo Lojistas, não disponível para empresas de API) */}
-      {activeTab === 'validator' && !isCurrentStoreApi && (
+      {/* ABA 1: LEITOR DE QR CODE / VALIDADOR DE BALCÃO (CAIXA / PDV) */}
+      {activeTab === 'validator' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           <div className="lg:col-span-7 bg-[#181824] border border-white/10 rounded-3xl p-6 sm:p-8">
             <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-[#FF5F00] flex items-center justify-center shadow-lg">
-                  <QrCode size={24} />
+                  <Camera size={24} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-lg sm:text-xl font-black text-white">Validador de Balcão (Caixa / PDV)</h2>
+                    <h2 className="text-lg sm:text-xl font-black text-white">Leitor de QR Code (Caixa / Balcão)</h2>
                     <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-                      🏪 Exclusivo Lojistas Locais
+                      📷 Câmera Integrada
                     </span>
                   </div>
                   <p className="text-xs text-gray-400">
-                    Bipe o QR Code com a câmera ou digite a Senha de 6 dígitos informada pelo cliente. (Não aplicável a cupons de empresas de API).
+                    Aponte a câmera para o QR Code na tela do smartphone do cliente ou digite o código do cupom para dar baixa imediata.
                   </p>
                 </div>
               </div>
@@ -913,14 +922,14 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <button
                   type="button"
                   onClick={() => setIsScannerOpen(!isScannerOpen)}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-md ${
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-md cursor-pointer ${
                     isScannerOpen 
                       ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30' 
-                      : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-300 hover:from-orange-500/30 hover:to-amber-500/30 border border-[#FF5F00]/40'
+                      : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-orange-600/30'
                   }`}
                 >
                   <Camera size={15} />
-                  <span>{isScannerOpen ? 'Fechar Câmera' : '📷 Escanear com Câmera'}</span>
+                  <span>{isScannerOpen ? 'Fechar Câmera' : '📷 Abrir Leitor de Câmera'}</span>
                 </button>
 
                 {(currentRole === 'admin' || isSimulatingRole) && storeRedemptions.some(r => r.status === 'valid') && (
@@ -929,7 +938,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     onClick={() => {
                       const nextValid = storeRedemptions.find(r => r.status === 'valid');
                       if (nextValid) {
-                        handleValidateText(nextValid.qrPayload || nextValid.passCode || nextValid.code);
+                        handleValidateText(nextValid.qrPayload || nextValid.code);
                       }
                     }}
                     className="px-3 py-2.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
@@ -942,12 +951,35 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               </div>
             </div>
 
+            {/* Banner Chamativo quando a câmera está fechada */}
+            {!isScannerOpen && (
+              <div className="mb-6 p-5 sm:p-6 bg-gradient-to-br from-[#1C1C2C] to-[#12121A] border-2 border-dashed border-[#FF5F00]/40 rounded-2xl text-center space-y-3">
+                <div className="w-14 h-14 rounded-2xl bg-orange-500/15 text-[#FF5F00] flex items-center justify-center mx-auto shadow-inner">
+                  <Camera size={28} className="animate-pulse" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-black text-white">Escanear QR Code com a Câmera</h3>
+                  <p className="text-xs text-gray-300 max-w-sm mx-auto leading-relaxed">
+                    Clique no botão abaixo para ativar a câmera do smartphone ou computador e fazer a leitura do QR Code ao vivo apresentado pelo cliente.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="bg-gradient-to-r from-[#FF5F00] to-amber-500 hover:from-[#E04F00] hover:to-amber-600 text-white font-black text-xs sm:text-sm py-3 px-6 rounded-xl shadow-lg shadow-orange-600/30 transition-all transform hover:scale-[1.02] cursor-pointer inline-flex items-center gap-2"
+                >
+                  <Camera size={17} />
+                  <span>📷 Ativar Câmera e Ler QR Code</span>
+                </button>
+              </div>
+            )}
+
             {/* Container do Leitor de Câmera (html5-qrcode) */}
             {isScannerOpen && (
               <div className="mb-6 p-4 bg-[#101017] border-2 border-[#FF5F00] rounded-2xl text-center animate-fade-in shadow-xl">
                 <div className="text-xs text-orange-300 font-bold mb-2 flex items-center justify-center gap-1.5">
                   <Camera size={15} className="animate-pulse" />
-                  <span>Aponte a câmera para o QR Code na tela do smartphone do cliente</span>
+                  <span>Aponte a câmera para o QR Code na tela do cliente</span>
                 </div>
                 
                 <div id="qr-reader" className="w-full max-w-[280px] mx-auto rounded-xl overflow-hidden bg-black aspect-square border border-white/10 shadow-inner"></div>
@@ -962,9 +994,9 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   <button
                     type="button"
                     onClick={() => setIsScannerOpen(false)}
-                    className="text-xs text-gray-400 hover:text-white underline"
+                    className="text-xs text-gray-400 hover:text-white underline cursor-pointer"
                   >
-                    Cancelar / Digitar senha manualmente
+                    Fechar Câmera / Digitar código manualmente
                   </button>
                 </div>
               </div>
@@ -976,7 +1008,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                 <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-amber-300">
                     <KeyRound size={14} className="text-[#FF5F00]" />
-                    <span>Senha de 6 Dígitos do QR Code ou Código:</span>
+                    <span>Código do Cupom ou QR Code Escaneado:</span>
                   </span>
                   <span className="text-[11px] text-gray-400 font-normal lowercase">
                     sem duplicidade
@@ -989,7 +1021,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       type="text"
                       value={validationInput}
                       onChange={(e) => setValidationInput(e.target.value.toUpperCase())}
-                      placeholder="Ex: 849201 ou VIP-SMASH50-8491"
+                      placeholder="Ex: MC-SMASH50-8491 ou aponte a câmera ao QR Code"
                       className="w-full bg-[#101017] border-2 border-white/15 focus:border-[#FF5F00] rounded-2xl px-4 py-3.5 text-base sm:text-lg font-mono font-bold text-white placeholder-gray-500 focus:outline-none uppercase tracking-wider"
                     />
                     {validationInput && (
@@ -1012,7 +1044,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                   </button>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-2">
-                  💡 <strong>Ofertas Locais:</strong> O cliente apresenta o QR Code e uma senha exclusiva de 6 dígitos gerada no momento do resgate. Caso a câmera não consiga escanear, basta digitar a senha de 6 dígitos acima para dar baixa imediata.
+                  💡 <strong>Validação Rápida:</strong> Aponte a câmera do celular para o QR Code ao vivo apresentado pelo cliente na tela, ou digite o código do cupom acima para registrar a economia e dar baixa imediata.
                 </p>
               </div>
             </form>
@@ -1071,9 +1103,8 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                         </div>
 
                         <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
-                          <span className="text-gray-400 block text-[10px]">Senha / Cupom:</span>
-                          <span className="font-mono text-amber-300 font-black text-xs block">🔑 {validationResult.redemption.passCode}</span>
-                          <span className="font-mono text-orange-400 text-[10px] block">{validationResult.redemption.code}</span>
+                          <span className="text-gray-400 block text-[10px]">Cupom Validado:</span>
+                          <span className="font-mono text-emerald-400 font-black text-sm block">✓ {validationResult.redemption.code}</span>
                         </div>
                       </div>
                     )}
@@ -1085,7 +1116,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
             <div className="mt-8 bg-white/5 rounded-2xl p-4 text-xs text-gray-400 flex items-center gap-3">
               <ShieldCheck size={22} className="text-[#FF5F00] flex-shrink-0" />
               <span>
-                <strong>Segurança Anti-Fraude:</strong> Cada QR Code e Senha de 6 dígitos são exclusivos e de uso único. Uma vez dada a baixa, o sistema bloqueia qualquer tentativa de reutilização por outros clientes.
+                <strong>Segurança Anti-Fraude:</strong> Cada QR Code é exclusivo e de uso único com proteção anti-print ao vivo. Uma vez dada a baixa, o sistema bloqueia qualquer tentativa de reutilização.
               </span>
             </div>
           </div>
@@ -1133,47 +1164,27 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       {red.couponTitle}
                     </div>
 
-                    {/* Senha de 6 dígitos em destaque */}
-                    <div className="flex items-center justify-between bg-black/40 px-2.5 py-1.5 rounded-xl border border-white/5 mb-2">
-                      <span className="text-[11px] text-gray-400 flex items-center gap-1">
-                        <KeyRound size={12} className="text-amber-400" />
-                        <span>Senha do QR:</span>
-                      </span>
-                      <span className="font-mono text-sm font-black text-amber-300 tracking-wider">
-                        {red.passCode || '849201'}
-                      </span>
-                    </div>
-
                     <div className="flex items-center justify-between text-[11px] text-gray-400 mb-2">
                       <span>Cliente: {red.userName}</span>
                       <span className="font-bold text-emerald-400">{red.discountBadge}</span>
                     </div>
 
-                    {/* Botões de Ação para Teste Rápido */}
+                    {/* Botão de Ação para Teste / Baixa Rápida */}
                     {red.status === 'valid' ? (
-                      <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-white/5">
-                        <button
-                          type="button"
-                          onClick={() => handleValidateText(red.passCode)}
-                          className="text-[11px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold py-1.5 px-2 rounded-lg transition-colors flex items-center justify-center gap-1"
-                          title="Dar baixa usando a senha de 6 dígitos"
-                        >
-                          <KeyRound size={11} />
-                          <span>Baixar c/ Senha</span>
-                        </button>
+                      <div className="pt-1.5 border-t border-white/5">
                         <button
                           type="button"
                           onClick={() => handleValidateText(red.qrPayload || red.code)}
-                          className="text-[11px] bg-[#FF5F00]/20 hover:bg-[#FF5F00]/30 text-orange-300 font-bold py-1.5 px-2 rounded-lg transition-colors flex items-center justify-center gap-1"
+                          className="w-full text-xs bg-[#FF5F00]/20 hover:bg-[#FF5F00]/30 text-orange-300 font-bold py-1.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                           title="Dar baixa simulando leitura do QR Code"
                         >
-                          <QrCode size={11} />
-                          <span>Baixar c/ QR</span>
+                          <QrCode size={13} />
+                          <span>Simular Baixa por QR Code</span>
                         </button>
                       </div>
                     ) : (
-                      <div className="text-[10px] text-gray-500 text-center pt-1 border-t border-white/5">
-                        Baixa realizada • Economia de R$ {Number(red.savings || 20).toFixed(2).replace('.', ',')} creditada
+                      <div className="text-[10px] text-gray-500 text-right pt-1 border-t border-white/5">
+                        Baixado em {new Date(red.usedAt).toLocaleString('pt-BR')} • Economia de R$ {Number(red.savings || 20).toFixed(2).replace('.', ',')}
                       </div>
                     )}
                   </div>

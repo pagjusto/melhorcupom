@@ -541,14 +541,9 @@ export const SavingsModal = ({ onSelectCoupon }) => {
                               {red.couponTitle}
                             </div>
 
-                            {/* Código e Senha de 6 dígitos */}
-                            <div className="flex items-center gap-3 text-[11px] text-gray-400 mt-1 font-mono">
+                            {/* Código do Cupom */}
+                            <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-1 font-mono">
                               <span>Código: <strong className="text-orange-400">{red.code}</strong></span>
-                              <span>•</span>
-                              <span className="flex items-center gap-1 text-amber-300">
-                                <KeyRound size={11} className="text-[#FF5F00]" />
-                                <span>Senha: <strong>{red.passCode}</strong></span>
-                              </span>
                             </div>
                           </div>
                         </div>
