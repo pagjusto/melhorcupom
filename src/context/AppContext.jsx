@@ -501,12 +501,21 @@ export const AppProvider = ({ children }) => {
         const finalLogoPadding = customOverride?.logoPadding !== undefined ? customOverride.logoPadding : (s.logoPadding !== undefined ? s.logoPadding : init?.logoPadding);
         const finalLogoBg = customOverride?.logoBg || s.logoBg || init?.logoBg || '#ffffff';
 
+        let sanitizedName = init?.name || s.name || 'Loja Parceira';
+        if (typeof sanitizedName === 'string' && (sanitizedName.startsWith('data:') || sanitizedName.includes(';base64,'))) {
+          sanitizedName = 'Loja Parceira';
+        }
+        let sanitizedLogo = init?.logo || s.logo || '🏪';
+        if (typeof sanitizedLogo === 'string' && (sanitizedLogo.startsWith('data:') || sanitizedLogo.startsWith('http') || sanitizedLogo.length > 8)) {
+          sanitizedLogo = '🏪';
+        }
+
         return {
           ...s,
-          name: init?.name || s.name,
+          name: sanitizedName,
           instagram,
-          logo: init?.logo || s.logo || '🏪',
-          logoImage: finalLogoImage,
+          logo: sanitizedLogo,
+          logoImage: finalLogoImage || (typeof s.logo === 'string' && (s.logo.startsWith('data:') || s.logo.startsWith('http')) ? s.logo : ''),
           hasCustomLogo: hasCustom,
           logoFit: finalLogoFit,
           logoScale: finalLogoScale,
@@ -1749,7 +1758,7 @@ export const AppProvider = ({ children }) => {
             cities: isOnline ? ['Todas as Cidades (Online / Brasil Todo)'] : (newCoupon.cities?.length ? newCoupon.cities : [newCoupon.city || 'São Paulo - SP']),
             type: isOnline ? 'online' : 'physical',
             isOnline,
-            logo: newCoupon.storeLogo || '🏪',
+            logo: (typeof newCoupon.storeLogo === 'string' && newCoupon.storeLogo.length <= 4 && !newCoupon.storeLogo.startsWith('data:') && !newCoupon.storeLogo.startsWith('http')) ? newCoupon.storeLogo : '🏪',
             logoImage: newCoupon.storeLogoImage || newCoupon.logoImage || (typeof newCoupon.storeLogo === 'string' && (newCoupon.storeLogo.startsWith('http') || newCoupon.storeLogo.startsWith('data:') || newCoupon.storeLogo.startsWith('/')) ? newCoupon.storeLogo : '') || getBrandLogo(newCoupon.storeName) || '',
             image: newCoupon.banner || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=80',
             tier: 'api',

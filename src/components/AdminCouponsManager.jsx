@@ -279,7 +279,7 @@ export const AdminCouponsManager = ({ showToast }) => {
         ? editingCoupon.storeId 
         : `store_avulsa_${Date.now()}`;
       finalStoreName = formData.customStoreName.trim();
-      finalStoreLogo = formData.customStoreLogoImage || '';
+      finalStoreLogo = '🏪';
       finalMerchantId = editingCoupon?.merchantId?.startsWith('merchant_avulso_')
         ? editingCoupon.merchantId
         : `merchant_avulso_${Date.now()}`;

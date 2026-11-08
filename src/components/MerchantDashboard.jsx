@@ -61,6 +61,22 @@ const BANNER_PRESETS = [
   { name: 'Moda & Sneakers', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=700&auto=format&fit=crop&q=80' }
 ];
 
+// Helpers para sanitização de Logo e Nome de Loja
+const getCleanStoreName = (name) => {
+  if (!name || typeof name !== 'string') return 'Loja Parceira';
+  if (name.startsWith('data:') || name.includes(';base64,')) return 'Loja Parceira';
+  return name.trim();
+};
+
+const renderStoreLogoBadge = (st) => {
+  const logoImage = st?.logoImage || (typeof st?.logo === 'string' && (st.logo.startsWith('http') || st.logo.startsWith('data:') || st.logo.startsWith('/')) ? st.logo : null);
+  if (logoImage) {
+    return <img src={logoImage} alt="" className="w-4 h-4 rounded-full object-cover flex-shrink-0" />;
+  }
+  const isEmoji = typeof st?.logo === 'string' && st.logo.length <= 4 && !st.logo.startsWith('http') && !st.logo.startsWith('data:');
+  return <span className="flex-shrink-0">{isEmoji ? st.logo : '🏪'}</span>;
+};
+
 export const MerchantDashboard = ({ prefilledCode }) => {
   const { 
     currentRole, 
@@ -613,13 +629,16 @@ export const MerchantDashboard = ({ prefilledCode }) => {
           <div className="flex items-center gap-4">
             
             {/* Logo da Empresa com Botão de Upload */}
-            <div className="relative group cursor-pointer" onClick={() => logoInputRef.current?.click()}>
+            <div className="relative group cursor-pointer flex-shrink-0" onClick={() => logoInputRef.current?.click()}>
               <div className="w-16 h-16 rounded-2xl bg-[#232332] border-2 border-[#FF5F00] flex items-center justify-center overflow-hidden shadow-lg">
-                {currentStore.logoImage ? (
-                  <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-3xl">{currentStore.logo}</span>
-                )}
+                {(() => {
+                  const logoSrc = currentStore.logoImage || (typeof currentStore.logo === 'string' && (currentStore.logo.startsWith('http') || currentStore.logo.startsWith('data:') || currentStore.logo.startsWith('/')) ? currentStore.logo : null);
+                  if (logoSrc) {
+                    return <img src={logoSrc} alt={getCleanStoreName(currentStore.name)} className="w-full h-full object-cover" />;
+                  }
+                  const isEmoji = typeof currentStore.logo === 'string' && currentStore.logo.length <= 4 && !currentStore.logo.startsWith('http') && !currentStore.logo.startsWith('data:');
+                  return <span className="text-3xl">{isEmoji ? currentStore.logo : '🏪'}</span>;
+                })()}
               </div>
               <div className="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                 <Camera size={18} />
@@ -683,11 +702,11 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               
               <div className="flex items-center gap-2 mt-1">
                 <h1 className="text-2xl sm:text-3xl font-black text-white">
-                  {currentStore.name}
+                  {getCleanStoreName(currentStore.name)}
                 </h1>
                 <button
                   onClick={() => logoInputRef.current?.click()}
-                  className="text-xs text-orange-400 hover:text-orange-300 font-semibold underline ml-2"
+                  className="text-xs text-orange-400 hover:text-orange-300 font-semibold underline ml-2 cursor-pointer"
                 >
                   Alterar Logo
                 </button>
@@ -695,31 +714,46 @@ export const MerchantDashboard = ({ prefilledCode }) => {
 
               <p className="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
                 <MapPin size={12} className="text-orange-400" />
-                <span>{currentStore.address}</span>
+                <span>{currentStore.address || 'Atendimento em Todo o Brasil'}</span>
                 <span>•</span>
-                <span className="text-amber-400 font-semibold">★ {currentStore.rating} ({currentStore.reviewsCount} avaliações)</span>
+                <span className="text-amber-400 font-semibold">
+                  ★ {currentStore.rating || '5.0'} ({currentStore.reviewsCount || 0} avaliações)
+                </span>
               </p>
             </div>
           </div>
 
-          {/* Troca Rápida de Estabelecimento Parceiro (Apenas Lojistas Cadastrados com Plano, não empresas de API) */}
-          {lojistaStores.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
-              <span className="text-xs text-gray-400 px-2 font-medium">Trocar Estabelecimento:</span>
-              {lojistaStores.slice(0, 4).map(st => (
-                <button
-                  key={st.id}
-                  onClick={() => switchRole(st.merchantId || st.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    (currentStore.merchantId === st.merchantId || currentStore.id === st.id)
-                      ? 'bg-[#FF5F00] text-white shadow-md'
-                      : 'text-gray-300 hover:text-white bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  <span>{st.logo || '🏪'}</span>
-                  <span>{st.name}</span>
-                </button>
-              ))}
+          {/* Troca Rápida de Estabelecimento Parceiro (Apenas Admin ou Modo Simulação) */}
+          {(currentRole === 'admin' || isSimulatingRole) && lojistaStores.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 max-w-full overflow-hidden">
+              <span className="text-xs text-gray-400 px-2 font-medium flex-shrink-0">Trocar Loja:</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {lojistaStores
+                  .filter(st => {
+                    const clean = getCleanStoreName(st.name);
+                    return clean && clean !== 'Loja Parceira' && !clean.startsWith('data:');
+                  })
+                  .slice(0, 4)
+                  .map(st => {
+                    const cleanName = getCleanStoreName(st.name);
+                    const isSelected = (currentStore.merchantId === st.merchantId || currentStore.id === st.id);
+                    return (
+                      <button
+                        key={st.id}
+                        onClick={() => switchRole(st.merchantId || st.id)}
+                        className={`max-w-[190px] truncate px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF5F00] text-white shadow-md'
+                            : 'text-gray-300 hover:text-white bg-white/5 hover:bg-white/10'
+                        }`}
+                        title={cleanName}
+                      >
+                        {renderStoreLogoBadge(st)}
+                        <span className="truncate">{cleanName}</span>
+                      </button>
+                    );
+                  })}
+              </div>
             </div>
           )}
         </div>
@@ -1327,7 +1361,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                         {currentStore.logoImage ? (
                           <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xl">{currentStore.logo}</span>
+                          <span className="text-xl">{(currentStore.logo?.length <= 4 && !currentStore.logo.startsWith('data:')) ? currentStore.logo : '🏪'}</span>
                         )}
                       </div>
                     </div>
@@ -1581,7 +1615,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     {currentStore.logoImage ? (
                       <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-xl">{currentStore.logo}</span>
+                      <span className="text-xl">{(currentStore.logo?.length <= 4 && !currentStore.logo.startsWith('data:')) ? currentStore.logo : '🏪'}</span>
                     )}
                   </div>
                   <span className="text-xs font-bold text-white drop-shadow-md">{currentStore.name}</span>
@@ -2166,7 +2200,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                       {storeForm.logoImage ? (
                         <img src={storeForm.logoImage} alt={storeForm.name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-2xl">{currentStore.logo}</span>
+                        <span className="text-2xl">{(currentStore.logo?.length <= 4 && !currentStore.logo.startsWith('data:')) ? currentStore.logo : '🏪'}</span>
                       )}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white">
                         <Camera size={16} />
@@ -2190,7 +2224,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     {storeForm.logoImage ? (
                       <img src={storeForm.logoImage} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-2xl">{currentStore.logo}</span>
+                      <span className="text-2xl">{(currentStore.logo?.length <= 4 && !currentStore.logo.startsWith('data:')) ? currentStore.logo : '🏪'}</span>
                     )}
                   </div>
                   <div>
@@ -3186,7 +3220,7 @@ export const MerchantDashboard = ({ prefilledCode }) => {
                     {currentStore.logoImage ? (
                       <img src={currentStore.logoImage} alt={currentStore.name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-2xl">{currentStore.logo}</span>
+                      <span className="text-2xl">{(currentStore.logo?.length <= 4 && !currentStore.logo.startsWith('data:')) ? currentStore.logo : '🏪'}</span>
                     )}
                   </div>
 
