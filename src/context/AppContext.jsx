@@ -1605,14 +1605,18 @@ export const AppProvider = ({ children }) => {
 
     let searchCode = '';
     let searchPassCode = '';
+    let qrTimestamp = null;
+    let isPayloadFromQR = false;
     const rawTrimmed = String(inputQuery).trim();
 
     // Tentar decodificar se for JSON vindo do leitor de QR Code
     if (rawTrimmed.startsWith('{') && rawTrimmed.endsWith('}')) {
       try {
         const parsed = JSON.parse(rawTrimmed);
+        isPayloadFromQR = true;
         if (parsed.code) searchCode = String(parsed.code).trim().toUpperCase();
         if (parsed.passCode) searchPassCode = String(parsed.passCode).trim();
+        if (parsed.timestamp) qrTimestamp = Number(parsed.timestamp);
       } catch (e) {
         // ignora erro de parse
       }
@@ -1636,6 +1640,18 @@ export const AppProvider = ({ children }) => {
         success: false, 
         message: 'QR Code ou Código de Cupom não encontrado no sistema. Verifique o código com o cliente.' 
       };
+    }
+
+    // BLOQUEIO TOTAL DE PRINTS: Se o QR Code tiver mais de 25 segundos, foi tirado print da tela!
+    if (isPayloadFromQR && qrTimestamp && !isNaN(qrTimestamp)) {
+      const ageSeconds = Math.floor((Date.now() - qrTimestamp) / 1000);
+      if (ageSeconds > 25) {
+        return {
+          success: false,
+          isPrintDetected: true,
+          message: `🚫 PRINT RECUSADO / QR CODE EXPIRADO! Este QR Code foi capturado há ${ageSeconds} segundos e já expirou (o código vivo expira a cada 15 segundos). Prints estáticos e fotos de tela não são válidos. Exija a apresentação da tela aberta AO VIVO no Melhor Cupom.`
+        };
+      }
     }
 
     const foundCoupon = coupons.find(c => c.id === found.couponId);

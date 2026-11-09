@@ -38,6 +38,7 @@ import {
   Heart,
   Zap,
   Shield,
+  ShieldAlert,
   Gift,
   Copy,
   Coins,
@@ -1088,24 +1089,36 @@ export const MerchantDashboard = ({ prefilledCode }) => {
               <div className={`p-5 rounded-2xl border-2 transition-all animate-fade-in ${
                 validationResult.success 
                   ? 'bg-emerald-500/15 border-emerald-500 text-emerald-200'
-                  : 'bg-red-500/15 border-red-500 text-red-200'
+                  : validationResult.isPrintDetected
+                    ? 'bg-rose-950/80 border-rose-500 text-rose-100 ring-2 ring-rose-500/50 shadow-2xl'
+                    : 'bg-red-500/15 border-red-500 text-red-200'
               }`}>
                 <div className="flex items-start gap-3">
                   {validationResult.success ? (
                     <CheckCircle2 size={26} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                  ) : validationResult.isPrintDetected ? (
+                    <ShieldAlert size={28} className="text-rose-400 flex-shrink-0 mt-0.5 animate-bounce" />
                   ) : (
                     <XCircle size={26} className="text-red-400 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <h4 className="text-base sm:text-lg font-black text-white">
-                        {validationResult.success ? '🎉 BAIXA REALIZADA COM SUCESSO!' : 'NÃO FOI POSSÍVEL VALIDAR'}
+                        {validationResult.success 
+                          ? '🎉 BAIXA REALIZADA COM SUCESSO!' 
+                          : validationResult.isPrintDetected 
+                            ? '🚫 TENTATIVA DE PRINT / FRAUDE DETECTADA!' 
+                            : 'NÃO FOI POSSÍVEL VALIDAR'}
                       </h4>
-                      {validationResult.success && (
+                      {validationResult.success ? (
                         <span className="bg-emerald-500/30 text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-400/40">
                           Cupom Consumido & Baixado
                         </span>
-                      )}
+                      ) : validationResult.isPrintDetected ? (
+                        <span className="bg-rose-500/30 text-rose-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-rose-400/40 uppercase tracking-wider animate-pulse">
+                          Print Recusado
+                        </span>
+                      ) : null}
                     </div>
                     <p className="text-xs sm:text-sm mt-1 text-gray-200 font-medium">
                       {validationResult.message}

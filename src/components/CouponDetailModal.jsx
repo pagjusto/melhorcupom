@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { QRCodeSVG } from 'qrcode.react';
 import { 
@@ -25,7 +25,8 @@ import {
   Eye,
   Shield,
   ShieldAlert,
-  Radio
+  Radio,
+  RotateCw
 } from 'lucide-react';
 import { getBrandLogo } from '../assets/brands';
 import { getStoreDestinationUrl } from '../utils/storeUrls';
@@ -52,19 +53,43 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
 
   // Estados de Segurança e Proteção Anti-Print / Anti-Screenshot
   const [isScreenShieldActive, setIsScreenShieldActive] = useState(false);
-  const [liveSecondsTime, setLiveSecondsTime] = useState(() => new Date().toLocaleTimeString('pt-BR'));
+  const [liveSecondsTime, setLiveSecondsTime] = useState(() => {
+    const now = new Date();
+    return `${now.toLocaleTimeString('pt-BR')}.${Math.floor(now.getMilliseconds() / 100)}`;
+  });
 
-  // Relógio ao vivo em tempo real para comprovação de vida (prova de tela ao vivo contra prints)
+  // Token Dinâmico com rotação a cada 15 segundos (Anti-Print TOTP)
+  const [rollingToken, setRollingToken] = useState(() => Date.now());
+  const [rollingSecondsLeft, setRollingSecondsLeft] = useState(15);
+  const [isRotatingFlash, setIsRotatingFlash] = useState(false);
+
+  // Contador regressivo de 15 segundos e rotação contínua do token ao vivo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRollingSecondsLeft(prev => {
+        if (prev <= 1) {
+          setRollingToken(Date.now());
+          setIsRotatingFlash(true);
+          setTimeout(() => setIsRotatingFlash(false), 500);
+          return 15;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Relógio ao vivo em milissegundos (prova de tela ao vivo contra prints estáticos)
   useEffect(() => {
     const clockInterval = setInterval(() => {
-      setLiveSecondsTime(new Date().toLocaleTimeString('pt-BR'));
-    }, 1000);
+      const now = new Date();
+      setLiveSecondsTime(`${now.toLocaleTimeString('pt-BR')}.${Math.floor(now.getMilliseconds() / 100)}`);
+    }, 100);
     return () => clearInterval(clockInterval);
   }, []);
 
   // Interceptador e sensor de captura de tela (Anti-Print / Anti-Screenshot)
   useEffect(() => {
-    // 1. Mudança de visibilidade / foco (quando o usuário tenta tirar print no celular iOS ou Android)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         setIsScreenShieldActive(true);
@@ -72,11 +97,16 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     };
 
     const handleWindowBlur = () => {
-      // Ao pressionar botões físicos de captura no mobile ou atalhos de sistema, a janela perde o foco
       setIsScreenShieldActive(true);
     };
 
-    // 2. Teclas de captura comuns de tela no computador / desktop
+    const handleTouchStart = (e) => {
+      // Combinações de multi-toque para captura de tela (2 ou 3 dedos)
+      if (e.touches && e.touches.length >= 2) {
+        setIsScreenShieldActive(true);
+      }
+    };
+
     const handleKeyDown = (e) => {
       if (
         e.key === 'PrintScreen' ||
@@ -91,13 +121,32 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('touchstart', handleTouchStart);
     };
   }, []);
+
+  // Payload do QR Code Dinâmico que se renova a cada 15 segundos
+  const dynamicQrPayload = useMemo(() => {
+    if (!activeRedemption) return '';
+    return JSON.stringify({
+      type: 'melhorcupom_local_partner',
+      code: activeRedemption.code,
+      id: activeRedemption.id,
+      couponId: coupon?.id,
+      storeId: coupon?.storeId || store?.id,
+      storeName: store ? store.name : 'Loja Parceira',
+      merchantId: coupon?.merchantId || store?.merchantId,
+      userName: userProfile?.name,
+      userCpf: userProfile?.cpf || '***.***.***-**',
+      timestamp: rollingToken
+    });
+  }, [activeRedemption, coupon, store, userProfile, rollingToken]);
 
   // Identificar se é cupom de grande loja / e-commerce online
   const isBigStoreCoupon = Boolean(
@@ -769,7 +818,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                   onContextMenu={(e) => e.preventDefault()}
                 >
                   {/* Header de Segurança e Prova de Vida ao Vivo */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-black uppercase tracking-wider">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                       <span>🟢 Ao Vivo: {liveSecondsTime}</span>
@@ -780,12 +829,33 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                     </div>
                   </div>
 
-                  <div className="text-xs text-gray-300 mb-3 font-semibold">
+                  {/* Barra de Progresso e Renovação do QR Code Dinâmico (Anti-Print) */}
+                  <div className="my-2 p-2 px-3 bg-emerald-500/10 rounded-xl border border-emerald-500/25 flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                      <RotateCw size={13} className={`text-emerald-400 ${isRotatingFlash ? 'animate-spin' : ''}`} />
+                      <span>Código Dinâmico:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-white/10 rounded-full h-1.5 overflow-hidden">
+                        <div 
+                          className="bg-emerald-400 h-full rounded-full transition-all duration-1000 ease-linear"
+                          style={{ width: `${(rollingSecondsLeft / 15) * 100}%` }}
+                        />
+                      </div>
+                      <span className="font-mono font-black text-emerald-300 w-6 text-right">
+                        {rollingSecondsLeft}s
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-gray-300 mb-2 font-semibold">
                     Apresente esta tela <strong>AO VIVO</strong> ao lojista/atendente no caixa:
                   </div>
 
                   {/* Container do QR Code Oficial com Feixe Laser em Movimento e Marca D'água Dinâmica */}
-                  <div className="relative inline-block p-4 bg-white rounded-2xl shadow-2xl my-2 border-4 border-[#FF5F00]/30 overflow-hidden select-none">
+                  <div className={`relative inline-block p-4 bg-white rounded-2xl shadow-2xl my-2 border-4 transition-all duration-300 overflow-hidden select-none ${
+                    isRotatingFlash ? 'border-emerald-400 scale-[1.02] shadow-emerald-500/50' : 'border-[#FF5F00]/40'
+                  }`}>
                     {/* Linha Laser Verde em Movimento Contínuo (impossível em prints estáticos) */}
                     <div className="animate-laser-scan pointer-events-none" />
 
@@ -793,13 +863,13 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-20 text-[9px] font-mono font-bold text-gray-900 select-none rotate-[-25deg] leading-tight">
                       <span>{userProfile?.name || 'CLIENTE VIP'}</span>
                       <span>{userProfile?.cpf ? `CPF: ${userProfile.cpf.substring(0, 3)}.***.***-${userProfile.cpf.slice(-2)}` : 'VALIDAÇÃO PDV'}</span>
-                      <span className="text-[7px]">{liveSecondsTime}</span>
+                      <span className="text-[7px]">TOKEN: {rollingToken}</span>
                     </div>
 
                     {/* QR Code SVG */}
                     <div className="relative z-10 pointer-events-none">
                       <QRCodeSVG 
-                        value={activeRedemption?.qrPayload || activeRedemption?.code || 'MELHORCUPOM'} 
+                        value={dynamicQrPayload || activeRedemption?.qrPayload || activeRedemption?.code || 'MELHORCUPOM'} 
                         size={185} 
                         level="H" 
                         includeMargin={false}
@@ -811,12 +881,12 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
                   <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-left space-y-1.5 mt-3 shadow-sm">
                     <div className="text-[11px] font-black text-amber-300 flex items-center gap-1.5">
                       <AlertTriangle size={15} className="text-amber-400 flex-shrink-0" />
-                      <span>Atenção Lojista / Atendente do Caixa:</span>
+                      <span>Proteção Anti-Print e Instrução ao Caixa:</span>
                     </div>
                     <p className="text-[11px] text-gray-300 leading-relaxed">
-                      • Exija a apresentação deste QR Code <strong>ao vivo</strong> na tela do cliente.<br/>
-                      • Verifique a <strong>linha laser verde em movimento contínuo</strong> e o <strong>relógio de segundos rodando</strong>.<br/>
-                      • <strong>NÃO ACEITE PRINTS DE TELA OU FOTOS</strong> (imagens estáticas são inválidas).
+                      • Este QR Code é <strong>dinâmico e expira a cada 15 segundos</strong>.<br/>
+                      • <strong>NÃO FUNCIONA EM PRINTS OU FOTOS:</strong> Se o cliente tentar apresentar um print de tela, o validador do lojista <strong>recusará a validação automaticamente</strong> por código expirado.<br/>
+                      • Exija sempre a apresentação deste QR Code <strong>aberto ao vivo</strong> no navegador/app com a linha laser em movimento.
                     </p>
                   </div>
 
