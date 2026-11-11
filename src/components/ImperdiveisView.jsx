@@ -134,6 +134,19 @@ export const ImperdiveisView = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  // Gerador de link de busca resiliente para Shopee (Garantia de Estoque / Produto Ativo)
+  const getShopeeSearchUrl = (deal) => {
+    const rawKeywords = (deal.searchQuery || deal.title || '')
+      .replace(/[^\w\s\u00C0-\u00FF]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(' ')
+      .slice(0, 5)
+      .join(' ');
+    const query = encodeURIComponent(rawKeywords);
+    return `https://shopee.com.br/search?keyword=${query}&af=18305641225&utm_source=affiliate&utm_campaign=melhorcupom&af_sub1=melhorcupom`;
+  };
+
   return (
     <div className="space-y-8 animate-fade-in pb-16">
       
@@ -539,6 +552,22 @@ export const ImperdiveisView = () => {
                     </button>
                   )}
                 </div>
+
+                {/* Fallback Inteligente de Estoque Garantido Shopee */}
+                {hasVipAccess && ((deal.store || '').toLowerCase().includes('shopee') || (deal.affiliateUrl || '').toLowerCase().includes('shopee')) && (
+                  <div className="pt-1.5 text-center border-t border-white/5 mt-2">
+                    <a
+                      href={getShopeeSearchUrl(deal)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-orange-400/80 hover:text-orange-300 hover:underline inline-flex items-center justify-center gap-1 transition-colors"
+                      title="Se o anúncio do vendedor esgotou ou foi pausado, veja todas as opções em estoque com menores preços"
+                    >
+                      <Search size={10} />
+                      <span>Anúncio esgotou na Shopee? Ver opções ativas</span>
+                    </a>
+                  </div>
+                )}
 
               </div>
             </div>
