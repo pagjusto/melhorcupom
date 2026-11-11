@@ -55,7 +55,8 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   const isLimited = maxUses !== null && maxUses !== undefined && maxUses !== '' && maxUses !== 0 && maxUses !== 'unlimited';
   const isLimitReached = isVipUser && isLimited && userUsesCount >= maxUses;
 
-  const handleAction = () => {
+  const handleAction = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
     if (recordCouponView) {
       recordCouponView(coupon.id);
     }
@@ -120,7 +121,7 @@ export const CouponCard = ({ coupon, store, onSelectCoupon }) => {
   };
 
   return (
-    <div className={`ticket-card flex flex-col justify-between group overflow-hidden transition-all duration-300 relative ${tierConfig.cardClass}`}>
+    <div onClick={handleAction} className={`ticket-card flex flex-col justify-between group overflow-hidden transition-all duration-300 relative cursor-pointer ${tierConfig.cardClass}`}>
       
       {/* Aura Luminosa interna no Hover (Apenas Gold, Silver, Bronze - Menos Free) */}
       {tierConfig.auraBg && (

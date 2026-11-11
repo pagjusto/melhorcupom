@@ -46,7 +46,7 @@ const QUICK_SEARCH_CHIPS = [
 ];
 
 export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
-  const { stores, coupons, hotDeals, navigateToImperdiveis } = useApp();
+  const { stores, coupons, hotDeals, navigateToImperdiveis, isVipUser, setIsSubscriptionModalOpen } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState('all');
 
@@ -259,7 +259,13 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
     return (
       <div
         key={key}
-        onClick={() => onSelectCoupon && onSelectCoupon(coupon)}
+        onClick={() => {
+          if (!isVipUser) {
+            setIsSubscriptionModalOpen(true);
+          } else if (onSelectCoupon) {
+            onSelectCoupon(coupon);
+          }
+        }}
         className={`${
           isGrid ? 'w-full' : 'w-[315px] sm:w-[345px]'
         } h-[142px] sm:h-[148px] flex-shrink-0 bg-gradient-to-br from-[#161626]/95 via-[#131320]/95 to-[#0F0F1A]/95 hover:from-[#1E1E34] hover:to-[#17172B] border border-white/10 hover:border-[#FF5F00]/80 rounded-2xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-950/40 cursor-pointer group relative overflow-hidden select-none`}
@@ -368,7 +374,7 @@ export const BigStoresShowcase = ({ onSelectCoupon, onSelectStore }) => {
 
           {/* Botão de Ação / Pegar Cupom ou Ver Oferta */}
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FF5F00]/15 group-hover:bg-[#FF5F00] text-orange-400 group-hover:text-white border border-[#FF5F00]/30 group-hover:border-[#FF5F00] text-xs font-bold transition-all flex-shrink-0 shadow-sm">
-            <span>{coupon.isHotDeal ? 'Ver Oferta' : 'Pegar'}</span>
+            <span>{isVipUser ? (coupon.isHotDeal ? 'Ver Oferta' : 'Pegar') : '🔒 VIP'}</span>
             <ExternalLink size={12} className="group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>

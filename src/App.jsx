@@ -250,17 +250,12 @@ const MainLayout = () => {
     if (recordCouponView) {
       recordCouponView(coupon.id);
     }
-    // Ofertas Imperdíveis são exclusivas para assinantes VIP
-    if ((coupon?.isHotDeal || coupon?.isImperdivel) && !isVipUser) {
+    // Regra Universal: Todos os cupons exigem assinatura VIP para resgate
+    if (!isVipUser) {
       setIsSubscriptionModalOpen(true);
       return;
     }
-    // Ao clicar em oferta de grandes lojas, sugere cadastro gratuito para visitantes
-    if (currentRole === 'visitor' && !userProfile?.isRegistered) {
-      setBigStoreFreeRegisterCoupon(coupon);
-    } else {
-      setSelectedCoupon(coupon);
-    }
+    setSelectedCoupon(coupon);
   };
 
   const getSimulatedRoleLabel = (role) => {

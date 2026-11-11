@@ -865,7 +865,7 @@ export const AuthModal = () => {
                 className="w-full mt-2 bg-gradient-to-r from-[#FF5F00] to-[#FF8400] hover:from-[#E04F00] hover:to-[#FF7700] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2 text-sm transform hover:scale-[1.01]"
               >
                 <Sparkles size={16} />
-                <span>Finalizar Cadastro de Usuário</span>
+                <span>Criar Conta & Ativar Acesso VIP</span>
                 <ArrowRight size={16} />
               </button>
 

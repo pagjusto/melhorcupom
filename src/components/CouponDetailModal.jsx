@@ -192,7 +192,7 @@ export const CouponDetailModal = ({ coupon, store, onClose, onTestValidateAtMerc
     if (!coupon) return;
 
     // Cupons de parceiros locais físicos e Ofertas Imperdíveis requerem assinatura VIP do clube
-    if (!isVipUser && (isLocalPartner || coupon.isHotDeal || coupon.isImperdivel)) {
+    if (!isVipUser) {
       onClose();
       setIsSubscriptionModalOpen(true);
       return;

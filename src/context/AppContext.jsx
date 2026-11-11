@@ -2282,6 +2282,8 @@ export const AppProvider = ({ children }) => {
     } catch {}
 
     setIsAuthModalOpen(false);
+    // Solicitar pagamento / ativação VIP imediatamente após o cadastro
+    setIsSubscriptionModalOpen(true);
 
     // Salvar no Supabase Cloud se estiver configurado
     if (isSupabaseConfigured && supabase && email) {
